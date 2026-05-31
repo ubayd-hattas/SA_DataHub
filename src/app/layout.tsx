@@ -27,19 +27,17 @@ const dmMono = DM_Mono({
 })
 
 export const metadata: Metadata = {
-   metadataBase: new URL('https://sadatahub.vercel.app'),
+  metadataBase: new URL('https://sadatahub.vercel.app'),
   title: 'SA Data Hub — South African Public Data',
   description:
     'Explore South African public data — unemployment, GDP, inflation, crime, education, population, housing, and census statistics.',
-  keywords: ['South Africa', 'statistics', 'data', 'Stats SA', 'public data', 'census'],
-
-  },
+  keywords: ['South Africa', 'statistics', 'data', 'Stats SA', 'public data', 'census'], // <-- Removed the extra }, from here
   openGraph: {
     title: 'SA Data Hub',
     description: 'Modern, accessible South African public data.',
     type: 'website',
     siteName: 'SA Data Hub',
- images: [
+    images: [
       {
         url: '/og-image.png',
         width: 1200,
@@ -52,6 +50,7 @@ export const metadata: Metadata = {
     google: '1e1a0b335f98cead',
   },
 }
+
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
