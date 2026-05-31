@@ -1,89 +1,52 @@
 {
   "_meta": {
-    "source": "Statistics South Africa — Quarterly Labour Force Survey (QLFS)",
+    "source": "Statistics South Africa — Quarterly Labour Force Survey (P0211)",
     "source_url": "https://www.statssa.gov.za/?page_id=1854&PPN=P0211",
-    "update_frequency": "Quarterly (Feb, May, Aug, Nov)",
-    "last_verified": "2026-05-30",
-    "notes": "Official unemployment uses the strict definition (ILO). Expanded definition includes discouraged work-seekers. Update by running: python scripts/update_unemployment.py",
-    "auto_updated": "2026-05-30"
+    "update_frequency": "Quarterly — February, May, August, November",
+    "last_verified": "2026-05-31",
+    "notes": "Official unemployment uses ILO strict definition. Expanded definition includes discouraged work-seekers. Q4 2025 data published Feb 2026 showing 31.4%. Provincial data from same QLFS release. Update by running: python scripts/update_unemployment.py"
   },
   "statistics": [
     {
       "id": "unemployment-national",
       "categoryId": "unemployment",
       "title": "National Unemployment Rate",
-      "value": "32.4%",
-      "rawValue": 32.4,
+      "value": "31.4%",
+      "rawValue": 31.4,
       "unit": "%",
-      "change": 0.1,
-      "changeLabel": "from 2024",
-      "trend": "up",
-      "description": "South Africa's official unemployment rate (strict ILO definition) for Q1 2025, as measured by the Quarterly Labour Force Survey. The expanded definition, which includes discouraged work-seekers, stands at 43.1%.",
+      "change": -0.5,
+      "changeLabel": "from Q3 2025 (31.9%)",
+      "trend": "down",
+      "description": "South Africa's official unemployment rate fell to 31.4% in Q4 2025 — the lowest since Q2 2022 — as 44,000 more people found work. The number of employed persons rose to 17.1 million. The expanded unemployment rate (including discouraged work-seekers) stands at 40.7%.",
       "source": {
         "name": "Statistics South Africa",
         "shortName": "Stats SA",
         "url": "https://www.statssa.gov.za/?page_id=1854&PPN=P0211",
-        "publicationName": "Quarterly Labour Force Survey Q1 2025",
-        "publicationDate": "2025-05-20"
+        "publicationName": "Quarterly Labour Force Survey Q4 2025",
+        "publicationDate": "2026-02-17"
       },
-      "lastUpdated": "2025-05-20",
+      "lastUpdated": "2026-02-17",
       "series": [
         {
-          "name": "Unemployment Rate",
+          "name": "Unemployment Rate (%)",
           "unit": "%",
           "data": [
-            {
-              "label": "Q1 2022",
-              "value": 34.5
-            },
-            {
-              "label": "Q2 2022",
-              "value": 33.9
-            },
-            {
-              "label": "Q3 2022",
-              "value": 32.9
-            },
-            {
-              "label": "Q4 2022",
-              "value": 32.7
-            },
-            {
-              "label": "Q1 2023",
-              "value": 32.9
-            },
-            {
-              "label": "Q2 2023",
-              "value": 33.5
-            },
-            {
-              "label": "Q3 2023",
-              "value": 33.7
-            },
-            {
-              "label": "Q4 2023",
-              "value": 32.9
-            },
-            {
-              "label": "Q1 2024",
-              "value": 33.0
-            },
-            {
-              "label": "Q2 2024",
-              "value": 33.5
-            },
-            {
-              "label": "Q3 2024",
-              "value": 32.1
-            },
-            {
-              "label": "Q4 2024",
-              "value": 32.9
-            },
-            {
-              "label": "Q1 2025",
-              "value": 33.5
-            }
+            { "label": "Q1 2022", "value": 34.5 },
+            { "label": "Q2 2022", "value": 33.9 },
+            { "label": "Q3 2022", "value": 32.9 },
+            { "label": "Q4 2022", "value": 32.7 },
+            { "label": "Q1 2023", "value": 32.9 },
+            { "label": "Q2 2023", "value": 33.5 },
+            { "label": "Q3 2023", "value": 33.7 },
+            { "label": "Q4 2023", "value": 32.9 },
+            { "label": "Q1 2024", "value": 32.9 },
+            { "label": "Q2 2024", "value": 33.5 },
+            { "label": "Q3 2024", "value": 32.1 },
+            { "label": "Q4 2024", "value": 31.9 },
+            { "label": "Q1 2025", "value": 33.5 },
+            { "label": "Q2 2025", "value": 33.2 },
+            { "label": "Q3 2025", "value": 31.9 },
+            { "label": "Q4 2025", "value": 31.4 }
           ]
         }
       ]
@@ -92,78 +55,42 @@
       "id": "youth-unemployment",
       "categoryId": "unemployment",
       "title": "Youth Unemployment (15–34)",
-      "value": "59.9%",
-      "rawValue": 59.9,
+      "value": "44.8%",
+      "rawValue": 44.8,
       "unit": "%",
-      "change": -0.3,
-      "changeLabel": "from 2024",
+      "change": -0.9,
+      "changeLabel": "from Q3 2025",
       "trend": "down",
-      "description": "Youth unemployment among those aged 15 to 34 years for Q1 2025. South Africa has one of the highest youth unemployment rates globally, significantly above the national average.",
+      "description": "Youth unemployment (ages 15–34) declined to 44.8% in Q4 2025. Among those aged 15–24, the rate stands at 61.4% — meaning roughly 6 in 10 young South Africans who want work cannot find it. South Africa's youth unemployment is among the highest globally.",
       "source": {
         "name": "Statistics South Africa",
         "shortName": "Stats SA",
         "url": "https://www.statssa.gov.za/?page_id=1854&PPN=P0211",
-        "publicationName": "Quarterly Labour Force Survey Q1 2025",
-        "publicationDate": "2025-05-20"
+        "publicationName": "Quarterly Labour Force Survey Q4 2025",
+        "publicationDate": "2026-02-17"
       },
-      "lastUpdated": "2025-05-20",
+      "lastUpdated": "2026-02-17",
       "series": [
         {
-          "name": "Youth Unemployment Rate",
+          "name": "Youth Unemployment Rate (%)",
           "unit": "%",
           "data": [
-            {
-              "label": "Q1 2022",
-              "value": 47.4
-            },
-            {
-              "label": "Q2 2022",
-              "value": 47.0
-            },
-            {
-              "label": "Q3 2022",
-              "value": 46.0
-            },
-            {
-              "label": "Q4 2022",
-              "value": 45.7
-            },
-            {
-              "label": "Q1 2023",
-              "value": 46.3
-            },
-            {
-              "label": "Q2 2023",
-              "value": 47.1
-            },
-            {
-              "label": "Q3 2023",
-              "value": 47.3
-            },
-            {
-              "label": "Q4 2023",
-              "value": 46.1
-            },
-            {
-              "label": "Q1 2024",
-              "value": 45.9
-            },
-            {
-              "label": "Q2 2024",
-              "value": 46.2
-            },
-            {
-              "label": "Q3 2024",
-              "value": 44.9
-            },
-            {
-              "label": "Q4 2024",
-              "value": 45.1
-            },
-            {
-              "label": "Q1 2025",
-              "value": 45.5
-            }
+            { "label": "Q1 2022", "value": 47.4 },
+            { "label": "Q2 2022", "value": 47.0 },
+            { "label": "Q3 2022", "value": 46.0 },
+            { "label": "Q4 2022", "value": 45.7 },
+            { "label": "Q1 2023", "value": 46.3 },
+            { "label": "Q2 2023", "value": 47.1 },
+            { "label": "Q3 2023", "value": 47.3 },
+            { "label": "Q4 2023", "value": 46.1 },
+            { "label": "Q1 2024", "value": 45.9 },
+            { "label": "Q2 2024", "value": 46.2 },
+            { "label": "Q3 2024", "value": 44.9 },
+            { "label": "Q4 2024", "value": 45.4 },
+            { "label": "Q1 2025", "value": 46.1 },
+            { "label": "Q2 2025", "value": 45.9 },
+            { "label": "Q3 2025", "value": 45.7 },
+            { "label": "Q4 2025", "value": 44.8 }
           ]
         }
       ]
@@ -172,62 +99,38 @@
       "id": "labour-force-participation",
       "categoryId": "unemployment",
       "title": "Labour Force Participation Rate",
-      "value": "55.6%",
-      "rawValue": 55.6,
+      "value": "42.7%",
+      "rawValue": 42.7,
       "unit": "%",
-      "change": 0.0,
-      "changeLabel": "from 2024",
+      "change": -0.1,
+      "changeLabel": "from Q3 2025",
       "trend": "stable",
-      "description": "Percentage of the working-age population (15–64) that is either employed or actively seeking work. South Africa's participation rate remains among the lowest globally, partly due to discouraged work-seekers.",
+      "description": "42.7% of working-age South Africans (ages 15–64) were either employed or actively seeking work in Q4 2025. This participation rate remains among the lowest globally, partly reflecting large numbers of discouraged work-seekers who have given up looking for jobs.",
       "source": {
         "name": "Statistics South Africa",
         "shortName": "Stats SA",
         "url": "https://www.statssa.gov.za/?page_id=1854&PPN=P0211",
-        "publicationName": "Quarterly Labour Force Survey Q1 2025",
-        "publicationDate": "2025-05-20"
+        "publicationName": "Quarterly Labour Force Survey Q4 2025",
+        "publicationDate": "2026-02-17"
       },
-      "lastUpdated": "2025-05-20",
+      "lastUpdated": "2026-02-17",
       "series": [
         {
-          "name": "Participation Rate",
+          "name": "Participation Rate (%)",
           "unit": "%",
           "data": [
-            {
-              "label": "Q1 2023",
-              "value": 42.8
-            },
-            {
-              "label": "Q2 2023",
-              "value": 42.5
-            },
-            {
-              "label": "Q3 2023",
-              "value": 43.1
-            },
-            {
-              "label": "Q4 2023",
-              "value": 43.2
-            },
-            {
-              "label": "Q1 2024",
-              "value": 42.9
-            },
-            {
-              "label": "Q2 2024",
-              "value": 43.0
-            },
-            {
-              "label": "Q3 2024",
-              "value": 43.3
-            },
-            {
-              "label": "Q4 2024",
-              "value": 42.9
-            },
-            {
-              "label": "Q1 2025",
-              "value": 42.6
-            }
+            { "label": "Q1 2023", "value": 42.8 },
+            { "label": "Q2 2023", "value": 42.5 },
+            { "label": "Q3 2023", "value": 43.1 },
+            { "label": "Q4 2023", "value": 43.2 },
+            { "label": "Q1 2024", "value": 42.9 },
+            { "label": "Q2 2024", "value": 43.0 },
+            { "label": "Q3 2024", "value": 43.3 },
+            { "label": "Q4 2024", "value": 42.9 },
+            { "label": "Q1 2025", "value": 42.5 },
+            { "label": "Q2 2025", "value": 42.9 },
+            { "label": "Q3 2025", "value": 42.8 },
+            { "label": "Q4 2025", "value": 42.7 }
           ]
         }
       ]

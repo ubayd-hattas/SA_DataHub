@@ -5,11 +5,12 @@ import {
   GraduationCap, Users, Home, BarChart3, ArrowLeft, LucideIcon,
 } from 'lucide-react'
 import { StatCard } from '@/components/ui/StatCard'
+import { InsightPanel } from '@/components/ui/InsightPanel'
 import { LineChartCard } from '@/components/charts/LineChartCard'
 import { BarChartCard } from '@/components/charts/BarChartCard'
 import { SourceBadge } from '@/components/ui/SourceBadge'
 import { getCategoryById, getStatsByCategory } from '@/data/mock'
-import { CategoryId } from '@/types'
+import { generateInsight, generateCategoryInsight } from '@/lib/insights'
 import { formatDate } from '@/lib/utils'
 
 const iconMap: Record<string, LucideIcon> = {
@@ -21,7 +22,6 @@ interface CategoryPageProps {
   params: { slug: string }
 }
 
-// Generate all category pages at build time
 export function generateStaticParams() {
   return [
     'unemployment', 'gdp', 'inflation', 'crime',
@@ -37,10 +37,8 @@ export default function CategoryPage({ params }: CategoryPageProps) {
   const Icon = iconMap[category.icon] ?? BarChart3
   const statsWithSeries = stats.filter((s) => s.series && s.series.length > 0)
   const allSources = Array.from(new Map(stats.map((s) => [s.source.name, s.source])).values())
-  const latestUpdate = stats
-    .map((s) => s.lastUpdated)
-    .sort()
-    .reverse()[0]
+  const latestUpdate = stats.map((s) => s.lastUpdated).sort().reverse()[0]
+  const categoryInsight = generateCategoryInsight(stats)
 
   return (
     <div className="animate-fade-in py-8">
@@ -55,7 +53,7 @@ export default function CategoryPage({ params }: CategoryPageProps) {
         </Link>
 
         {/* Header */}
-        <div className="mb-8 flex items-start gap-4">
+        <div className="mb-6 flex items-start gap-4">
           <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${category.bgColor}`}>
             <Icon size={24} className={category.color} />
           </div>
@@ -68,35 +66,46 @@ export default function CategoryPage({ params }: CategoryPageProps) {
           </div>
         </div>
 
-        {/* Overview cards */}
+        {/* Category-level insight */}
+        {categoryInsight && (
+          <div className="mb-8 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-300">
+            {categoryInsight}
+          </div>
+        )}
+
+        {/* Overview cards + per-stat insights */}
         <div className="mb-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {stats.map((stat) => (
-            <StatCard key={stat.id} stat={stat} />
-          ))}
+          {stats.map((stat) => {
+            const insight = generateInsight(stat)
+            return (
+              <div key={stat.id} className="flex flex-col gap-2">
+                <StatCard stat={stat} />
+                <InsightPanel insight={insight} compact />
+              </div>
+            )
+          })}
         </div>
 
-        {/* Charts */}
+        {/* Charts with full insights */}
         {statsWithSeries.length > 0 && (
           <div className="mb-10">
             <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-slate-400">
               Trend visualisations
             </h2>
-            <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-              {statsWithSeries.map((stat, i) =>
-                i % 2 === 0 ? (
-                  <LineChartCard
-                    key={stat.id}
-                    title={stat.title}
-                    series={stat.series!}
-                  />
-                ) : (
-                  <BarChartCard
-                    key={stat.id}
-                    title={stat.title}
-                    series={stat.series!}
-                  />
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+              {statsWithSeries.map((stat, i) => {
+                const insight = generateInsight(stat)
+                return (
+                  <div key={stat.id} className="flex flex-col gap-3">
+                    {i % 2 === 0 ? (
+                      <LineChartCard title={stat.title} series={stat.series!} />
+                    ) : (
+                      <BarChartCard title={stat.title} series={stat.series!} />
+                    )}
+                    <InsightPanel insight={insight} />
+                  </div>
                 )
-              )}
+              })}
             </div>
           </div>
         )}

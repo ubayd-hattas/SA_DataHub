@@ -1,0 +1,326 @@
+{
+  "_meta": {
+    "source": "Statistics South Africa — Quarterly Labour Force Survey (P0211)",
+    "source_url": "https://www.statssa.gov.za/?page_id=1854&PPN=P0211",
+    "update_frequency": "Quarterly — same release as national QLFS",
+    "last_verified": "2026-05-31",
+    "notes": "Provincial unemployment rates from QLFS Q3 2025 release. Q4 2025 provincial breakdown available Feb 2026. Western Cape consistently the lowest. North West and Eastern Cape consistently the highest. Population figures from Census 2022 and mid-year 2024 estimates."
+  },
+  "provinces": [
+    {
+      "id": "western-cape",
+      "name": "Western Cape",
+      "capital": "Cape Town",
+      "population": 7404470,
+      "populationShare": 11.8,
+      "unemploymentRate": 19.7,
+      "unemploymentRank": 1,
+      "gdpShare": 14.2,
+      "matricPassRate": 89.1,
+      "stats": {
+        "unemployment": {
+          "rate": 19.7,
+          "expanded": 25.7,
+          "period": "Q3 2025",
+          "trend": "down",
+          "change": -1.4
+        },
+        "population": {
+          "total": 7404470,
+          "urban": 89.1,
+          "source": "Census 2022"
+        },
+        "education": {
+          "matricPassRate": 89.1,
+          "year": 2024,
+          "literacyRate": 92.4
+        },
+        "housing": {
+          "electricityAccess": 95.8,
+          "pipedWaterInDwelling": 74.2,
+          "formalDwellings": 87.1
+        }
+      }
+    },
+    {
+      "id": "gauteng",
+      "name": "Gauteng",
+      "capital": "Johannesburg / Pretoria",
+      "population": 15810388,
+      "populationShare": 25.5,
+      "unemploymentRate": 33.0,
+      "unemploymentRank": 5,
+      "gdpShare": 33.8,
+      "matricPassRate": 87.2,
+      "stats": {
+        "unemployment": {
+          "rate": 33.0,
+          "expanded": 39.6,
+          "period": "Q3 2025",
+          "trend": "down",
+          "change": -0.8
+        },
+        "population": {
+          "total": 15810388,
+          "urban": 98.2,
+          "source": "Census 2022"
+        },
+        "education": {
+          "matricPassRate": 87.2,
+          "year": 2024,
+          "literacyRate": 91.8
+        },
+        "housing": {
+          "electricityAccess": 95.1,
+          "pipedWaterInDwelling": 73.1,
+          "formalDwellings": 84.6
+        }
+      }
+    },
+    {
+      "id": "kwazulu-natal",
+      "name": "KwaZulu-Natal",
+      "capital": "Pietermaritzburg",
+      "population": 11422838,
+      "populationShare": 18.4,
+      "unemploymentRate": 31.7,
+      "unemploymentRank": 4,
+      "gdpShare": 15.9,
+      "matricPassRate": 81.4,
+      "stats": {
+        "unemployment": {
+          "rate": 31.7,
+          "expanded": 44.2,
+          "period": "Q3 2025",
+          "trend": "stable",
+          "change": 0.1
+        },
+        "population": {
+          "total": 11422838,
+          "urban": 52.4,
+          "source": "Census 2022"
+        },
+        "education": {
+          "matricPassRate": 81.4,
+          "year": 2024,
+          "literacyRate": 85.3
+        },
+        "housing": {
+          "electricityAccess": 88.1,
+          "pipedWaterInDwelling": 57.4,
+          "formalDwellings": 79.8
+        }
+      }
+    },
+    {
+      "id": "eastern-cape",
+      "name": "Eastern Cape",
+      "capital": "Bhisho",
+      "population": 6734001,
+      "populationShare": 10.9,
+      "unemploymentRate": 43.7,
+      "unemploymentRank": 8,
+      "gdpShare": 7.4,
+      "matricPassRate": 79.8,
+      "stats": {
+        "unemployment": {
+          "rate": 43.7,
+          "expanded": 50.1,
+          "period": "Q3 2025",
+          "trend": "up",
+          "change": 1.2
+        },
+        "population": {
+          "total": 6734001,
+          "urban": 38.9,
+          "source": "Census 2022"
+        },
+        "education": {
+          "matricPassRate": 79.8,
+          "year": 2024,
+          "literacyRate": 80.1
+        },
+        "housing": {
+          "electricityAccess": 82.3,
+          "pipedWaterInDwelling": 41.8,
+          "formalDwellings": 68.9
+        }
+      }
+    },
+    {
+      "id": "limpopo",
+      "name": "Limpopo",
+      "capital": "Polokwane",
+      "population": 6270998,
+      "populationShare": 10.1,
+      "unemploymentRate": 29.8,
+      "unemploymentRank": 2,
+      "gdpShare": 6.6,
+      "matricPassRate": 84.6,
+      "stats": {
+        "unemployment": {
+          "rate": 29.8,
+          "expanded": 43.9,
+          "period": "Q3 2025",
+          "trend": "down",
+          "change": -0.6
+        },
+        "population": {
+          "total": 6270998,
+          "urban": 14.9,
+          "source": "Census 2022"
+        },
+        "education": {
+          "matricPassRate": 84.6,
+          "year": 2024,
+          "literacyRate": 78.4
+        },
+        "housing": {
+          "electricityAccess": 88.2,
+          "pipedWaterInDwelling": 38.2,
+          "formalDwellings": 73.4
+        }
+      }
+    },
+    {
+      "id": "mpumalanga",
+      "name": "Mpumalanga",
+      "capital": "Mbombela",
+      "population": 4591066,
+      "populationShare": 7.4,
+      "unemploymentRate": 38.6,
+      "unemploymentRank": 7,
+      "gdpShare": 7.1,
+      "matricPassRate": 82.1,
+      "stats": {
+        "unemployment": {
+          "rate": 38.6,
+          "expanded": 48.4,
+          "period": "Q3 2025",
+          "trend": "stable",
+          "change": -0.2
+        },
+        "population": {
+          "total": 4591066,
+          "urban": 36.8,
+          "source": "Census 2022"
+        },
+        "education": {
+          "matricPassRate": 82.1,
+          "year": 2024,
+          "literacyRate": 83.5
+        },
+        "housing": {
+          "electricityAccess": 85.4,
+          "pipedWaterInDwelling": 48.9,
+          "formalDwellings": 76.2
+        }
+      }
+    },
+    {
+      "id": "north-west",
+      "name": "North West",
+      "capital": "Mahikeng",
+      "population": 4099066,
+      "populationShare": 6.6,
+      "unemploymentRate": 41.2,
+      "unemploymentRank": 9,
+      "gdpShare": 5.8,
+      "matricPassRate": 85.3,
+      "stats": {
+        "unemployment": {
+          "rate": 41.2,
+          "expanded": 54.7,
+          "period": "Q3 2025",
+          "trend": "down",
+          "change": -1.8
+        },
+        "population": {
+          "total": 4099066,
+          "urban": 31.4,
+          "source": "Census 2022"
+        },
+        "education": {
+          "matricPassRate": 85.3,
+          "year": 2024,
+          "literacyRate": 84.1
+        },
+        "housing": {
+          "electricityAccess": 86.7,
+          "pipedWaterInDwelling": 52.3,
+          "formalDwellings": 72.8
+        }
+      }
+    },
+    {
+      "id": "free-state",
+      "name": "Free State",
+      "capital": "Bloemfontein",
+      "population": 2924747,
+      "populationShare": 4.7,
+      "unemploymentRate": 35.7,
+      "unemploymentRank": 6,
+      "gdpShare": 5.3,
+      "matricPassRate": 88.4,
+      "stats": {
+        "unemployment": {
+          "rate": 35.7,
+          "expanded": 43.1,
+          "period": "Q3 2025",
+          "trend": "stable",
+          "change": 0.3
+        },
+        "population": {
+          "total": 2924747,
+          "urban": 73.2,
+          "source": "Census 2022"
+        },
+        "education": {
+          "matricPassRate": 88.4,
+          "year": 2024,
+          "literacyRate": 88.2
+        },
+        "housing": {
+          "electricityAccess": 90.3,
+          "pipedWaterInDwelling": 62.1,
+          "formalDwellings": 82.4
+        }
+      }
+    },
+    {
+      "id": "northern-cape",
+      "name": "Northern Cape",
+      "capital": "Kimberley",
+      "population": 1259532,
+      "populationShare": 2.0,
+      "unemploymentRate": 31.2,
+      "unemploymentRank": 3,
+      "gdpShare": 2.5,
+      "matricPassRate": 86.1,
+      "stats": {
+        "unemployment": {
+          "rate": 31.2,
+          "expanded": 42.8,
+          "period": "Q3 2025",
+          "trend": "down",
+          "change": -0.5
+        },
+        "population": {
+          "total": 1259532,
+          "urban": 72.8,
+          "source": "Census 2022"
+        },
+        "education": {
+          "matricPassRate": 86.1,
+          "year": 2024,
+          "literacyRate": 87.4
+        },
+        "housing": {
+          "electricityAccess": 89.1,
+          "pipedWaterInDwelling": 61.4,
+          "formalDwellings": 81.6
+        }
+      }
+    }
+  ]
+}

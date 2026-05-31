@@ -1,25 +1,24 @@
 /**
  * src/data/mock.ts
  *
- * Data layer for SA Data Hub.
+ * SA Data Hub — Data Layer v2
  *
- * ── Architecture ─────────────────────────────────────────────────────────────
- * Data lives in src/data/datasets/<category>.json files.
- * This file imports those JSON files and re-exports them using the same
- * interface your frontend already expects — no component changes required.
+ * ── What changed in v2 ────────────────────────────────────────────────────────
+ * - Added province data from provinces.json
+ * - Added getProvinceData() and getProvinceById() helpers
+ * - searchStats() now uses the fuzzy search engine (typo tolerance + synonyms)
+ * - All existing function signatures preserved — no frontend component changes
  *
- * ── Updating data ────────────────────────────────────────────────────────────
+ * ── Data files ────────────────────────────────────────────────────────────────
+ * src/data/datasets/<category>.json  — one file per category
+ * src/data/datasets/provinces.json   — provincial breakdown data (NEW)
+ *
+ * ── Updating data ─────────────────────────────────────────────────────────────
  * Run:  python scripts/update_all.py
- * This fetches/validates fresh data and regenerates the JSON files above.
- * For datasets with no API, the script prints instructions for manual update.
- *
- * ── Adding a new statistic ───────────────────────────────────────────────────
- * 1. Add a new object to the relevant src/data/datasets/<category>.json file.
- * 2. Ensure it matches the Statistic interface in src/types/index.ts.
- * 3. The frontend picks it up automatically — no changes needed here.
  */
 
-import { Category, Statistic } from '@/types'
+import { Category, Statistic, ProvinceData } from '@/types'
+import { searchStatistics } from '@/lib/search'
 
 // ─── Dataset imports ──────────────────────────────────────────────────────────
 import unemploymentData from './datasets/unemployment.json'
@@ -30,10 +29,9 @@ import educationData    from './datasets/education.json'
 import populationData   from './datasets/population.json'
 import housingData      from './datasets/housing.json'
 import censusData       from './datasets/census.json'
+import provincesData    from './datasets/provinces.json'
 
 // ─── Categories ───────────────────────────────────────────────────────────────
-// Categories are static metadata — they describe the shape of the site,
-// not the data itself. Update stats counts when you add new datasets.
 
 export const categories: Category[] = [
   {
@@ -111,8 +109,6 @@ export const categories: Category[] = [
 ]
 
 // ─── Statistics ───────────────────────────────────────────────────────────────
-// Merge all category datasets into a single flat array.
-// The type cast is safe because the JSON schema exactly matches Statistic[].
 
 export const statistics: Statistic[] = [
   ...(unemploymentData.statistics as Statistic[]),
@@ -125,8 +121,11 @@ export const statistics: Statistic[] = [
   ...(censusData.statistics       as Statistic[]),
 ]
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-// Identical signatures to the original mock.ts — no frontend changes needed.
+// ─── Province data ────────────────────────────────────────────────────────────
+
+export const provinces: ProvinceData[] = provincesData.provinces as ProvinceData[]
+
+// ─── Helpers — identical signatures to v1 ────────────────────────────────────
 
 export function getStatsByCategory(categoryId: string): Statistic[] {
   return statistics.filter((s) => s.categoryId === categoryId)
@@ -141,7 +140,6 @@ export function getStatById(id: string): Statistic | undefined {
 }
 
 export function getFeaturedStats(): Statistic[] {
-  // Pinned featured IDs — change these to surface different stats on the homepage.
   const featuredIds = [
     'unemployment-national',
     'gdp-growth',
@@ -155,12 +153,21 @@ export function getFeaturedStats(): Statistic[] {
     .filter((s): s is Statistic => s !== undefined)
 }
 
+/** Fuzzy search — replaces the previous exact substring match. */
 export function searchStats(query: string): Statistic[] {
-  const q = query.toLowerCase()
-  return statistics.filter(
-    (s) =>
-      s.title.toLowerCase().includes(q) ||
-      s.description.toLowerCase().includes(q) ||
-      s.categoryId.includes(q)
+  return searchStatistics(query, statistics).map((r) =>
+    statistics.find((s) => s.id === r.id)!
   )
+}
+
+// ─── Province helpers (NEW) ──────────────────────────────────────────────────
+
+export function getProvinceById(id: string): ProvinceData | undefined {
+  return provinces.find((p) => p.id === id)
+}
+
+export function getProvincesSortedBy(
+  key: keyof Pick<ProvinceData, 'unemploymentRate' | 'population' | 'matricPassRate' | 'gdpShare'>
+): ProvinceData[] {
+  return [...provinces].sort((a, b) => (b[key] as number) - (a[key] as number))
 }

@@ -52,6 +52,7 @@ export interface Statistic {
   lastUpdated: string     // ISO date string
   province?: Province
   series?: DataSeries[]
+  insight?: Insight       // optional computed or authored insight
 }
 
 export interface DataSource {
@@ -60,6 +61,59 @@ export interface DataSource {
   url: string
   publicationName?: string
   publicationDate?: string
+}
+
+// ─── Data Interpretation Layer ───────────────────────────────────────────────
+
+export type InsightSentiment = 'positive' | 'negative' | 'neutral' | 'mixed'
+export type InsightType = 'trend' | 'turning-point' | 'context' | 'comparison' | 'warning'
+
+export interface Insight {
+  summary: string           // 1–2 sentence headline insight
+  sentiment: InsightSentiment
+  type: InsightType
+  details?: string[]        // supporting bullet points (optional)
+  generatedFrom?: string    // e.g. "16-quarter trend analysis"
+}
+
+// ─── Province Data ───────────────────────────────────────────────────────────
+
+export interface ProvinceStats {
+  unemployment: {
+    rate: number
+    expanded: number
+    period: string
+    trend: 'up' | 'down' | 'stable'
+    change: number
+  }
+  population: {
+    total: number
+    urban: number
+    source: string
+  }
+  education: {
+    matricPassRate: number
+    year: number
+    literacyRate: number
+  }
+  housing: {
+    electricityAccess: number
+    pipedWaterInDwelling: number
+    formalDwellings: number
+  }
+}
+
+export interface ProvinceData {
+  id: Province
+  name: string
+  capital: string
+  population: number
+  populationShare: number
+  unemploymentRate: number
+  unemploymentRank: number
+  gdpShare: number
+  matricPassRate: number
+  stats: ProvinceStats
 }
 
 // ─── Category Metadata ──────────────────────────────────────────────────────
@@ -83,6 +137,7 @@ export interface SearchResult {
   categoryLabel: string
   value: string
   href: string
+  score?: number          // relevance score for fuzzy matching
 }
 
 // ─── Dashboard Filters ──────────────────────────────────────────────────────
@@ -91,4 +146,18 @@ export interface DashboardFilters {
   category: CategoryId | 'all'
   province: Province
   search: string
+}
+
+// ─── Methodology ────────────────────────────────────────────────────────────
+
+export interface DataSourceMeta {
+  id: string
+  name: string
+  shortName: string
+  url: string
+  description: string
+  datasets: string[]
+  updateFrequency: string
+  automationLevel: 'full' | 'partial' | 'manual' | 'static'
+  reliability: 'official' | 'derived' | 'third-party'
 }

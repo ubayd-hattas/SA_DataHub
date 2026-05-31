@@ -1,77 +1,48 @@
 {
   "_meta": {
-    "source": "Statistics South Africa — Consumer Price Index (CPI)",
+    "source": "Statistics South Africa — Consumer Price Index (P0141); SARB Monetary Policy Committee",
     "source_url": "https://www.statssa.gov.za/?page_id=1854&PPN=P0141",
-    "update_frequency": "Monthly (around the 20th of each month)",
-    "last_verified": "2026-05-30",
-    "notes": "CPI data is published monthly. The SARB targets 3%–6%. Update by running: python scripts/update_inflation.py",
-    "auto_updated": "2026-05-30"
+    "update_frequency": "Monthly — around the 22nd of each month for the prior month",
+    "last_verified": "2026-05-31",
+    "notes": "CPI figures are year-on-year % change. SARB inflation target was changed to 3% (±1pp) on 12 November 2025 from the previous 3–6% band. Repo rate decisions made at MPC meetings approx. 6× per year. Update by running: python scripts/update_inflation.py"
   },
   "statistics": [
     {
       "id": "cpi-headline",
       "categoryId": "inflation",
       "title": "Headline Inflation (CPI)",
-      "value": "3.0%",
-      "rawValue": 3.0,
+      "value": "4.0%",
+      "rawValue": 4.0,
       "unit": "%",
-      "change": -0.3,
-      "changeLabel": "from February 2025",
-      "trend": "down",
-      "description": "South Africa's headline consumer price inflation for March 2025. This is the lowest CPI reading since 2020, now at the lower bound of the SARB's 3–6% target band. Lower fuel prices and easing food inflation are the primary drivers.",
+      "change": 0.9,
+      "changeLabel": "from March 2026 (3.1%)",
+      "trend": "up",
+      "description": "South Africa's headline CPI rose to 4.0% year-on-year in April 2026 — the steepest reading since August 2024. The main drivers were a sharp jump in fuel prices (+18% annually), higher electricity tariffs, and insurance costs. Food inflation eased to 2.9%. Core inflation (ex-food, fuel, energy) rose to 3.6%. This moves inflation above the SARB's new 3% target midpoint.",
       "source": {
         "name": "Statistics South Africa",
         "shortName": "Stats SA",
         "url": "https://www.statssa.gov.za/?page_id=1854&PPN=P0141",
-        "publicationName": "Consumer Price Index March 2025",
-        "publicationDate": "2025-04-23"
+        "publicationName": "Consumer Price Index April 2026",
+        "publicationDate": "2026-05-21"
       },
-      "lastUpdated": "2025-04-23",
+      "lastUpdated": "2026-05-21",
       "series": [
         {
-          "name": "Annual CPI (%)",
+          "name": "Headline CPI (%)",
           "unit": "%",
           "data": [
-            {
-              "label": "2015",
-              "value": 4.5
-            },
-            {
-              "label": "2016",
-              "value": 6.6
-            },
-            {
-              "label": "2017",
-              "value": 5.2
-            },
-            {
-              "label": "2018",
-              "value": 4.5
-            },
-            {
-              "label": "2019",
-              "value": 4.1
-            },
-            {
-              "label": "2020",
-              "value": 3.2
-            },
-            {
-              "label": "2021",
-              "value": 4.6
-            },
-            {
-              "label": "2022",
-              "value": 7.0
-            },
-            {
-              "label": "2023",
-              "value": 6.1
-            },
-            {
-              "label": "2024",
-              "value": 4.4
-            }
+            { "label": "May 2025", "value": 2.8 },
+            { "label": "Jun 2025", "value": 3.2 },
+            { "label": "Jul 2025", "value": 3.3 },
+            { "label": "Aug 2025", "value": 3.4 },
+            { "label": "Sep 2025", "value": 3.5 },
+            { "label": "Oct 2025", "value": 3.3 },
+            { "label": "Nov 2025", "value": 3.0 },
+            { "label": "Dec 2025", "value": 3.2 },
+            { "label": "Jan 2026", "value": 3.5 },
+            { "label": "Feb 2026", "value": 3.0 },
+            { "label": "Mar 2026", "value": 3.1 },
+            { "label": "Apr 2026", "value": 4.0 }
           ]
         }
       ]
@@ -80,74 +51,38 @@
       "id": "food-inflation",
       "categoryId": "inflation",
       "title": "Food & Non-Alcoholic Beverages CPI",
-      "value": "3.0%",
-      "rawValue": 3.0,
+      "value": "2.9%",
+      "rawValue": 2.9,
       "unit": "%",
-      "change": -0.4,
-      "changeLabel": "from February 2025",
+      "change": -0.7,
+      "changeLabel": "from March 2026 (3.6%)",
       "trend": "down",
-      "description": "Year-on-year inflation for food and non-alcoholic beverages for March 2025. Food price inflation has come down significantly from the 2023 highs above 14%, providing meaningful relief to households.",
+      "description": "Food and non-alcoholic beverage inflation eased to 2.9% in April 2026, continuing its decline from 2023 highs above 14%. Strong farm output has moderated food prices. Meat prices remain elevated year-on-year despite recent monthly declines. Bread and cereals saw mixed trends.",
       "source": {
         "name": "Statistics South Africa",
         "shortName": "Stats SA",
         "url": "https://www.statssa.gov.za/?page_id=1854&PPN=P0141",
-        "publicationName": "Consumer Price Index March 2025",
-        "publicationDate": "2025-04-23"
+        "publicationName": "Consumer Price Index April 2026",
+        "publicationDate": "2026-05-21"
       },
-      "lastUpdated": "2025-04-23",
+      "lastUpdated": "2026-05-21",
       "series": [
         {
           "name": "Food CPI (%)",
           "unit": "%",
           "data": [
-            {
-              "label": "Apr 2024",
-              "value": 4.8
-            },
-            {
-              "label": "May 2024",
-              "value": 4.1
-            },
-            {
-              "label": "Jun 2024",
-              "value": 4.4
-            },
-            {
-              "label": "Jul 2024",
-              "value": 3.9
-            },
-            {
-              "label": "Aug 2024",
-              "value": 3.9
-            },
-            {
-              "label": "Sep 2024",
-              "value": 3.6
-            },
-            {
-              "label": "Oct 2024",
-              "value": 3.5
-            },
-            {
-              "label": "Nov 2024",
-              "value": 3.5
-            },
-            {
-              "label": "Dec 2024",
-              "value": 3.2
-            },
-            {
-              "label": "Jan 2025",
-              "value": 3.2
-            },
-            {
-              "label": "Feb 2025",
-              "value": 3.4
-            },
-            {
-              "label": "Mar 2025",
-              "value": 3.0
-            }
+            { "label": "May 2025", "value": 2.2 },
+            { "label": "Jun 2025", "value": 2.9 },
+            { "label": "Jul 2025", "value": 3.0 },
+            { "label": "Aug 2025", "value": 3.1 },
+            { "label": "Sep 2025", "value": 3.3 },
+            { "label": "Oct 2025", "value": 3.2 },
+            { "label": "Nov 2025", "value": 3.0 },
+            { "label": "Dec 2025", "value": 3.1 },
+            { "label": "Jan 2026", "value": 3.5 },
+            { "label": "Feb 2026", "value": 3.7 },
+            { "label": "Mar 2026", "value": 3.6 },
+            { "label": "Apr 2026", "value": 2.9 }
           ]
         }
       ]
@@ -155,83 +90,84 @@
     {
       "id": "repo-rate",
       "categoryId": "inflation",
-      "title": "SARB Repo Rate",
-      "value": "7.5%",
-      "rawValue": 7.5,
+      "title": "SARB Policy Rate (Repo Rate)",
+      "value": "6.75%",
+      "rawValue": 6.75,
       "unit": "%",
-      "change": -0.25,
-      "changeLabel": "from January 2025",
-      "trend": "down",
-      "description": "The South African Reserve Bank's repurchase (repo) rate as of March 2025. This is the rate at which the SARB lends money to commercial banks, and it directly influences borrowing costs for households and businesses.",
+      "change": 0.0,
+      "changeLabel": "held at March 2026 MPC",
+      "trend": "stable",
+      "description": "The SARB held the repo rate at 6.75% at the March 2026 MPC meeting — the second consecutive hold. The decision was unanimous. The MPC cited the Iran war-related oil price shock as creating upside inflation risk. The prime lending rate remains at 10.25%. The SARB's new inflation target is 3% (±1pp), adopted November 2025.",
       "source": {
         "name": "South African Reserve Bank",
         "shortName": "SARB",
-        "url": "https://www.resbank.co.za/en/home/what-we-do/monetary-policy/monetary-policy-decisions",
-        "publicationName": "MPC Statement March 2025",
-        "publicationDate": "2025-03-27"
+        "url": "https://www.resbank.co.za/en/home/publications/publication-detail-pages/statements/monetary-policy-statements/2026/march",
+        "publicationName": "MPC Statement March 2026",
+        "publicationDate": "2026-03-26"
       },
-      "lastUpdated": "2025-03-27",
+      "lastUpdated": "2026-03-26",
       "series": [
         {
           "name": "Repo Rate (%)",
           "unit": "%",
           "data": [
-            {
-              "label": "Jan 2023",
-              "value": 7.25
-            },
-            {
-              "label": "Mar 2023",
-              "value": 7.75
-            },
-            {
-              "label": "May 2023",
-              "value": 8.25
-            },
-            {
-              "label": "Jul 2023",
-              "value": 8.25
-            },
-            {
-              "label": "Sep 2023",
-              "value": 8.25
-            },
-            {
-              "label": "Nov 2023",
-              "value": 8.25
-            },
-            {
-              "label": "Jan 2024",
-              "value": 8.25
-            },
-            {
-              "label": "Mar 2024",
-              "value": 8.25
-            },
-            {
-              "label": "May 2024",
-              "value": 8.25
-            },
-            {
-              "label": "Jul 2024",
-              "value": 8.25
-            },
-            {
-              "label": "Sep 2024",
-              "value": 8.0
-            },
-            {
-              "label": "Nov 2024",
-              "value": 7.75
-            },
-            {
-              "label": "Jan 2025",
-              "value": 7.75
-            },
-            {
-              "label": "Mar 2025",
-              "value": 7.5
-            }
+            { "label": "May 2023", "value": 8.25 },
+            { "label": "Jul 2023", "value": 8.25 },
+            { "label": "Sep 2023", "value": 8.25 },
+            { "label": "Nov 2023", "value": 8.25 },
+            { "label": "Jan 2024", "value": 8.25 },
+            { "label": "Mar 2024", "value": 8.25 },
+            { "label": "May 2024", "value": 8.25 },
+            { "label": "Jul 2024", "value": 8.25 },
+            { "label": "Sep 2024", "value": 8.00 },
+            { "label": "Nov 2024", "value": 7.75 },
+            { "label": "Jan 2025", "value": 7.75 },
+            { "label": "Mar 2025", "value": 7.50 },
+            { "label": "May 2025", "value": 7.25 },
+            { "label": "Jul 2025", "value": 7.25 },
+            { "label": "Sep 2025", "value": 7.00 },
+            { "label": "Nov 2025", "value": 6.75 },
+            { "label": "Jan 2026", "value": 6.75 },
+            { "label": "Mar 2026", "value": 6.75 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "annual-cpi-avg",
+      "categoryId": "inflation",
+      "title": "Annual Average CPI (Full Year)",
+      "value": "3.2%",
+      "rawValue": 3.2,
+      "unit": "%",
+      "change": -1.2,
+      "changeLabel": "from 2024 average (4.4%)",
+      "trend": "down",
+      "description": "South Africa's full-year average headline CPI for 2025 was 3.2% — the lowest annual average in 21 years, confirmed by Stats SA in January 2026. This represents a dramatic improvement from 2022's peak of 6.9% and reflects the impact of aggressive SARB rate hikes and falling global commodity prices.",
+      "source": {
+        "name": "Statistics South Africa",
+        "shortName": "Stats SA",
+        "url": "https://www.statssa.gov.za/?page_id=1854&PPN=P0141",
+        "publicationName": "Consumer Price Index December 2025",
+        "publicationDate": "2026-01-21"
+      },
+      "lastUpdated": "2026-01-21",
+      "series": [
+        {
+          "name": "Annual Average CPI (%)",
+          "unit": "%",
+          "data": [
+            { "label": "2015", "value": 4.6 },
+            { "label": "2016", "value": 6.4 },
+            { "label": "2017", "value": 5.3 },
+            { "label": "2018", "value": 4.6 },
+            { "label": "2019", "value": 4.1 },
+            { "label": "2020", "value": 3.3 },
+            { "label": "2021", "value": 4.5 },
+            { "label": "2022", "value": 6.9 },
+            { "label": "2023", "value": 6.0 },
+            { "label": "2024", "value": 4.4 },
+            { "label": "2025", "value": 3.2 }
           ]
         }
       ]
