@@ -51,6 +51,7 @@ export function Footer() {
             <ul className="space-y-2 text-sm mb-6">
               {[
                 { label: 'Data Stories', href: '/insights' },
+                { label: 'Data Downloads', href: '/downloads' },
                 { label: 'Province Explorer', href: '/provinces' },
                 { label: 'Dashboard', href: '/dashboard' },
                 { label: 'Methodology', href: '/methodology' },

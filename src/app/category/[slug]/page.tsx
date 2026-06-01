@@ -9,11 +9,12 @@ import { InsightPanel } from '@/components/ui/InsightPanel'
 import { DatasetExplanation } from '@/components/ui/DatasetExplanation'
 import { FreshnessIndicator } from '@/components/ui/FreshnessIndicator'
 import { ExportButton } from '@/components/ui/ExportButton'
+import { CitationWidget } from '@/components/ui/CitationWidget'
 import { LineChartCard } from '@/components/charts/LineChartCard'
 import { BarChartCard } from '@/components/charts/BarChartCard'
 import { SourceBadge } from '@/components/ui/SourceBadge'
 import { getCategoryById, getStatsByCategory } from '@/data/mock'
-import { getRegistryByCategory } from '@/lib/registry'
+import { getRegistryByCategory, getEntryLastUpdated } from '@/lib/registry'
 import { generateInsight, generateCategoryInsight } from '@/lib/insights'
 import { formatDate } from '@/lib/utils'
 
@@ -48,6 +49,9 @@ export default function CategoryPage({ params }: CategoryPageProps) {
   // Falls back gracefully if the category has no registry entry (shouldn't happen)
   const registryEntries = getRegistryByCategory(category.id)
   const updateFrequency = registryEntries[0]?.updateFrequency
+  // Pre-resolve lastUpdated for the primary registry entry (passed to CitationWidget
+  // to keep citation.ts free of mock.ts imports — see citation.ts header comment)
+  const primaryEntryLastUpdated = registryEntries[0] ? getEntryLastUpdated(registryEntries[0]) : undefined
 
   // Use first stat's source for the freshness indicator (most representative)
   const primaryStat = stats[0]
@@ -91,11 +95,21 @@ export default function CategoryPage({ params }: CategoryPageProps) {
 
         {/* Data Freshness */}
         {primaryStat && latestUpdate && (
-          <div className="mb-8">
+          <div className="mb-4">
             <FreshnessIndicator
               lastUpdated={latestUpdate}
               source={primaryStat.source}
               updateFrequency={updateFrequency}
+            />
+          </div>
+        )}
+
+        {/* Citation Widget — uses the primary registry entry for the category */}
+        {registryEntries[0] && (
+          <div className="mb-8">
+            <CitationWidget
+              entry={registryEntries[0]}
+              lastUpdated={primaryEntryLastUpdated}
             />
           </div>
         )}
