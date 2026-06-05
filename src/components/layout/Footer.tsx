@@ -1,3 +1,4 @@
+
 import Link from 'next/link'
 import { BarChart3, ExternalLink } from 'lucide-react'
 
@@ -56,6 +57,8 @@ export function Footer() {
                 { label: 'Province Explorer', href: '/provinces' },
                 { label: 'Dashboard', href: '/dashboard' },
                 { label: 'Methodology', href: '/methodology' },
+                // Add Changelog link to Platform navigation
+                { label: 'Changelog', href: '/changelog' },
               ].map(({ label, href }) => (
                 <li key={label}>
                   <Link href={href} className="text-slate-500 hover:text-brand-600 dark:text-slate-400 dark:hover:text-brand-400">
@@ -101,3 +104,4 @@ export function Footer() {
     </footer>
   )
 }
+

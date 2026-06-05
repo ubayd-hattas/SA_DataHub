@@ -13,6 +13,7 @@ const navLinks = [
   { href: '/insights', label: 'Insights' },
   { href: '/downloads', label: 'Downloads' },
   { href: '/provinces', label: 'Provinces' },
+  { href: '/municipalities', label: 'Municipalities' },
   {
     label: 'Categories',
     children: [

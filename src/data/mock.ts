@@ -19,7 +19,7 @@
  * Run:  python scripts/update_all.py
  */
 
-import { Category, Statistic, ProvinceData } from '@/types'
+import { Category, Statistic, ProvinceData, MunicipalityRecord, MunicipalitiesDataset, ProvinceCode } from '@/types'
 import { intelligentSearch } from '@/lib/search'
 import type { DatasetRegistryEntry } from '@/lib/registry'
 import { SearchResult } from '@/types'
@@ -34,6 +34,7 @@ import populationData      from './datasets/population.json'
 import housingData         from './datasets/housing.json'
 import censusData          from './datasets/census.json'
 import provincesData       from './datasets/provinces.json'
+import municipalitiesData  from './datasets/municipalities.json'
 import youthUnemployment   from './datasets/youth-unemployment.json'
 import interestRatesData   from './datasets/interest-rates.json'
 import labourForceData     from './datasets/labour-force.json'
@@ -207,4 +208,94 @@ export function getProvincesSortedBy(
   key: keyof Pick<ProvinceData, 'unemploymentRate' | 'population' | 'matricPassRate' | 'gdpShare'>
 ): ProvinceData[] {
   return [...provinces].sort((a, b) => (b[key] as number) - (a[key] as number))
+}
+
+// ─── Municipality data ───────────────────────────────────────────────────────
+
+export const municipalities: MunicipalityRecord[] =
+  (municipalitiesData as unknown as MunicipalitiesDataset).municipalities
+
+// ─── Municipality helpers ─────────────────────────────────────────────────────
+
+export function getAllMunicipalities(): MunicipalityRecord[] {
+  return municipalities
+}
+
+export function getMunicipalityByCode(code: string): MunicipalityRecord | undefined {
+  return municipalities.find((m) => m.id === code)
+}
+
+export function getMunicipalitiesByProvince(provinceCode: ProvinceCode): MunicipalityRecord[] {
+  return municipalities.filter((m) => m.province === provinceCode)
+}
+
+/**
+ * Computes national averages across all municipalities for the six
+ * comparison metrics used on the municipality detail page.
+ * Only municipalities with valid (finite, > 0) values contribute to each mean.
+ */
+export function getMunicipalityNationalAverages(): {
+  population: number | null
+  populationDensity: number | null
+  avgHouseholdSize: number | null
+  pctFormalDwelling: number | null
+  pctElectricityCooking: number | null
+  pctFlushToilet: number | null
+} {
+  function mean(vals: number[]): number | null {
+    const valid = vals.filter((v) => v != null && isFinite(v) && v >= 0)
+    return valid.length > 0 ? valid.reduce((a, b) => a + b, 0) / valid.length : null
+  }
+  return {
+    population:          mean(municipalities.map((m) => m.population2022)),
+    populationDensity:   mean(municipalities.map((m) => m.populationDensity2022)),
+    avgHouseholdSize:    mean(municipalities.map((m) => m.avgHouseholdSize2022)),
+    pctFormalDwelling:   mean(municipalities.map((m) => m.pctFormalDwelling2022)),
+    pctElectricityCooking: mean(municipalities.map((m) => m.pctElectricityCooking2022)),
+    pctFlushToilet:      mean(municipalities.map((m) => m.pctFlushToilet2022)),
+  }
+}
+
+/**
+ * Computes provincial averages for the comparison metrics,
+ * scoped to municipalities in the given province.
+ */
+export function getMunicipalityProvincialAverages(provinceCode: ProvinceCode): {
+  population: number | null
+  populationDensity: number | null
+  avgHouseholdSize: number | null
+  pctFormalDwelling: number | null
+  pctElectricityCooking: number | null
+  pctFlushToilet: number | null
+} {
+  const peers = municipalities.filter((m) => m.province === provinceCode)
+  function mean(vals: number[]): number | null {
+    const valid = vals.filter((v) => v != null && isFinite(v) && v >= 0)
+    return valid.length > 0 ? valid.reduce((a, b) => a + b, 0) / valid.length : null
+  }
+  return {
+    population:            mean(peers.map((m) => m.population2022)),
+    populationDensity:     mean(peers.map((m) => m.populationDensity2022)),
+    avgHouseholdSize:      mean(peers.map((m) => m.avgHouseholdSize2022)),
+    pctFormalDwelling:     mean(peers.map((m) => m.pctFormalDwelling2022)),
+    pctElectricityCooking: mean(peers.map((m) => m.pctElectricityCooking2022)),
+    pctFlushToilet:        mean(peers.map((m) => m.pctFlushToilet2022)),
+  }
+}
+
+/**
+ * Returns the largest municipality in a province by population2022,
+ * excluding the municipality identified by `excludeId`.
+ */
+export function getLargestMunicipalityInProvince(
+  provinceCode: ProvinceCode,
+  excludeId: string
+): MunicipalityRecord | null {
+  const peers = municipalities.filter(
+    (m) => m.province === provinceCode && m.id !== excludeId
+  )
+  if (peers.length === 0) return null
+  return peers.reduce((best, m) =>
+    m.population2022 > best.population2022 ? m : best
+  )
 }
