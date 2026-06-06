@@ -6,24 +6,38 @@ import {
   getMunicipalityNationalAverages,
   getMunicipalityProvincialAverages,
   getLargestMunicipalityInProvince,
+  getRelatedMunicipalities,
+  generateMunicipalityInsights,
+  getSortedMunicipalityList,
 } from '@/data/mock'
 import type { MunicipalityRecord } from '@/types'
 import { AgeStructureChart } from '@/components/charts/AgeStructureChart'
 import { HousingCompositionChart } from '@/components/charts/HousingCompositionChart'
 import { BasicServicesChart } from '@/components/charts/BasicServicesChart'
 
-// ─── Static params ─────────────────────────────────────────────────────────
+// ─── Static params ──────────────────────────────────────────────────────────
 
 export async function generateStaticParams() {
   return getAllMunicipalities().map((m) => ({ code: m.id }))
 }
 
-export async function generateMetadata({ params }: { params: { code: string } }) {
+// ─── SEO metadata ───────────────────────────────────────────────────────────
+
+export async function generateMetadata({
+  params,
+}: {
+  params: { code: string }
+}) {
   const m = getMunicipalityByCode(params.code)
   if (!m) return {}
   return {
-    title: `${m.name} | SA Data Hub`,
-    description: `Census 2022 data for ${m.name} — population, housing, services and demographics.`,
+    title: `${m.name} Municipality | SA Data Hub`,
+    description: `Population, housing, services and demographic profile for ${m.name} from Census 2022.`,
+    openGraph: {
+      title: `${m.name} Municipality | SA Data Hub`,
+      description: `Population, housing, services and demographic profile for ${m.name} from Census 2022.`,
+      type: 'website',
+    },
   }
 }
 
@@ -482,6 +496,196 @@ function ComparisonSection({ m }: { m: MunicipalityRecord }) {
   )
 }
 
+// ─── Municipality Insights ──────────────────────────────────────────────────
+
+const SENTIMENT_STYLES = {
+  positive: {
+    dot: 'bg-emerald-400',
+    pill: 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800/60',
+    text: 'text-emerald-800 dark:text-emerald-200',
+  },
+  negative: {
+    dot: 'bg-red-400',
+    pill: 'bg-red-50 dark:bg-red-950/40 border-red-200 dark:border-red-800/60',
+    text: 'text-red-800 dark:text-red-200',
+  },
+  neutral: {
+    dot: 'bg-brand-400',
+    pill: 'bg-brand-50 dark:bg-brand-950/40 border-brand-200 dark:border-brand-800/60',
+    text: 'text-brand-800 dark:text-brand-200',
+  },
+} as const
+
+function InsightsSection({ m }: { m: MunicipalityRecord }) {
+  const insights = generateMunicipalityInsights(m)
+  if (insights.length === 0) return null
+
+  return (
+    <section>
+      <SectionHeading>Municipality Insights</SectionHeading>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        {insights.map((insight, i) => {
+          const styles = SENTIMENT_STYLES[insight.sentiment]
+          return (
+            <div
+              key={i}
+              className={`border rounded-xl p-4 flex gap-3 ${styles.pill}`}
+            >
+              <span className={`mt-1.5 shrink-0 w-2 h-2 rounded-full ${styles.dot}`} />
+              <p className={`text-sm leading-relaxed ${styles.text}`}>
+                {insight.text}
+              </p>
+            </div>
+          )
+        })}
+      </div>
+    </section>
+  )
+}
+
+// ─── Related Municipalities ─────────────────────────────────────────────────
+
+const CATEGORY_COLORS: Record<string, string> = {
+  A: 'bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300',
+  B: 'bg-brand-100 text-brand-700 dark:bg-brand-900/40 dark:text-brand-300',
+  C: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
+}
+
+function RelatedMunicipalitiesSection({ m }: { m: MunicipalityRecord }) {
+  const related = getRelatedMunicipalities(m, 3)
+  if (related.length === 0) return null
+
+  return (
+    <section>
+      <SectionHeading>Related Municipalities</SectionHeading>
+      <p className="text-sm text-slate-500 dark:text-slate-400 mb-4 -mt-2">
+        Other municipalities in {m.provinceName} with similar population size.
+      </p>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {related.map((r) => (
+          <Link
+            key={r.id}
+            href={`/municipalities/${r.id}`}
+            className="group bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-5 flex flex-col gap-3 hover:border-brand-400 dark:hover:border-brand-600 hover:shadow-md transition-all duration-200"
+          >
+            {/* Name + badge */}
+            <div className="flex items-start justify-between gap-2">
+              <span className="font-semibold text-slate-900 dark:text-white group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors leading-tight">
+                {r.name}
+              </span>
+              <span
+                className={`shrink-0 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                  CATEGORY_COLORS[r.category] ?? 'bg-slate-100 text-slate-600'
+                }`}
+              >
+                Cat {r.category}
+              </span>
+            </div>
+
+            {/* Key stats */}
+            <div className="grid grid-cols-2 gap-2 text-sm">
+              <div>
+                <div className="text-xs text-slate-400 dark:text-slate-500 mb-0.5">Population</div>
+                <div className="font-semibold text-slate-700 dark:text-slate-200">
+                  {r.population2022.toLocaleString('en-ZA')}
+                </div>
+              </div>
+              <div>
+                <div className="text-xs text-slate-400 dark:text-slate-500 mb-0.5">Households</div>
+                <div className="font-semibold text-slate-700 dark:text-slate-200">
+                  {r.households2022.toLocaleString('en-ZA')}
+                </div>
+              </div>
+              <div>
+                <div className="text-xs text-slate-400 dark:text-slate-500 mb-0.5">Formal housing</div>
+                <div className="font-semibold text-slate-700 dark:text-slate-200">
+                  {r.pctFormalDwelling2022 != null ? `${r.pctFormalDwelling2022.toFixed(1)}%` : '—'}
+                </div>
+              </div>
+              <div>
+                <div className="text-xs text-slate-400 dark:text-slate-500 mb-0.5">Growth 2011–22</div>
+                <div
+                  className={`font-semibold ${
+                    r.populationGrowthRate >= 0
+                      ? 'text-emerald-600 dark:text-emerald-400'
+                      : 'text-red-500 dark:text-red-400'
+                  }`}
+                >
+                  {r.populationGrowthRate >= 0 ? '+' : ''}
+                  {r.populationGrowthRate.toFixed(1)}%
+                </div>
+              </div>
+            </div>
+
+            {/* Arrow hint */}
+            <div className="text-xs text-brand-600 dark:text-brand-400 font-medium group-hover:translate-x-1 transition-transform duration-200 flex items-center gap-1">
+              View profile →
+            </div>
+          </Link>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+// ─── Prev / Next navigation ─────────────────────────────────────────────────
+
+function MunicipalityNavigation({ currentId }: { currentId: string }) {
+  const sorted = getSortedMunicipalityList()
+  const idx    = sorted.findIndex((m) => m.id === currentId)
+  const prev   = idx > 0 ? sorted[idx - 1] : null
+  const next   = idx < sorted.length - 1 ? sorted[idx + 1] : null
+
+  if (!prev && !next) return null
+
+  return (
+    <nav
+      aria-label="Municipality navigation"
+      className="flex items-stretch gap-3 pt-6 border-t border-slate-200 dark:border-slate-700"
+    >
+      {/* Previous */}
+      {prev ? (
+        <Link
+          href={`/municipalities/${prev.id}`}
+          className="group flex-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 flex flex-col gap-1 hover:border-brand-400 dark:hover:border-brand-600 hover:shadow-sm transition-all duration-200"
+        >
+          <span className="text-xs font-medium text-slate-400 dark:text-slate-500 flex items-center gap-1">
+            ← Previous
+          </span>
+          <span className="font-semibold text-slate-800 dark:text-slate-100 group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors">
+            {prev.name}
+          </span>
+          <span className="text-xs text-slate-400 dark:text-slate-500">
+            {prev.provinceName}
+          </span>
+        </Link>
+      ) : (
+        <div className="flex-1" />
+      )}
+
+      {/* Next */}
+      {next ? (
+        <Link
+          href={`/municipalities/${next.id}`}
+          className="group flex-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 flex flex-col gap-1 items-end text-right hover:border-brand-400 dark:hover:border-brand-600 hover:shadow-sm transition-all duration-200"
+        >
+          <span className="text-xs font-medium text-slate-400 dark:text-slate-500 flex items-center gap-1">
+            Next →
+          </span>
+          <span className="font-semibold text-slate-800 dark:text-slate-100 group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors">
+            {next.name}
+          </span>
+          <span className="text-xs text-slate-400 dark:text-slate-500">
+            {next.provinceName}
+          </span>
+        </Link>
+      ) : (
+        <div className="flex-1" />
+      )}
+    </nav>
+  )
+}
+
 // ─── Category badge ─────────────────────────────────────────────────────────
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -551,7 +755,7 @@ export default function MunicipalityDetailPage({
         </p>
       </div>
 
-      {/* Sections */}
+      {/* Data sections */}
       <DemographicsSection m={m} />
       <AgeStructureSection m={m} />
       <HousingSection m={m} />
@@ -559,11 +763,18 @@ export default function MunicipalityDetailPage({
       <EducationSection m={m} />
       <ComparisonSection m={m} />
 
+      {/* V5 additions */}
+      <InsightsSection m={m} />
+      <RelatedMunicipalitiesSection m={m} />
+
       {/* Source note */}
       <p className="text-xs text-slate-400 dark:text-slate-500">
         All data from Stats SA Census 2022 Municipal Fact Sheets (revised August 2025).
         Last updated {m.lastUpdated}.
       </p>
+
+      {/* Prev / Next navigation */}
+      <MunicipalityNavigation currentId={m.id} />
     </div>
   )
 }
