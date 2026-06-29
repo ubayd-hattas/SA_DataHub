@@ -41,19 +41,13 @@ This is the **first line of defense** — catches duplicate IDs, broken registry
 
 ---
 
-## Layer 2: Unit Tests (Recommended — Vitest)
+## Layer 2: Unit Tests (Vitest — configured)
 
-**Setup:**
+**Setup:** already in `package.json`:
 
 ```bash
-npm install -D vitest
-```
-
-Add to `package.json`:
-
-```json
-"test": "vitest run",
-"test:watch": "vitest"
+npm test                  # all tests
+npm run test:equivalence  # JSON vs DB per dataset
 ```
 
 ### Priority modules
@@ -255,9 +249,9 @@ Avoids touching production data during development.
 ## Implementation Order
 
 1. ✅ `validation/report.py` (done)
-2. Add Vitest + unit tests for `citation.ts`, `registry.ts`, `insights.ts`
-3. Add CSV snapshot tests for 3 registry datasets
-4. Add first equivalence test when `lib/db/observations.ts` exists
+2. ✅ Vitest + unemployment equivalence tests (done)
+3. Add unit tests for `citation.ts`, `registry.ts`, `insights.ts`
+4. Add CSV snapshot tests for 3 registry datasets
 5. Add GitHub Actions `ci.yml`
 6. Add Playwright smoke (optional)
 

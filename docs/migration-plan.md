@@ -67,8 +67,10 @@ Delete Neon branch; remove env vars. No app impact.
 | 1.2 | Write `002_indexes.sql` — indexes, views, `pg_trgm` |
 | 1.3 | Write `003_constraints.sql` — natural-key unique constraints |
 | 1.4 | Write `004_seed_reference_data.sql` — categories, sources, geographies, dataset metadata |
+| 1.3 | Write `004_seed_reference_data.sql` — categories, sources, geographies, dataset metadata |
 | 1.5 | Apply migrations: `npm run db:migrate` |
 | 1.6 | Create `src/lib/db/` query stubs (no page wiring yet) |
+| 2.0 | **Unemployment ETL pilot** — `etl/pipelines/unemployment.py` |
 
 Regenerate seed SQL after JSON changes: `npm run db:seed:generate`
 
