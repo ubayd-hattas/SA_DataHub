@@ -12,7 +12,11 @@
     "db:migrate:status": "node db/migrate.mjs --status",
     "db:seed:generate": "node db/scripts/generate_seed.mjs",
     "db:inspect": "node db/scripts/inspect.mjs",
-    "db:reset": "node db/scripts/reset_dev.mjs"
+    "db:reset": "node db/scripts/reset_dev.mjs",
+    "etl": "python etl/run.py",
+    "etl:verify": "node etl/verify.mjs",
+    "test": "vitest run",
+    "test:equivalence": "vitest run tests/equivalence"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",
@@ -36,6 +40,7 @@
     "eslint-config-next": "14.2.3",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^3.0.5"
   }
 }
