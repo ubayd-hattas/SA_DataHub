@@ -11,20 +11,21 @@
       "id": "repo-rate-sarb",
       "categoryId": "gdp",
       "title": "Repo Rate",
-      "value": "7.50%",
-      "rawValue": 7.50,
+      "value": "6.75%",
+      "rawValue": 6.75,
       "unit": "%",
-      "change": -0.25,
-      "changeLabel": "from Jan 2026 MPC",
-      "trend": "down",
+      "change": 0.0,
+      "changeLabel": "held at March 2026 MPC",
+      "trend": "stable",
       "description": "The repurchase (repo) rate is the benchmark interest rate set by the South African Reserve Bank's Monetary Policy Committee (MPC). It is the rate at which the SARB lends short-term money to commercial banks and is the primary instrument of inflation targeting.",
       "source": {
         "name": "South African Reserve Bank",
         "shortName": "SARB",
-        "url": "https://www.resbank.co.za/en/home/what-we-do/monetary-policy/decisions",
-        "release": "MPC Statement — March 2026"
+        "url": "https://www.resbank.co.za/en/home/publications/publication-detail-pages/statements/monetary-policy-statements/2026/march",
+        "publicationName": "MPC Statement March 2026",
+        "publicationDate": "2026-03-26"
       },
-      "lastUpdated": "2026-03-27",
+      "lastUpdated": "2026-03-26",
       "series": [
         {
           "name": "Repo Rate",
@@ -52,10 +53,10 @@
             { "label": "Mar 2025", "value": 7.50 },
             { "label": "May 2025", "value": 7.25 },
             { "label": "Jul 2025", "value": 7.25 },
-            { "label": "Sep 2025", "value": 7.25 },
-            { "label": "Nov 2025", "value": 7.50 },
-            { "label": "Jan 2026", "value": 7.50 },
-            { "label": "Mar 2026", "value": 7.50 }
+            { "label": "Sep 2025", "value": 7.00 },
+            { "label": "Nov 2025", "value": 6.75 },
+            { "label": "Jan 2026", "value": 6.75 },
+            { "label": "Mar 2026", "value": 6.75 }
           ]
         }
       ]
@@ -64,20 +65,21 @@
       "id": "prime-lending-rate",
       "categoryId": "gdp",
       "title": "Prime Lending Rate",
-      "value": "11.00%",
-      "rawValue": 11.00,
+      "value": "10.25%",
+      "rawValue": 10.25,
       "unit": "%",
-      "change": -0.25,
-      "changeLabel": "from Jan 2026 MPC",
-      "trend": "down",
+      "change": 0.0,
+      "changeLabel": "held at March 2026 MPC",
+      "trend": "stable",
       "description": "The prime lending rate is the benchmark rate at which commercial banks lend to their most creditworthy clients. It is conventionally set at repo rate + 3.5 percentage points. Most consumer and business loans are priced relative to prime.",
       "source": {
         "name": "South African Reserve Bank",
         "shortName": "SARB",
-        "url": "https://www.resbank.co.za",
-        "release": "MPC Statement — March 2026"
+        "url": "https://www.resbank.co.za/en/home/publications/publication-detail-pages/statements/monetary-policy-statements/2026/march",
+        "publicationName": "MPC Statement March 2026",
+        "publicationDate": "2026-03-26"
       },
-      "lastUpdated": "2026-03-27",
+      "lastUpdated": "2026-03-26",
       "series": [
         {
           "name": "Prime Lending Rate",
@@ -105,10 +107,10 @@
             { "label": "Mar 2025", "value": 11.00 },
             { "label": "May 2025", "value": 10.75 },
             { "label": "Jul 2025", "value": 10.75 },
-            { "label": "Sep 2025", "value": 10.75 },
-            { "label": "Nov 2025", "value": 11.00 },
-            { "label": "Jan 2026", "value": 11.00 },
-            { "label": "Mar 2026", "value": 11.00 }
+            { "label": "Sep 2025", "value": 10.50 },
+            { "label": "Nov 2025", "value": 10.25 },
+            { "label": "Jan 2026", "value": 10.25 },
+            { "label": "Mar 2026", "value": 10.25 }
           ]
         }
       ]

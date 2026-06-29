@@ -6,14 +6,22 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "validate": "python validation/report.py",
+    "db:migrate": "node db/migrate.mjs",
+    "db:migrate:status": "node db/migrate.mjs --status",
+    "db:seed:generate": "node db/scripts/generate_seed.mjs",
+    "db:inspect": "node db/scripts/inspect.mjs",
+    "db:reset": "node db/scripts/reset_dev.mjs"
   },
   "dependencies": {
+    "@neondatabase/serverless": "^1.1.0",
     "@vercel/analytics": "^2.0.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.383.0",
     "next": "14.2.3",
     "next-themes": "^0.3.0",
+    "postgres": "^3.4.9",
     "react": "^18",
     "react-dom": "^18",
     "recharts": "^2.12.7",

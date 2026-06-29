@@ -115,12 +115,6 @@ export interface Story {
   tags: string[]
 }
 
-// ─── Historical Timeline ─────────────────────────────────────────────────────
-
-export interface TimelineEvent {
-  // ... existing fields ...
-}
-
 // ─── Platform Changelog ─────────────────────────────────────────────────────
 export interface ChangelogEntry {
   version: string

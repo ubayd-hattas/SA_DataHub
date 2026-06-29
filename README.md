@@ -2,7 +2,7 @@
 
 **South Africa's public data, made clear.**
 
-[![Next.js](https://img.shields.io/badge/Next.js-15-black?logo=next.js)](https://nextjs.org)
+[![Next.js](https://img.shields.io/badge/Next.js-14-black?logo=next.js)](https://nextjs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?logo=typescript)](https://typescriptlang.org)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-3-38bdf8?logo=tailwind-css)](https://tailwindcss.com)
 [![Vercel](https://img.shields.io/badge/Deployed-Vercel-black?logo=vercel)](https://sadatahub.tech)
@@ -100,7 +100,7 @@ Browser
 
 | Layer | Technology |
 |-------|-----------|
-| Framework | Next.js 15 (App Router) |
+| Framework | Next.js 14 (App Router) |
 | Language | TypeScript 5 |
 | Styling | Tailwind CSS 3 |
 | Charts | Recharts |

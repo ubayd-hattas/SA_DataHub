@@ -1,21 +1,8 @@
 {
-  "/robots.txt/route": "app/robots.txt/route.js",
-  "/sitemap.xml/route": "app/sitemap.xml/route.js",
-  "/about/page": "app/about/page.js",
-  "/category/[slug]/page": "app/category/[slug]/page.js",
-  "/changelog/page": "app/changelog/page.js",
-  "/insights/page": "app/insights/page.js",
-  "/_not-found/page": "app/_not-found/page.js",
-  "/insights/[slug]/page": "app/insights/[slug]/page.js",
-  "/dashboard/page": "app/dashboard/page.js",
-  "/downloads/page": "app/downloads/page.js",
   "/page": "app/page.js",
-  "/provinces/page": "app/provinces/page.js",
-  "/methodology/page": "app/methodology/page.js",
+  "/insights/page": "app/insights/page.js",
   "/municipalities/page": "app/municipalities/page.js",
-  "/provinces/[id]/page": "app/provinces/[id]/page.js",
-  "/municipalities/[code]/page": "app/municipalities/[code]/page.js",
-  "/updates/page": "app/updates/page.js",
-  "/icon.png/route": "app/icon.png/route.js",
-  "/opengraph-image/route": "app/opengraph-image/route.js"
+  "/category/[slug]/page": "app/category/[slug]/page.js",
+  "/dashboard/page": "app/dashboard/page.js",
+  "/icon.png/route": "app/icon.png/route.js"
 }

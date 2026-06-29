@@ -32,10 +32,10 @@ from datetime import datetime
 from utils import load_dataset, save_dataset, report_changes, today_iso
 
 # ── Manual override — update this after each MPC meeting ─────────────────────
-# Last updated: 2026-05-31
-# Source: SARB MPC statement — March 2026
-LATEST_REPO_RATE = 7.50      # %
-LATEST_MPC_DATE  = "2026-03-27"
+# Last updated: 2026-06-28
+# Source: SARB MPC statement — March 2026 (aligned with inflation.json repo-rate)
+LATEST_REPO_RATE = 6.75      # %
+LATEST_MPC_DATE  = "2026-03-26"
 LATEST_MPC_LABEL = "Mar 2026"
 
 PRIME_MARGIN = 3.50          # Prime is always Repo + 3.5pp
@@ -98,7 +98,7 @@ def run(dry_run: bool = False) -> None:
     old_stats = existing.get("statistics", [])
 
     # ── Repo rate ──────────────────────────────────────────────────────────────
-    repo_series = build_series_from_existing(old_stats, "repo-rate")
+    repo_series = build_series_from_existing(old_stats, "repo-rate-sarb")
     if not repo_series:
         print("  No existing repo series — initialising from scratch.")
 
@@ -125,7 +125,7 @@ def run(dry_run: bool = False) -> None:
     # ── Build updated stats list ───────────────────────────────────────────────
     new_stats = [
         build_stat(
-            "repo-rate",
+            "repo-rate-sarb",
             "Repo Rate",
             LATEST_REPO_RATE,
             "%",

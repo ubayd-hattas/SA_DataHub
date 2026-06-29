@@ -21,6 +21,7 @@
     "last_verified": "2026-06-04",
     "source_url": "https://census.statssa.gov.za",
     "update_frequency": "Decennial (next census ~2032)",
+    "notes": "Census 2022 municipal profiles. Employment and income themes excluded per Statistician-General (August 2024). Regenerate via: node scripts/transform_municipalities.js",
     "erratum": "Thaba Chweu (MP325) and City of Mbombela (MP322) figures corrected in August 2025 revision of the Municipal Fact Sheet.",
     "geographic_level": "local_municipality",
     "category_counts": {
