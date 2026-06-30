@@ -1,4 +1,4 @@
-import { absoluteUrl, AUTHOR, SITE_NAME, SITE_DESCRIPTION, SITE_URL } from '@/lib/seo'
+import { absoluteUrl, AUTHOR, SITE_NAME, SITE_DESCRIPTION, SITE_LOGO_PATH, SITE_URL } from '@/lib/seo'
 import type { DatasetRegistryEntry } from '@/lib/registry'
 import type { Story } from '@/types'
 import type { MunicipalityRecord } from '@/types'
@@ -36,7 +36,12 @@ export function organizationSchema() {
     name: SITE_NAME,
     url: SITE_URL,
     description: SITE_DESCRIPTION,
-    logo: absoluteUrl('/icon.png'),
+    logo: {
+      '@type': 'ImageObject',
+      url: absoluteUrl(SITE_LOGO_PATH),
+      width: 512,
+      height: 512,
+    },
     founder: { '@id': `${SITE_URL}/#person` },
     sameAs: [AUTHOR.url, AUTHOR.github],
   }
@@ -85,8 +90,12 @@ export function datasetSchema(entry: DatasetRegistryEntry, path: string) {
       ? `${entry.seriesStart}/${entry.seriesEnd}`
       : entry.seriesStart,
     spatialCoverage: {
-      '@type': 'Country',
+      '@type': 'Place',
       name: 'South Africa',
+      geo: {
+        '@type': 'GeoShape',
+        box: '-34.8351 16.3449 -22.1250 32.8301',
+      },
     },
     license: 'https://creativecommons.org/licenses/by/4.0/',
     isAccessibleForFree: true,

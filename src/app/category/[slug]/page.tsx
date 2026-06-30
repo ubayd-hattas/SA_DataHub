@@ -14,7 +14,8 @@ import { CitationWidget } from '@/components/ui/CitationWidget'
 import { LineChartCard } from '@/components/charts/LineChartCard'
 import { BarChartCard } from '@/components/charts/BarChartCard'
 import { SourceBadge } from '@/components/ui/SourceBadge'
-import { getCategoryById, getStatsByCategory } from '@/data/mock'
+import { getAppDataProvider } from '@/data/providers'
+import { getCategoryById } from '@/data/mock'
 import {
   getRegistryByCategory,
   getEntryLastUpdated,
@@ -86,11 +87,13 @@ export function generateMetadata({ params }: CategoryPageProps): Metadata {
   })
 }
 
-export default function CategoryPage({ params }: CategoryPageProps) {
-  const category = getCategoryById(params.slug)
+export default async function CategoryPage({ params }: CategoryPageProps) {
+  const provider = await getAppDataProvider()
+  const [category, stats] = await Promise.all([
+    provider.getCategoryById(params.slug),
+    provider.getStatsByCategory(params.slug),
+  ])
   if (!category) notFound()
-
-  const stats = getStatsByCategory(params.slug)
   const Icon = iconMap[category.icon] ?? BarChart3
   const statsWithSeries = stats.filter((s) => s.series && s.series.length > 0)
   const allSources = Array.from(new Map(stats.map((s) => [s.source.name, s.source])).values())

@@ -37,3 +37,6 @@ next-env.d.ts
 
 # Tooling Output (From your sidebar)
 repomix-output.xml
+
+# ETL raw snapshots (immutable archives)
+etl/raw-snapshots/

@@ -7,14 +7,9 @@ import { StatCard } from '@/components/ui/StatCard'
 import { LineChartCard } from '@/components/charts/LineChartCard'
 import { HistoricalTimeline } from '@/components/ui/HistoricalTimeline'
 import { SearchBar } from '@/components/ui/SearchBar'
-import { statistics, categories, getStatById, searchAll } from '@/data/mock'
-import { CategoryId, Province, SearchResult, SearchResultKind } from '@/types'
+import { searchAllWithData } from '@/data/providers/utils'
+import { Category, CategoryId, Province, ProvinceData, SearchResult, SearchResultKind, Statistic } from '@/types'
 import { cn, provinceLabels } from '@/lib/utils'
-
-const ALL_CATEGORIES: { id: CategoryId | 'all'; label: string }[] = [
-  { id: 'all', label: 'All' },
-  ...categories.map((c) => ({ id: c.id, label: c.label })),
-]
 
 const PROVINCES: Province[] = [
   'all',
@@ -79,11 +74,22 @@ function SearchResultRow({ result }: { result: SearchResult }) {
   )
 }
 
-export default function DashboardView() {
+interface DashboardViewProps {
+  statistics: Statistic[]
+  categories: Category[]
+  provinces: ProvinceData[]
+}
+
+export default function DashboardView({ statistics, categories, provinces }: DashboardViewProps) {
   const [selectedCategory, setSelectedCategory] = useState<CategoryId | 'all'>('all')
   const [selectedProvince, setSelectedProvince] = useState<Province>('all')
   const [search, setSearch] = useState('')
   const [showFilters, setShowFilters] = useState(false)
+
+  const allCategories: { id: CategoryId | 'all'; label: string }[] = [
+    { id: 'all', label: 'All' },
+    ...categories.map((category) => ({ id: category.id, label: category.label })),
+  ]
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
@@ -92,8 +98,8 @@ export default function DashboardView() {
   }, [])
 
   const searchResults = useMemo(
-    () => (search.trim() ? searchAll(search) : []),
-    [search]
+    () => (search.trim() ? searchAllWithData(search, statistics, provinces, categories) : []),
+    [categories, provinces, search, statistics]
   )
 
   const filtered = useMemo(() => {
@@ -160,7 +166,7 @@ export default function DashboardView() {
                   Category
                 </label>
                 <div className="flex flex-wrap gap-1.5">
-                  {ALL_CATEGORIES.map(({ id, label }) => (
+                  {allCategories.map(({ id, label }) => (
                     <button
                       key={id}
                       onClick={() => setSelectedCategory(id)}
@@ -271,9 +277,8 @@ export default function DashboardView() {
 
         {/* Historical Timeline */}
         {(() => {
-          const gdpStat = getStatById('gdp-growth')
-          const cpiStat = getStatById('cpi-headline')
-          const unempStat = getStatById('unemployment-national')
+          const gdpStat = statistics.find((stat) => stat.id === 'gdp-growth')
+          const unempStat = statistics.find((stat) => stat.id === 'unemployment-national')
           const timelineSeries = [
             gdpStat?.series?.[0] && { name: 'GDP Growth', color: '#18a06d', unit: '%', data: gdpStat.series[0].data },
             unempStat?.series?.[0] && { name: 'Unemployment', color: '#f59e0b', unit: '%', data: unempStat.series[0].data },

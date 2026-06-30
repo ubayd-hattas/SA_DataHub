@@ -5,8 +5,8 @@ import { ArrowLeft, Clock, Calendar, RefreshCw, BookOpen } from 'lucide-react'
 import { StatCallout } from '@/components/ui/StatCallout'
 import { StoryCard } from '@/components/ui/StoryCard'
 import { FreshnessIndicator } from '@/components/ui/FreshnessIndicator'
+import { getAppDataProvider } from '@/data/providers'
 import { getStoryBySlug, getRelatedStories, STORIES } from '@/data/stories'
-import { getStatById } from '@/data/mock'
 import { cn } from '@/lib/utils'
 import { buildPageMetadata, AUTHOR } from '@/lib/seo'
 import { Breadcrumbs } from '@/components/seo/Breadcrumbs'
@@ -58,15 +58,21 @@ const categoryColors: Record<string, string> = {
   policy:       'bg-teal-50 text-teal-700 dark:bg-teal-950/30 dark:text-teal-300',
 }
 
-export default function StoryPage({ params }: StoryPageProps) {
+export default async function StoryPage({ params }: StoryPageProps) {
   const story = getStoryBySlug(params.slug)
   if (!story) notFound()
 
+  const provider = await getAppDataProvider()
   const related = getRelatedStories(params.slug)
   const catColor = categoryColors[story.category] ?? categoryColors.policy
-  const relatedStats = story.relatedStatIds
-    .map((id) => getStatById(id))
-    .filter(Boolean)
+  const storyStatIds = Array.from(
+    new Set([
+      ...story.relatedStatIds,
+      ...story.sections.flatMap((section) => section.statCallouts ?? []),
+    ])
+  )
+  const relatedStats = await provider.getStatsByIds(storyStatIds)
+  const relatedStatMap = new Map(relatedStats.map((stat) => [stat.id, stat]))
 
   // Derive a fake DataSource for FreshnessIndicator from the first related stat
   const primarySource = relatedStats[0]?.source
@@ -191,7 +197,7 @@ export default function StoryPage({ params }: StoryPageProps) {
           <article className="prose-story">
             {story.sections.map((section) => {
               const sectionStats = (section.statCallouts ?? [])
-                .map((id) => getStatById(id))
+                .map((id) => relatedStatMap.get(id))
                 .filter(Boolean)
 
               return (

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title>SA Data Hub logo mark</title>
+  <desc>Rounded square with a white bar chart on a green background.</desc>
+  <rect width="512" height="512" rx="112" fill="#16a34a"/>
+  <rect x="108" y="280" width="54" height="124" rx="16" fill="#ffffff"/>
+  <rect x="192" y="220" width="54" height="184" rx="16" fill="#ffffff"/>
+  <rect x="276" y="164" width="54" height="240" rx="16" fill="#ffffff"/>
+  <rect x="360" y="108" width="54" height="296" rx="16" fill="#ffffff"/>
+</svg>

@@ -6,6 +6,8 @@ export const SITE_NAME = 'SA Data Hub'
 export const SITE_TAGLINE = "South Africa's public data, made clear"
 export const SITE_DESCRIPTION =
   'Explore South African public data — unemployment, GDP, inflation, crime, education, population, housing, and census statistics from official government sources.'
+export const SITE_LOGO_PATH = '/brand/logo-wordmark.svg'
+export const SITE_LOGO_MARK_PATH = '/brand/logo-mark.svg'
 
 export const AUTHOR = {
   name: 'Ubayd Hattas',

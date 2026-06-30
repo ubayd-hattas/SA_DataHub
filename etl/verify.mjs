@@ -19,6 +19,17 @@ const PIPELINE_CONFIG = {
     geographyCode: 'ZA',
     jsonPath: 'src/data/datasets/unemployment.json',
   },
+  'youth-unemployment': {
+    slug: 'youth-unemployment',
+    statIds: [
+      'youth-unemployment-narrow',
+      'youth-unemployment-1524',
+      'youth-unemployment-expanded',
+      'youth-neet-rate',
+    ],
+    geographyCode: 'ZA',
+    jsonPath: 'src/data/datasets/youth-unemployment.json',
+  },
 }
 
 function loadEnvLocal() {

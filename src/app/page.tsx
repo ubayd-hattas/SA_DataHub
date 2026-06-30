@@ -4,7 +4,7 @@ import type { Metadata } from 'next'
 import { SearchBar } from '@/components/ui/SearchBar'
 import { StatCard } from '@/components/ui/StatCard'
 import { CategoryCard } from '@/components/ui/CategoryCard'
-import { getFeaturedStats, categories } from '@/data/mock'
+import { getAppDataProvider } from '@/data/providers'
 import { buildPageMetadata } from '@/lib/seo'
 
 export const metadata: Metadata = buildPageMetadata({
@@ -14,8 +14,12 @@ export const metadata: Metadata = buildPageMetadata({
   path: '/',
 })
 
-export default function HomePage() {
-  const featuredStats = getFeaturedStats()
+export default async function HomePage() {
+  const provider = await getAppDataProvider()
+  const [featuredStats, categories] = await Promise.all([
+    provider.getFeaturedStats(),
+    provider.getCategories(),
+  ])
 
   return (
     <div className="animate-fade-in">

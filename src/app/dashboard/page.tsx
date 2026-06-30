@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { getAppDataProvider } from '@/data/providers'
 import { buildPageMetadata } from '@/lib/seo'
 import DashboardView from './DashboardView'
 
@@ -9,6 +10,19 @@ export const metadata: Metadata = buildPageMetadata({
   path: '/dashboard',
 })
 
-export default function DashboardPage() {
-  return <DashboardView />
+export default async function DashboardPage() {
+  const provider = await getAppDataProvider()
+  const [statistics, categories, provinces] = await Promise.all([
+    provider.getStatistics(),
+    provider.getCategories(),
+    provider.getProvinces(),
+  ])
+
+  return (
+    <DashboardView
+      statistics={statistics}
+      categories={categories}
+      provinces={provinces}
+    />
+  )
 }

@@ -6,7 +6,7 @@ import { Footer } from '@/components/layout/Footer'
 import { Analytics } from '@vercel/analytics/react'
 import { JsonLd } from '@/components/seo/JsonLd'
 import { organizationSchema, personSchema, websiteSchema } from '@/lib/schema'
-import { SITE_URL, SITE_NAME, SITE_DESCRIPTION } from '@/lib/seo'
+import { SITE_URL, SITE_NAME, SITE_DESCRIPTION, SITE_LOGO_MARK_PATH } from '@/lib/seo'
 import './globals.css'
 
 const dmSans = DM_Sans({
@@ -36,15 +36,34 @@ export const metadata: Metadata = {
     template: `%s | ${SITE_NAME}`,
   },
   description: SITE_DESCRIPTION,
+  applicationName: SITE_NAME,
+  manifest: '/manifest.webmanifest',
+  icons: {
+    icon: [
+      { url: SITE_LOGO_MARK_PATH, type: 'image/svg+xml' },
+    ],
+    shortcut: [SITE_LOGO_MARK_PATH],
+    apple: [SITE_LOGO_MARK_PATH],
+  },
   openGraph: {
     siteName: SITE_NAME,
     locale: 'en_ZA',
     type: 'website',
+    url: SITE_URL,
     images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: SITE_NAME }],
   },
   twitter: {
     card: 'summary_large_image',
     images: ['/opengraph-image'],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-image-preview': 'large',
+    },
   },
   verification: {
     google: '1e1a0b335f98cead',
