@@ -1,62 +1,155 @@
 {
   "_meta": {
     "source": "South African Reserve Bank (SARB)",
-    "source_url": "https://www.resbank.co.za/en/home/what-we-do/monetary-policy/decisions",
+    "source_url": "https://www.resbank.co.za/en/home/publications/publication-detail-pages/statements/monetary-policy-statements/2026/july",
     "update_frequency": "MPC meetings (~every 2 months). Rate effective immediately on announcement.",
-    "last_verified": "2026-05-31",
-    "notes": "Repo rate is the rate at which the SARB lends to commercial banks. Prime lending rate = Repo + 3.5%. Both are the primary levers of South African monetary policy."
+    "last_verified": "2026-07-01",
+    "notes": "Repo rate is the rate at which the SARB lends to commercial banks. Prime lending rate = Repo + 3.5%. Both are the primary levers of South African monetary policy.",
+    "lastUpdated": "2026-07-01",
+    "publicationDate": "2026-07-01",
+    "automation": {
+      "updatedBy": "sarb-adapter/1.0.0",
+      "updatedAt": "2026-07-01T19:40:41.025915+00:00",
+      "apiEndpoint": "https://custom.resbank.co.za/SarbWebApi/WebIndicators/HomePageRates",
+      "timeseriesCodes": {
+        "repo": "MMRD002A",
+        "prime": "MMRD000A"
+      }
+    }
   },
   "statistics": [
     {
       "id": "repo-rate-sarb",
       "categoryId": "gdp",
       "title": "Repo Rate",
-      "value": "6.75%",
-      "rawValue": 6.75,
+      "value": "7.00%",
+      "rawValue": 7.0,
       "unit": "%",
-      "change": 0.0,
-      "changeLabel": "held at March 2026 MPC",
-      "trend": "stable",
+      "change": 0.25,
+      "changeLabel": "rate at 7.00% (July 2026 MPC)",
+      "trend": "up",
       "description": "The repurchase (repo) rate is the benchmark interest rate set by the South African Reserve Bank's Monetary Policy Committee (MPC). It is the rate at which the SARB lends short-term money to commercial banks and is the primary instrument of inflation targeting.",
       "source": {
         "name": "South African Reserve Bank",
         "shortName": "SARB",
-        "url": "https://www.resbank.co.za/en/home/publications/publication-detail-pages/statements/monetary-policy-statements/2026/march",
-        "publicationName": "MPC Statement March 2026",
-        "publicationDate": "2026-03-26"
+        "url": "https://www.resbank.co.za/en/home/publications/publication-detail-pages/statements/monetary-policy-statements/2026/july",
+        "publicationName": "MPC Statement July 2026",
+        "publicationDate": "2026-07-01"
       },
-      "lastUpdated": "2026-03-26",
+      "lastUpdated": "2026-07-01",
       "series": [
         {
           "name": "Repo Rate",
           "unit": "%",
           "data": [
-            { "label": "Jan 2022", "value": 4.00 },
-            { "label": "Mar 2022", "value": 4.25 },
-            { "label": "May 2022", "value": 4.75 },
-            { "label": "Jul 2022", "value": 5.50 },
-            { "label": "Sep 2022", "value": 6.25 },
-            { "label": "Nov 2022", "value": 7.00 },
-            { "label": "Jan 2023", "value": 7.25 },
-            { "label": "Mar 2023", "value": 7.75 },
-            { "label": "May 2023", "value": 8.25 },
-            { "label": "Jul 2023", "value": 8.25 },
-            { "label": "Sep 2023", "value": 8.25 },
-            { "label": "Nov 2023", "value": 8.25 },
-            { "label": "Jan 2024", "value": 8.25 },
-            { "label": "Mar 2024", "value": 8.25 },
-            { "label": "May 2024", "value": 8.25 },
-            { "label": "Jul 2024", "value": 8.25 },
-            { "label": "Sep 2024", "value": 8.00 },
-            { "label": "Nov 2024", "value": 7.75 },
-            { "label": "Jan 2025", "value": 7.50 },
-            { "label": "Mar 2025", "value": 7.50 },
-            { "label": "May 2025", "value": 7.25 },
-            { "label": "Jul 2025", "value": 7.25 },
-            { "label": "Sep 2025", "value": 7.00 },
-            { "label": "Nov 2025", "value": 6.75 },
-            { "label": "Jan 2026", "value": 6.75 },
-            { "label": "Mar 2026", "value": 6.75 }
+            {
+              "label": "Jan 2022",
+              "value": 4.0
+            },
+            {
+              "label": "Mar 2022",
+              "value": 4.25
+            },
+            {
+              "label": "May 2022",
+              "value": 4.75
+            },
+            {
+              "label": "Jul 2022",
+              "value": 5.5
+            },
+            {
+              "label": "Sep 2022",
+              "value": 6.25
+            },
+            {
+              "label": "Nov 2022",
+              "value": 7.0
+            },
+            {
+              "label": "Jan 2023",
+              "value": 7.25
+            },
+            {
+              "label": "Mar 2023",
+              "value": 7.75
+            },
+            {
+              "label": "May 2023",
+              "value": 8.25
+            },
+            {
+              "label": "Jul 2023",
+              "value": 8.25
+            },
+            {
+              "label": "Sep 2023",
+              "value": 8.25
+            },
+            {
+              "label": "Nov 2023",
+              "value": 8.25
+            },
+            {
+              "label": "Jan 2024",
+              "value": 8.25
+            },
+            {
+              "label": "Mar 2024",
+              "value": 8.25
+            },
+            {
+              "label": "May 2024",
+              "value": 8.25
+            },
+            {
+              "label": "Jul 2024",
+              "value": 8.25
+            },
+            {
+              "label": "Sep 2024",
+              "value": 8.0
+            },
+            {
+              "label": "Nov 2024",
+              "value": 7.75
+            },
+            {
+              "label": "Jan 2025",
+              "value": 7.5
+            },
+            {
+              "label": "Mar 2025",
+              "value": 7.5
+            },
+            {
+              "label": "May 2025",
+              "value": 7.25
+            },
+            {
+              "label": "Jul 2025",
+              "value": 7.25
+            },
+            {
+              "label": "Sep 2025",
+              "value": 7.0
+            },
+            {
+              "label": "Nov 2025",
+              "value": 6.75
+            },
+            {
+              "label": "Jan 2026",
+              "value": 6.75
+            },
+            {
+              "label": "Mar 2026",
+              "value": 6.75
+            },
+            {
+              "label": "Jul 2026",
+              "value": 7.0
+            }
           ]
         }
       ]
@@ -65,52 +158,134 @@
       "id": "prime-lending-rate",
       "categoryId": "gdp",
       "title": "Prime Lending Rate",
-      "value": "10.25%",
-      "rawValue": 10.25,
+      "value": "10.50%",
+      "rawValue": 10.5,
       "unit": "%",
-      "change": 0.0,
-      "changeLabel": "held at March 2026 MPC",
-      "trend": "stable",
+      "change": 0.25,
+      "changeLabel": "rate at 10.50% (July 2026 MPC)",
+      "trend": "up",
       "description": "The prime lending rate is the benchmark rate at which commercial banks lend to their most creditworthy clients. It is conventionally set at repo rate + 3.5 percentage points. Most consumer and business loans are priced relative to prime.",
       "source": {
         "name": "South African Reserve Bank",
         "shortName": "SARB",
-        "url": "https://www.resbank.co.za/en/home/publications/publication-detail-pages/statements/monetary-policy-statements/2026/march",
-        "publicationName": "MPC Statement March 2026",
-        "publicationDate": "2026-03-26"
+        "url": "https://www.resbank.co.za/en/home/publications/publication-detail-pages/statements/monetary-policy-statements/2026/july",
+        "publicationName": "MPC Statement July 2026",
+        "publicationDate": "2026-07-01"
       },
-      "lastUpdated": "2026-03-26",
+      "lastUpdated": "2026-07-01",
       "series": [
         {
           "name": "Prime Lending Rate",
           "unit": "%",
           "data": [
-            { "label": "Jan 2022", "value": 7.50 },
-            { "label": "Mar 2022", "value": 7.75 },
-            { "label": "May 2022", "value": 8.25 },
-            { "label": "Jul 2022", "value": 9.00 },
-            { "label": "Sep 2022", "value": 9.75 },
-            { "label": "Nov 2022", "value": 10.50 },
-            { "label": "Jan 2023", "value": 10.75 },
-            { "label": "Mar 2023", "value": 11.25 },
-            { "label": "May 2023", "value": 11.75 },
-            { "label": "Jul 2023", "value": 11.75 },
-            { "label": "Sep 2023", "value": 11.75 },
-            { "label": "Nov 2023", "value": 11.75 },
-            { "label": "Jan 2024", "value": 11.75 },
-            { "label": "Mar 2024", "value": 11.75 },
-            { "label": "May 2024", "value": 11.75 },
-            { "label": "Jul 2024", "value": 11.75 },
-            { "label": "Sep 2024", "value": 11.50 },
-            { "label": "Nov 2024", "value": 11.25 },
-            { "label": "Jan 2025", "value": 11.00 },
-            { "label": "Mar 2025", "value": 11.00 },
-            { "label": "May 2025", "value": 10.75 },
-            { "label": "Jul 2025", "value": 10.75 },
-            { "label": "Sep 2025", "value": 10.50 },
-            { "label": "Nov 2025", "value": 10.25 },
-            { "label": "Jan 2026", "value": 10.25 },
-            { "label": "Mar 2026", "value": 10.25 }
+            {
+              "label": "Jan 2022",
+              "value": 7.5
+            },
+            {
+              "label": "Mar 2022",
+              "value": 7.75
+            },
+            {
+              "label": "May 2022",
+              "value": 8.25
+            },
+            {
+              "label": "Jul 2022",
+              "value": 9.0
+            },
+            {
+              "label": "Sep 2022",
+              "value": 9.75
+            },
+            {
+              "label": "Nov 2022",
+              "value": 10.5
+            },
+            {
+              "label": "Jan 2023",
+              "value": 10.75
+            },
+            {
+              "label": "Mar 2023",
+              "value": 11.25
+            },
+            {
+              "label": "May 2023",
+              "value": 11.75
+            },
+            {
+              "label": "Jul 2023",
+              "value": 11.75
+            },
+            {
+              "label": "Sep 2023",
+              "value": 11.75
+            },
+            {
+              "label": "Nov 2023",
+              "value": 11.75
+            },
+            {
+              "label": "Jan 2024",
+              "value": 11.75
+            },
+            {
+              "label": "Mar 2024",
+              "value": 11.75
+            },
+            {
+              "label": "May 2024",
+              "value": 11.75
+            },
+            {
+              "label": "Jul 2024",
+              "value": 11.75
+            },
+            {
+              "label": "Sep 2024",
+              "value": 11.5
+            },
+            {
+              "label": "Nov 2024",
+              "value": 11.25
+            },
+            {
+              "label": "Jan 2025",
+              "value": 11.0
+            },
+            {
+              "label": "Mar 2025",
+              "value": 11.0
+            },
+            {
+              "label": "May 2025",
+              "value": 10.75
+            },
+            {
+              "label": "Jul 2025",
+              "value": 10.75
+            },
+            {
+              "label": "Sep 2025",
+              "value": 10.5
+            },
+            {
+              "label": "Nov 2025",
+              "value": 10.25
+            },
+            {
+              "label": "Jan 2026",
+              "value": 10.25
+            },
+            {
+              "label": "Mar 2026",
+              "value": 10.25
+            },
+            {
+              "label": "Jul 2026",
+              "value": 10.5
+            }
           ]
         }
       ]

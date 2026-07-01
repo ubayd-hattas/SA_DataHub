@@ -1,0 +1,9 @@
+# automation/config/datasets/education.yaml
+source_id: dbe
+display_name: "Education (Matric Pass Rate)"
+enabled: false  # Adapter not yet implemented in Phase A
+cadence: annual
+automation_level: manual
+priority: 50
+# Annual press announcement in mid-January.
+# Requires a Track B manual review ticket generation.

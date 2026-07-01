@@ -1,0 +1,17 @@
+# automation/config/datasets/crime.yaml
+source_id: saps
+display_name: "Crime Statistics (SAPS Quarterly/Annual)"
+enabled: true
+cadence: manual    # Unreliable calendar — poll weekly, not calendar-gated
+automation_level: manual
+priority: 60
+# Manual-entry fields that a reviewer MUST transcribe
+required_transcription_fields:
+  - murder_count
+  - contact_crime_total
+  - aggravated_robbery_total
+  - period_label
+  - source_url
+  - source_date
+# Weekly watch cadence for page-hash check
+watch_interval: weekly

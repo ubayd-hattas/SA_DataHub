@@ -1,0 +1,32 @@
+{
+  "run_id": "0f5775345a8f",
+  "started_at": "2026-07-01T19:38:18.113669+00:00",
+  "finished_at": "2026-07-01T19:38:18.381956+00:00",
+  "dry_run": false,
+  "adapters": [
+    {
+      "adapter_id": "sarb",
+      "display_name": "South African Reserve Bank",
+      "status": "ok",
+      "datasets_checked": [
+        "interest-rates"
+      ],
+      "datasets_changed": [
+        "interest-rates"
+      ],
+      "warnings": [],
+      "errors": [],
+      "duration_ms": 222,
+      "notes": ""
+    }
+  ],
+  "global_warnings": [],
+  "global_errors": [],
+  "config_summary": {
+    "sources_configured": 4,
+    "datasets_configured": 13,
+    "adapters_registered": 4,
+    "adapters_run": 1,
+    "log_level": "INFO"
+  }
+}

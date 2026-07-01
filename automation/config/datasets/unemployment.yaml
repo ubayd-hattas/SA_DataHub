@@ -1,0 +1,15 @@
+# automation/config/datasets/unemployment.yaml
+source_id: statssa
+display_name: "Unemployment (QLFS P0211)"
+enabled: true
+cadence: quarterly
+automation_level: hybrid
+priority: 10
+
+# QLFS family — this dataset shares an extractor with youth-unemployment
+# and labour-force.  One download, three outputs.
+qlfs_family: true
+release_publication: "P0211"
+release_hub_ppn: "P0211"
+# Approximate release: ~6 weeks after quarter-end
+release_window_days_after_quarter_end: 42

@@ -1,0 +1,26 @@
+{
+  "run_id": "e8a9f4c89b4f",
+  "started_at": "2026-07-01T19:40:40.525316+00:00",
+  "finished_at": "2026-07-01T19:40:41.053977+00:00",
+  "dry_run": false,
+  "adapters": [
+    {
+      "adapter_id": "sarb",
+      "display_name": "South African Reserve Bank",
+      "status": "ok",
+      "datasets_checked": [
+        "interest-rates"
+      ],
+      "datasets_changed": [
+        "interest-rates"
+      ],
+      "warnings": [],
+      "errors": [],
+      "duration_ms": 0,
+      "notes": "## SARB Interest Rate Change Summary\n\n**Effective date:** 2026-07-01  \n**Publication date (API date):** 2026-07-01  \n**Generated:** 2026-07-01 19:40 UTC\n\n| Rate | Previous | New | Change |\n|------|----------|-----|--------|\n| Repo rate | 6.75% | 7.00% | +0.25pp |\n| Prime lending rate | 10.25% | 10.50% | +0.25pp |\n\n> **Business rule check:** prime (10.50%) = repo (7.00%) + 3.5% [OK]\n\n### Source\n- API endpoint: `https://custom.resbank.co.za/SarbWebApi/WebIndicators/HomePageRates`\n- Timeseries codes: `MMRD002A` (repo), `MMRD000A` (prime)\n- MPC decisions page: https://www.resbank.co.za/en/home/what-we-do/monetary-policy/decisions"
+    }
+  ],
+  "global_warnings": [],
+  "global_errors": [],
+  "config_summary": {}
+}

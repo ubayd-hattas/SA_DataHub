@@ -1,0 +1,145 @@
+[
+  {
+    "Name": "CPI",
+    "SectionId": "HPRIR",
+    "SectionName": "Inflation rates",
+    "TimeseriesCode": "CPI1000F",
+    "Date": "2026-05-31",
+    "Value": 4.5,
+    "UpDown": 1,
+    "FormatNumber": "0.0",
+    "FormatDate": "MMM, yyyy"
+  },
+  {
+    "Name": "PPI",
+    "SectionId": "HPRIR",
+    "SectionName": "Inflation rates",
+    "TimeseriesCode": "PPI1000F",
+    "Date": "2026-05-31",
+    "Value": 7.8125,
+    "UpDown": 1,
+    "FormatNumber": "0.0",
+    "FormatDate": "MMM, yyyy"
+  },
+  {
+    "Name": "SARB Policy Rate",
+    "SectionId": "HPRINT",
+    "SectionName": "Interest rates",
+    "TimeseriesCode": "MMRD002A",
+    "Date": "2026-07-01",
+    "Value": 7.0,
+    "UpDown": 0,
+    "FormatNumber": "0.00",
+    "FormatDate": "yyyy-MM-dd"
+  },
+  {
+    "Name": "Prime lending rate",
+    "SectionId": "HPRINT",
+    "SectionName": "Interest rates",
+    "TimeseriesCode": "MMRD000A",
+    "Date": "2026-07-01",
+    "Value": 10.5,
+    "UpDown": 0,
+    "FormatNumber": "0.00",
+    "FormatDate": "yyyy-MM-dd"
+  },
+  {
+    "Name": "8.00% 2030 (R2030) (closing yields)",
+    "SectionId": "HPRINT",
+    "SectionName": "Interest rates",
+    "TimeseriesCode": "MMRD708A",
+    "Date": "2026-06-30",
+    "Value": 7.735,
+    "UpDown": 1,
+    "FormatNumber": "0.00",
+    "FormatDate": "yyyy-MM-dd"
+  },
+  {
+    "Name": "6.25% 2036 (R209) (closing yields)",
+    "SectionId": "HPRINT",
+    "SectionName": "Interest rates",
+    "TimeseriesCode": "MMRD709A",
+    "Date": "2026-06-30",
+    "Value": 8.425,
+    "UpDown": 1,
+    "FormatNumber": "0.00",
+    "FormatDate": "yyyy-MM-dd"
+  },
+  {
+    "Name": "Sabor",
+    "SectionId": "HPRINT",
+    "SectionName": "Interest rates",
+    "TimeseriesCode": "MMRD851A",
+    "Date": "2026-06-30",
+    "Value": 6.917,
+    "UpDown": 1,
+    "FormatNumber": "0.000",
+    "FormatDate": "yyyy-MM-dd"
+  },
+  {
+    "Name": "Zaronia",
+    "SectionId": "HPRINT",
+    "SectionName": "Interest rates",
+    "TimeseriesCode": "MMRD855A",
+    "Date": "2026-06-30",
+    "Value": 6.865,
+    "UpDown": -1,
+    "FormatNumber": "0.000",
+    "FormatDate": "yyyy-MM-dd"
+  },
+  {
+    "Name": "Rand per US Dollar",
+    "SectionId": "HPREXCH",
+    "SectionName": "Exchange rates",
+    "TimeseriesCode": "EXCX135D",
+    "Date": "2026-07-01",
+    "Value": 16.415,
+    "UpDown": 1,
+    "FormatNumber": "0.0000",
+    "FormatDate": "yyyy-MM-dd"
+  },
+  {
+    "Name": "Rand per British Pound",
+    "SectionId": "HPREXCH",
+    "SectionName": "Exchange rates",
+    "TimeseriesCode": "EXCZ001D",
+    "Date": "2026-07-01",
+    "Value": 21.7507,
+    "UpDown": 1,
+    "FormatNumber": "0.0000",
+    "FormatDate": "yyyy-MM-dd"
+  },
+  {
+    "Name": "Rand per Euro",
+    "SectionId": "HPREXCH",
+    "SectionName": "Exchange rates",
+    "TimeseriesCode": "EXCZ002D",
+    "Date": "2026-07-01",
+    "Value": 18.7074,
+    "UpDown": 1,
+    "FormatNumber": "0.0000",
+    "FormatDate": "yyyy-MM-dd"
+  },
+  {
+    "Name": "Rand per Japanese Yen",
+    "SectionId": "HPREXCH",
+    "SectionName": "Exchange rates",
+    "TimeseriesCode": "EXCZ120D",
+    "Date": "2026-07-01",
+    "Value": 0.1009,
+    "UpDown": -1,
+    "FormatNumber": "0.0000",
+    "FormatDate": "yyyy-MM-dd"
+  },
+  {
+    "Name": "Nominal effective exchange rate",
+    "SectionId": "HPRNEE",
+    "SectionName": "Nominal Effective",
+    "TimeseriesCode": "EER4504A",
+    "Date": "2026-07-01",
+    "Value": 85.5546,
+    "UpDown": 1,
+    "FormatNumber": "0.00",
+    "FormatDate": "yyyy-MM-dd"
+  }
+]

@@ -1,0 +1,12 @@
+# automation/config/sources/saps.yaml
+# SAPS source configuration
+
+display_name: "South African Police Service"
+base_url: "https://www.saps.gov.za"
+enabled: true
+request_delay_seconds: 2.0
+max_retries: 3
+timeout_seconds: 30
+
+# Crime statistics page to monitor
+crime_stats_url: "https://www.saps.gov.za/services/crimestats.php"
