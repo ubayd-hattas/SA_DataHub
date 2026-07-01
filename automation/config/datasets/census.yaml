@@ -1,0 +1,9 @@
+# automation/config/datasets/census.yaml
+source_id: statssa
+display_name: "Census 2022 (Static)"
+enabled: true
+cadence: static
+automation_level: static
+priority: 90
+# Census is static until ~2032.
+# Phase B will implement a lightweight erratum-watch check.

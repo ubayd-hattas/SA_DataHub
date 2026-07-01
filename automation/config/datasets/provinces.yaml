@@ -1,0 +1,8 @@
+# automation/config/datasets/provinces.yaml
+source_id: composite
+display_name: "Provinces (Composite)"
+enabled: false  # Adapter not yet implemented in Phase A
+cadence: quarterly
+automation_level: hybrid
+priority: 99
+# Downstream merge job over already-fresh sources.

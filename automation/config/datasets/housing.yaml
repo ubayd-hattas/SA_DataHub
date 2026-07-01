@@ -1,0 +1,14 @@
+# automation/config/datasets/housing.yaml
+source_id: statssa
+display_name: "Housing (Census 2022 + GHS P0318)"
+enabled: true
+cadence: annual    # GHS component; Census component is static
+automation_level: hybrid
+priority: 40
+release_publication: "P0318"
+# Two components with different update frequencies:
+# - Census-anchored baseline: static until Census 2032
+# - GHS-refreshable indicators: annual (piped water, electricity, formal dwellings)
+# Phase B: confirm whether GHS 2024/2025 has updated the three indicators
+ghs_component_enabled: true
+census_baseline_static: true

@@ -1,0 +1,13 @@
+# automation/config/datasets/interest-rates.yaml
+source_id: sarb
+display_name: "Interest Rates (MPC Repo/Prime)"
+enabled: true
+cadence: manual    # ~6 times/year on MPC calendar
+automation_level: auto  # Best automation candidate in portfolio
+priority: 5         # Highest priority — easiest and most impactful
+mpc_meetings_per_year: 6
+# Business rule — enforced in adapter validation and Phase B ETL
+business_rule_prime_equals_repo_plus: 3.5
+# Canonical home for SARB rate data.
+# inflation.json must reference this, not duplicate it.
+is_canonical_sarb_source: true

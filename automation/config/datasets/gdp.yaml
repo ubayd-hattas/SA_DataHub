@@ -1,0 +1,12 @@
+# automation/config/datasets/gdp.yaml
+source_id: statssa
+display_name: "GDP (P0441)"
+enabled: true
+cadence: quarterly
+automation_level: hybrid
+priority: 20
+release_publication: "P0441"
+release_window_days_after_quarter_end: 67  # ~65-70 days
+# IMPORTANT: GDP requires overwrite of historical points (revisions),
+# NOT blind append. The ETL must handle this explicitly.
+overwrites_historical_points: true

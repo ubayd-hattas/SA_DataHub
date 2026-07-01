@@ -1,0 +1,22 @@
+# automation/config/sources/statssa.yaml
+# Stats SA source configuration
+
+display_name: "Statistics South Africa"
+base_url: "https://www.statssa.gov.za"
+enabled: true
+request_delay_seconds: 2.0   # Polite delay — release hub can be slow
+max_retries: 5
+timeout_seconds: 60           # Stats SA site can be slow on release day
+
+# Release hub URL pattern
+release_hub_url: "https://www.statssa.gov.za/?page_id=1854"
+
+# Known release hub page IDs for each dataset
+release_hub_ids:
+  unemployment: "P0211"
+  youth-unemployment: "P0211"
+  labour-force: "P0211"
+  gdp: "P0441"
+  inflation: "P0141"
+  population: "P0302"
+  housing: "P0318"

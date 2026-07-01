@@ -1,0 +1,16 @@
+# automation/config/datasets/population.yaml
+source_id: statssa
+display_name: "Population (MYPE P0302)"
+enabled: true
+cadence: annual
+automation_level: manual   # Deliberately manual until source is corrected
+priority: 30
+release_publication: "P0302"
+release_month: July  # MYPE typically released late July
+# DATA INTEGRITY BUG: current JSON likely sourced from World Bank, not Stats SA.
+# JSON shows 64.0M (2024); Stats SA MYPE 2025 says 63.1M.
+# DO NOT automate until the source is corrected to statssa.gov.za P0302.
+# Phase B MUST include a source guard that hard-fails if resolved data
+# does not originate from statssa.gov.za.
+source_guard_required: true
+source_guard_domain: "statssa.gov.za"

@@ -1,0 +1,14 @@
+# automation/config/sources/worldbank.yaml
+# World Bank source configuration
+
+display_name: "World Bank"
+base_url: "https://api.worldbank.org/v2"
+enabled: true
+request_delay_seconds: 1.0
+max_retries: 4
+timeout_seconds: 30
+
+# IMPORTANT: No datasets are currently assigned to this source.
+# Before assigning any dataset here, verify via explicit audit that
+# World Bank is the correct (not just convenient) source for that indicator.
+# See population.json for the canonical example of what to avoid.

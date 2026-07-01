@@ -1,0 +1,9 @@
+# automation/config/datasets/municipalities.yaml
+source_id: statssa
+display_name: "Municipalities (Census 2022 Fact Sheet)"
+enabled: true
+cadence: static
+automation_level: static
+priority: 91
+# Like census, this is largely static but Stats SA has issued erratums
+# (e.g. August 2025). Phase B will implement a low-frequency erratum watch.

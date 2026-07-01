@@ -1,0 +1,9 @@
+# automation/config/datasets/youth-unemployment.yaml
+source_id: statssa
+display_name: "Youth Unemployment (QLFS P0211)"
+enabled: true
+cadence: quarterly
+automation_level: hybrid
+priority: 11
+qlfs_family: true
+release_publication: "P0211"

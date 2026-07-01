@@ -1,0 +1,9 @@
+# automation/config/datasets/labour-force.yaml
+source_id: statssa
+display_name: "Labour Force Participation (QLFS P0211)"
+enabled: true
+cadence: quarterly
+automation_level: hybrid
+priority: 12
+qlfs_family: true
+release_publication: "P0211"

@@ -1,0 +1,14 @@
+# automation/config/datasets/inflation.yaml
+source_id: statssa    # CPI component — SARB handles repo-rate component
+display_name: "Inflation / CPI (P0141) + Repo Rate"
+enabled: true
+cadence: monthly
+automation_level: hybrid
+priority: 25
+release_publication: "P0141"
+# The repo-rate stat inside this file is a known duplication issue.
+# Phase B: reference interest-rates.json canonical value instead of
+# fetching independently. Track this in the de-duplication task.
+repo_rate_dedup_required: true
+cpi_source_id: statssa
+repo_rate_source_id: sarb

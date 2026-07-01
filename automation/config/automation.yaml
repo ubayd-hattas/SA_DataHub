@@ -1,0 +1,24 @@
+# SA Data Hub — Automation Framework Global Configuration
+# =========================================================
+# This file contains framework-wide defaults.
+# Override in local.yaml (gitignored) or via environment variables.
+#
+# Environment variable overrides:
+#   AUTOMATION_DRY_RUN=1          (bool)
+#   AUTOMATION_LOG_LEVEL=DEBUG    (str)
+#   AUTOMATION_REPORT_DIR=/path   (str)
+#   AUTOMATION_RAW_ARCHIVE_DIR=/path  (str)
+#   AUTOMATION_LOG_JSON=1         (bool: JSON log lines)
+
+# Whether to run in read-only mode (no DB writes, no version entries)
+dry_run: false
+
+# Logging verbosity: DEBUG | INFO | WARNING | ERROR
+log_level: INFO
+
+# Where to write execution reports (Markdown + JSON)
+# Relative paths are resolved from the project root
+# report_dir: automation/reports/archive
+
+# Where to store raw source files before processing
+# raw_archive_dir: raw_data/archive

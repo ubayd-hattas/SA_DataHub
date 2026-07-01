@@ -1,0 +1,15 @@
+# automation/config/sources/sarb.yaml
+# SARB source configuration
+
+display_name: "South African Reserve Bank"
+base_url: "https://custom.resbank.co.za/SarbWebApi/"
+enabled: true
+request_delay_seconds: 1.0
+max_retries: 4
+timeout_seconds: 30
+
+# MPC decisions page (for secondary monitoring)
+mpc_decisions_url: "https://www.resbank.co.za/en/home/what-we-do/monetary-policy/decisions"
+
+# Prime-repo spread (hard-coded business rule — validated in Phase B)
+prime_repo_spread: 3.5
