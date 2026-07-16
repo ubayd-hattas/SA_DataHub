@@ -179,3 +179,45 @@ def pending_versions(
         for e in load_version_history(report_dir, dataset_id)
         if e.status == "pending"
     ]
+
+
+def approve_version(report_dir: Path, dataset_id: str, version_id: str, approver: str) -> None:
+    """Transition a version entry from pending to approved."""
+    history = load_version_history(report_dir, dataset_id)
+    updated = False
+    for entry in history:
+        if entry.version_id == version_id:
+            if entry.status != "pending":
+                raise ValueError(f"Version {version_id} is not pending (status: {entry.status})")
+            entry.status = "approved"
+            entry.approved_at = datetime.now(tz=timezone.utc).isoformat()
+            entry.approved_by = approver
+            updated = True
+            break
+    
+    if not updated:
+        raise KeyError(f"Version {version_id} not found for dataset {dataset_id}")
+    
+    path = _version_store_path(report_dir, dataset_id)
+    atomic_write_text(path, json.dumps([e.to_dict() for e in history], indent=2))
+    log.info("Approved version %s for %s by %s", version_id, dataset_id, approver)
+
+
+def reject_version(report_dir: Path, dataset_id: str, version_id: str) -> None:
+    """Transition a version entry from pending to rejected."""
+    history = load_version_history(report_dir, dataset_id)
+    updated = False
+    for entry in history:
+        if entry.version_id == version_id:
+            if entry.status != "pending":
+                raise ValueError(f"Version {version_id} is not pending (status: {entry.status})")
+            entry.status = "rejected"
+            updated = True
+            break
+            
+    if not updated:
+        raise KeyError(f"Version {version_id} not found for dataset {dataset_id}")
+        
+    path = _version_store_path(report_dir, dataset_id)
+    atomic_write_text(path, json.dumps([e.to_dict() for e in history], indent=2))
+    log.info("Rejected version %s for %s", version_id, dataset_id)

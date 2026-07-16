@@ -117,6 +117,32 @@ def archive_path(
     return archive_root / dataset_id / date_str / filename
 
 
+def portable_archive_path(archive_root: Path, dest: Path) -> str:
+    """
+    Return a portable, archive-root-relative string for an archived file's
+    path, suitable for persisting in version entries, manifests, or reports.
+
+    ``dest`` (as returned by :func:`archive_path`/:func:`save_to_archive`) is
+    built from whatever ``archive_root`` the caller configured, which
+    defaults to an absolute path under the project root but may be an
+    absolute local path on a developer's machine (e.g.
+    ``AUTOMATION_RAW_ARCHIVE_DIR`` pointing at a local working directory).
+    Persisting ``str(dest)`` directly can leak developer-specific local
+    filesystem paths into committed artifacts (see Work Item 7 in the
+    2026-07-12 implementation spec, which found exactly this in a committed
+    version-store entry). Callers that write an archive path to disk should
+    use this helper instead of ``str(dest)``.
+    """
+    try:
+        rel_path = str(dest.relative_to(archive_root))
+        return f"automation/reports/archive/{rel_path}".replace("\\", "/")
+    except ValueError:
+        # dest isn't under archive_root (unexpected) — fall back to a
+        # short, portable tail rather than emitting an absolute local path.
+        fallback = str(Path(archive_root.name) / dest.name)
+        return f"automation/reports/archive/{fallback}".replace("\\", "/")
+
+
 def save_to_archive(
     archive_root: Path,
     data: bytes,

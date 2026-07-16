@@ -1,0 +1,25 @@
+# automation/requirements.txt
+#
+# Dependency manifest for the SA Data Hub automation framework
+# (automation/).  Install with:
+#
+#   pip install -r automation/requirements.txt
+#
+# NOTE (Work Item 6, implementation spec 2026-07-12): this file was added
+# under `automation/` because `etl/requirements.txt` — the file the
+# specification asked us to check for an existing repository convention —
+# was not available in the working environment for this session (only the
+# `automation/` package itself was provided). If `etl/requirements.txt`
+# turns out to use a different convention (e.g. a root-level
+# `pyproject.toml`, or pinned versions via a lockfile), this file should be
+# moved/reconciled with that convention rather than kept as a second,
+# divergent manifest.
+#
+# automation/core/config.py's _load_yaml() silently falls back to a
+# .json-suffixed sibling (or an empty dict) if PyYAML is not installed.
+# Installing this manifest ensures `python -m automation.runner --list`
+# (and every other entry point) loads the real YAML config instead of
+# silently running with zero configured sources/datasets.
+
+PyYAML>=6.0
+pytest>=7.0.0

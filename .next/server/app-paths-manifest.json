@@ -1,5 +1,23 @@
 {
+  "/api/test-db/route": "app/api/test-db/route.js",
+  "/manifest.webmanifest/route": "app/manifest.webmanifest/route.js",
+  "/robots.txt/route": "app/robots.txt/route.js",
+  "/sitemap.xml/route": "app/sitemap.xml/route.js",
+  "/about/page": "app/about/page.js",
+  "/_not-found/page": "app/_not-found/page.js",
+  "/changelog/page": "app/changelog/page.js",
+  "/category/[slug]/page": "app/category/[slug]/page.js",
+  "/dashboard/page": "app/dashboard/page.js",
   "/insights/page": "app/insights/page.js",
+  "/downloads/page": "app/downloads/page.js",
   "/municipalities/page": "app/municipalities/page.js",
-  "/category/[slug]/page": "app/category/[slug]/page.js"
+  "/insights/[slug]/page": "app/insights/[slug]/page.js",
+  "/page": "app/page.js",
+  "/provinces/page": "app/provinces/page.js",
+  "/methodology/page": "app/methodology/page.js",
+  "/municipalities/[code]/page": "app/municipalities/[code]/page.js",
+  "/updates/page": "app/updates/page.js",
+  "/icon.png/route": "app/icon.png/route.js",
+  "/provinces/[id]/page": "app/provinces/[id]/page.js",
+  "/opengraph-image/route": "app/opengraph-image/route.js"
 }

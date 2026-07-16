@@ -20,6 +20,10 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+from automation.core.logging import get_logger
+
+log = get_logger(__name__)
+
 # ---------------------------------------------------------------------------
 # Paths
 # ---------------------------------------------------------------------------
@@ -103,8 +107,22 @@ def _load_yaml(path: Path) -> dict[str, Any]:
         # yaml not installed — try JSON fallback (same path with .json extension)
         json_path = path.with_suffix(".json")
         if json_path.exists():
+            log.warning(
+                "PyYAML not installed — falling back to JSON sibling %s "
+                "for %s. Run `pip install -r automation/requirements.txt` "
+                "to load the real YAML config.",
+                json_path,
+                path,
+            )
             with json_path.open(encoding="utf-8") as fh:
                 return json.load(fh)
+        log.warning(
+            "PyYAML not installed and no JSON sibling found for %s — "
+            "this file will be treated as EMPTY, which may silently "
+            "disable every source/dataset config it would have defined. "
+            "Run `pip install -r automation/requirements.txt` to fix this.",
+            path,
+        )
         return {}
     except Exception:
         return {}

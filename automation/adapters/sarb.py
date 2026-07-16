@@ -20,7 +20,12 @@ Design principles
 -----------------
 - Uses the official SARB WebIndicators API (no scraping).
 - Retry policy: API_POLICY (short backoff — API is expected to be reliable).
-- Market-sensitive data — all writes require manual approval before promotion.
+- Market-sensitive data — writes to interest-rates.json are INTENDED to
+  require manual approval before promotion, but that gate is not yet
+  enforced in code (see ``fetch_and_apply()`` docstring and Work Item 1/4
+  in the implementation specification). Until the staging/approval/promote
+  pipeline exists, ``fetch_and_apply()`` is a manually-invoked, ungated
+  utility, not a protected production write path.
 - prime = repo + 3.5 is the hard-wired business rule enforced on every run.
 - interest-rates.json is the CANONICAL home for SARB rate data.
 - Archives raw API response before any transformation.
@@ -47,6 +52,7 @@ MPC meeting calendar 2026 (next 12 months)
 from __future__ import annotations
 
 import json
+import re
 from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -54,7 +60,7 @@ from typing import Any
 from automation.adapters import register
 from automation.adapters.base import BaseAdapter, DatasetCheckResult
 from automation.core.config import AutomationConfig, DatasetConfig, SourceConfig
-from automation.core.files import save_to_archive
+from automation.core.files import portable_archive_path, save_to_archive
 from automation.core.http_client import AutomationHTTPError, HTTPClient
 from automation.core.logging import get_logger
 from automation.core.metadata import check_protected_fields
@@ -89,7 +95,37 @@ _SARB_DATASETS: list[str] = ["interest-rates"]
 _DATASETS_DIR = Path(__file__).resolve().parent.parent.parent / "src" / "data" / "datasets"
 _INTEREST_RATES_JSON = _DATASETS_DIR / "interest-rates.json"
 
-# MPC meetings 2026 — used for scheduling context in reports
+# MPC meetings 2026 — used for scheduling context in reports, and (per the
+# Work Item 2 investigation below) as the authoritative source of the
+# effective/decision date, since the API's own ``Date`` field cannot be
+# trusted for that purpose.
+#
+# --- Work Item 2 investigation (2026-07-12 implementation spec) -----------
+# Question: does HomePageRates' ``Date`` field represent the MPC decision
+# date, or a data-refresh/publication timestamp?
+#
+# Evidence gathered 2026-07-15 by querying the live SARB Web API
+# (``https://custom.resbank.co.za/SarbWebApi/WebIndicators/CurrentMarketRates``,
+# which shares the same ``TimeseriesCode``/``Date`` schema as
+# ``HomePageRates`` and includes the same ``MMRD002A``/``MMRD000A`` codes):
+# the response showed ``MMRD002A`` (repo rate) at Value=7.0000 with
+# Date="2026-07-14" — i.e. *yesterday* relative to the query date — even
+# though this adapter's own MPC calendar (below) records the repo rate as
+# having last changed on 2026-05-28, seven weeks earlier, with no MPC
+# meeting in between. Every other indicator in the same response (FX
+# rates, bond yields, T-bill tenders) is also dated one business day
+# behind the query date, regardless of whether that indicator's value
+# changed. This is conclusive: the ``Date`` field is a "last refreshed in
+# the API" timestamp that advances on every business day, not an
+# MPC-decision date. It happened to equal the run date in the one archived
+# run (2026-07-01) not because of a coincidental same-day MPC meeting, but
+# because that is what this field always does — see ``_infer_effective_date()``.
+#
+# Resolution: effective_date is no longer taken from the API's ``Date``
+# field. It is derived from this reference table instead (the most recent
+# non-"pending" meeting on or before the API's refresh date). Validated
+# against the one known-good historical case: repo 7.00%, MPC date
+# 2026-05-28 — see the docstring of ``_infer_effective_date()``.
 _MPC_MEETINGS_2026: list[dict[str, str]] = [
     {"date": "2026-01-29", "decision": "hold (historical)"},
     {"date": "2026-03-26", "decision": "hold (historical)"},
@@ -163,6 +199,91 @@ def _extract_rate(
         f"not found in SARB HomePageRates response "
         f"(got {len(rates)} items)."
     )
+
+
+def _infer_effective_date(
+    rate_value: float,
+    api_date_str: str,
+    meetings: list[dict[str, str]] = _MPC_MEETINGS_2026,
+) -> tuple[str, list[str]]:
+    """
+    Infer the true MPC decision effective date for a fetched repo rate.
+
+    Background
+    ----------
+    ``HomePageRates``' (and the wider SARB Web API's) ``Date`` field is a
+    data-refresh timestamp, not the MPC decision date — confirmed by live
+    investigation on 2026-07-15 (see the comment above ``_MPC_MEETINGS_2026``
+    for the full evidence trail). This function replaces the old
+    ``effective_date = repo_date`` assumption with a lookup against the
+    known MPC meeting calendar instead.
+
+    Algorithm
+    ---------
+    1. Treat ``api_date_str`` as an upper bound (the decision cannot be
+       later than the API's last refresh).
+    2. Among ``meetings`` with a non-"pending" decision on or before that
+       bound, take the most recent one — that is the effective date.
+    3. Cross-check: if the meeting's ``decision`` text encodes a rate
+       (e.g. "hike to 7.00%"), it must roughly match ``rate_value``. A
+       mismatch means the reference table is stale (a newer MPC decision
+       happened that hasn't been added to ``_MPC_MEETINGS_2026`` yet) —
+       this is reported as a warning rather than silently trusted, and the
+       API's raw date is returned as a best-effort fallback so the run
+       still produces *a* date rather than failing outright.
+
+    Validated against the one known-good historical case referenced in the
+    2026-07-12 implementation spec: ``rate_value=7.00``,
+    ``api_date_str="2026-07-01"`` (the archived run's API date) resolves to
+    ``"2026-05-28"``, matching the documented MPC decision date exactly.
+
+    Returns
+    -------
+    (effective_date, warnings)
+        ``effective_date`` is ``YYYY-MM-DD``. ``warnings`` is a list of
+        human-readable strings describing any fallback taken (empty if the
+        reference table cleanly resolved the date).
+    """
+    warnings: list[str] = []
+    api_date_short = api_date_str[:10]
+    try:
+        api_date = datetime.strptime(api_date_short, "%Y-%m-%d").date()
+    except ValueError:
+        warnings.append(
+            f"Could not parse API Date {api_date_str!r} as YYYY-MM-DD; "
+            "using it verbatim as a fallback effective_date."
+        )
+        return api_date_short, warnings
+
+    known_decisions = [
+        m
+        for m in meetings
+        if "pending" not in m["decision"].lower()
+        and datetime.strptime(m["date"], "%Y-%m-%d").date() <= api_date
+    ]
+    if not known_decisions:
+        warnings.append(
+            f"No non-pending MPC meeting on or before {api_date_short} found "
+            "in _MPC_MEETINGS_2026 — the reference table needs a new entry. "
+            f"Falling back to the API's refresh date ({api_date_short}), "
+            "which is NOT the true decision date."
+        )
+        return api_date_short, warnings
+
+    latest = max(known_decisions, key=lambda m: m["date"])
+    rate_match = re.search(r"(\d+(?:\.\d+)?)\s*%", latest["decision"])
+    if rate_match and abs(float(rate_match.group(1)) - rate_value) > 0.01:
+        warnings.append(
+            f"_MPC_MEETINGS_2026's most recent decision "
+            f"({latest['date']}: {latest['decision']!r}) does not match the "
+            f"fetched repo rate ({rate_value:.2f}%) — the reference table is "
+            "likely stale and needs a new entry for a more recent MPC "
+            f"decision. Falling back to the API's refresh date "
+            f"({api_date_short}), which is NOT the true decision date."
+        )
+        return api_date_short, warnings
+
+    return latest["date"], warnings
 
 
 def _validate_prime_spread(
@@ -451,6 +572,27 @@ def _transform_interest_rates(
         }
 
         # Append new series data point (avoid duplicates)
+        if not stat.get("series"):
+            # First-ever update for this stat — there is no existing series
+            # to append to, so seed one. Previously this case fell through
+            # the loop below with zero iterations and silently dropped the
+            # first data point (see automation/adapters/tests/test_sarb.py::
+            # test_transform_interest_rates_first_ever_update).
+            stat["series"] = [
+                {
+                    "name": stat.get("title", stat_id),
+                    "unit": stat.get("unit", "%"),
+                    "data": [{"label": series_label, "value": new_rate}],
+                }
+            ]
+            log.debug(
+                "Seeded first series point %r -> %.2f for %s",
+                series_label,
+                new_rate,
+                stat_id,
+            )
+            continue
+
         for series in stat.get("series", []):
             existing_labels = {pt["label"] for pt in series.get("data", [])}
             if series_label not in existing_labels:
@@ -604,7 +746,14 @@ class SARBAdapter(BaseAdapter):
                 source_url=_HOME_PAGE_RATES_URL,
             )
 
-        effective_date = repo_date  # Repo and prime share the same MPC decision date
+        # Repo and prime share the same MPC decision date. The API's own
+        # ``Date`` field is a refresh timestamp, not the decision date (see
+        # the evidence trail above ``_MPC_MEETINGS_2026`` and Work Item 2
+        # in the 2026-07-12 implementation spec) — derive it from the MPC
+        # calendar instead.
+        effective_date, date_warnings = _infer_effective_date(new_repo, repo_date)
+        for warning in date_warnings:
+            self._log.warning("Effective-date inference: %s", warning)
 
         # --- Validate business rule ---
         biz_errors = _validate_prime_spread(new_repo, new_prime)
@@ -674,7 +823,20 @@ class SARBAdapter(BaseAdapter):
         run_id: str = "",
     ) -> dict[str, Any]:
         """
-        Full ETL execution for interest-rates.json.
+        Reachable via ``runner.py --apply`` (see the CLI sequence documented
+        in ``automation/docs/developer-guide.md``).
+
+        This method does NOT write to ``src/data/datasets/interest-rates.json``
+        directly. It writes the candidate document to the file-based staging
+        area (``automation.core.staging.write_staged_dataset``) and records a
+        ``status="pending"`` version entry. The version entry is a control,
+        not just a record of intent: ``automation.core.promote.promote_version``
+        refuses to write to the production dataset unless the corresponding
+        version entry's status is ``"approved"``. Reaching production requires
+        the separate, explicit sequence:
+        ``runner.py --approve <dataset> <version_id>`` then
+        ``runner.py --promote <dataset> <version_id>``
+        (see Work Item 4 in the implementation specification).
 
         Steps
         -----
@@ -746,7 +908,9 @@ class SARBAdapter(BaseAdapter):
                     source_id=self.source_id,
                     suffix=".json",
                 )
-                result["archive_path"] = str(archive_dest)
+                result["archive_path"] = portable_archive_path(
+                    self.config.raw_archive_dir, archive_dest
+                )
                 result["sha256"] = sha256
                 self._log.info(
                     "Raw response archived → %s (sha256=%s…)",
@@ -776,7 +940,14 @@ class SARBAdapter(BaseAdapter):
             self._log.error("Rate extraction failed: %s", exc)
             return result
 
-        effective_date = repo_date[:10]
+        # The API's ``Date`` field is a refresh timestamp, not the MPC
+        # decision date (see the evidence trail above ``_MPC_MEETINGS_2026``
+        # and Work Item 2 in the 2026-07-12 implementation spec) — derive
+        # the effective date from the MPC calendar instead.
+        effective_date, date_warnings = _infer_effective_date(new_repo, repo_date)
+        for warning in date_warnings:
+            self._log.warning("Effective-date inference: %s", warning)
+            result["validation_errors"].append(f"Effective-date inference warning: {warning}")
         result["new_repo"] = new_repo
         result["new_prime"] = new_prime
         result["effective_date"] = effective_date
@@ -873,29 +1044,7 @@ class SARBAdapter(BaseAdapter):
                 )
                 return result
 
-        # 8. Write updated JSON
-        updated_json = json.dumps(updated_doc, indent=2, ensure_ascii=False)
-        if not dry_run:
-            from automation.core.files import atomic_write_text
-            try:
-                atomic_write_text(_INTEREST_RATES_JSON, updated_json)
-                self._log.info(
-                    "interest-rates.json updated → %s", _INTEREST_RATES_JSON
-                )
-            except OSError as exc:
-                result["validation_errors"].append(
-                    f"Failed to write interest-rates.json: {exc}"
-                )
-                self._log.error("JSON write failed: %s", exc)
-                return result
-        else:
-            self._log.info(
-                "[DRY RUN] Would write %d bytes to %s",
-                len(updated_json),
-                _INTEREST_RATES_JSON,
-            )
-
-        # 9. Version entry
+        # 8. Create Version entry (pending)
         version_entry = new_version_entry(
             dataset_id="interest-rates",
             source_id=self.source_id,
@@ -906,11 +1055,36 @@ class SARBAdapter(BaseAdapter):
             notes=(
                 f"repo {new_repo:.2f}% / prime {new_prime:.2f}% "
                 f"(effective {effective_date}). "
-                f"Manual approval required before PostgreSQL load."
+                f"Manual approval required before promotion."
             ),
             run_id=run_id,
         )
         result["version_id"] = version_entry.version_id
+
+        # 9. Stage updated JSON
+        if not dry_run:
+            from automation.core.staging import write_staged_dataset
+            try:
+                write_staged_dataset(
+                    self.config.report_dir,
+                    dataset_id="interest-rates",
+                    version_id=version_entry.version_id,
+                    document=updated_doc,
+                )
+                self._log.info(
+                    "Staged dataset for version %s", version_entry.version_id
+                )
+            except Exception as exc:
+                result["validation_errors"].append(
+                    f"Failed to write to staging: {exc}"
+                )
+                self._log.error("Staging write failed: %s", exc)
+                return result
+        else:
+            self._log.info(
+                "[DRY RUN] Would write updated doc to staging area for version %s",
+                version_entry.version_id,
+            )
 
         if not dry_run:
             try:
@@ -949,10 +1123,22 @@ class SARBAdapter(BaseAdapter):
                 "interest-rates": "auto (Phase B fully implemented)",
             },
             "retry_policy": "API_POLICY (short backoff — API expected reliable)",
-            "phase_b_status": "Production — live API fetch, validate, diff, transform, write",
+            "phase_b_status": (
+                "fetch_and_apply() is implemented (live API fetch, validate, diff, "
+                "transform) and is reachable via `runner.py --apply`. It writes "
+                "the candidate document to the file-based staging area, not "
+                "directly to interest-rates.json. See Work Item 4 in the "
+                "implementation specification."
+            ),
             "manual_approval_required": (
-                "All updates staged as 'pending' version entries. "
-                "Manual review required before PostgreSQL ETL load."
+                "Updates are staged as 'pending' version entries. A version "
+                "entry only reaches interest-rates.json after an explicit "
+                "`runner.py --approve <dataset> <version_id>` followed by "
+                "`runner.py --promote <dataset> <version_id>` "
+                "(automation.core.version.approve_version / "
+                "automation.core.promote.promote_version). promote_version() "
+                "raises ValueError if the version's status is not 'approved', "
+                "so this is an enforced gate, not just a convention."
             ),
             "etl_integration": (
                 "etl/pipelines/interest_rates.py reads the written JSON and "
