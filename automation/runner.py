@@ -244,6 +244,7 @@ def run(
     output_json: bool = False,
     verbose: bool = False,
     no_report: bool = False,
+    apply: bool = False,
 ) -> int:
     """
     Execute the automation framework.
@@ -262,6 +263,8 @@ def run(
         Show additional detail in the console summary.
     no_report:
         Skip writing the Markdown/JSON report files.
+    apply:
+        Run fetch_and_apply instead of check_for_updates.
 
     Returns
     -------
@@ -276,7 +279,7 @@ def run(
     set_run_id(run_id)
 
     started_at = datetime.now(tz=timezone.utc)
-    log.info("Automation runner started — run_id=%s dry_run=%s", run_id, dry_run)
+    log.info("Automation runner started — run_id=%s dry_run=%s apply=%s", run_id, dry_run, apply)
 
     # 3. Load configuration
     try:
@@ -340,6 +343,8 @@ def run(
     global_warnings: list[str] = []
     global_errors: list[str] = []
 
+    from automation.adapters.base import DatasetCheckResult
+
     for adapter_cls in adapters_to_run:
         source_id = adapter_cls.source_id
         source_config = config.sources.get(source_id)
@@ -357,12 +362,41 @@ def run(
             continue
 
         try:
-            result = instance.run(dry_run=dry_run)
-            adapter_results.append(result)
+            if apply and hasattr(instance, "fetch_and_apply"):
+                log.info("Running fetch_and_apply for %s", source_id)
+                res_dict = instance.fetch_and_apply(dry_run=dry_run, run_id=run_id)
+                dataset_id = res_dict.get("dataset_id", "unknown")
+                status = res_dict.get("status", "error")
+                
+                # Convert fetch_and_apply dict to standard AdapterResult
+                ar = AdapterResult(
+                    adapter_id=instance.source_id,
+                    source_id=instance.source_id,
+                    display_name=instance.display_name,
+                    started_at=datetime.now(tz=timezone.utc),
+                    status="ok" if status != "error" else "error"
+                )
+                
+                ds_res = DatasetCheckResult(
+                    dataset_id=dataset_id,
+                    status=status if status in ("up_to_date", "update_available", "error", "skipped", "unknown") else "unknown",
+                    message=res_dict.get("change_summary", ""),
+                    notes=f"Version ID: {res_dict.get('version_id')}"
+                )
+                ar.datasets.append(ds_res)
+                if res_dict.get("validation_errors"):
+                    for e in res_dict["validation_errors"]:
+                        ar.add_error(e)
+                ar.finished_at = datetime.now(tz=timezone.utc)
+                adapter_results.append(ar)
+            else:
+                result = instance.run(dry_run=dry_run)
+                adapter_results.append(result)
         except Exception as exc:
             msg = f"Adapter {source_id} raised an unhandled exception: {exc}"
             log.exception(msg)
             global_errors.append(msg)
+
 
     # 8. Build execution report
     finished_at = datetime.now(tz=timezone.utc)
@@ -490,6 +524,29 @@ Examples:
         help="Show additional detail in console summary",
     )
     parser.add_argument(
+        "--apply",
+        action="store_true",
+        help="Run fetch_and_apply on adapters that support it instead of read-only run",
+    )
+    parser.add_argument(
+        "--approve",
+        nargs=2,
+        metavar=("DATASET_ID", "VERSION_ID"),
+        help="Approve a pending dataset version",
+    )
+    parser.add_argument(
+        "--reject",
+        nargs=2,
+        metavar=("DATASET_ID", "VERSION_ID"),
+        help="Reject a pending dataset version",
+    )
+    parser.add_argument(
+        "--promote",
+        nargs=2,
+        metavar=("DATASET_ID", "VERSION_ID"),
+        help="Promote an approved dataset version to production",
+    )
+    parser.add_argument(
         "--no-report",
         action="store_true",
         help="Skip writing Markdown/JSON report files",
@@ -508,6 +565,22 @@ Examples:
     if args.describe:
         return _describe_adapter(config, args.describe)
 
+    if args.approve:
+        from automation.core.version import approve_version
+        approver = os.environ.get("USER", os.environ.get("USERNAME", "cli-user"))
+        approve_version(config.report_dir, args.approve[0], args.approve[1], approver)
+        return 0
+
+    if args.reject:
+        from automation.core.version import reject_version
+        reject_version(config.report_dir, args.reject[0], args.reject[1])
+        return 0
+
+    if args.promote:
+        from automation.core.promote import promote_version
+        promote_version(config.report_dir, args.promote[0], args.promote[1])
+        return 0
+
     return run(
         adapter_filter=args.adapter,
         dry_run=args.dry_run,
@@ -515,6 +588,7 @@ Examples:
         output_json=args.output_json,
         verbose=args.verbose,
         no_report=args.no_report,
+        apply=args.apply,
     )
 
 

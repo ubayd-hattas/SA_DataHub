@@ -9,7 +9,7 @@
     "approved_by": null,
     "source_url": "https://custom.resbank.co.za/SarbWebApi/WebIndicators/HomePageRates",
     "sha256": "07eaa09bbcea60d08c471bd3fcebdbe3b4d246c31fe88b1e7fc2f3343089666e",
-    "archive_path": "C:\\Users\\Mahierh\\Desktop\\UBAYD\\ubayd_side_quests\\Data Project\\stats_data\\raw_data\\archive\\interest-rates\\2026-07-01\\sarb_194040z.json",
+    "archive_path": "automation/reports/archive/interest-rates/2026-07-01/sarb_194040z.json",
     "adapter_version": "1.0.0",
     "notes": "repo 7.00% / prime 10.50% (effective 2026-07-01). Manual approval required before PostgreSQL load.",
     "run_id": "e8a9f4c89b4f",

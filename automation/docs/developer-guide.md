@@ -70,3 +70,30 @@ If the source adapter already exists, adding a new dataset requires zero code ch
    automation_level: auto
    ```
 2. **Update the Adapter**: Depending on how the existing adapter is implemented, you may need to add the new `dataset_id` to its internal tracking list (e.g., `_STATSSA_DATASETS`) so that it returns it in its `datasets()` method and handles it in `check_for_updates()`.
+
+## `fetch_and_apply()` and the Approval Pipeline
+
+Some adapters (currently `SARBAdapter` and `StatsSAAdapter`) define an additional method, `fetch_and_apply()`, alongside the `check_for_updates()` method described in "Execution Flow" above.
+
+This method operates within a strict staging → approval → promote pipeline to protect production data:
+
+1. **Staging**: When run via `python -m automation.runner --apply`, the adapter fetches the data, validates it, and writes the transformed JSON to a safe staging directory (`automation/reports/staging/`), leaving production data entirely untouched. It records a `pending` version entry.
+2. **Approval**: A human reviewer inspects the staged data and approves the version using `python -m automation.runner --approve <dataset_id> <version_id>`.
+3. **Promotion**: The approved version is atomically written to the production dataset location (`src/data/datasets/`) using `python -m automation.runner --promote <dataset_id> <version_id>`.
+
+This pipeline acts as the enforced gate, ensuring that automated/unattended runs cannot write directly to production datasets.
+
+## Known Open Item: Stats SA QLFS WAF Signal (Work Item 5)
+
+`StatsSAAdapter` explicitly detects the Stats SA release hub's Incapsula WAF
+challenge page (by scanning the response body for `_Incapsula_Resource`/
+`incapsula`) and raises a `WAF_BLOCKED` error rather than hashing it as a
+candidate "no_change" signal. This avoids the specific failure mode the
+original review flagged (a WAF challenge misread as a real release), but it
+does **not** empirically confirm whether the challenge page's content hash
+is actually stable across requests — no session to date has had network
+access to `statssa.gov.za` to observe this directly. See the docstring on
+`_fetch_release_hub_html()` in `automation/adapters/statss.py` for the full
+finding. This item can be closed with an explicit, dated, request-counted
+observation once real network access is available; until then it should be
+treated as mitigated, not resolved.
