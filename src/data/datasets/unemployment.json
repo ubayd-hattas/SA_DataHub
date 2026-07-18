@@ -31,66 +31,70 @@
           "name": "Unemployment Rate (%)",
           "unit": "%",
           "data": [
-            { "label": "Q1 2022", "value": 34.5 },
-            { "label": "Q2 2022", "value": 33.9 },
-            { "label": "Q3 2022", "value": 32.9 },
-            { "label": "Q4 2022", "value": 32.7 },
-            { "label": "Q1 2023", "value": 32.9 },
-            { "label": "Q2 2023", "value": 33.5 },
-            { "label": "Q3 2023", "value": 33.7 },
-            { "label": "Q4 2023", "value": 32.9 },
-            { "label": "Q1 2024", "value": 32.9 },
-            { "label": "Q2 2024", "value": 33.5 },
-            { "label": "Q3 2024", "value": 32.1 },
-            { "label": "Q4 2024", "value": 31.9 },
-            { "label": "Q1 2025", "value": 33.5 },
-            { "label": "Q2 2025", "value": 33.2 },
-            { "label": "Q3 2025", "value": 31.9 },
-            { "label": "Q4 2025", "value": 31.4 }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "youth-unemployment",
-      "categoryId": "unemployment",
-      "title": "Youth Unemployment (15–34)",
-      "value": "44.8%",
-      "rawValue": 44.8,
-      "unit": "%",
-      "change": -0.9,
-      "changeLabel": "from Q3 2025",
-      "trend": "down",
-      "description": "Youth unemployment (ages 15–34) declined to 44.8% in Q4 2025. Among those aged 15–24, the rate stands at 61.4% — meaning roughly 6 in 10 young South Africans who want work cannot find it. South Africa's youth unemployment is among the highest globally.",
-      "source": {
-        "name": "Statistics South Africa",
-        "shortName": "Stats SA",
-        "url": "https://www.statssa.gov.za/?page_id=1854&PPN=P0211",
-        "publicationName": "Quarterly Labour Force Survey Q4 2025",
-        "publicationDate": "2026-02-17"
-      },
-      "lastUpdated": "2026-02-17",
-      "series": [
-        {
-          "name": "Youth Unemployment Rate (%)",
-          "unit": "%",
-          "data": [
-            { "label": "Q1 2022", "value": 47.4 },
-            { "label": "Q2 2022", "value": 47.0 },
-            { "label": "Q3 2022", "value": 46.0 },
-            { "label": "Q4 2022", "value": 45.7 },
-            { "label": "Q1 2023", "value": 46.3 },
-            { "label": "Q2 2023", "value": 47.1 },
-            { "label": "Q3 2023", "value": 47.3 },
-            { "label": "Q4 2023", "value": 46.1 },
-            { "label": "Q1 2024", "value": 45.9 },
-            { "label": "Q2 2024", "value": 46.2 },
-            { "label": "Q3 2024", "value": 44.9 },
-            { "label": "Q4 2024", "value": 45.4 },
-            { "label": "Q1 2025", "value": 46.1 },
-            { "label": "Q2 2025", "value": 45.9 },
-            { "label": "Q3 2025", "value": 45.7 },
-            { "label": "Q4 2025", "value": 44.8 }
+            {
+              "label": "Q1 2022",
+              "value": 34.5
+            },
+            {
+              "label": "Q2 2022",
+              "value": 33.9
+            },
+            {
+              "label": "Q3 2022",
+              "value": 32.9
+            },
+            {
+              "label": "Q4 2022",
+              "value": 32.7
+            },
+            {
+              "label": "Q1 2023",
+              "value": 32.9
+            },
+            {
+              "label": "Q2 2023",
+              "value": 33.5
+            },
+            {
+              "label": "Q3 2023",
+              "value": 33.7
+            },
+            {
+              "label": "Q4 2023",
+              "value": 32.9
+            },
+            {
+              "label": "Q1 2024",
+              "value": 32.9
+            },
+            {
+              "label": "Q2 2024",
+              "value": 33.5
+            },
+            {
+              "label": "Q3 2024",
+              "value": 32.1
+            },
+            {
+              "label": "Q4 2024",
+              "value": 31.9
+            },
+            {
+              "label": "Q1 2025",
+              "value": 33.5
+            },
+            {
+              "label": "Q2 2025",
+              "value": 33.2
+            },
+            {
+              "label": "Q3 2025",
+              "value": 31.9
+            },
+            {
+              "label": "Q4 2025",
+              "value": 31.4
+            }
           ]
         }
       ]
@@ -119,18 +123,54 @@
           "name": "Participation Rate (%)",
           "unit": "%",
           "data": [
-            { "label": "Q1 2023", "value": 42.8 },
-            { "label": "Q2 2023", "value": 42.5 },
-            { "label": "Q3 2023", "value": 43.1 },
-            { "label": "Q4 2023", "value": 43.2 },
-            { "label": "Q1 2024", "value": 42.9 },
-            { "label": "Q2 2024", "value": 43.0 },
-            { "label": "Q3 2024", "value": 43.3 },
-            { "label": "Q4 2024", "value": 42.9 },
-            { "label": "Q1 2025", "value": 42.5 },
-            { "label": "Q2 2025", "value": 42.9 },
-            { "label": "Q3 2025", "value": 42.8 },
-            { "label": "Q4 2025", "value": 42.7 }
+            {
+              "label": "Q1 2023",
+              "value": 42.8
+            },
+            {
+              "label": "Q2 2023",
+              "value": 42.5
+            },
+            {
+              "label": "Q3 2023",
+              "value": 43.1
+            },
+            {
+              "label": "Q4 2023",
+              "value": 43.2
+            },
+            {
+              "label": "Q1 2024",
+              "value": 42.9
+            },
+            {
+              "label": "Q2 2024",
+              "value": 43.0
+            },
+            {
+              "label": "Q3 2024",
+              "value": 43.3
+            },
+            {
+              "label": "Q4 2024",
+              "value": 42.9
+            },
+            {
+              "label": "Q1 2025",
+              "value": 42.5
+            },
+            {
+              "label": "Q2 2025",
+              "value": 42.9
+            },
+            {
+              "label": "Q3 2025",
+              "value": 42.8
+            },
+            {
+              "label": "Q4 2025",
+              "value": 42.7
+            }
           ]
         }
       ]

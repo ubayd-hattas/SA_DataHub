@@ -28,7 +28,7 @@ export const STORIES: Story[] = [
     featured: true,
     coverEmoji: '📉',
     summary: 'South Africa has one of the world\'s highest unemployment rates. At 31.4%, more than 7.8 million people are jobless. This story examines the scale of the crisis, its causes, and what progress looks like.',
-    relatedStatIds: ['unemployment-national', 'youth-unemployment', 'labour-force-participation'],
+    relatedStatIds: ['unemployment-national', 'youth-unemployment-narrow', 'labour-force-participation'],
     relatedSlugs: ['inflation-what-it-means', 'gdp-growth-slowdown'],
     tags: ['unemployment', 'labour market', 'youth', 'QLFS'],
     sections: [
@@ -43,7 +43,7 @@ export const STORIES: Story[] = [
         id: 'youth',
         heading: 'Youth unemployment: a generation at risk',
         body: 'The crisis is especially acute for young people. Among those aged 15 to 34, the unemployment rate was 44.8% in Q4 2025. For the narrower 15–24 age group, the rate reaches 61.4% — meaning six in ten young South Africans actively seeking work cannot find it.\n\nThe NEET rate (Not in Education, Employment, or Training) is particularly concerning. A significant share of young South Africans are neither gaining work experience nor improving their skills — a structural trap that compounds over time.\n\nThe Western Cape, with its more diversified economy and stronger tourism sector, consistently records the lowest youth unemployment. The Eastern Cape and North West consistently record the highest.',
-        statCallouts: ['youth-unemployment'],
+        statCallouts: ['youth-unemployment-narrow'],
         highlight: '6 in 10 young South Africans who want work cannot find it.',
       },
       {

@@ -24,26 +24,72 @@ Design principles (from architecture doc)
 - Retry policy: STATSSA_POLICY (exponential backoff, up to 2 h — the
   release-day site-load scenario).
 
-Phase 1 scope (QLFS)
---------------------
-This upgrade implements:
+Phase 1 scope (QLFS) — download + archive
+------------------------------------------
+This upgrade implemented:
   - Real ETag/content-hash change detection on the P0211 release hub
-  - ``fetch_and_apply()`` for the QLFS family:
-      1. Detect the latest QLFS publication on the release hub
-      2. Locate the official Excel workbook link
-      3. Download the workbook (with retry)
-      4. Archive the raw .xlsx file
-      5. Record a version entry (status=pending)
-      6. Produce a per-dataset run report
+  - Discover → download → archive the raw QLFS publication file
 
-STOP at download.  This phase does NOT:
-  - Parse the Excel file
-  - Extract values
-  - Transform data
-  - Update JSON files
-  - Write to PostgreSQL
+Phase 2 scope (QLFS) — parse + transform + stage (this build)
+----------------------------------------------------------------
+Continuing directly from where Phase 1 stopped, ``fetch_and_apply()`` now
+also:
+  1. Parses the archived Excel workbook (``parse_qlfs_workbook()``) by
+     header/label matching — not fixed cell coordinates — since Stats SA's
+     table layout is a per-release idiom, not a stable contract (see
+     ``IMPLEMENTATION-SPEC-STATSSA-PHASE2.md`` §5). If the expected tables
+     cannot be located, this raises loudly; there is no PDF-scraping or
+     stale-value fallback.
+  2. Transforms the parsed values into the three existing JSON schemas
+     (``unemployment.json``, ``youth-unemployment.json``,
+     ``labour-force.json``) via ``_transform_unemployment()`` /
+     ``_transform_youth_unemployment()`` / ``_transform_labour_force()``,
+     each following the exact deep-copy / rate-bearing-fields-only /
+     seed-or-append-series pattern already established by
+     ``SARBAdapter._transform_interest_rates()``.
+  3. Validates each candidate document: rate bounds, quarterly label
+     format, ``check_protected_fields()`` (reused unchanged from
+     ``core/metadata.py``), and a quarter-over-quarter plausibility check
+     that flags (does not hard-fail) large jumps for the human reviewer.
+  4. Stages each of the three documents that actually changed via
+     ``automation.core.staging.write_staged_dataset()`` and records one
+     ``pending`` version entry per dataset (three total) — the same
+     staging → approval → promote gate already enforced for
+     ``interest-rates.json``. **No direct write to any dataset JSON ever
+     happens here.**
 
-Those stages have implementation plans and will be completed in later phases.
+Design note (open question resolved, see spec §9): this adapter records
+**one version entry per output dataset** (three total per QLFS release),
+not one shared entry for all three. ``version.py``'s store and
+``promote_version()`` are both keyed by a single ``dataset_id`` per call,
+so one entry per dataset is the natural fit and keeps `--approve`/
+`--promote` invocations for one QLFS output independent of the other two
+(e.g. a reviewer can approve ``unemployment`` while still checking
+``labour-force``). No change was made to ``version.py`` to support this —
+it is simply called three times.
+
+GDP, CPI, population, housing, census, and municipalities remain Phase A
+stubs — explicitly out of scope for this build (see
+``IMPLEMENTATION-SPEC-STATSSA-PHASE2.md`` §2).
+
+Excel layout — verification status (read before touching the parser)
+----------------------------------------------------------------------
+No archived QLFS ``.xlsx`` file was available in this implementation
+session to inspect (no session to date has had network access to
+``statssa.gov.za`` — see the WAF finding below — and the reports/archive
+tree contains no prior Phase 1 download to fall back on). The parser
+below was therefore built against the *documented* Stats SA convention
+(a header row of quarter labels, e.g. ``Q1 2026``, with indicator rows
+identified by label text below it) using header/label matching rather
+than fixed coordinates specifically so it can tolerate the layout drift
+the sourcing plan warns about — but this has **not** been empirically
+validated against a real release file, only against synthetic fixtures
+(see ``automation/adapters/tests/test_statss.py``). This is the same
+class of open item as the WAF-hash-determinism question below: mitigated
+by design (fail loudly, label-based lookup, no guessing), not resolved by
+observation. The first live run against a real downloaded workbook should
+be treated as the empirical test of this parser, and any mismatch should
+update this note rather than silently patching around it.
 
 QLFS release hub URL
 --------------------
@@ -63,11 +109,17 @@ Excel link pattern (observed, may change per release)
 
 from __future__ import annotations
 
+import copy
+import json
 import re
 import urllib.parse
+from dataclasses import dataclass
 from datetime import date, datetime, timezone
+from io import BytesIO
 from pathlib import Path
 from typing import Any
+
+import openpyxl
 
 from automation.adapters import register
 from automation.adapters.base import BaseAdapter, DatasetCheckResult
@@ -75,7 +127,9 @@ from automation.core.config import AutomationConfig, DatasetConfig, SourceConfig
 from automation.core.files import portable_archive_path, save_to_archive
 from automation.core.http_client import AutomationHTTPError, HTTPClient
 from automation.core.logging import get_logger
+from automation.core.metadata import check_protected_fields
 from automation.core.retry import STATSSA_POLICY, WATCH_POLICY, with_retry
+from automation.core.staging import write_staged_dataset
 from automation.core.version import new_version_entry, save_version_entry
 
 log = get_logger(__name__)
@@ -174,6 +228,20 @@ _QLFS_FAMILY: frozenset[str] = frozenset({
     "youth-unemployment",
     "labour-force",
 })
+
+# Path to the canonical dataset JSON files (relative to project root,
+# resolved at run time) — mirrors SARBAdapter's _DATASETS_DIR/_INTEREST_RATES_JSON.
+_DATASETS_DIR = Path(__file__).resolve().parent.parent.parent / "src" / "data" / "datasets"
+_QLFS_DATASET_JSON: dict[str, Path] = {
+    "unemployment": _DATASETS_DIR / "unemployment.json",
+    "youth-unemployment": _DATASETS_DIR / "youth-unemployment.json",
+    "labour-force": _DATASETS_DIR / "labour-force.json",
+}
+
+# Quarter-over-quarter jump beyond this many percentage points is flagged
+# as an anomaly for the human reviewer (not a hard failure — see
+# IMPLEMENTATION-SPEC-STATSSA-PHASE2.md §6, item 3).
+_QOQ_JUMP_WARNING_THRESHOLD = 3.0
 
 # ---------------------------------------------------------------------------
 # HTTP client helpers
@@ -516,6 +584,583 @@ def _download_publication(client: HTTPClient, url: str) -> bytes:
 
 
 # ---------------------------------------------------------------------------
+# QLFS Excel parsing (Phase 2)
+#
+# Pure functions: raw workbook bytes in, a small set of named values out.
+# No knowledge of any JSON schema lives here — see IMPLEMENTATION-SPEC-
+# STATSSA-PHASE2.md §5. Table location is by header/label text matching,
+# not fixed cell coordinates, so a release with reflowed rows/columns
+# still parses as long as the same label text appears somewhere in the
+# sheet — but a genuinely new layout (renamed indicators, no quarter
+# header row, etc.) will fail loudly via ValueError rather than silently
+# mis-mapping a value. See the module docstring above for the verification
+# status of this parser (no live archived file was available to test
+# against in this session).
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class QLFSExtract:
+    """Named values extracted from a single QLFS Excel workbook."""
+
+    release_period: str          # e.g. "Q1 2026"
+    publication_date: str        # ISO YYYY-MM-DD, best-effort (see below)
+    unemployment_rate: float
+    youth_unemployment_narrow: float
+    youth_unemployment_1524: float
+    youth_unemployment_expanded: float
+    neet_rate: float
+    lfpr_overall: float
+    lfpr_female: float
+
+
+# Label specs used to locate each indicator's row by text match.
+# ``include``: all substrings must be present (case-insensitive).
+# ``exclude``: none of these substrings may be present.
+# Order matters only in that more specific specs (e.g. "expanded") must
+# exclude what a more general spec (e.g. plain "unemployment rate") would
+# also match, and vice versa, so that no two metrics resolve to the same row.
+_QLFS_METRIC_SPECS: dict[str, dict[str, tuple[str, ...]]] = {
+    "unemployment_rate": {
+        "include": ("unemployment rate",),
+        "exclude": ("youth", "expanded", "female", "15"),
+    },
+    "youth_unemployment_narrow": {
+        "include": ("youth", "15", "34"),
+        "exclude": ("expanded", "neet"),
+    },
+    "youth_unemployment_1524": {
+        "include": ("youth", "15", "24"),
+        "exclude": ("expanded", "neet"),
+    },
+    "youth_unemployment_expanded": {
+        "include": ("expanded", "youth"),
+        "exclude": ("neet",),
+    },
+    "neet_rate": {
+        "include": ("neet",),
+        "exclude": (),
+    },
+    "lfpr_overall": {
+        "include": ("labour force participation rate",),
+        "exclude": ("female",),
+    },
+    "lfpr_female": {
+        "include": ("labour force participation rate", "female"),
+        "exclude": (),
+    },
+}
+
+_MONTH_NAMES_RE = (
+    "January|February|March|April|May|June|July|August|September|October|"
+    "November|December"
+)
+_PUB_DATE_RE = re.compile(rf"(\d{{1,2}})\s+({_MONTH_NAMES_RE})\s+(\d{{4}})")
+
+
+def _find_latest_quarter_column(ws: Any) -> tuple[int, str] | None:
+    """
+    Scan the first several rows of a worksheet for QLFS quarter-header
+    cells (e.g. "Q1 2026") and return the column index and label of the
+    chronologically latest one found.
+
+    Returns None if no quarter-header cell is found in this sheet.
+    """
+    best: tuple[tuple[int, int], int, str] | None = None
+    max_header_rows = min(15, ws.max_row or 1)
+    for row in ws.iter_rows(min_row=1, max_row=max_header_rows):
+        for cell in row:
+            val = cell.value
+            if not isinstance(val, str):
+                continue
+            match = _QUARTER_PATTERN.search(val)
+            if not match:
+                continue
+            groups = match.groups()
+            if groups[0] and groups[1]:
+                q, y = int(groups[0]), int(groups[1])
+            elif groups[2] and groups[3]:
+                q, y = int(groups[2]), int(groups[3])
+            else:
+                continue
+            key = (y, q)
+            if best is None or key > best[0]:
+                best = (key, cell.column, f"Q{q} {y}")
+    if best is None:
+        return None
+    return best[1], best[2]
+
+
+def _find_metric_value(
+    ws: Any,
+    col_idx: int,
+    include: tuple[str, ...],
+    exclude: tuple[str, ...] = (),
+) -> float | None:
+    """
+    Search every row of a worksheet for a label cell matching ``include``/
+    ``exclude``, then read the numeric value at ``col_idx`` in that same row.
+
+    Returns None if no matching label row is found, or the value at
+    ``col_idx`` cannot be interpreted as a number.
+    """
+    max_row = ws.max_row or 1
+    for row in ws.iter_rows(min_row=1, max_row=max_row):
+        for cell in row:
+            val = cell.value
+            if not isinstance(val, str):
+                continue
+            low = val.lower()
+            if not all(term in low for term in include):
+                continue
+            if any(term in low for term in exclude):
+                continue
+            value_cell = ws.cell(row=cell.row, column=col_idx)
+            v = value_cell.value
+            if isinstance(v, bool):
+                return None
+            if isinstance(v, (int, float)):
+                return float(v)
+            if isinstance(v, str):
+                try:
+                    return float(v.strip().rstrip("%"))
+                except ValueError:
+                    return None
+            return None
+    return None
+
+
+def _best_effort_publication_date(wb: Any) -> str | None:
+    """
+    Best-effort scan for a publication date embedded in the workbook
+    (e.g. a title/cover cell reading "Released: 12 May 2026").
+
+    This is metadata, not one of the required named values — a failure to
+    find it does NOT raise; callers should fall back to another date
+    source (e.g. today's date) and log accordingly.
+    """
+    for ws in wb.worksheets:
+        max_row = min(10, ws.max_row or 1)
+        for row in ws.iter_rows(min_row=1, max_row=max_row):
+            for cell in row:
+                val = cell.value
+                if isinstance(val, datetime):
+                    return val.date().isoformat()
+                if isinstance(val, date):
+                    return val.isoformat()
+                if isinstance(val, str):
+                    match = _PUB_DATE_RE.search(val)
+                    if match:
+                        try:
+                            parsed = datetime.strptime(match.group(0), "%d %B %Y")
+                            return parsed.date().isoformat()
+                        except ValueError:
+                            continue
+    return None
+
+
+def parse_qlfs_workbook(file_bytes: bytes) -> QLFSExtract:
+    """
+    Parse a QLFS Excel workbook and extract the named values needed by the
+    unemployment / youth-unemployment / labour-force transforms.
+
+    This function has no knowledge of any JSON schema — it returns a plain
+    :class:`QLFSExtract` of named floats plus the detected release period.
+
+    Raises
+    ------
+    ValueError
+        If the workbook cannot be opened, or if one or more required
+        indicators cannot be located by label match in any worksheet. The
+        error message names exactly which indicator(s) failed to resolve,
+        so a human reviewer can tell at a glance whether this is a layout
+        change (see the module docstring's "Excel layout — verification
+        status" note) rather than a transient/network problem.
+    """
+    try:
+        wb = openpyxl.load_workbook(
+            BytesIO(file_bytes), data_only=True, read_only=True
+        )
+    except Exception as exc:
+        raise ValueError(
+            f"Cannot open QLFS file as an Excel workbook — not a valid "
+            f".xlsx/.xls file, or the file is corrupted: {exc}"
+        ) from exc
+
+    resolved: dict[str, float] = {}
+    release_period: str | None = None
+    missing: list[str] = []
+
+    for metric_key, spec in _QLFS_METRIC_SPECS.items():
+        value: float | None = None
+        period_for_value: str | None = None
+        for ws in wb.worksheets:
+            header = _find_latest_quarter_column(ws)
+            if header is None:
+                continue
+            col_idx, period_label = header
+            found = _find_metric_value(
+                ws, col_idx, spec["include"], spec.get("exclude", ())
+            )
+            if found is not None:
+                value = found
+                period_for_value = period_label
+                break
+
+        if value is None:
+            missing.append(metric_key)
+            continue
+
+        resolved[metric_key] = value
+        if release_period is None:
+            release_period = period_for_value
+        elif period_for_value is not None and period_for_value != release_period:
+            log.warning(
+                "QLFS parser: metric %s resolved to period %s, which "
+                "differs from the period already resolved for other "
+                "metrics (%s). Using %s for this run's release_period; "
+                "this mismatch itself is exactly the class of cross-file "
+                "period drift IMPLEMENTATION-SPEC-STATSSA-PHASE2.md §6 "
+                "item 4 asks the run to flag, not silently paper over.",
+                metric_key, period_for_value, release_period, release_period,
+            )
+
+    if missing or release_period is None:
+        raise ValueError(
+            "QLFS workbook parse failed — could not locate the following "
+            f"required indicator(s) by label match: "
+            f"{', '.join(missing) if missing else '(no quarter header found at all)'}. "
+            "This most likely means the Stats SA Excel layout for this "
+            "release differs from the label-matching rules in "
+            "_QLFS_METRIC_SPECS (automation/adapters/statss.py) — per "
+            "IMPLEMENTATION-SPEC-STATSSA-PHASE2.md §5, this must fail "
+            "loudly rather than guess or fall back to a stale value. "
+            "Manual review (Track B) is the correct next step, not a "
+            "PDF-parsing fallback (explicitly out of scope for this phase)."
+        )
+
+    publication_date = _best_effort_publication_date(wb)
+    if publication_date is None:
+        publication_date = date.today().isoformat()
+        log.warning(
+            "QLFS parser: could not find an explicit publication date in "
+            "the workbook — using today's date (%s) as a best-effort "
+            "fallback for lastUpdated/source.publicationDate fields.",
+            publication_date,
+        )
+
+    return QLFSExtract(
+        release_period=release_period,
+        publication_date=publication_date,
+        unemployment_rate=resolved["unemployment_rate"],
+        youth_unemployment_narrow=resolved["youth_unemployment_narrow"],
+        youth_unemployment_1524=resolved["youth_unemployment_1524"],
+        youth_unemployment_expanded=resolved["youth_unemployment_expanded"],
+        neet_rate=resolved["neet_rate"],
+        lfpr_overall=resolved["lfpr_overall"],
+        lfpr_female=resolved["lfpr_female"],
+    )
+
+
+# ---------------------------------------------------------------------------
+# QLFS validation helpers (Phase 2)
+# ---------------------------------------------------------------------------
+
+_QUARTERLY_LABEL_RE = re.compile(r"^Q[1-4] \d{4}$")
+
+
+def _validate_percentage(value: float, label: str) -> list[str]:
+    """Validate a rate is a plausible percentage in [0, 100]."""
+    if not (0.0 <= value <= 100.0):
+        return [f"{label} value {value} is outside the plausible [0, 100] range."]
+    return []
+
+
+def _validate_quarterly_label(label: str) -> list[str]:
+    """Validate a period label matches the quarterly format (dataset-analysis.md RULES)."""
+    if not _QUARTERLY_LABEL_RE.match(label):
+        return [f"Release period {label!r} does not match the expected 'Q[1-4] YYYY' format."]
+    return []
+
+
+def _check_qoq_jump(
+    current: float | None,
+    new: float,
+    stat_label: str,
+    threshold: float = _QOQ_JUMP_WARNING_THRESHOLD,
+) -> str | None:
+    """
+    Return a human-readable anomaly warning if the quarter-over-quarter
+    jump for ``stat_label`` exceeds ``threshold`` percentage points.
+
+    This is a review aid, not a hard failure — per
+    IMPLEMENTATION-SPEC-STATSSA-PHASE2.md §6 item 3, an anomaly flag is
+    for the human approver's attention, not an automatic rejection.
+    """
+    if current is None:
+        return None
+    delta = new - current
+    if abs(delta) > threshold:
+        sign = "+" if delta > 0 else ""
+        return (
+            f"ANOMALY: {stat_label} moved {sign}{delta:.1f}pp "
+            f"({current:.1f}% → {new:.1f}%), exceeding the {threshold:.1f}pp "
+            "review threshold. Verify against the official release before approving."
+        )
+    return None
+
+
+# ---------------------------------------------------------------------------
+# QLFS transform helpers (Phase 2)
+#
+# Each transform follows the exact pattern SARBAdapter._transform_interest_rates()
+# already established: deep-copy the current document, update only
+# rate-bearing fields (value, rawValue, change, changeLabel, trend,
+# lastUpdated, source.publicationDate), seed-or-append the series history,
+# and update the shared _meta block. Structural/protected fields (id,
+# categoryId, unit, description, etc.) are never touched here.
+# ---------------------------------------------------------------------------
+
+
+def _read_current_dataset_json(path: Path) -> dict[str, Any]:
+    """Read an existing dataset JSON file. Returns {} if absent/unreadable."""
+    if not path.exists():
+        log.warning("%s not found — treating as empty.", path)
+        return {}
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError) as exc:
+        log.error("Cannot read %s: %s", path, exc)
+        return {}
+
+
+def _get_current_stat_rate(doc: dict[str, Any], stat_id: str) -> float | None:
+    """Return the rawValue for a given stat_id from a dataset document."""
+    for stat in doc.get("statistics", []):
+        if stat.get("id") == stat_id:
+            try:
+                return float(stat["rawValue"])
+            except (KeyError, TypeError, ValueError):
+                return None
+    return None
+
+
+def _determine_qlfs_trend(current_rate: float | None, new_rate: float) -> str:
+    """Determine trend direction from previous to new rate."""
+    if current_rate is None:
+        return "stable"
+    if new_rate > current_rate:
+        return "up"
+    if new_rate < current_rate:
+        return "down"
+    return "stable"
+
+
+def _apply_qlfs_rate_map(
+    doc: dict[str, Any],
+    rate_map: dict[str, float],
+    *,
+    release_period: str,
+    publication_date: str,
+) -> None:
+    """
+    Apply ``rate_map`` (stat_id -> new rawValue) to ``doc["statistics"]``
+    in place, following the shared seed-or-append/in-place-revision series
+    logic already established for SARB.
+
+    Only stat IDs present in ``rate_map`` are touched; every other stat in
+    the document (and every other field on a touched stat) is left as-is.
+    """
+    for stat in doc.get("statistics", []):
+        stat_id = stat.get("id")
+        if stat_id not in rate_map:
+            continue
+
+        new_rate = rate_map[stat_id]
+        prev_rate = _get_current_stat_rate({"statistics": [stat]}, stat_id)
+
+        change = 0.0
+        if prev_rate is not None:
+            change = round(new_rate - prev_rate, 1)
+
+        # Previous label, for the changeLabel text — the last existing
+        # series point before we mutate it below (if any).
+        prev_label = None
+        existing_series = stat.get("series") or []
+        if existing_series and existing_series[0].get("data"):
+            prev_label = existing_series[0]["data"][-1].get("label")
+
+        stat["value"] = f"{new_rate:.1f}%"
+        stat["rawValue"] = new_rate
+        stat["change"] = change
+        stat["changeLabel"] = f"from {prev_label}" if prev_label else release_period
+        stat["trend"] = _determine_qlfs_trend(prev_rate, new_rate)
+        stat["lastUpdated"] = publication_date
+        if isinstance(stat.get("source"), dict):
+            stat["source"]["publicationDate"] = publication_date
+
+        # Series: seed-or-append-or-revise, exactly as
+        # SARBAdapter._transform_interest_rates() does.
+        if not stat.get("series"):
+            stat["series"] = [
+                {
+                    "name": stat.get("title", stat_id),
+                    "unit": stat.get("unit", "%"),
+                    "data": [{"label": release_period, "value": new_rate}],
+                }
+            ]
+            log.debug(
+                "Seeded first series point %r -> %.1f for %s",
+                release_period, new_rate, stat_id,
+            )
+            continue
+
+        for series in stat.get("series", []):
+            existing_labels = {pt["label"] for pt in series.get("data", [])}
+            if release_period not in existing_labels:
+                series.setdefault("data", []).append(
+                    {"label": release_period, "value": new_rate}
+                )
+                log.debug(
+                    "Appended series point %r -> %.1f for %s",
+                    release_period, new_rate, stat_id,
+                )
+            else:
+                for pt in series["data"]:
+                    if pt["label"] == release_period:
+                        if abs(pt["value"] - new_rate) > 0.001:
+                            log.info(
+                                "Updating existing series point %r: %.1f -> %.1f for %s",
+                                release_period, pt["value"], new_rate, stat_id,
+                            )
+                            pt["value"] = new_rate
+                        break
+
+
+def _update_qlfs_meta(
+    doc: dict[str, Any],
+    *,
+    release_period: str,
+    publication_date: str,
+    source_url: str,
+) -> None:
+    """Update the shared _meta block, following the SARB _meta pattern."""
+    if "_meta" not in doc:
+        doc["_meta"] = {}
+    today_str = date.today().isoformat()
+    doc["_meta"]["last_verified"] = today_str
+    doc["_meta"]["lastUpdated"] = publication_date
+    doc["_meta"]["source_url"] = source_url
+    doc["_meta"]["automation"] = {
+        "updatedBy": "statssa-adapter/qlfs",
+        "updatedAt": datetime.now(tz=timezone.utc).isoformat(),
+        "releasePeriod": release_period,
+        "sourceFile": source_url,
+    }
+
+
+def _transform_unemployment(
+    current_doc: dict[str, Any],
+    extract: QLFSExtract,
+    source_url: str,
+) -> dict[str, Any]:
+    """Apply QLFS values to the existing unemployment.json document shape."""
+    doc = copy.deepcopy(current_doc)
+    rate_map = {"unemployment-national": extract.unemployment_rate}
+    _apply_qlfs_rate_map(
+        doc, rate_map,
+        release_period=extract.release_period,
+        publication_date=extract.publication_date,
+    )
+    _update_qlfs_meta(
+        doc,
+        release_period=extract.release_period,
+        publication_date=extract.publication_date,
+        source_url=source_url,
+    )
+    return doc
+
+
+def _transform_youth_unemployment(
+    current_doc: dict[str, Any],
+    extract: QLFSExtract,
+    source_url: str,
+) -> dict[str, Any]:
+    """Apply QLFS values to the existing youth-unemployment.json document shape."""
+    doc = copy.deepcopy(current_doc)
+    rate_map = {
+        "youth-unemployment-narrow": extract.youth_unemployment_narrow,
+        "youth-unemployment-1524": extract.youth_unemployment_1524,
+        "youth-unemployment-expanded": extract.youth_unemployment_expanded,
+        # NEET's existing series uses annual labels (2019..2025) in the
+        # current on-disk data, but the live QLFS release reports this
+        # figure alongside the other youth indicators each quarter (per
+        # SA-Data-Hub-Dataset-Sourcing-Plan.md's Q1 2026 findings). Going
+        # forward this stat is updated on the same quarterly cadence as
+        # the rest of the youth family, labeled by quarter like the others
+        # — flagged here rather than silently assumed, since it's a change
+        # from the historical annual-label convention in this one series.
+        "youth-neet-rate": extract.neet_rate,
+    }
+    _apply_qlfs_rate_map(
+        doc, rate_map,
+        release_period=extract.release_period,
+        publication_date=extract.publication_date,
+    )
+    _update_qlfs_meta(
+        doc,
+        release_period=extract.release_period,
+        publication_date=extract.publication_date,
+        source_url=source_url,
+    )
+    return doc
+
+
+def _transform_labour_force(
+    current_doc: dict[str, Any],
+    extract: QLFSExtract,
+    source_url: str,
+) -> dict[str, Any]:
+    """Apply QLFS values to the existing labour-force.json document shape."""
+    doc = copy.deepcopy(current_doc)
+    rate_map = {
+        "lfpr-overall": extract.lfpr_overall,
+        "female-labour-participation": extract.lfpr_female,
+    }
+    _apply_qlfs_rate_map(
+        doc, rate_map,
+        release_period=extract.release_period,
+        publication_date=extract.publication_date,
+    )
+    _update_qlfs_meta(
+        doc,
+        release_period=extract.release_period,
+        publication_date=extract.publication_date,
+        source_url=source_url,
+    )
+    return doc
+
+
+_QLFS_TRANSFORMS = {
+    "unemployment": _transform_unemployment,
+    "youth-unemployment": _transform_youth_unemployment,
+    "labour-force": _transform_labour_force,
+}
+
+# stat_id -> dataset_id, used for per-dataset "did anything actually
+# change" comparisons against the current on-disk JSON.
+_QLFS_STAT_TO_DATASET: dict[str, str] = {
+    "unemployment-national": "unemployment",
+    "youth-unemployment-narrow": "youth-unemployment",
+    "youth-unemployment-1524": "youth-unemployment",
+    "youth-unemployment-expanded": "youth-unemployment",
+    "youth-neet-rate": "youth-unemployment",
+    "lfpr-overall": "labour-force",
+    "female-labour-participation": "labour-force",
+}
+
+
+# ---------------------------------------------------------------------------
 # Adapter class
 # ---------------------------------------------------------------------------
 
@@ -542,7 +1187,7 @@ class StatsSAAdapter(BaseAdapter):
     source_id = "statssa"
     display_name = "Statistics South Africa"
     priority = 10   # Run first — largest number of datasets
-    version = "0.2.0"  # bumped from 0.1.0 (Phase A stub) → Phase 1
+    version = "0.3.0"  # 0.1.0 Phase A stub -> 0.2.0 Phase 1 (download) -> 0.3.0 Phase 2 (parse/transform/stage)
 
     def __init__(
         self,
@@ -863,20 +1508,18 @@ class StatsSAAdapter(BaseAdapter):
         run_id: str = "",
     ) -> dict[str, Any]:
         """
-        Manually-invoked utility. NOT part of the automated execution flow
-        and NOT reachable via ``runner.py``, ``__main__.py``, or any
-        config-driven flag (see Work Item 1,
-        ``automation/docs/developer-guide.md``).
+        Manually-invoked utility, reachable via ``python -m automation.runner
+        --apply`` (any adapter defining ``fetch_and_apply()`` is invoked by
+        ``runner.py`` — see ``automation/docs/developer-guide.md``).
 
-        Phase 1: Discover, download and archive the latest QLFS publication.
-        This method only downloads and archives raw source files — it does
-        not write to any production dataset JSON (see "STOP THERE" below) —
-        but it must still only be invoked by a developer who explicitly
-        imports ``StatsSAAdapter`` and calls this method themselves, for
-        manual, supervised testing. When this adapter's write logic is
-        eventually built out (parse/transform/update JSON), that write path
-        must go through the staging → approval → promote pipeline
-        (Work Item 4), not a direct write like ``SARBAdapter.fetch_and_apply()``.
+        Phase 2: Discover, download, archive, parse, transform, validate,
+        and **stage** the latest QLFS publication for all three QLFS-family
+        datasets. This method never writes directly to any dataset JSON —
+        every candidate document is written to the staging area and
+        recorded as a ``pending`` version entry; reaching production
+        requires a separate, explicit ``--approve`` then ``--promote`` per
+        dataset, exactly as already enforced for ``interest-rates.json``
+        (Work Item 4, ``automation/core/staging.py`` / ``promote.py``).
 
         Steps
         -----
@@ -884,21 +1527,27 @@ class StatsSAAdapter(BaseAdapter):
         2. Locate the official publication link (Excel or PDF) by direct URL probing.
         3. Download the publication file (with retry, large-file timeout).
         4. Archive the raw file with checksum + manifest.
-        5. Record a version entry (status='pending') for each QLFS dataset.
-        6. Return an execution result dict for the caller / report system.
+        5. Parse the workbook (``parse_qlfs_workbook()``); fail loudly (no
+           staging, no version entries) if the file isn't an Excel
+           workbook or the expected indicators can't be located.
+        6. For each of the three QLFS datasets whose values actually
+           changed: transform, validate (range + label format +
+           protected-field diff), flag (not hard-fail) large
+           quarter-over-quarter jumps, then stage the candidate document
+           and record one ``pending`` version entry.
+        7. Return an execution result dict for the caller / report system.
 
-        STOP THERE.  This method does NOT:
-          - Parse the file
-          - Extract any values
-          - Transform data
-          - Update unemployment.json / youth-unemployment.json / labour-force.json
-          - Write to PostgreSQL
+        If none of the three datasets' values differ from what's already
+        on disk, this returns ``status="no_change"`` with no staging and
+        no new version entries — the same no-op-on-no-change behaviour
+        already established for SARB.
 
         Parameters
         ----------
         dry_run:
-            When True, downloads the file but does NOT write to disk.
-            All other steps execute normally (for verification purposes).
+            When True, downloads and parses the file but does NOT write to
+            disk (no archive write, no staging, no version entries). All
+            other steps execute normally (for verification purposes).
         run_id:
             Correlation ID from the runner, injected into version entries.
 
@@ -906,14 +1555,14 @@ class StatsSAAdapter(BaseAdapter):
         -------
         dict
             Keys:
-              status            — "ok" | "no_publication_found" | "error"
+              status            — "ok" | "no_change" | "no_publication_found" | "error"
               hub_url           — QLFS release hub URL checked
               file_url          — discovered publication URL, or None
               release_period    — detected quarter label, e.g. "Q1 2026"
               archive_path      — path where file was saved, or None
               sha256            — checksum of the downloaded file
               file_size_bytes   — size of the downloaded file
-              version_ids       — list of version IDs created
+              version_ids       — list of version IDs staged (one per changed dataset)
               dry_run           — echo of the dry_run flag
               notes             — human-readable summary
               errors            — list of error strings
@@ -1045,8 +1694,8 @@ class StatsSAAdapter(BaseAdapter):
         # ----------------------------------------------------------
         # Step 4: Archive the raw file
         # ----------------------------------------------------------
+        file_ext = Path(urllib.parse.urlparse(file_url).path).suffix.lower() or ".bin"
         if not dry_run:
-            file_ext = Path(urllib.parse.urlparse(file_url).path).suffix or ".bin"
             try:
                 archive_dest, sha256 = save_to_archive(
                     self.config.raw_archive_dir,
@@ -1083,11 +1732,139 @@ class StatsSAAdapter(BaseAdapter):
         sha256 = result["sha256"] or ""
 
         # ----------------------------------------------------------
-        # Step 5: Record version entries (one per QLFS dataset)
+        # Step 4.5: Parse the workbook (Phase 2)
+        #
+        # PDF parsing is explicitly out of scope for this phase (see
+        # IMPLEMENTATION-SPEC-STATSSA-PHASE2.md §2/§5). If the URL probe in
+        # Step 2 fell back to the statistical-release PDF (no Excel
+        # candidate responded), the correct behaviour is the same
+        # status="error" path used for every other unparseable-file case
+        # here — not a best-effort PDF scrape.
         # ----------------------------------------------------------
-        version_ids: list[str] = []
-        for ds_id in sorted(_QLFS_FAMILY):
-            try:
+        if file_ext not in (".xlsx", ".xls"):
+            msg = (
+                f"Downloaded QLFS publication is not an Excel workbook "
+                f"(extension {file_ext!r}, url={file_url}). PDF parsing is "
+                f"explicitly out of scope for this phase — falling back to "
+                f"the manual-review path (Track B) rather than guessing at "
+                f"PDF-extracted values."
+            )
+            result["errors"].append(msg)
+            result["status"] = "error"
+            self._log.error(msg)
+            return result
+
+        try:
+            extract = parse_qlfs_workbook(file_bytes)
+        except Exception as exc:
+            msg = f"QLFS workbook parse failed: {exc}"
+            result["errors"].append(msg)
+            result["status"] = "error"
+            self._log.error(msg)
+            return result
+
+        result["release_period"] = extract.release_period
+        self._log.info(
+            "QLFS workbook parsed OK — release period %s, "
+            "unemployment=%.1f%%, youth-narrow=%.1f%%, youth-1524=%.1f%%, "
+            "youth-expanded=%.1f%%, NEET=%.1f%%, LFPR=%.1f%%, LFPR-female=%.1f%%",
+            extract.release_period,
+            extract.unemployment_rate,
+            extract.youth_unemployment_narrow,
+            extract.youth_unemployment_1524,
+            extract.youth_unemployment_expanded,
+            extract.neet_rate,
+            extract.lfpr_overall,
+            extract.lfpr_female,
+        )
+
+        # ----------------------------------------------------------
+        # Step 5: Transform, validate, diff, stage — one pass per QLFS
+        # output dataset. No dataset JSON is ever written directly; the
+        # only outputs of this step are staged candidates + pending
+        # version entries, exactly as SARBAdapter.fetch_and_apply() does
+        # for interest-rates.json.
+        # ----------------------------------------------------------
+        current_docs = {
+            ds_id: _read_current_dataset_json(path)
+            for ds_id, path in _QLFS_DATASET_JSON.items()
+        }
+
+        new_values = {
+            "unemployment-national": extract.unemployment_rate,
+            "youth-unemployment-narrow": extract.youth_unemployment_narrow,
+            "youth-unemployment-1524": extract.youth_unemployment_1524,
+            "youth-unemployment-expanded": extract.youth_unemployment_expanded,
+            "youth-neet-rate": extract.neet_rate,
+            "lfpr-overall": extract.lfpr_overall,
+            "female-labour-participation": extract.lfpr_female,
+        }
+
+        # Per-dataset "did anything actually change" flags, mirroring
+        # SARBAdapter's repo_changed/prime_changed pattern — and, per
+        # IMPLEMENTATION-SPEC-STATSSA-PHASE2.md §10 acceptance criterion 6,
+        # the basis for producing status="no_change" with zero side
+        # effects when nothing has moved.
+        dataset_changed: dict[str, bool] = {ds_id: False for ds_id in _QLFS_FAMILY}
+        for stat_id, new_val in new_values.items():
+            ds_id = _QLFS_STAT_TO_DATASET[stat_id]
+            current_val = _get_current_stat_rate(current_docs[ds_id], stat_id)
+            if current_val is None or abs(new_val - current_val) > 0.05:
+                dataset_changed[ds_id] = True
+
+        if not any(dataset_changed.values()):
+            result["status"] = "no_change"
+            result["notes"] = (
+                f"No change: {extract.release_period} values already match "
+                f"unemployment.json / youth-unemployment.json / labour-force.json."
+            )
+            self._log.info("No change detected — all three QLFS JSON files are already current.")
+            # Still worth refreshing the hub hash baseline below.
+        else:
+            version_ids: list[str] = []
+            for ds_id in sorted(_QLFS_FAMILY):
+                if not dataset_changed[ds_id]:
+                    continue  # this dataset's own values are unchanged; leave it alone
+
+                current_doc = current_docs[ds_id]
+                updated_doc = _QLFS_TRANSFORMS[ds_id](current_doc, extract, file_url)
+
+                # --- schema/range validation ---
+                validation_errors: list[str] = []
+                validation_errors += _validate_quarterly_label(extract.release_period)
+                for stat_id, new_val in new_values.items():
+                    if _QLFS_STAT_TO_DATASET[stat_id] != ds_id:
+                        continue
+                    validation_errors += _validate_percentage(new_val, stat_id)
+
+                if validation_errors:
+                    msg = f"Validation failed for {ds_id}: {'; '.join(validation_errors)}"
+                    result["errors"].append(msg)
+                    self._log.error(msg)
+                    continue  # do not stage this dataset
+
+                # --- protected-field check (reused unchanged) ---
+                if current_doc:
+                    violations = check_protected_fields(current_doc, updated_doc)
+                    if violations:
+                        msg = f"Protected field violation(s) for {ds_id}: {violations}"
+                        result["errors"].append(msg)
+                        result.setdefault("protected_field_violations", {})[ds_id] = violations
+                        self._log.error(msg)
+                        continue  # abort staging for this document only
+
+                # --- anomaly / plausibility check (warning, not a hard fail) ---
+                anomaly_notes: list[str] = []
+                for stat_id, new_val in new_values.items():
+                    if _QLFS_STAT_TO_DATASET[stat_id] != ds_id:
+                        continue
+                    current_val = _get_current_stat_rate(current_doc, stat_id)
+                    warning = _check_qoq_jump(current_val, new_val, stat_id)
+                    if warning:
+                        anomaly_notes.append(warning)
+                        self._log.warning(warning)
+
+                # --- stage + version entry ---
                 entry = new_version_entry(
                     dataset_id=ds_id,
                     source_id=self.source_id,
@@ -1096,53 +1873,61 @@ class StatsSAAdapter(BaseAdapter):
                     archive_path=result["archive_path"] or "",
                     adapter_version=self.version,
                     notes=(
-                        f"Phase 1: raw publication downloaded. "
-                        f"Release period: {release_period or 'unknown'}. "
+                        f"QLFS {extract.release_period} parsed and staged. "
                         f"Hub URL: {_QLFS_HUB_URL}. "
-                        f"File size: {len(file_bytes)} bytes. "
-                        f"Note: Stats SA WAF prevents reliable Excel scraping, "
-                        f"so we fall back to PDF if Excel is unprobeable."
+                        + ("; ".join(anomaly_notes) + ". " if anomaly_notes else "")
+                        + "Manual approval required before promotion."
                     ),
                     run_id=run_id,
                 )
+
                 if not dry_run:
-                    save_version_entry(self.config.report_dir, entry)
-                    self._log.info(
-                        "Version entry saved: %s (dataset=%s, status=pending)",
-                        entry.version_id,
-                        ds_id,
-                    )
+                    try:
+                        write_staged_dataset(
+                            self.config.report_dir,
+                            dataset_id=ds_id,
+                            version_id=entry.version_id,
+                            document=updated_doc,
+                        )
+                        save_version_entry(self.config.report_dir, entry)
+                        self._log.info(
+                            "Staged %s — version %s (status=pending)",
+                            ds_id, entry.version_id,
+                        )
+                    except Exception as exc:
+                        msg = f"Staging failed for {ds_id}: {exc}"
+                        result["errors"].append(msg)
+                        self._log.error(msg)
+                        continue
                 else:
                     self._log.info(
-                        "[DRY RUN] Would save version entry %s for %s",
-                        entry.version_id,
-                        ds_id,
+                        "[DRY RUN] Would stage %s — version %s", ds_id, entry.version_id,
                     )
-                version_ids.append(entry.version_id)
-            except Exception as exc:
-                msg = f"Version entry failed for {ds_id}: {exc}"
-                result["errors"].append(msg)
-                self._log.warning(msg)
 
-        result["version_ids"] = version_ids
+                version_ids.append(entry.version_id)
+
+            result["version_ids"] = version_ids
+
+            if version_ids:
+                result["status"] = "ok"
+            else:
+                # A change was detected but every candidate dataset failed
+                # validation/protected-field checks — nothing was staged.
+                result["status"] = "error"
 
         # ----------------------------------------------------------
         # Step 6: Compose result and update QLFS hub hash
         # ----------------------------------------------------------
-        if not result["errors"]:
-            result["status"] = "ok"
-        else:
-            # Partial success — workbook downloaded but minor issues occurred
-            result["status"] = "ok"  # still OK; errors are logged
-
-        result["notes"] = (
-            f"QLFS Phase 1 complete. "
-            f"Release period: {release_period or 'unknown'}. "
-            f"Publication file: {len(file_bytes):,} bytes. "
-            f"Archive: {result['archive_path'] or '(dry-run)'}. "
-            f"Version entries: {', '.join(version_ids) or 'none'}. "
-            f"Note: Downloaded format depends on direct URL probing success due to WAF."
-        )
+        if not result.get("notes"):
+            result["notes"] = (
+                f"QLFS Phase 2 complete. "
+                f"Release period: {extract.release_period}. "
+                f"Publication file: {len(file_bytes):,} bytes. "
+                f"Archive: {result['archive_path'] or '(dry-run)'}. "
+                f"Version entries staged: {', '.join(result.get('version_ids', [])) or 'none'}. "
+                f"No dataset JSON was written directly — staged candidates require "
+                f"`--approve` then `--promote` per dataset."
+            )
 
         # Update hub hash so the next check_for_updates call sees the new baseline
         if not dry_run:
@@ -1189,10 +1974,15 @@ class StatsSAAdapter(BaseAdapter):
                 "QLFS: real ETag/hash detection + Excel download + archive. "
                 "All other datasets: Phase A stubs."
             ),
-            "phase_2_plan": (
-                "Implement Excel parser (automation/adapters/qlfs_parser.py) "
-                "to extract unemployment / youth / LFPR values from specific "
-                "cell ranges.  Mapper then writes to JSON schema."
+            "phase_2_status": (
+                "QLFS: parse (label-matched, not fixed cell ranges) + transform "
+                "+ validate + stage implemented in "
+                "automation/adapters/statss.py (parse_qlfs_workbook() and the "
+                "_transform_* family) — reuses the existing staging/approval/"
+                "promote pipeline; fetch_and_apply() stages up to 3 pending "
+                "version entries (one per QLFS output dataset) and writes no "
+                "dataset JSON directly. GDP/CPI/population/housing/census/"
+                "municipalities remain Phase A stubs — out of scope for this build."
             ),
             "notes": (
                 "One release, one job: QLFS family uses a single extractor. "
