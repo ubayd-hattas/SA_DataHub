@@ -23,3 +23,9 @@
 
 PyYAML>=6.0
 pytest>=7.0.0
+
+# Added in Phase 2 (IMPLEMENTATION-SPEC-STATSSA-PHASE2.md): required by
+# automation/adapters/statss.py::parse_qlfs_workbook() to read the QLFS
+# Excel workbook. Not needed by any other adapter today.
+openpyxl>=3.1.0
+

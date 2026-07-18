@@ -83,6 +83,60 @@ This method operates within a strict staging → approval → promote pipeline t
 
 This pipeline acts as the enforced gate, ensuring that automated/unattended runs cannot write directly to production datasets.
 
+## QLFS Parse / Transform / Stage (Phase 2)
+
+`StatsSAAdapter.fetch_and_apply()` covers the QLFS family (`unemployment`,
+`youth-unemployment`, `labour-force`) — one Stats SA release, three JSON
+outputs, per the "one release, one job" principle in
+`SA-Data-Hub-Automation-Architecture.md` §0.
+
+After the Phase 1 download/archive steps, this build adds:
+
+1. **Parse** (`parse_qlfs_workbook()`): locates the seven required
+   indicators (national unemployment, youth narrow/15-24/expanded, NEET,
+   overall LFPR, female LFPR) by scanning each worksheet for a
+   quarter-header row (e.g. `Q1 2026`) and, per indicator, a label-text
+   match on the same sheet — not fixed cell coordinates. If a required
+   indicator can't be located, or the file isn't a valid Excel workbook
+   (including the case where the URL probe fell back to a PDF), this
+   raises loudly. There is no PDF-parsing fallback in this phase.
+2. **Transform** (`_transform_unemployment()` / `_transform_youth_unemployment()`
+   / `_transform_labour_force()`): each follows the exact deep-copy,
+   rate-bearing-fields-only, seed-or-append-series pattern already
+   established by `SARBAdapter._transform_interest_rates()`.
+3. **Validate**: percentage-range check, quarterly label format check,
+   and `check_protected_fields()` (reused unchanged from `core/metadata.py`)
+   per dataset. A protected-field violation or a range/format failure
+   aborts staging **for that dataset only** — the other two QLFS outputs
+   still stage normally if they pass.
+4. **Anomaly flag**: a quarter-over-quarter jump beyond ±3.0 percentage
+   points is logged and recorded in the version entry's notes for the
+   human reviewer's attention — it does not block staging.
+5. **Stage**: each dataset whose values actually changed is written via
+   `write_staged_dataset()` with one `pending` version entry recorded via
+   `new_version_entry()` / `save_version_entry()` — **one version entry
+   per output dataset** (up to three per release), since `version.py`'s
+   store and `promote_version()` are both keyed by a single `dataset_id`
+   per call. If none of the three datasets' values differ from what's
+   already on disk, the run returns `status="no_change"` with no staging
+   and no version entries at all.
+
+No dataset JSON is ever written directly by this adapter — reaching
+production still requires the same `--approve` then `--promote` sequence
+already used for `interest-rates.json`.
+
+**Verification status of the Excel layout** (read before changing the
+parser): no archived QLFS `.xlsx` file was available to inspect in the
+session that built this parser, and no session to date has had network
+access to `statssa.gov.za` to fetch one live. The label-matching rules in
+`_QLFS_METRIC_SPECS` (`automation/adapters/statss.py`) were built against
+the documented convention and tested only against synthetic fixtures (see
+`automation/adapters/tests/test_statss.py`). Treat the first real run
+against a downloaded workbook as the empirical test of this parser.
+
+GDP, CPI, population, housing, census, and municipalities remain Phase A
+stubs — out of scope for this build.
+
 ## Known Open Item: Stats SA QLFS WAF Signal (Work Item 5)
 
 `StatsSAAdapter` explicitly detects the Stats SA release hub's Incapsula WAF
