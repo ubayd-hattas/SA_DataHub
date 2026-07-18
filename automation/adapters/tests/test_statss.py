@@ -44,8 +44,9 @@ from automation.adapters.statss import (
 )
 from automation.core.config import AutomationConfig, SourceConfig
 from automation.core.metadata import check_protected_fields
+from automation.core.promote import promote_version
 from automation.core.staging import read_staged_dataset
-from automation.core.version import pending_versions
+from automation.core.version import approve_version, pending_versions
 
 # ---------------------------------------------------------------------------
 # Fixture workbook builder
@@ -533,3 +534,78 @@ def test_fetch_and_apply_protected_field_violation_aborts_only_that_dataset(tmp_
     assert len(pending_versions(adapter.config.report_dir, "labour-force")) == 1
     # The other two datasets still staged successfully despite one failure.
     assert result["status"] == "ok"
+
+
+def test_qlfs_staged_candidate_requires_approve_then_promote(tmp_path, monkeypatch):
+    """QLFS-specific version of test_full_stage_approve_promote_cycle
+    (automation/core/tests/test_pipeline_integration.py), using a real
+    version produced by StatsSAAdapter.fetch_and_apply() rather than a
+    hand-built fixture. Closes acceptance criterion 4 of
+    IMPLEMENTATION-SPEC-STATSSA-PHASE2.md, per the closeout spec §4.
+    """
+    file_bytes = _build_fixture_workbook()
+    file_url = "https://www.statssa.gov.za/publications/P0211/fixture.xlsx"
+    _patch_network(monkeypatch, file_bytes, file_url)
+
+    prod_dir = tmp_path / "production"
+    prod_dir.mkdir()
+    stale_docs = {
+        "unemployment": {
+            "_meta": {},
+            "statistics": [
+                {"id": "unemployment-national", "rawValue": 31.4,
+                 "series": [{"data": [{"label": "Q4 2025", "value": 31.4}]}]}
+            ],
+        },
+        "youth-unemployment": _youth_doc(),
+        "labour-force": _labour_force_doc(),
+    }
+    paths = {}
+    for ds_id, doc in stale_docs.items():
+        p = prod_dir / f"{ds_id}.json"
+        p.write_text(json.dumps(doc), encoding="utf-8")
+        paths[ds_id] = p
+    monkeypatch.setattr(statss_mod, "_QLFS_DATASET_JSON", paths)
+
+    # Redirect promote_version()'s production target the same way
+    # core/tests/test_pipeline_integration.py does for SARB, so this test
+    # never touches the real src/data/datasets/ tree.
+    monkeypatch.setattr(
+        "automation.core.promote.get_production_dataset_path",
+        lambda dataset_id: paths[dataset_id],
+    )
+
+    adapter = _make_adapter(tmp_path)
+    report_dir = adapter.config.report_dir
+
+    # (a) Stage a genuine change for the unemployment dataset.
+    result = adapter.fetch_and_apply(dry_run=False, run_id="test-run")
+    assert result["status"] == "ok"
+    assert not result["errors"]
+
+    pending = pending_versions(report_dir, "unemployment")
+    assert len(pending) == 1
+    version_id = pending[0].version_id
+
+    # unemployment.json's on-disk content is unchanged immediately after staging.
+    assert json.loads(paths["unemployment"].read_text(encoding="utf-8")) == stale_docs["unemployment"]
+
+    # (b) Promotion must be refused before approval — same guarantee proven
+    # for SARB in test_full_stage_approve_promote_cycle, now for a real
+    # QLFS-produced version.
+    with pytest.raises(ValueError, match="requires 'approved'"):
+        promote_version(report_dir, "unemployment", version_id)
+    assert json.loads(paths["unemployment"].read_text(encoding="utf-8")) == stale_docs["unemployment"]
+
+    # (c) Approve.
+    approve_version(report_dir, "unemployment", version_id, approver="test-reviewer")
+    assert pending_versions(report_dir, "unemployment") == []
+
+    # (d) Promote — now allowed. The written file matches the staged document.
+    staged_doc = read_staged_dataset(report_dir, "unemployment", version_id)
+    result_path = promote_version(report_dir, "unemployment", version_id)
+    assert result_path == paths["unemployment"]
+    written = json.loads(paths["unemployment"].read_text(encoding="utf-8"))
+    assert written == staged_doc
+    # (e) Only now — after promotion — has the on-disk content changed.
+    assert written != stale_docs["unemployment"]
