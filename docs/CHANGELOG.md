@@ -4,6 +4,33 @@ All notable changes to the SA Data Hub automation framework are documented in th
 
 ---
 
+## 2026-07-18 — Stats SA QLFS Phase 2 Closeout
+
+### Summary
+Closes out the five gaps identified by the post-implementation audit of Phase 2 (`IMPLEMENTATION-SPEC-STATSSA-PHASE2-CLOSEOUT.md`). This is a closeout, not a new feature: no core module, no adapter other than `automation/adapters/statss.py`'s tests, and no dataset outside the two listed below were touched.
+
+### Changed
+- `src/data/datasets/unemployment.json` — removed the `labour-force-participation` stat. `unemployment.json`'s `statistics` array now contains exactly one stat: `unemployment-national`.
+- `src/data/datasets/labour-force.json` — `labour-force-participation` added back as a new, distinct stat (id, title, value, rawValue, unit, change, changeLabel, trend, description, source, lastUpdated, series preserved byte-for-byte from `unemployment.json`; `categoryId` set to `"unemployment"` to match `lfpr-overall`'s existing value). `labour-force.json`'s `statistics` array now contains three stats: `lfpr-overall`, `female-labour-participation`, `labour-force-participation`. This is a structural/labeling fix only — the ~18-percentage-point disagreement between `lfpr-overall` (60.6%) and `labour-force-participation` (42.7%) for approximately the same period is **not** resolved by this change and is not a value judgment this session made. `labour-force.json`'s `_meta.notes` now documents the discrepancy explicitly and states it must be verified against the Stats SA QLFS P0211 release before either stat is touched by a future automated run.
+- `automation/adapters/statss.py::_transform_labour_force()` and `_QLFS_STAT_TO_DATASET` — confirmed unchanged (verification only, no code edit): they still map only `lfpr-overall` and `female-labour-participation`. `labour-force-participation` remains outside the QLFS automated pipeline's scope until the value discrepancy above is resolved by a human.
+
+### Added
+- `automation/adapters/tests/test_statss.py::test_qlfs_staged_candidate_requires_approve_then_promote` — the QLFS-specific end-to-end "staged candidate cannot reach production without approve→promote" test that Phase 2's acceptance criterion 4 required but did not deliver. Uses a real version produced by `StatsSAAdapter.fetch_and_apply()` (not a hand-built fixture) to prove, for the `unemployment` dataset: promotion is refused before approval (`ValueError`, `"requires 'approved'"`), `unemployment.json` is unchanged on disk immediately after staging, and only after `approve_version()` + `promote_version()` does the on-disk file change to match the staged document. Test count: 37 → 38.
+
+### Verified (no code change)
+- **Downstream reference sweep for the removed bare `youth-unemployment` statistic ID.** Searched the full `src/` tree available to this session (`src/data/mock.ts`, `src/data/stories.ts`, `src/data/update-history.ts`, `src/data/changelog.ts`, `src/data/providers/*.ts`, and all `src/data/datasets/*.json`) for the literal string `youth-unemployment` used as an exact statistic ID. No genuine hits found: the only matches are the correct `youth-unemployment-narrow` / `youth-unemployment-1524` / `youth-unemployment-expanded` stat IDs and the correct `youth-unemployment` dataset/registry ID (file name, import name, `datasetId` field) — none of which refer to the removed bare statistic ID. **`src/lib/registry.ts`, `src/lib/citation.ts`, and `src/lib/insights.ts` were not available to this session** (only `src/data/` was provided in `data.zip`, not `src/lib/`) and so could not be swept — this is the same gap the audit flagged after Phase 2 and remains open; see Known Issues.
+- `automation/adapters/statss.py`'s module docstring, `automation/docs/developer-guide.md`, and this file's own prior entries — confirmed the real-workbook parser-verification notes are still present and worded consistently; none of the edits in this closeout touched or contradicted them.
+
+### Known Issues
+- **`parse_qlfs_workbook()` has still never been run against a real, downloaded Stats SA QLFS workbook** — only synthetic fixtures. This closeout does not attempt to fabricate or simulate a real workbook to close this item, per explicit instruction; it remains open and is now tracked directly in `CURRENT_STATE.md` §5 and §7, not only in this changelog. The first live `--apply` run against a real workbook is the actual empirical test; a parse failure there is expected-possible, not a regression.
+- **The `labour-force-participation` (42.7%) vs. `lfpr-overall` (60.6%) value discrepancy is relocated, not resolved.** Both stats now live in `labour-force.json` with the disagreement documented in `_meta.notes`, but which value (if either) is correct has not been checked against the Stats SA QLFS P0211 release tables — that remains a human data-verification task.
+- **`src/lib/registry.ts`, `src/lib/citation.ts`, `src/lib/insights.ts` remain unswept** for the removed `youth-unemployment` statistic ID — not available to this session. Per `ai-context.md`, these are exactly the files most likely to break silently on a statistic-ID removal; this should be checked in a session where `src/lib/` is available before treating the Phase 2 schema fix as fully safe.
+
+### Next Milestone
+Per `CURRENT_STATE.md` §7 (updated in this closeout): GDP write path, following the Stats SA QLFS pattern now proven twice. The real-workbook QLFS parser verification and the `src/lib/` reference sweep remain open, tracked items, neither of which blocks starting GDP.
+
+---
+
 ## 2026-07-18 — Stats SA QLFS Phase 2 (Parse / Transform / Stage)
 
 ### Summary

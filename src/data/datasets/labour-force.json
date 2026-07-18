@@ -4,7 +4,7 @@
     "source_url": "https://www.statssa.gov.za/?page_id=1854&PPN=P0211",
     "update_frequency": "Quarterly",
     "last_verified": "2026-05-31",
-    "notes": "Labour force participation rate (LFPR) measures the share of the working-age population (15–64) that is either employed or actively looking for work. South Africa's LFPR is low by international standards, partly reflecting high rates of discouragement."
+    "notes": "Labour force participation rate (LFPR) measures the share of the working-age population (15–64) that is either employed or actively looking for work. South Africa's LFPR is low by international standards, partly reflecting high rates of discouragement. NOTE (2026-07-18, Phase 2 closeout): this file now contains two stats both titled \"Labour Force Participation Rate\" for approximately the same period — lfpr-overall (60.6%) and labour-force-participation (42.7%) — that disagree by a wide, unexplained margin (~18 percentage points). This discrepancy is unresolved. Do not silently update, merge, or drop either stat on a future automated run; it must be verified against the Stats SA QLFS P0211 release tables by a human first."
   },
   "statistics": [
     {
@@ -99,6 +99,82 @@
             { "label": "Q2 2025", "value": 54.5 },
             { "label": "Q3 2025", "value": 54.9 },
             { "label": "Q4 2025", "value": 55.2 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "labour-force-participation",
+      "categoryId": "unemployment",
+      "title": "Labour Force Participation Rate",
+      "value": "42.7%",
+      "rawValue": 42.7,
+      "unit": "%",
+      "change": -0.1,
+      "changeLabel": "from Q3 2025",
+      "trend": "stable",
+      "description": "42.7% of working-age South Africans (ages 15–64) were either employed or actively seeking work in Q4 2025. This participation rate remains among the lowest globally, partly reflecting large numbers of discouraged work-seekers who have given up looking for jobs.",
+      "source": {
+        "name": "Statistics South Africa",
+        "shortName": "Stats SA",
+        "url": "https://www.statssa.gov.za/?page_id=1854&PPN=P0211",
+        "publicationName": "Quarterly Labour Force Survey Q4 2025",
+        "publicationDate": "2026-02-17"
+      },
+      "lastUpdated": "2026-02-17",
+      "series": [
+        {
+          "name": "Participation Rate (%)",
+          "unit": "%",
+          "data": [
+            {
+              "label": "Q1 2023",
+              "value": 42.8
+            },
+            {
+              "label": "Q2 2023",
+              "value": 42.5
+            },
+            {
+              "label": "Q3 2023",
+              "value": 43.1
+            },
+            {
+              "label": "Q4 2023",
+              "value": 43.2
+            },
+            {
+              "label": "Q1 2024",
+              "value": 42.9
+            },
+            {
+              "label": "Q2 2024",
+              "value": 43.0
+            },
+            {
+              "label": "Q3 2024",
+              "value": 43.3
+            },
+            {
+              "label": "Q4 2024",
+              "value": 42.9
+            },
+            {
+              "label": "Q1 2025",
+              "value": 42.5
+            },
+            {
+              "label": "Q2 2025",
+              "value": 42.9
+            },
+            {
+              "label": "Q3 2025",
+              "value": 42.8
+            },
+            {
+              "label": "Q4 2025",
+              "value": 42.7
+            }
           ]
         }
       ]
