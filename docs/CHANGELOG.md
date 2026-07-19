@@ -4,6 +4,209 @@ All notable changes to the SA Data Hub automation framework are documented in th
 
 ---
 
+## 2026-07-19 — Stats SA Release-Hub WAF Access: Tier 1 Implemented
+
+### Summary
+Implements `IMPLEMENTATION-SPEC-STATSSA-WAF.md` §6.1 (Tier 1), following on
+from the same-day "Phase 0 Attempted, No Code Change" entry below. A real
+developer environment with genuine `statssa.gov.za` network access has
+since confirmed the core Phase 0 fact directly: the release hub is
+reachable, the adapter reaches the correct URL, the response is a genuine
+Imperva Incapsula WAF challenge, and `StatsSAAdapter` correctly reports
+`WAF_BLOCKED` — matching the symptom already on file in
+`automation/reports/archive/2026-07-19/run_cfc0d1ae2e99.md`. With that
+confirmation in hand, Tier 1 is implemented exactly as specified: no
+redesign, no re-evaluation of whether it should exist. Exactly two files
+changed code (`automation/adapters/statss.py`,
+`automation/adapters/tests/test_statss.py`), plus this file,
+`CURRENT_STATE.md`, and `automation/docs/developer-guide.md` — no parser,
+transform, validation, staging, approval, or promotion code touched, and no
+`src/data/datasets/*.json` file touched.
+
+### Added
+- `automation/adapters/statss.py::_STATSSA_BROWSER_HEADERS` — a new
+  module-level constant: an ordinary-browser-equivalent header set
+  (non-"bot" `User-Agent`, `Accept-Language`, `Sec-Fetch-*`,
+  `Upgrade-Insecure-Requests`) for Stats SA requests only.
+  `Accept-Encoding` is pinned to `"identity"`, not a real browser's
+  `"gzip, deflate, br"`, because `core/http_client.py` (unchanged, out of
+  scope) has no response-decompression support — advertising compression
+  support without decompressing it would silently corrupt the raw hub-page
+  body this adapter both WAF-scans and parses for the release period.
+- `automation/adapters/tests/test_statss.py` — 7 new tests (§8 of the
+  spec): for both `_check_qlfs()` and `_check_gdp()` — WAF-blocked hub +
+  successful direct-URL fallback probe → `status="unknown"` with `notes`
+  naming the found URL (2 tests); WAF-blocked hub + fallback probe also
+  fails → `status="error"`, exact pre-existing `WAF_BLOCKED` message
+  unchanged (2 tests); hub succeeds normally → unchanged
+  `status="update_available"`, with a call-count assertion proving the new
+  fallback probe is never invoked on this path (2 tests) — plus one direct
+  test asserting the new header set on `_build_http_client()`'s
+  constructed client, including the deliberate `Accept-Encoding: identity`
+  choice. Test count: 53 → 60 (36 → 43 in `test_statss.py`).
+
+### Changed
+- `automation/adapters/statss.py::_build_http_client()` — now returns an
+  `HTTPClient` configured with `_STATSSA_BROWSER_HEADERS` instead of the
+  previous single `Accept` header (which relied on the client's default,
+  self-identifying `SA-Data-Hub-Automation/0.1 (...; data-automation-bot)`
+  User-Agent). No other adapter's HTTP client construction is affected.
+- `automation/adapters/statss.py::_check_qlfs()` / `_check_gdp()` — on
+  detecting the Incapsula WAF marker, each now falls through to the
+  existing `_probe_qlfs_publication_url()` / `_probe_gdp_publication_url()`
+  direct-URL probe (the same functions `fetch_and_apply()` already uses
+  for discovery — no new probing mechanism introduced) before returning:
+  a reachable candidate now produces `status="unknown"` with `notes`
+  naming the found URL and an explicit "probe-based signal, not a
+  hub-diff signal" message; no reachable candidate leaves today's
+  `status="error"` / `WAF_BLOCKED` message exactly as it was. Both
+  functions' pre-existing WAF-marker scan is byte-for-byte unchanged, and
+  the deliberate duplication between the two (rather than a shared helper)
+  is preserved, per the spec's explicit non-goal (§6.1 step 3) —
+  consolidating it remains a separate, out-of-scope refactor. The
+  fallback probe is wrapped in its own `try/except`, so a probe-level
+  exception degrades to the unchanged `status="error"` path rather than
+  propagating.
+- `automation/adapters/statss.py::describe()` — added one new, additive
+  `waf_access_status` key summarizing the Tier 1 change; every existing
+  key keeps its exact prior shape and meaning.
+- `automation/adapters/statss.py::StatsSAAdapter.version` bumped
+  `0.4.0` → `0.4.1`.
+
+### Verified (no code change)
+- **The full pre-existing 53-test suite passes unmodified** both before
+  and after this change (`pytest automation/` — 53 passed pre-change, 60
+  passed post-change, zero regressions).
+- **`fetch_and_apply()`'s own, separate use of
+  `_probe_qlfs_publication_url()` / `_probe_gdp_publication_url()` for
+  discovery is untouched** — the new fallback call site in
+  `check_for_updates()` is additive, not a replacement, and does not
+  change either function's signature or behavior.
+- **A live CLI run (`python -m automation.runner --adapter statssa`)
+  behaves identically pre- and post-change** in this session's own
+  sandbox (still no `statssa.gov.za` route here — see the Phase 0 entry
+  below): the sandbox's proxy-level `HTTP 403` is raised as an
+  `AutomationHTTPError` before the WAF-marker check is ever reached, so
+  the new fallback branch is correctly never exercised by a non-WAF-shaped
+  failure. This is expected and consistent with the fallback only firing
+  on a genuine `_Incapsula_Resource`/`incapsula` marker in the response
+  body, not on any 4xx generally.
+
+### Known Issues
+- **Whether the direct-publication-URL path is itself WAF-free has not
+  been independently re-confirmed by this session** — the developer-
+  environment confirmation described above establishes the hub-block
+  reproduces, not the direct-URL path's own status. Tier 1's fallback
+  probe is written to handle either outcome correctly at runtime (a
+  reachable candidate is used; an unreachable one leaves `status="error"`
+  unchanged), so this does not block or invalidate the implementation —
+  it is simply the fact the next live run (`IMPLEMENTATION-SPEC-STATSSA-
+  WAF.md` §9 Phase 2) will observe directly, not a re-opened
+  investigation.
+- **The candidate-filename guessing problem in `_build_qlfs_candidate_urls()`
+  / `_build_gdp_candidate_urls()` remains exactly as unconfirmed as
+  before** — explicitly out of scope for this milestone (spec §4.2); a
+  reachable hub-fallback probe still depends on the candidate list
+  eventually matching Stats SA's real naming convention.
+- **Tier 2 (browser automation) remains not adopted**, per the spec's own
+  recommendation (§5.C) and this milestone's explicit instruction not to
+  redesign or re-evaluate the solution.
+
+### Next Milestone
+Unchanged from `CURRENT_STATE.md` §7: CPI write path
+(`inflation.json`, Stats SA component only). This WAF-access milestone
+does not block or reorder that sequencing.
+
+---
+
+## 2026-07-19 — Stats SA Release-Hub WAF Access: Phase 0 Attempted, No Code Change
+
+### Summary
+Implements the investigation phase of `IMPLEMENTATION-SPEC-STATSSA-WAF.md`.
+This milestone exists to restore reliable detection for the QLFS
+(`unemployment`, `youth-unemployment`, `labour-force`) and `gdp` datasets,
+which currently fail with `WAF_BLOCKED: Incapsula WAF challenge detected`
+on every `--adapter statssa` run (`automation/reports/archive/2026-07-19/run_cfc0d1ae2e99.md`).
+The spec's proposed fix (Tier 1: browser-equivalent request headers in
+`_build_http_client()`, plus a fallback probe against the existing direct
+publication-URL functions in `_check_qlfs()`/`_check_gdp()` when the hub is
+WAF-blocked) is explicitly **gated on a Phase 0 empirical reachability
+check** that must run from an environment with genuine `statssa.gov.za`
+network access. This implementation session's sandbox does not have that
+access: all 10 Phase 0 requests attempted (the QLFS and GDP hub URLs and
+their direct publication-base URLs, each with both the adapter's existing
+headers and a browser-equivalent header set, plus a one-time check of
+Stats SA's general time-series download page) were rejected by the
+session's own egress proxy with `HTTP 403`, `x-deny-reason:
+host_not_allowed`, before any request reached Stats SA's servers — a
+distinctly different failure mode from the live Incapsula `WAF_BLOCKED`
+response already captured in the referenced run report from a different
+environment. Per the spec's own Definition of Done ("implementing \[Tier
+1\] unconditionally without Phase 0 evidence is explicitly not 'done'... the
+entire point of this milestone is closing an *empirical* gap, not a
+hypothetical one"), **no change was made to
+`automation/adapters/statss.py`** in this session: not to
+`_build_http_client()`'s headers, not to `_check_qlfs()`/`_check_gdp()`'s
+WAF-block handling, and not to any parser, transform, validation, staging,
+approval, or promotion code (all of which were out of scope regardless).
+Exactly two files changed: `automation/docs/developer-guide.md` and
+`CURRENT_STATE.md`, plus this entry — no adapter or test code.
+
+### Added
+- `automation/docs/developer-guide.md` — a new dated "Phase 0 finding —
+  2026-07-19" subsection under the existing "Known Open Item: Stats SA
+  QLFS WAF Signal" heading, recording the exact `host_not_allowed` denial
+  (verbatim response body, status code, header) for all 10 attempted
+  requests, contrasting it explicitly with the genuine `WAF_BLOCKED`
+  symptom already on file, and recording the Tier 2 (browser automation)
+  decision required by the spec's §12 item 7: **not adopted**, and not yet
+  a live question, since the one fact that would trigger it (the
+  direct-publication-URL path being WAF-blocked from a genuinely reachable
+  environment) remains unconfirmed either way.
+
+### Verified (no code change)
+- **The existing WAF-marker detection logic in `_fetch_release_hub_html()`,
+  `_check_qlfs()`, and `_check_gdp()` is unchanged** — confirmed by the full
+  existing 53-test suite passing unmodified (`pytest automation/` — 53
+  passed, zero regressions, zero new tests, since no new adapter behavior
+  was introduced for a test to cover).
+- **`_probe_qlfs_publication_url()` / `_probe_gdp_publication_url()` and the
+  candidate-URL builders remain exactly as they were** — the spec's §4.2
+  scope boundary (candidate-filename guessing accuracy is separate,
+  follow-on work) was never reached, since Tier 1 itself did not implement.
+
+### Known Issues
+- **The direct-publication-URL path's WAF status is still unconfirmed.**
+  This is the single fact §9 Phase 0 exists to establish, and it remains
+  open — carried forward unchanged from `CURRENT_STATE.md`'s existing
+  "mitigated, not empirically resolved" framing, now with an explicit,
+  dated record that this session tried and could not obtain the evidence
+  from its own sandboxed network.
+- **QLFS/GDP detection remains `status="error"` (undifferentiated) on every
+  WAF-blocked hub fetch.** The Tier 1 fallback probe that would produce a
+  more informative `status="unknown"` on a WAF block was not implemented,
+  per the spec's own evidence-gating requirement. This is not a regression:
+  it is the documented, already-correct pre-existing behavior, left
+  unchanged because implementing around it without evidence would violate
+  this milestone's Definition of Done.
+- **A Tier 2 (browser automation) decision remains explicitly open, not
+  defaulted.** Per the spec's §15, the interim state
+  (`status="error"`/manual monitoring) continues to apply while that
+  decision is made deliberately by whoever owns the compliance/product call
+  — this milestone does not make that call implicitly by doing nothing.
+
+### Next Milestone
+Re-run this spec's Phase 0 (§9) from an environment whose network egress
+configuration genuinely includes `statssa.gov.za` — a CI runner or
+developer machine, not this sandbox — and record the four data points it
+requires. Only once that evidence exists should Tier 1 (§6.1) be
+implemented against `automation/adapters/statss.py`. This does not block
+or change the sequencing of the CPI write path (`CURRENT_STATE.md` §7),
+which remains the next feature milestone independent of this access
+question.
+
+---
+
 ## 2026-07-19 — GDP (P0441) Quarterly Growth Write Path
 
 ### Summary

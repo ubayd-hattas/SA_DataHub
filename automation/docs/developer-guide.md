@@ -151,3 +151,81 @@ access to `statssa.gov.za` to observe this directly. See the docstring on
 finding. This item can be closed with an explicit, dated, request-counted
 observation once real network access is available; until then it should be
 treated as mitigated, not resolved.
+
+### Phase 0 finding — 2026-07-19 (`IMPLEMENTATION-SPEC-STATSSA-WAF.md`)
+
+An implementation session first attempted the four Phase 0 checks required
+by `IMPLEMENTATION-SPEC-STATSSA-WAF.md` §9 from this codebase's own sandbox
+and found no route to `statssa.gov.za` at all (every request rejected by
+the sandbox's own egress proxy, `HTTP 403`, `x-deny-reason:
+host_not_allowed` — a proxy-level denial, not a Stats SA response).
+
+**Update, same date, later session:** a real developer environment with
+genuine `statssa.gov.za` network access has since confirmed the core Phase
+0 fact directly: the release hub is reachable, the adapter's request
+reaches the correct URL, the response is a genuine Imperva Incapsula WAF
+challenge, and `StatsSAAdapter` correctly reports `WAF_BLOCKED` — matching
+the symptom already on file in
+`automation/reports/archive/2026-07-19/run_cfc0d1ae2e99.md`. This closes
+the specific question of whether the hub-block reproduces from a genuinely
+reachable environment (it does). Per this confirmation, Tier 1 (§6.1) has
+now been implemented against `automation/adapters/statss.py` — see "Tier 1
+implementation" below. The direct-publication-URL path's own WAF status
+(§9 Phase 0 step 2 specifically) was not separately re-stated in this
+confirmation; Tier 1's fallback probe is written to handle either outcome
+at runtime (reachable → `status="unknown"`; still blocked/unreachable →
+`status="error"`, unchanged), so this does not block implementation — it
+is simply the fact the next live run (§9 Phase 2) will observe directly.
+
+**Tier 2 decision (recorded per §12 item 7):** not adopted. Tier 1's
+runtime fallback is the change being shipped; browser automation remains
+out of scope unless a future live run shows the direct-URL path is itself
+WAF-blocked and that finding is escalated deliberately, per §15.
+
+### Tier 1 implementation — 2026-07-19
+
+`automation/adapters/statss.py` now implements §6.1 of
+`IMPLEMENTATION-SPEC-STATSSA-WAF.md`:
+
+1. **Header hardening (`_build_http_client()`).** Stats SA requests now
+   carry an ordinary-browser-equivalent header set
+   (`_STATSSA_BROWSER_HEADERS`): a non-"bot"-labelled `User-Agent`,
+   `Accept-Language`, `Sec-Fetch-*`, and `Upgrade-Insecure-Requests`, in
+   place of the previous self-identifying
+   `SA-Data-Hub-Automation/0.1 (...; data-automation-bot)` User-Agent.
+   `Accept-Encoding` is deliberately pinned to `"identity"`, not a real
+   browser's `"gzip, deflate, br"`, because `core/http_client.py` (out of
+   scope to change) does not decompress response bodies — advertising
+   compression support without decompressing it would corrupt the raw
+   body text this adapter both WAF-scans and parses. No other adapter's
+   HTTP client is affected.
+2. **`check_for_updates()` fallback probe.** When `_check_qlfs()` /
+   `_check_gdp()` detect the Incapsula WAF marker on the hub response,
+   they now fall through to the existing `_probe_qlfs_publication_url()` /
+   `_probe_gdp_publication_url()` direct-URL probe (the same functions
+   `fetch_and_apply()` already uses for discovery — no new probe
+   mechanism was introduced) before returning:
+   - a reachable candidate → `status="unknown"`, with `notes` naming the
+     found URL and a message stating explicitly that this is a
+     probe-based signal, not a hub-diff signal;
+   - no reachable candidate → `status="error"` with the exact,
+     pre-existing `WAF_BLOCKED` message — today's behavior, unchanged.
+
+   This is additive only: the WAF-marker detection scan itself (§2.2) is
+   byte-for-byte unchanged in both `_check_qlfs()` and `_check_gdp()`, the
+   duplication between the two is preserved rather than consolidated (per
+   §6.1 step 3 — an explicit non-goal), and `fetch_and_apply()`'s own,
+   separate use of the probing functions is untouched. Verified by 6 new
+   tests (3 QLFS + 3 GDP): probe-succeeds → `unknown`, probe-also-fails →
+   `error` (message unchanged), and a call-count assertion proving the
+   fallback probe is never invoked on the non-WAF-blocked path. A 7th new
+   test asserts the new header set directly on `_build_http_client()`'s
+   constructed client. All 53 pre-existing tests continue to pass
+   unmodified (60 total). `describe()` gained one new, additive
+   `waf_access_status` key; no existing `describe()` key changed shape.
+   `StatsSAAdapter.version` bumped `0.4.0` → `0.4.1`.
+
+No parser, transform, validation, staging, approval, or promotion code was
+touched. No file outside `automation/adapters/statss.py`,
+`automation/adapters/tests/test_statss.py`, and this documentation set
+changed.

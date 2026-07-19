@@ -315,12 +315,58 @@ _GDP_GROWTH_PLAUSIBLE_RANGE: tuple[float, float] = (-20.0, 20.0)
 # HTTP client helpers
 # ---------------------------------------------------------------------------
 
+# Tier 1 header hardening (IMPLEMENTATION-SPEC-STATSSA-WAF.md §6.1 step 1,
+# approach B). Applied only to Stats SA requests via _build_http_client()
+# below — no other adapter's HTTP client is affected.
+#
+# Accept-Encoding is pinned to "identity", NOT a real browser's default
+# "gzip, deflate, br": core/http_client.py (out of scope to change here)
+# never decompresses a response body, so advertising compression support
+# without the ability to decompress would silently corrupt every hub-page
+# fetch this adapter relies on for both WAF-marker detection and release-
+# period parsing.
+_STATSSA_BROWSER_HEADERS: dict[str, str] = {
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept-Language": "en-ZA,en;q=0.9",
+    "Accept-Encoding": "identity",
+    "Sec-Fetch-Dest": "document",
+    "Sec-Fetch-Mode": "navigate",
+    "Sec-Fetch-Site": "none",
+    "Sec-Fetch-User": "?1",
+    "Upgrade-Insecure-Requests": "1",
+    "User-Agent": (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+        "(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
+    ),
+}
+
 
 def _build_http_client(source_config: SourceConfig) -> HTTPClient:
-    """Create an HTTPClient configured from source_config."""
+    """Create an HTTPClient configured from source_config.
+
+    Tier 1 header hardening (IMPLEMENTATION-SPEC-STATSSA-WAF.md §6.1 step 1)
+    ------------------------------------------------------------------------
+    Uses an ordinary-browser-equivalent header set — ``Accept-Language``,
+    ``Sec-Fetch-*``, and a non-"bot"-labelled ``User-Agent`` — in place of
+    the previous, self-identifying
+    ``SA-Data-Hub-Automation/0.1 (...; data-automation-bot)`` User-Agent, to
+    test whether Incapsula's block is header/UA-driven rather than purely a
+    JS/cookie challenge. This changes only the outbound request headers for
+    Stats SA calls; the WAF-marker detection logic downstream (§2.2 of the
+    spec) is unchanged — if a challenge page is still served, it is still
+    detected and still raised as ``WAF_BLOCKED``, never silently accepted
+    as a real page.
+
+    ``Accept-Encoding`` is deliberately pinned to ``"identity"`` rather than
+    a real browser's ``"gzip, deflate, br"``: ``core/http_client.py`` has no
+    response-decompression support and is out of scope to change here
+    (spec §7) — advertising compression support without being able to
+    decompress the response would corrupt the raw body text this adapter
+    both WAF-scans and (via ``_extract_release_period()``) parses.
+    """
     return HTTPClient(
         timeout_seconds=source_config.timeout_seconds,
-        extra_headers={"Accept": "text/html,application/xhtml+xml,*/*"},
+        extra_headers=dict(_STATSSA_BROWSER_HEADERS),
     )
 
 
@@ -1901,7 +1947,7 @@ class StatsSAAdapter(BaseAdapter):
     source_id = "statssa"
     display_name = "Statistics South Africa"
     priority = 10   # Run first — largest number of datasets
-    version = "0.4.0"  # 0.1.0 Phase A stub -> 0.2.0 Phase 1 (download) -> 0.3.0 Phase 2 (QLFS parse/transform/stage) -> 0.4.0 Phase 3a (GDP parse/transform/stage)
+    version = "0.4.1"  # 0.1.0 Phase A stub -> 0.2.0 Phase 1 (download) -> 0.3.0 Phase 2 (QLFS parse/transform/stage) -> 0.4.0 Phase 3a (GDP parse/transform/stage) -> 0.4.1 WAF Tier 1 (header hardening + direct-URL fallback probe)
 
     def __init__(
         self,
@@ -2126,6 +2172,41 @@ class StatsSAAdapter(BaseAdapter):
             body_text = response.body.decode("utf-8", errors="replace")
             if "_Incapsula_Resource" in body_text or "incapsula" in body_text.lower():
                 self._log.error("WAF challenge detected on QLFS release hub")
+                # Tier 1 fallback (IMPLEMENTATION-SPEC-STATSSA-WAF.md §6.1
+                # step 2): the hub being WAF-blocked does not mean the
+                # direct publication-URL path is also blocked. Probe it
+                # before giving up. This is additive only: it does not
+                # change the WAF-marker detection above, and does not
+                # touch fetch_and_apply()'s own, separate use of the same
+                # probing functions.
+                q, y = _determine_current_qlfs_quarter()
+                try:
+                    fallback_url = _probe_qlfs_publication_url(client, q, y)
+                except Exception as probe_exc:
+                    self._log.warning(
+                        "QLFS direct-URL fallback probe raised: %s", probe_exc
+                    )
+                    fallback_url = None
+                if fallback_url:
+                    self._log.info(
+                        "QLFS hub WAF-blocked, but a direct publication URL "
+                        "is reachable: %s", fallback_url,
+                    )
+                    return DatasetCheckResult(
+                        dataset_id=dataset_id,
+                        status="unknown",
+                        message=(
+                            "WAF_BLOCKED: Incapsula WAF challenge detected on "
+                            "the QLFS release hub, but a direct publication "
+                            "URL is reachable. This is a probe-based signal, "
+                            "not a hub-diff signal — it confirms a candidate "
+                            "file can be fetched, not that a new release "
+                            "exists. Run fetch_and_apply() to attempt "
+                            "download."
+                        ),
+                        source_url=_QLFS_HUB_URL,
+                        notes=f"Direct-URL fallback probe found: {fallback_url}",
+                    )
                 return DatasetCheckResult(
                     dataset_id=dataset_id,
                     status="error",
@@ -2260,6 +2341,38 @@ class StatsSAAdapter(BaseAdapter):
             body_text = response.body.decode("utf-8", errors="replace")
             if "_Incapsula_Resource" in body_text or "incapsula" in body_text.lower():
                 self._log.error("WAF challenge detected on GDP release hub")
+                # Tier 1 fallback (IMPLEMENTATION-SPEC-STATSSA-WAF.md §6.1
+                # step 2), mirroring _check_qlfs()'s fallback exactly —
+                # copied rather than shared, for the same reason as the WAF
+                # scan above.
+                q, y = _determine_current_gdp_quarter()
+                try:
+                    fallback_url = _probe_gdp_publication_url(client, q, y)
+                except Exception as probe_exc:
+                    self._log.warning(
+                        "GDP direct-URL fallback probe raised: %s", probe_exc
+                    )
+                    fallback_url = None
+                if fallback_url:
+                    self._log.info(
+                        "GDP hub WAF-blocked, but a direct publication URL "
+                        "is reachable: %s", fallback_url,
+                    )
+                    return DatasetCheckResult(
+                        dataset_id=dataset_id,
+                        status="unknown",
+                        message=(
+                            "WAF_BLOCKED: Incapsula WAF challenge detected on "
+                            "the GDP release hub, but a direct publication "
+                            "URL is reachable. This is a probe-based signal, "
+                            "not a hub-diff signal — it confirms a candidate "
+                            "file can be fetched, not that a new release "
+                            "exists. Run fetch_and_apply() to attempt "
+                            "download."
+                        ),
+                        source_url=_GDP_HUB_URL,
+                        notes=f"Direct-URL fallback probe found: {fallback_url}",
+                    )
                 return DatasetCheckResult(
                     dataset_id=dataset_id,
                     status="error",
@@ -3090,6 +3203,18 @@ class StatsSAAdapter(BaseAdapter):
                 "out of scope for this build. The P0441 URL-naming convention "
                 "and _GDP_GROWTH_SPEC's label match are unverified against a "
                 "real workbook, same caveat class as QLFS's Excel layout."
+            ),
+            "waf_access_status": (
+                "IMPLEMENTATION-SPEC-STATSSA-WAF.md Tier 1 implemented: "
+                "_build_http_client() now sends an ordinary-browser-"
+                "equivalent header set (non-bot User-Agent, Accept-Language, "
+                "Sec-Fetch-*) for Stats SA requests; _check_qlfs()/"
+                "_check_gdp() now fall through to the existing direct-"
+                "publication-URL probe on a WAF_BLOCKED hub response, "
+                "returning status='unknown' (probe-based signal) if a "
+                "candidate file is reachable, or the prior status='error' "
+                "unchanged if it is not. WAF-marker detection semantics are "
+                "unchanged. Tier 2 (browser automation) is not adopted."
             ),
             "notes": (
                 "One release, one job: QLFS family uses a single extractor. "

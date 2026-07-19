@@ -1243,3 +1243,174 @@ def test_gdp_staged_candidate_requires_approve_then_promote(tmp_path, monkeypatc
     assert written == staged_doc
     # (e) Only now — after promotion — has the on-disk content changed.
     assert written != stale_gdp_doc
+
+
+# ---------------------------------------------------------------------------
+# 7. IMPLEMENTATION-SPEC-STATSSA-WAF.md §8 — Tier 1 WAF-fallback tests
+#
+# Covers, for both _check_qlfs() and _check_gdp():
+#   1. Hub WAF-blocked, direct-URL probe succeeds -> status="unknown".
+#   2. Hub WAF-blocked, direct-URL probe also fails -> status="error"
+#      (today's WAF_BLOCKED behaviour preserved).
+#   3. Hub succeeds normally (no WAF marker) -> unchanged, and the new
+#      fallback probe is provably NOT invoked (call-count assertion).
+# Plus, separately:
+#   4. _build_http_client() sends the new Tier 1 header set.
+# ---------------------------------------------------------------------------
+
+
+def _waf_response(hub_url: str) -> HTTPResponse:
+    """An HTTPResponse whose body contains the Incapsula WAF marker."""
+    return HTTPResponse(
+        url=hub_url,
+        status=200,
+        headers={},
+        body=b"<html><body>_Incapsula_Resource challenge page</body></html>",
+        content_sha256="waf-challenge-hash",
+    )
+
+
+def _clean_response(hub_url: str, body: bytes) -> HTTPResponse:
+    """An ordinary, non-WAF HTTPResponse."""
+    return HTTPResponse(
+        url=hub_url, status=200, headers={}, body=body, content_sha256="clean-hash",
+    )
+
+
+def test_check_qlfs_waf_blocked_fallback_probe_succeeds_returns_unknown(tmp_path, monkeypatch):
+    adapter = _make_adapter(tmp_path)
+    monkeypatch.setattr(
+        "automation.core.http_client.HTTPClient.etag_check",
+        lambda self, url, **kwargs: (True, _waf_response(statss_mod._QLFS_HUB_URL)),
+    )
+    found_url = "https://www.statssa.gov.za/publications/P0211/found.xlsx"
+    monkeypatch.setattr(
+        statss_mod, "_probe_qlfs_publication_url", lambda client, q, y: found_url
+    )
+
+    result = adapter.check_for_updates("unemployment", None)
+
+    assert result.status == "unknown"
+    assert "WAF_BLOCKED" in result.message
+    assert "probe-based signal" in result.message
+    assert found_url in result.notes
+
+
+def test_check_qlfs_waf_blocked_fallback_probe_also_fails_returns_error(tmp_path, monkeypatch):
+    adapter = _make_adapter(tmp_path)
+    monkeypatch.setattr(
+        "automation.core.http_client.HTTPClient.etag_check",
+        lambda self, url, **kwargs: (True, _waf_response(statss_mod._QLFS_HUB_URL)),
+    )
+    monkeypatch.setattr(
+        statss_mod, "_probe_qlfs_publication_url", lambda client, q, y: None
+    )
+
+    result = adapter.check_for_updates("unemployment", None)
+
+    # Today's pre-Tier-1 behaviour is preserved exactly when the fallback
+    # provides no signal either.
+    assert result.status == "error"
+    assert result.message == (
+        "WAF_BLOCKED: Incapsula WAF challenge detected. Cannot check for updates."
+    )
+
+
+def test_check_qlfs_no_waf_fallback_probe_not_invoked(tmp_path, monkeypatch):
+    adapter = _make_adapter(tmp_path)
+    monkeypatch.setattr(
+        "automation.core.http_client.HTTPClient.etag_check",
+        lambda self, url, **kwargs: (
+            True, _clean_response(statss_mod._QLFS_HUB_URL, b"<html>Q1 2026 QLFS release</html>"),
+        ),
+    )
+    probe_calls: list[tuple] = []
+    monkeypatch.setattr(
+        statss_mod,
+        "_probe_qlfs_publication_url",
+        lambda client, q, y: probe_calls.append((q, y)) or "unused",
+    )
+
+    result = adapter.check_for_updates("unemployment", None)
+
+    # Non-WAF path is completely unaffected by Tier 1: status still
+    # computed from the hub diff, and the new fallback probe is never
+    # reached.
+    assert result.status == "update_available"
+    assert probe_calls == []
+
+
+def test_check_gdp_waf_blocked_fallback_probe_succeeds_returns_unknown(tmp_path, monkeypatch):
+    adapter = _make_adapter_for_gdp(tmp_path)
+    monkeypatch.setattr(
+        "automation.core.http_client.HTTPClient.etag_check",
+        lambda self, url, **kwargs: (True, _waf_response(statss_mod._GDP_HUB_URL)),
+    )
+    found_url = "https://www.statssa.gov.za/publications/P0441/found.xlsx"
+    monkeypatch.setattr(
+        statss_mod, "_probe_gdp_publication_url", lambda client, q, y: found_url
+    )
+
+    result = adapter.check_for_updates("gdp", None)
+
+    assert result.status == "unknown"
+    assert "WAF_BLOCKED" in result.message
+    assert "probe-based signal" in result.message
+    assert found_url in result.notes
+
+
+def test_check_gdp_waf_blocked_fallback_probe_also_fails_returns_error(tmp_path, monkeypatch):
+    adapter = _make_adapter_for_gdp(tmp_path)
+    monkeypatch.setattr(
+        "automation.core.http_client.HTTPClient.etag_check",
+        lambda self, url, **kwargs: (True, _waf_response(statss_mod._GDP_HUB_URL)),
+    )
+    monkeypatch.setattr(
+        statss_mod, "_probe_gdp_publication_url", lambda client, q, y: None
+    )
+
+    result = adapter.check_for_updates("gdp", None)
+
+    assert result.status == "error"
+    assert result.message == (
+        "WAF_BLOCKED: Incapsula WAF challenge detected. Cannot check for updates."
+    )
+
+
+def test_check_gdp_no_waf_fallback_probe_not_invoked(tmp_path, monkeypatch):
+    adapter = _make_adapter_for_gdp(tmp_path)
+    monkeypatch.setattr(
+        "automation.core.http_client.HTTPClient.etag_check",
+        lambda self, url, **kwargs: (
+            True, _clean_response(statss_mod._GDP_HUB_URL, b"<html>Q1 2026 GDP release</html>"),
+        ),
+    )
+    probe_calls: list[tuple] = []
+    monkeypatch.setattr(
+        statss_mod,
+        "_probe_gdp_publication_url",
+        lambda client, q, y: probe_calls.append((q, y)) or "unused",
+    )
+
+    result = adapter.check_for_updates("gdp", None)
+
+    assert result.status == "update_available"
+    assert probe_calls == []
+
+
+def test_build_http_client_sends_tier1_browser_headers():
+    """IMPLEMENTATION-SPEC-STATSSA-WAF.md §8 item 4 — a direct assertion on
+    the constructed client's headers, not a live-network test."""
+    source_config = SourceConfig(source_id="statssa", display_name="Statistics South Africa")
+    client = statss_mod._build_http_client(source_config)
+
+    headers = client.extra_headers
+    assert headers["User-Agent"] == statss_mod._STATSSA_BROWSER_HEADERS["User-Agent"]
+    assert "data-automation-bot" not in headers["User-Agent"]
+    assert headers["Accept-Language"] == "en-ZA,en;q=0.9"
+    assert headers["Sec-Fetch-Mode"] == "navigate"
+    # Accept-Encoding is deliberately "identity", not "gzip, deflate, br" —
+    # core/http_client.py never decompresses a response body (out of scope
+    # to change here), so advertising compression support would corrupt
+    # the raw body text this adapter WAF-scans and parses.
+    assert headers["Accept-Encoding"] == "identity"
