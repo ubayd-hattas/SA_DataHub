@@ -1,7 +1,10 @@
 """
-Tests for automation.adapters.statss — Phase 2 (QLFS parse/transform/stage).
+Tests for automation.adapters.statss — Phase 2 (QLFS parse/transform/stage)
+and Phase 3a (GDP parse/transform/stage).
 
-Covers the acceptance criteria in IMPLEMENTATION-SPEC-STATSSA-PHASE2.md §10:
+Covers the acceptance criteria in IMPLEMENTATION-SPEC-STATSSA-PHASE2.md §10
+(QLFS, tests 1-21 below) and IMPLEMENTATION-SPEC-GDP.md §10 (GDP, appended
+at the end of this file):
   1. Successful parse of a representative QLFS workbook, verified against
      every one of the seven named values.
   2. Correct application of each transform (unemployment / youth /
@@ -19,6 +22,19 @@ No archived QLFS .xlsx file was available in this environment to test
 against (see the module docstring in automation/adapters/statss.py); the
 fixture workbook below is a synthetic stand-in built to the documented
 Stats SA convention (quarter-label header row + labeled indicator rows).
+
+The GDP tests at the end of this file cover parse_gdp_workbook() (multi-
+quarter extraction, fail-loudly paths, blank-column skipping),
+_validate_gdp_growth_rate(), _apply_gdp_growth_points() (append, in-place
+revision — the "single most important test" per IMPLEMENTATION-SPEC-
+GDP.md §10 item 7 — and empty-series seeding), _transform_gdp()'s scope
+boundary (gdp-annual-growth / gdp-nominal / gdp-per-capita untouched),
+_check_gdp()'s hub-change detection, and fetch_and_apply()'s combined
+QLFS+GDP flow (staging without direct write, no-change, protected-field
+isolation between the two flows, and the approve→promote end-to-end
+proof). Exactly as with QLFS, no archived GDP .xlsx file was available in
+this session — the GDP fixture workbook below is likewise a synthetic
+stand-in built to the documented Stats SA convention.
 """
 
 from __future__ import annotations
@@ -32,17 +48,25 @@ import pytest
 
 import automation.adapters.statss as statss_mod
 from automation.adapters.statss import (
+    GDPExtract,
     QLFSExtract,
     StatsSAAdapter,
+    _apply_gdp_growth_points,
     _check_qoq_jump,
+    _GDP_GROWTH_JUMP_WARNING_THRESHOLD,
+    _GDP_GROWTH_PLAUSIBLE_RANGE,
+    _transform_gdp,
     _transform_labour_force,
     _transform_unemployment,
     _transform_youth_unemployment,
+    _validate_gdp_growth_rate,
     _validate_percentage,
     _validate_quarterly_label,
+    parse_gdp_workbook,
     parse_qlfs_workbook,
 )
 from automation.core.config import AutomationConfig, SourceConfig
+from automation.core.http_client import HTTPResponse
 from automation.core.metadata import check_protected_fields
 from automation.core.promote import promote_version
 from automation.core.staging import read_staged_dataset
@@ -609,3 +633,613 @@ def test_qlfs_staged_candidate_requires_approve_then_promote(tmp_path, monkeypat
     assert written == staged_doc
     # (e) Only now — after promotion — has the on-disk content changed.
     assert written != stale_docs["unemployment"]
+
+
+# ---------------------------------------------------------------------------
+# GDP (Phase 3a) — IMPLEMENTATION-SPEC-GDP.md §10
+# ---------------------------------------------------------------------------
+#
+# 15 new tests, appended after the existing QLFS tests above. No existing
+# test in this file is modified.
+
+_GDP_GROWTH_LABEL = "GDP growth rate (QoQ, SAAR)"
+_GDP_ANNUAL_LABEL = "Annual GDP growth rate"
+
+
+def _build_gdp_fixture_workbook(
+    headers: tuple[str, ...] = ("Q2 2025", "Q3 2025", "Q4 2025", "Q1 2026"),
+    values: tuple[float, ...] = (0.8, 0.3, 0.4, 0.5),
+    label: str = _GDP_GROWTH_LABEL,
+    include_annual_row: bool = True,
+) -> bytes:
+    """
+    Build a minimal, representative GDP-style workbook: a quarter-label
+    header row plus a single "GDP growth" indicator row with a value
+    under each quarter column. Unlike the QLFS fixture builder (one value
+    per metric, only the latest quarter populated), this places values
+    under MULTIPLE quarter columns, since parse_gdp_workbook() must read
+    every available column, not just the latest.
+    """
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "GDP Time Series"
+    ws.cell(row=1, column=1, value="Indicator")
+    for i, h in enumerate(headers, start=2):
+        ws.cell(row=1, column=i, value=h)
+
+    ws.cell(row=2, column=1, value=label)
+    for c, v in enumerate(values, start=2):
+        ws.cell(row=2, column=c, value=v)
+
+    if include_annual_row:
+        ws.cell(row=3, column=1, value=_GDP_ANNUAL_LABEL)
+        for c, v in enumerate(values, start=2):
+            ws.cell(row=3, column=c, value=v + 10.0)  # distinct dummy values
+
+    buf = BytesIO()
+    wb.save(buf)
+    return buf.getvalue()
+
+
+# ---------------------------------------------------------------------------
+# 1. Parser
+# ---------------------------------------------------------------------------
+
+
+def test_parse_gdp_workbook_extracts_all_quarter_points():
+    data = _build_gdp_fixture_workbook()
+    extract = parse_gdp_workbook(data)
+
+    assert extract.release_period == "Q1 2026"
+    assert extract.growth_points == [
+        ("Q2 2025", 0.8),
+        ("Q3 2025", 0.3),
+        ("Q4 2025", 0.4),
+        ("Q1 2026", 0.5),
+    ]
+
+
+def test_parse_gdp_workbook_missing_row_fails_loudly():
+    data = _build_gdp_fixture_workbook(include_annual_row=False)
+    wb = openpyxl.load_workbook(BytesIO(data))
+    ws = wb.active
+    for row in ws.iter_rows():
+        for cell in row:
+            if cell.value == _GDP_GROWTH_LABEL:
+                cell.value = "Some unrelated row"
+    buf = BytesIO()
+    wb.save(buf)
+
+    with pytest.raises(ValueError, match="growth"):
+        parse_gdp_workbook(buf.getvalue())
+
+
+def test_parse_gdp_workbook_no_quarter_headers_fails_loudly():
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.cell(row=1, column=1, value="Indicator")
+    ws.cell(row=1, column=2, value="Not a quarter")
+    ws.cell(row=2, column=1, value=_GDP_GROWTH_LABEL)
+    ws.cell(row=2, column=2, value=0.5)
+    buf = BytesIO()
+    wb.save(buf)
+
+    with pytest.raises(ValueError, match="quarter-header"):
+        parse_gdp_workbook(buf.getvalue())
+
+
+def test_parse_gdp_workbook_skips_blank_columns():
+    data = _build_gdp_fixture_workbook()
+    wb = openpyxl.load_workbook(BytesIO(data))
+    ws = wb.active
+    ws.cell(row=2, column=3).value = None  # blank out Q3 2025's value cell
+    buf = BytesIO()
+    wb.save(buf)
+
+    extract = parse_gdp_workbook(buf.getvalue())
+    labels = [label for label, _ in extract.growth_points]
+    assert "Q3 2025" not in labels
+    assert labels == ["Q2 2025", "Q4 2025", "Q1 2026"]
+
+
+# ---------------------------------------------------------------------------
+# 2. Validation
+# ---------------------------------------------------------------------------
+
+
+def test_validate_gdp_growth_rate_in_range_and_out_of_range():
+    assert _validate_gdp_growth_rate(0.5, "Q1 2026") == []
+    # A real historical value from gdp.json itself — proves the range
+    # isn't naively [0, 100] like QLFS's _validate_percentage().
+    assert _validate_gdp_growth_rate(-6.2, "2020") == []
+
+    errors = _validate_gdp_growth_rate(45.0, "Q1 2026")
+    assert len(errors) == 1
+    assert "Q1 2026" in errors[0]
+
+
+# ---------------------------------------------------------------------------
+# 3. _apply_gdp_growth_points() / _transform_gdp()
+# ---------------------------------------------------------------------------
+
+
+def _gdp_growth_stat(series_data=None, **overrides) -> dict:
+    stat = {
+        "id": "gdp-growth",
+        "categoryId": "gdp",
+        "title": "GDP Growth Rate (Quarter-on-Quarter)",
+        "value": "0.4%",
+        "rawValue": 0.4,
+        "unit": "%",
+        "change": 0.1,
+        "changeLabel": "from Q3 2025",
+        "trend": "up",
+        "source": {"name": "Statistics South Africa", "publicationDate": "2026-03-10"},
+        "lastUpdated": "2026-03-10",
+        "series": [
+            {
+                "name": "GDP Growth (%, QoQ SAAR)",
+                "unit": "%",
+                "data": series_data if series_data is not None else [
+                    {"label": "Q3 2025", "value": 0.3},
+                    {"label": "Q4 2025", "value": 0.4},
+                ],
+            }
+        ],
+    }
+    stat.update(overrides)
+    return stat
+
+
+def _gdp_doc(growth_stat: dict | None = None) -> dict:
+    return {
+        "_meta": {"source": "Stats SA", "last_verified": "2026-05-31"},
+        "statistics": [
+            growth_stat if growth_stat is not None else _gdp_growth_stat(),
+            {
+                "id": "gdp-annual-growth",
+                "rawValue": 1.1,
+                "series": [{"data": [
+                    {"label": "2024", "value": 0.5},
+                    {"label": "2025", "value": 1.1},
+                ]}],
+            },
+            {
+                "id": "gdp-nominal",
+                "rawValue": 7670,
+                "series": [{"data": [
+                    {"label": "2024", "value": 7352},
+                    {"label": "2025", "value": 7670},
+                ]}],
+            },
+            {
+                "id": "gdp-per-capita",
+                "rawValue": 120800,
+                "series": [{"data": [
+                    {"label": "2024", "value": 114869},
+                    {"label": "2025", "value": 120800},
+                ]}],
+            },
+        ],
+    }
+
+
+def test_apply_gdp_growth_points_appends_new_point():
+    doc = _gdp_doc()
+    notes = _apply_gdp_growth_points(doc, [("Q1 2026", 0.5)], publication_date="2026-06-09")
+
+    stat = {s["id"]: s for s in doc["statistics"]}["gdp-growth"]
+    data = stat["series"][0]["data"]
+    assert data[-1] == {"label": "Q1 2026", "value": 0.5}
+    assert len(data) == 3
+    assert stat["rawValue"] == 0.5
+    assert stat["value"] == "0.5%"
+    assert stat["change"] == 0.1
+    assert stat["trend"] == "up"
+    assert stat["lastUpdated"] == "2026-06-09"
+    assert notes == []  # nothing existing changed — pure append
+
+
+def test_apply_gdp_growth_points_revises_historical_point():
+    """The single most important test in this milestone (IMPLEMENTATION-
+    SPEC-GDP.md §10 item 7) — the direct proof of the
+    ``overwrites_historical_points: true`` requirement from gdp.yaml.
+    """
+    doc = _gdp_doc()
+    notes = _apply_gdp_growth_points(
+        doc,
+        [("Q3 2025", 0.6), ("Q1 2026", 0.5)],
+        publication_date="2026-06-09",
+    )
+
+    stat = {s["id"]: s for s in doc["statistics"]}["gdp-growth"]
+    data = stat["series"][0]["data"]
+
+    # Q3 2025 overwritten in place — not duplicated.
+    q3_points = [pt for pt in data if pt["label"] == "Q3 2025"]
+    assert len(q3_points) == 1
+    assert q3_points[0]["value"] == 0.6
+
+    # Q1 2026 appended as the new point.
+    assert data[-1] == {"label": "Q1 2026", "value": 0.5}
+    assert len(data) == 3
+
+    # A revision note was produced, naming the revised period.
+    assert any("Q3 2025" in n and "Revised" in n for n in notes)
+
+    # Headline fields are driven by Q1 2026 (the newest point) — NOT by
+    # the revised older Q3 2025 point.
+    assert stat["rawValue"] == 0.5
+    assert stat["value"] == "0.5%"
+    assert stat["trend"] == "up"
+
+
+def test_apply_gdp_growth_points_seeds_empty_series():
+    doc = _gdp_doc()
+    stat = {s["id"]: s for s in doc["statistics"]}["gdp-growth"]
+    stat["series"] = []
+    del stat["rawValue"]  # true "first-ever update": nothing to diff against
+
+    notes = _apply_gdp_growth_points(doc, [("Q1 2026", 0.5)], publication_date="2026-06-09")
+
+    stat = {s["id"]: s for s in doc["statistics"]}["gdp-growth"]
+    assert stat["series"][0]["data"] == [{"label": "Q1 2026", "value": 0.5}]
+    assert stat["change"] == 0.0
+    assert stat["trend"] == "stable"
+    assert notes == []
+
+
+def test_transform_gdp_only_touches_gdp_growth():
+    doc = _gdp_doc()
+    extract = GDPExtract(
+        release_period="Q1 2026",
+        publication_date="2026-06-09",
+        growth_points=[("Q4 2025", 0.4), ("Q1 2026", 0.5)],
+    )
+    new_doc, warnings = _transform_gdp(doc, extract, "https://statssa.gov.za/gdp.xlsx")
+
+    original_stats = {s["id"]: s for s in doc["statistics"]}
+    new_stats = {s["id"]: s for s in new_doc["statistics"]}
+
+    for stat_id in ("gdp-annual-growth", "gdp-nominal", "gdp-per-capita"):
+        assert new_stats[stat_id] == original_stats[stat_id]
+
+    assert new_stats["gdp-growth"]["rawValue"] == 0.5
+    # Deep copy — original input document is not mutated.
+    assert doc["statistics"][0]["rawValue"] == 0.4
+
+
+# ---------------------------------------------------------------------------
+# 4. Quarter-over-quarter anomaly threshold (GDP-specific)
+# ---------------------------------------------------------------------------
+
+
+def test_qoq_jump_flags_large_gdp_swing():
+    warning = _check_qoq_jump(0.4, 6.0, "gdp-growth", threshold=_GDP_GROWTH_JUMP_WARNING_THRESHOLD)
+    assert warning is not None
+    assert "ANOMALY" in warning
+
+    # A swing within the wider GDP threshold (but that would exceed
+    # QLFS's tighter 3.0pp default) is NOT flagged — proving the
+    # GDP-specific threshold is actually wider, not just re-used.
+    assert _check_qoq_jump(0.4, 4.0, "gdp-growth", threshold=_GDP_GROWTH_JUMP_WARNING_THRESHOLD) is None
+
+
+# ---------------------------------------------------------------------------
+# 5. _check_gdp() — hub-change detection
+# ---------------------------------------------------------------------------
+
+
+def _make_adapter_for_gdp(tmp_path: Path) -> StatsSAAdapter:
+    config = AutomationConfig(
+        report_dir=tmp_path / "reports",
+        raw_archive_dir=tmp_path / "raw_archive",
+    )
+    return StatsSAAdapter(
+        config, SourceConfig(source_id="statssa", display_name="Statistics South Africa")
+    )
+
+
+def test_check_gdp_detects_hub_change(tmp_path, monkeypatch):
+    adapter = _make_adapter_for_gdp(tmp_path)
+
+    changed_response = HTTPResponse(
+        url=statss_mod._GDP_HUB_URL,
+        status=200,
+        headers={},
+        body=b"<html>Q1 2026 GDP release</html>",
+        content_sha256="new-hash",
+    )
+    monkeypatch.setattr(
+        "automation.core.http_client.HTTPClient.etag_check",
+        lambda self, url, **kwargs: (True, changed_response),
+    )
+    result = adapter.check_for_updates("gdp", None)
+    assert result.status == "update_available"
+
+    # Fresh adapter (new cache), hub now reports unchanged.
+    adapter2 = _make_adapter_for_gdp(tmp_path)
+    unchanged_response = HTTPResponse(
+        url=statss_mod._GDP_HUB_URL,
+        status=200,
+        headers={},
+        body=b"<html>Q1 2026 GDP release</html>",
+        content_sha256="new-hash",
+    )
+    monkeypatch.setattr(
+        "automation.core.http_client.HTTPClient.etag_check",
+        lambda self, url, **kwargs: (False, unchanged_response),
+    )
+    result2 = adapter2.check_for_updates("gdp", None)
+    assert result2.status == "up_to_date"
+
+
+# ---------------------------------------------------------------------------
+# 6. fetch_and_apply() integration — network layer mocked, GDP + QLFS
+# ---------------------------------------------------------------------------
+
+
+def _patch_qlfs_and_gdp_network(
+    monkeypatch,
+    qlfs_bytes: bytes,
+    qlfs_url: str,
+    gdp_bytes: bytes,
+    gdp_url: str,
+) -> None:
+    """Combined network patch: deterministic mocks for both the QLFS and
+    GDP discovery/download paths within a single fetch_and_apply() call.
+    """
+    monkeypatch.setattr(
+        statss_mod, "_fetch_release_hub_html",
+        lambda client, url: b"<html>Q1 2026 QLFS release</html>",
+    )
+    monkeypatch.setattr(statss_mod, "_extract_release_period", lambda html: "Q1 2026")
+    monkeypatch.setattr(statss_mod, "_determine_current_qlfs_quarter", lambda: (1, 2026))
+    monkeypatch.setattr(statss_mod, "_probe_qlfs_publication_url", lambda client, q, y: qlfs_url)
+
+    monkeypatch.setattr(statss_mod, "_determine_current_gdp_quarter", lambda: (1, 2026))
+    monkeypatch.setattr(
+        statss_mod, "_discover_gdp_excel",
+        lambda client, **kwargs: (gdp_url, "Q1 2026", b"<html>Q1 2026 GDP release</html>"),
+    )
+
+    def _download(client, url):
+        if url == qlfs_url:
+            return qlfs_bytes
+        if url == gdp_url:
+            return gdp_bytes
+        raise AssertionError(f"Unexpected download URL in test: {url}")
+
+    monkeypatch.setattr(statss_mod, "_download_publication", _download)
+
+
+def _stale_qlfs_docs_and_paths(prod_dir: Path) -> tuple[dict, dict]:
+    stale_docs = {
+        "unemployment": {
+            "_meta": {},
+            "statistics": [
+                {"id": "unemployment-national", "rawValue": 31.4,
+                 "series": [{"data": [{"label": "Q4 2025", "value": 31.4}]}]}
+            ],
+        },
+        "youth-unemployment": _youth_doc(),
+        "labour-force": _labour_force_doc(),
+    }
+    paths = {}
+    for ds_id, doc in stale_docs.items():
+        p = prod_dir / f"{ds_id}.json"
+        p.write_text(json.dumps(doc), encoding="utf-8")
+        paths[ds_id] = p
+    return stale_docs, paths
+
+
+def test_fetch_and_apply_stages_gdp_without_direct_write(tmp_path, monkeypatch):
+    qlfs_bytes = _build_fixture_workbook()
+    qlfs_url = "https://www.statssa.gov.za/publications/P0211/fixture.xlsx"
+    gdp_bytes = _build_gdp_fixture_workbook(
+        headers=("Q4 2025", "Q1 2026"), values=(0.4, 0.5), include_annual_row=False,
+    )
+    gdp_url = "https://www.statssa.gov.za/publications/P0441/gdp_fixture.xlsx"
+    _patch_qlfs_and_gdp_network(monkeypatch, qlfs_bytes, qlfs_url, gdp_bytes, gdp_url)
+
+    prod_dir = tmp_path / "production"
+    prod_dir.mkdir()
+    stale_qlfs_docs, qlfs_paths = _stale_qlfs_docs_and_paths(prod_dir)
+    monkeypatch.setattr(statss_mod, "_QLFS_DATASET_JSON", qlfs_paths)
+
+    stale_gdp_doc = _gdp_doc()
+    gdp_path = prod_dir / "gdp.json"
+    gdp_path.write_text(json.dumps(stale_gdp_doc), encoding="utf-8")
+    monkeypatch.setattr(statss_mod, "_GDP_DATASET_JSON", gdp_path)
+
+    adapter = _make_adapter(tmp_path)
+    result = adapter.fetch_and_apply(dry_run=False, run_id="test-run")
+
+    # QLFS portion of the result is unaffected by GDP being added.
+    assert result["status"] == "ok"
+    assert not result["errors"]
+    assert len(result["version_ids"]) == 4  # 3 QLFS + 1 GDP
+    for ds_id, p in qlfs_paths.items():
+        assert json.loads(p.read_text(encoding="utf-8")) == stale_qlfs_docs[ds_id]
+
+    # GDP staged, no direct write to gdp.json.
+    assert result["gdp"]["status"] == "ok"
+    assert result["gdp"]["version_id"] is not None
+    assert result["gdp"]["version_id"] in result["version_ids"]
+    assert json.loads(gdp_path.read_text(encoding="utf-8")) == stale_gdp_doc
+
+    pending = pending_versions(adapter.config.report_dir, "gdp")
+    assert len(pending) == 1
+    staged_doc = read_staged_dataset(adapter.config.report_dir, "gdp", pending[0].version_id)
+    assert staged_doc["statistics"]
+    staged_growth = {s["id"]: s for s in staged_doc["statistics"]}["gdp-growth"]
+    assert staged_growth["rawValue"] == 0.5
+
+
+def test_fetch_and_apply_gdp_no_change_produces_no_change_status(tmp_path, monkeypatch):
+    qlfs_bytes = _build_fixture_workbook()
+    qlfs_url = "https://www.statssa.gov.za/publications/P0211/fixture.xlsx"
+    gdp_bytes = _build_gdp_fixture_workbook(
+        headers=("Q3 2025", "Q4 2025"), values=(0.3, 0.4), include_annual_row=False,
+    )
+    gdp_url = "https://www.statssa.gov.za/publications/P0441/gdp_fixture.xlsx"
+    _patch_qlfs_and_gdp_network(monkeypatch, qlfs_bytes, qlfs_url, gdp_bytes, gdp_url)
+
+    prod_dir = tmp_path / "production"
+    prod_dir.mkdir()
+    _, qlfs_paths = _stale_qlfs_docs_and_paths(prod_dir)
+    # Make the QLFS values already match the fixture so QLFS is no_change,
+    # keeping this test focused on the GDP no_change path.
+    for ds_id, doc in {
+        "unemployment": {
+            "_meta": {},
+            "statistics": [
+                {"id": "unemployment-national", "rawValue": 32.7,
+                 "series": [{"data": [{"label": "Q1 2026", "value": 32.7}]}]}
+            ],
+        },
+        "youth-unemployment": {
+            "_meta": {},
+            "statistics": [
+                {"id": "youth-unemployment-narrow", "rawValue": 46.3, "series": []},
+                {"id": "youth-unemployment-1524", "rawValue": 60.9, "series": []},
+                {"id": "youth-unemployment-expanded", "rawValue": 58.1, "series": []},
+                {"id": "youth-neet-rate", "rawValue": 37.6, "series": []},
+            ],
+        },
+        "labour-force": {
+            "_meta": {},
+            "statistics": [
+                {"id": "lfpr-overall", "rawValue": 60.5, "series": []},
+                {"id": "female-labour-participation", "rawValue": 55.0, "series": []},
+            ],
+        },
+    }.items():
+        qlfs_paths[ds_id].write_text(json.dumps(doc), encoding="utf-8")
+    monkeypatch.setattr(statss_mod, "_QLFS_DATASET_JSON", qlfs_paths)
+
+    stale_gdp_doc = _gdp_doc()  # series already ends at Q3 2025: 0.3, Q4 2025: 0.4
+    gdp_path = prod_dir / "gdp.json"
+    gdp_path.write_text(json.dumps(stale_gdp_doc), encoding="utf-8")
+    monkeypatch.setattr(statss_mod, "_GDP_DATASET_JSON", gdp_path)
+
+    adapter = _make_adapter(tmp_path)
+    result = adapter.fetch_and_apply(dry_run=False, run_id="test-run")
+
+    assert result["gdp"]["status"] == "no_change"
+    assert result["gdp"]["version_id"] is None
+    assert pending_versions(adapter.config.report_dir, "gdp") == []
+    assert json.loads(gdp_path.read_text(encoding="utf-8")) == stale_gdp_doc
+
+
+def test_fetch_and_apply_gdp_protected_field_violation_does_not_affect_qlfs(tmp_path, monkeypatch):
+    qlfs_bytes = _build_fixture_workbook()
+    qlfs_url = "https://www.statssa.gov.za/publications/P0211/fixture.xlsx"
+    gdp_bytes = _build_gdp_fixture_workbook(
+        headers=("Q4 2025", "Q1 2026"), values=(0.4, 0.5), include_annual_row=False,
+    )
+    gdp_url = "https://www.statssa.gov.za/publications/P0441/gdp_fixture.xlsx"
+    _patch_qlfs_and_gdp_network(monkeypatch, qlfs_bytes, qlfs_url, gdp_bytes, gdp_url)
+
+    prod_dir = tmp_path / "production"
+    prod_dir.mkdir()
+    stale_qlfs_docs, qlfs_paths = _stale_qlfs_docs_and_paths(prod_dir)
+    monkeypatch.setattr(statss_mod, "_QLFS_DATASET_JSON", qlfs_paths)
+
+    stale_gdp_doc = _gdp_doc()
+    gdp_path = prod_dir / "gdp.json"
+    gdp_path.write_text(json.dumps(stale_gdp_doc), encoding="utf-8")
+    monkeypatch.setattr(statss_mod, "_GDP_DATASET_JSON", gdp_path)
+
+    # Sabotage the GDP transform to violate a protected field.
+    original_transform_gdp = statss_mod._transform_gdp
+
+    def _sabotaged_transform_gdp(current_doc, extract, source_url=""):
+        doc, warnings = original_transform_gdp(current_doc, extract, source_url)
+        doc["statistics"][0]["id"] = "gdp-growth-TAMPERED"
+        return doc, warnings
+
+    monkeypatch.setattr(statss_mod, "_transform_gdp", _sabotaged_transform_gdp)
+
+    adapter = _make_adapter(tmp_path)
+    result = adapter.fetch_and_apply(dry_run=False, run_id="test-run")
+
+    # GDP failed due to the protected-field violation …
+    assert result["gdp"]["status"] == "error"
+    assert any("Protected field violation" in e for e in result["gdp"]["errors"])
+    assert pending_versions(adapter.config.report_dir, "gdp") == []
+    assert json.loads(gdp_path.read_text(encoding="utf-8")) == stale_gdp_doc
+
+    # … while the QLFS portion of the SAME fetch_and_apply() call still
+    # succeeded normally — direct proof the two flows are isolated.
+    assert result["status"] == "ok"
+    assert not result["errors"]
+    for ds_id, p in qlfs_paths.items():
+        assert json.loads(p.read_text(encoding="utf-8")) == stale_qlfs_docs[ds_id]
+    for ds_id in qlfs_paths:
+        assert len(pending_versions(adapter.config.report_dir, ds_id)) == 1
+
+
+def test_gdp_staged_candidate_requires_approve_then_promote(tmp_path, monkeypatch):
+    """The GDP-specific equivalent of
+    test_qlfs_staged_candidate_requires_approve_then_promote — closes this
+    acceptance-criterion class for GDP from the start of this milestone
+    rather than as a later closeout (IMPLEMENTATION-SPEC-GDP.md §10 item 15).
+    """
+    qlfs_bytes = _build_fixture_workbook()
+    qlfs_url = "https://www.statssa.gov.za/publications/P0211/fixture.xlsx"
+    gdp_bytes = _build_gdp_fixture_workbook(
+        headers=("Q4 2025", "Q1 2026"), values=(0.4, 0.5), include_annual_row=False,
+    )
+    gdp_url = "https://www.statssa.gov.za/publications/P0441/gdp_fixture.xlsx"
+    _patch_qlfs_and_gdp_network(monkeypatch, qlfs_bytes, qlfs_url, gdp_bytes, gdp_url)
+
+    prod_dir = tmp_path / "production"
+    prod_dir.mkdir()
+    stale_qlfs_docs, qlfs_paths = _stale_qlfs_docs_and_paths(prod_dir)
+    monkeypatch.setattr(statss_mod, "_QLFS_DATASET_JSON", qlfs_paths)
+
+    stale_gdp_doc = _gdp_doc()
+    gdp_path = prod_dir / "gdp.json"
+    gdp_path.write_text(json.dumps(stale_gdp_doc), encoding="utf-8")
+    monkeypatch.setattr(statss_mod, "_GDP_DATASET_JSON", gdp_path)
+
+    # Redirect promote_version()'s production target, same technique used
+    # for QLFS/SARB in this file, so this test never touches the real
+    # src/data/datasets/ tree.
+    monkeypatch.setattr(
+        "automation.core.promote.get_production_dataset_path",
+        lambda dataset_id: {**qlfs_paths, "gdp": gdp_path}[dataset_id],
+    )
+
+    adapter = _make_adapter(tmp_path)
+    report_dir = adapter.config.report_dir
+
+    # (a) Stage a genuine GDP change.
+    result = adapter.fetch_and_apply(dry_run=False, run_id="test-run")
+    assert result["gdp"]["status"] == "ok"
+
+    pending = pending_versions(report_dir, "gdp")
+    assert len(pending) == 1
+    version_id = pending[0].version_id
+
+    # gdp.json's on-disk content is unchanged immediately after staging.
+    assert json.loads(gdp_path.read_text(encoding="utf-8")) == stale_gdp_doc
+
+    # (b) Promotion must be refused before approval.
+    with pytest.raises(ValueError, match="requires 'approved'"):
+        promote_version(report_dir, "gdp", version_id)
+    assert json.loads(gdp_path.read_text(encoding="utf-8")) == stale_gdp_doc
+
+    # (c) Approve.
+    approve_version(report_dir, "gdp", version_id, approver="test-reviewer")
+    assert pending_versions(report_dir, "gdp") == []
+
+    # (d) Promote — now allowed. The written file matches the staged document.
+    staged_doc = read_staged_dataset(report_dir, "gdp", version_id)
+    result_path = promote_version(report_dir, "gdp", version_id)
+    assert result_path == gdp_path
+    written = json.loads(gdp_path.read_text(encoding="utf-8"))
+    assert written == staged_doc
+    # (e) Only now — after promotion — has the on-disk content changed.
+    assert written != stale_gdp_doc

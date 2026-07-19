@@ -68,9 +68,51 @@ so one entry per dataset is the natural fit and keeps `--approve`/
 ``labour-force``). No change was made to ``version.py`` to support this —
 it is simply called three times.
 
-GDP, CPI, population, housing, census, and municipalities remain Phase A
+Phase 3a scope (GDP) — parse + transform + stage (this build)
+-----------------------------------------------------------------
+Continuing from where Phase 2 left QLFS, ``fetch_and_apply()`` now also
+processes GDP (P0441) as a second, fully independent flow within the same
+method call (see ``IMPLEMENTATION-SPEC-GDP.md``):
+  1. Real ETag/content-hash detection against the P0441 release hub
+     (``_check_gdp()``, mirroring ``_check_qlfs()``).
+  2. Discover → download → archive the raw GDP Excel publication.
+  3. Parse the workbook (``parse_gdp_workbook()``) by header/label
+     matching, extracting **every** available quarter-column value in
+     the GDP growth table — not just the latest — because Stats SA
+     routinely revises previously published quarters (``gdp.yaml``'s
+     ``overwrites_historical_points: true``).
+  4. Transform (``_transform_gdp()`` / ``_apply_gdp_growth_points()``)
+     into ``gdp.json``'s existing ``gdp-growth`` stat only, overwriting
+     any revised historical series point in place and appending any
+     genuinely new one; ``gdp-annual-growth``, ``gdp-nominal``, and
+     ``gdp-per-capita`` are never read or modified by this flow.
+  5. Validate (plausibility range for growth rates — which, unlike QLFS
+     rates, can be negative — quarterly label format, protected-field
+     diff, and a GDP-specific quarter-over-quarter anomaly threshold)
+     and stage the candidate via the same
+     ``core/staging.py``/``core/version.py`` pipeline already proven for
+     SARB and QLFS. No direct write to ``gdp.json`` ever happens here.
+
+CPI, population, housing, census, and municipalities remain Phase A
 stubs — explicitly out of scope for this build (see
-``IMPLEMENTATION-SPEC-STATSSA-PHASE2.md`` §2).
+``IMPLEMENTATION-SPEC-GDP.md`` §13).
+
+GDP Excel layout — verification status (read before touching the parser)
+--------------------------------------------------------------------------
+Exactly as with QLFS in Phase 2, no archived GDP ``.xlsx`` file was
+available in this implementation session to inspect (no session to date
+has had network access to ``statssa.gov.za``). ``parse_gdp_workbook()``
+and ``_GDP_GROWTH_SPEC``'s label-matching rules were built against the
+*documented* Stats SA convention (a header row of quarter labels with a
+"GDP growth" indicator row beneath it), not empirically verified against
+a real P0441 release file — only against synthetic fixtures (see
+``automation/adapters/tests/test_statss.py``). The P0441 URL-naming
+convention used by ``_build_gdp_candidate_urls()`` is likewise
+unconfirmed, carried forward the same way the QLFS URL convention was at
+the start of Phase 2. This is mitigated by design (fail loudly, no
+guessing, no PDF fallback), not resolved by observation — the first live
+run against a real downloaded GDP workbook is the actual empirical test
+of this parser.
 
 Excel layout — verification status (read before touching the parser)
 ----------------------------------------------------------------------
@@ -203,6 +245,16 @@ _GDP_RELEASE_WINDOWS: dict[str, str] = {
     "Q4": "March",
 }
 
+# GDP (P0441) release hub — used for ETag/content-hash change detection.
+# Same WAF caveats as the QLFS hub (see _QLFS_HUB_URL above).
+_GDP_HUB_URL = f"{_RELEASE_HUB_BASE}&PPN=P0441"
+_GDP_PUBLICATION_CODE = "P0441"
+
+# Direct publication base URL — mirrors _QLFS_PUBLICATION_BASE's pattern.
+# **Unconfirmed** against a real Stats SA release (see module docstring's
+# "GDP Excel layout — verification status" section).
+_GDP_PUBLICATION_BASE = "https://www.statssa.gov.za/publications/P0441/"
+
 # ---------------------------------------------------------------------------
 # Datasets managed by this adapter
 # ---------------------------------------------------------------------------
@@ -238,10 +290,26 @@ _QLFS_DATASET_JSON: dict[str, Path] = {
     "labour-force": _DATASETS_DIR / "labour-force.json",
 }
 
+# gdp.json — the sole dataset JSON touched by the GDP flow.
+_GDP_DATASET_JSON: Path = _DATASETS_DIR / "gdp.json"
+_GDP_GROWTH_STAT_ID = "gdp-growth"
+
 # Quarter-over-quarter jump beyond this many percentage points is flagged
 # as an anomaly for the human reviewer (not a hard failure — see
 # IMPLEMENTATION-SPEC-STATSSA-PHASE2.md §6, item 3).
 _QOQ_JUMP_WARNING_THRESHOLD = 3.0
+
+# GDP growth is inherently more volatile quarter-to-quarter than QLFS
+# rates, so its anomaly threshold is wider (IMPLEMENTATION-SPEC-GDP.md §6
+# item 4) — a tighter QLFS-style threshold would flag routine, non-
+# anomalous revisions.
+_GDP_GROWTH_JUMP_WARNING_THRESHOLD = 5.0
+
+# GDP growth is not a [0, 100] percentage like QLFS rates — it can be
+# negative (gdp.json already contains -6.2% for 2020) — so this is a
+# genuinely new plausibility range, not a reuse of _validate_percentage()'s
+# [0, 100] assumption (IMPLEMENTATION-SPEC-GDP.md §6 item 1).
+_GDP_GROWTH_PLAUSIBLE_RANGE: tuple[float, float] = (-20.0, 20.0)
 
 # ---------------------------------------------------------------------------
 # HTTP client helpers
@@ -863,6 +931,652 @@ def parse_qlfs_workbook(file_bytes: bytes) -> QLFSExtract:
 
 
 # ---------------------------------------------------------------------------
+# GDP Excel parsing (Phase 3a)
+#
+# Unlike parse_qlfs_workbook() — which deliberately reads only the single
+# most recent quarter column per metric, correct for QLFS since it does not
+# revise prior quarters as a matter of routine practice in this codebase's
+# scope — GDP must read every available quarter column in the growth
+# table, because Stats SA routinely restates prior quarters' GDP growth
+# figures in later releases (see IMPLEMENTATION-SPEC-GDP.md §1 item 3 and
+# §5.1). The helpers below generalise _find_latest_quarter_column() /
+# _find_metric_value() without modifying either — QLFS keeps using the
+# single-column versions, unchanged.
+# ---------------------------------------------------------------------------
+
+
+def _find_all_quarter_columns(ws: Any) -> list[tuple[int, str]]:
+    """
+    Scan the first several rows of a worksheet for quarter-header cells
+    (e.g. "Q1 2026") and return every (column_index, "Qn YYYY") pair found,
+    sorted chronologically ascending (oldest first). Deduplicates by
+    column index. Returns an empty list if no quarter-header cell is found.
+
+    Generalises _find_latest_quarter_column(), which this function does
+    NOT replace or modify — QLFS keeps using the single-column version
+    unchanged.
+    """
+    found: dict[int, tuple[int, int, str]] = {}
+    max_header_rows = min(15, ws.max_row or 1)
+    for row in ws.iter_rows(min_row=1, max_row=max_header_rows):
+        for cell in row:
+            val = cell.value
+            if not isinstance(val, str):
+                continue
+            match = _QUARTER_PATTERN.search(val)
+            if not match:
+                continue
+            groups = match.groups()
+            if groups[0] and groups[1]:
+                q, y = int(groups[0]), int(groups[1])
+            elif groups[2] and groups[3]:
+                q, y = int(groups[2]), int(groups[3])
+            else:
+                continue
+            found[cell.column] = (y, q, f"Q{q} {y}")
+
+    ordered = sorted(found.items(), key=lambda item: (item[1][0], item[1][1]))
+    return [(col_idx, label) for col_idx, (_year, _q, label) in ordered]
+
+
+def _find_metric_row(
+    ws: Any,
+    include: tuple[str, ...],
+    exclude: tuple[str, ...] = (),
+) -> int | None:
+    """
+    Search every row of a worksheet for a label cell matching include/
+    exclude (same case-insensitive substring rules as
+    _find_metric_value()'s label matching). Returns the 1-indexed row
+    number of the first match, or None.
+
+    Factored out so the caller can read multiple columns from the same
+    row (parse_gdp_workbook() needs this); _find_metric_value() itself is
+    left unchanged for QLFS's continued single-column use.
+    """
+    max_row = ws.max_row or 1
+    for row in ws.iter_rows(min_row=1, max_row=max_row):
+        for cell in row:
+            val = cell.value
+            if not isinstance(val, str):
+                continue
+            low = val.lower()
+            if not all(term in low for term in include):
+                continue
+            if any(term in low for term in exclude):
+                continue
+            return cell.row
+    return None
+
+
+def _read_row_values_at_columns(
+    ws: Any,
+    row_idx: int,
+    columns: list[tuple[int, str]],
+) -> list[tuple[str, float]]:
+    """
+    For each (col_idx, period_label) in `columns`, read the cell at
+    (row_idx, col_idx). Uses the exact same numeric-coercion rules as
+    _find_metric_value() (int/float pass through; numeric strings with a
+    trailing '%' are stripped and parsed; bool and unparseable values are
+    skipped, not raised). Columns whose cell is blank or unparseable are
+    silently omitted from the result (a worksheet legitimately may not
+    print a value for every historical column, e.g. a leading placeholder
+    column) — this is not an error condition.
+
+    Returns the list of (period_label, value) pairs actually found, in
+    the same chronological order as `columns`.
+    """
+    results: list[tuple[str, float]] = []
+    for col_idx, period_label in columns:
+        cell = ws.cell(row=row_idx, column=col_idx)
+        v = cell.value
+        if isinstance(v, bool):
+            continue
+        if isinstance(v, (int, float)):
+            results.append((period_label, float(v)))
+            continue
+        if isinstance(v, str):
+            try:
+                results.append((period_label, float(v.strip().rstrip("%"))))
+            except ValueError:
+                continue
+    return results
+
+
+@dataclass
+class GDPExtract:
+    """Named values extracted from a single GDP Excel workbook."""
+
+    release_period: str                      # latest quarter found, e.g. "Q1 2026"
+    publication_date: str                    # ISO YYYY-MM-DD, best-effort
+    growth_points: list[tuple[str, float]]   # [(period_label, value), ...], chronological
+
+
+# Label spec used to locate the GDP growth row by text match. Excludes an
+# annual-growth row on the same worksheet without requiring knowledge of
+# gdp-annual-growth's exact label, consistent with _QLFS_METRIC_SPECS's
+# include/exclude convention. Unverified against a real Stats SA P0441
+# workbook — see the module docstring's "GDP Excel layout — verification
+# status" section. If the real label differs, parse_gdp_workbook() fails
+# loudly rather than guessing, and this spec is the first and only place
+# that needs correcting.
+_GDP_GROWTH_SPEC: dict[str, tuple[str, ...]] = {
+    "include": ("gdp growth",),
+    "exclude": ("annual",),
+}
+
+
+def parse_gdp_workbook(file_bytes: bytes) -> GDPExtract:
+    """
+    Parse a GDP Excel workbook and extract every available quarterly GDP
+    growth rate point (all columns present in the growth table, not just
+    the latest — required for revision handling, see
+    IMPLEMENTATION-SPEC-GDP.md §1 item 3).
+
+    Algorithm
+    ---------
+    1. Open the workbook (openpyxl, data_only=True, read_only=True) — same
+       error handling as parse_qlfs_workbook(): any exception opening the
+       file is re-raised as ValueError with a clear message.
+    2. For each worksheet, call _find_all_quarter_columns(). Skip
+       worksheets where this returns an empty list.
+    3. On the first worksheet with quarter columns, call _find_metric_row()
+       using _GDP_GROWTH_SPEC's include/exclude terms.
+    4. If a row is found, call _read_row_values_at_columns() to get every
+       (period_label, value) pair present in that row.
+    5. Stop at the first worksheet that yields at least one point.
+
+    Raises
+    ------
+    ValueError
+        If no worksheet yields both a quarter-header row AND a matching
+        metric row with at least one readable value. The message names
+        what specifically could not be found (no quarter-header row found
+        at all vs. a quarter-header row was found but no row matched the
+        GDP growth label), mirroring parse_qlfs_workbook()'s fail-loudly
+        contract and its explicit pointer to manual review (Track B) as
+        the correct next step — not a PDF-parsing fallback (explicitly
+        out of scope, same as Phase 2).
+
+    release_period is the label of the last (chronologically latest)
+    entry in growth_points. publication_date is obtained via the existing,
+    already-generic _best_effort_publication_date(wb) — reused as-is, no
+    changes needed.
+    """
+    try:
+        wb = openpyxl.load_workbook(
+            BytesIO(file_bytes), data_only=True, read_only=True
+        )
+    except Exception as exc:
+        raise ValueError(
+            f"Cannot open GDP file as an Excel workbook — not a valid "
+            f".xlsx/.xls file, or the file is corrupted: {exc}"
+        ) from exc
+
+    growth_points: list[tuple[str, float]] = []
+    quarter_header_found = False
+    metric_row_found = False
+
+    for ws in wb.worksheets:
+        columns = _find_all_quarter_columns(ws)
+        if not columns:
+            continue
+        quarter_header_found = True
+
+        row_idx = _find_metric_row(
+            ws, _GDP_GROWTH_SPEC["include"], _GDP_GROWTH_SPEC.get("exclude", ())
+        )
+        if row_idx is None:
+            continue
+        metric_row_found = True
+
+        points = _read_row_values_at_columns(ws, row_idx, columns)
+        if points:
+            growth_points = points
+            break
+
+    if not growth_points:
+        if not quarter_header_found:
+            raise ValueError(
+                "GDP workbook parse failed — no quarter-header row (e.g. "
+                "'Q1 2026') could be located in any worksheet. This most "
+                "likely means the Stats SA P0441 Excel layout differs from "
+                "the header-matching rules in parse_gdp_workbook() "
+                "(automation/adapters/statss.py) — per "
+                "IMPLEMENTATION-SPEC-GDP.md §5, this must fail loudly "
+                "rather than guess or fall back to a stale value. Manual "
+                "review (Track B) is the correct next step, not a "
+                "PDF-parsing fallback (explicitly out of scope for this "
+                "phase)."
+            )
+        if not metric_row_found:
+            raise ValueError(
+                "GDP workbook parse failed — a quarter-header row was "
+                "found, but no row matched the GDP growth label spec "
+                f"(include={_GDP_GROWTH_SPEC['include']!r}, "
+                f"exclude={_GDP_GROWTH_SPEC.get('exclude', ())!r}). This "
+                "most likely means the Stats SA P0441 Excel layout differs "
+                "from _GDP_GROWTH_SPEC's label-matching rules "
+                "(automation/adapters/statss.py) — per "
+                "IMPLEMENTATION-SPEC-GDP.md §5, this must fail loudly "
+                "rather than guess. Manual review (Track B) is the correct "
+                "next step, not a PDF-parsing fallback (explicitly out of "
+                "scope for this phase)."
+            )
+        raise ValueError(
+            "GDP workbook parse failed — a GDP growth row was located but "
+            "yielded no readable numeric values in any quarter column."
+        )
+
+    release_period = growth_points[-1][0]
+
+    publication_date = _best_effort_publication_date(wb)
+    if publication_date is None:
+        publication_date = date.today().isoformat()
+        log.warning(
+            "GDP parser: could not find an explicit publication date in "
+            "the workbook — using today's date (%s) as a best-effort "
+            "fallback for lastUpdated/source.publicationDate fields.",
+            publication_date,
+        )
+
+    return GDPExtract(
+        release_period=release_period,
+        publication_date=publication_date,
+        growth_points=growth_points,
+    )
+
+
+# ---------------------------------------------------------------------------
+# GDP direct URL construction and probing (Phase 3a)
+#
+# Mirrors the QLFS discovery pattern exactly, parameterised for P0441.
+# **Unconfirmed** against a real Stats SA release — see the module
+# docstring's "GDP Excel layout — verification status" section.
+# ---------------------------------------------------------------------------
+
+
+def _build_gdp_candidate_urls(quarter: int, year: int) -> list[str]:
+    """
+    Build an ordered list of candidate Excel/PDF URLs for the given GDP
+    quarter, following _build_qlfs_candidate_urls()'s structure scaled to
+    P0441's naming convention. **Unconfirmed** against a real release —
+    see the module docstring.
+    """
+    base = _GDP_PUBLICATION_BASE
+    q = quarter
+    y = year
+    ord_suffix = _QUARTER_ORDINALS.get(q, f"{q}th")
+
+    pres_prefix = f"Presentation%20GDP%20Q{q}%20{y}"
+    stat_release_prefix = f"Statistical%20release%20P0441%20Q{q}%20{y}"
+    data_prefix1 = f"P0441{ord_suffix}Quarter{y}"
+    data_prefix2 = f"GDP%20Q{q}%20{y}%20Statistical%20release"
+
+    candidates: list[str] = []
+    for prefix in [pres_prefix, stat_release_prefix, data_prefix1, data_prefix2]:
+        for ext in (".xlsx", ".xls", ".pdf"):
+            candidates.append(f"{base}{prefix}{ext}")
+
+    return candidates
+
+
+def _determine_current_gdp_quarter() -> tuple[int, int]:
+    """
+    Determine the expected most-recently-released GDP quarter, using
+    GDP's own release windows (_GDP_RELEASE_WINDOWS: Q1→June, Q2→
+    September, Q3→December, Q4→March of the following year) rather than
+    QLFS's ~6-week offsets.
+
+    Returns
+    -------
+    (quarter, year)
+        The quarter and year of the most recently expected GDP release.
+    """
+    today = date.today()
+    m = today.month
+    y = today.year
+
+    if m < 3:
+        return 3, y - 1
+    elif m < 6:
+        return 4, y - 1
+    elif m < 9:
+        return 1, y
+    elif m < 12:
+        return 2, y
+    else:
+        return 3, y
+
+
+def _probe_gdp_publication_url(
+    client: HTTPClient,
+    quarter: int,
+    year: int,
+) -> str | None:
+    """
+    Probe candidate URLs for the GDP quarter and return the first that
+    responds with a valid file (HTTP 200, size > 10 KB). Structurally
+    identical to _probe_qlfs_publication_url().
+    """
+    candidates = _build_gdp_candidate_urls(quarter, year)
+    log.debug(
+        "Probing %d candidate URLs for GDP Q%d %d …",
+        len(candidates), quarter, year,
+    )
+    for url in candidates:
+        try:
+            resp = client.get(url)
+            if resp.status == 200 and len(resp.body) > 10_240:
+                log.info(
+                    "GDP publication found via direct URL probe: %s (%d bytes)",
+                    url, len(resp.body),
+                )
+                return url
+            log.debug("Probe %s → %d bytes (too small or error)", url, len(resp.body))
+        except AutomationHTTPError as exc:
+            if exc.status != 404:
+                log.warning("Probe %s → HTTP %s: %s", url, exc.status, exc.reason)
+        except Exception as exc:
+            log.debug("Probe %s → %s", url, exc)
+    return None
+
+
+def _discover_gdp_excel(
+    client: HTTPClient,
+    *,
+    hub_url: str = _GDP_HUB_URL,
+) -> tuple[str | None, str, bytes]:
+    """
+    Discover and return the GDP Excel workbook URL and hub HTML.
+    Structurally identical to _discover_qlfs_excel(), reusing the fully
+    generic _fetch_release_hub_html() / _extract_excel_url() /
+    _extract_release_period() unchanged.
+
+    Returns
+    -------
+    (excel_url, release_period, hub_html)
+        excel_url:      Absolute URL of the Excel workbook, or None.
+        release_period: Detected quarter label (e.g. 'Q1 2026') or ''.
+        hub_html:       Raw HTML bytes of the release hub.
+    """
+    hub_html = _fetch_release_hub_html(client, hub_url)
+    excel_url = _extract_excel_url(hub_html)
+    release_period = _extract_release_period(hub_html)
+    return excel_url, release_period, hub_html
+
+
+# ---------------------------------------------------------------------------
+# GDP validation helpers (Phase 3a)
+# ---------------------------------------------------------------------------
+
+
+def _validate_gdp_growth_rate(value: float, label: str) -> list[str]:
+    """
+    Validate a GDP growth rate is a plausible percentage in
+    _GDP_GROWTH_PLAUSIBLE_RANGE. Unlike QLFS rates, GDP growth can be
+    negative and the plausible range is wider than [0, 100] — gdp.json
+    itself already contains -6.2% (2020 annual figure) — so this is a
+    genuinely new validator, not a reuse of _validate_percentage().
+    """
+    low, high = _GDP_GROWTH_PLAUSIBLE_RANGE
+    if not (low <= value <= high):
+        return [
+            f"{label} GDP growth value {value} is outside the plausible "
+            f"[{low}, {high}] range."
+        ]
+    return []
+
+
+def _gdp_growth_values_changed(
+    current_doc: dict[str, Any],
+    growth_points: list[tuple[str, float]],
+    *,
+    stat_id: str = _GDP_GROWTH_STAT_ID,
+) -> bool:
+    """
+    Return True if any (label, value) in `growth_points` differs from the
+    corresponding existing series point for `stat_id` in `current_doc`
+    (or is entirely absent from it), within the same 0.001 tolerance
+    _apply_gdp_growth_points() uses for its in-place-revision comparison.
+
+    This mirrors the QLFS flow's per-dataset "did anything actually
+    change" check (`dataset_changed`), and — critically — must be
+    computed BEFORE _transform_gdp() runs: _transform_gdp() always
+    refreshes `_meta.last_verified`/`_meta.automation.updatedAt` to the
+    current run, so comparing the full transformed document against the
+    current on-disk document would never equal it even when no growth
+    value actually changed. Computing the change flag from the raw
+    growth_points first (as QLFS does from its extracted rates) avoids
+    that trap and lets a genuine no-op run report "no_change" with zero
+    side effects.
+    """
+    existing_data: list[dict[str, Any]] = []
+    for stat in current_doc.get("statistics", []):
+        if stat.get("id") == stat_id:
+            series = stat.get("series") or []
+            if series:
+                existing_data = series[0].get("data", [])
+            break
+
+    existing_by_label = {pt["label"]: pt["value"] for pt in existing_data}
+    for label, value in growth_points:
+        if label not in existing_by_label:
+            return True
+        if abs(existing_by_label[label] - value) > 0.001:
+            return True
+    return False
+
+
+# ---------------------------------------------------------------------------
+# GDP transform helpers (Phase 3a)
+#
+# _apply_gdp_growth_points() is a deliberate generalisation of
+# _apply_qlfs_rate_map() (multiple points instead of one; explicit
+# revision-note tracking) rather than a call to it —
+# _apply_qlfs_rate_map() is left completely unchanged, still used only by
+# the three QLFS transforms.
+# ---------------------------------------------------------------------------
+
+
+def _apply_gdp_growth_points(
+    doc: dict[str, Any],
+    points: list[tuple[str, float]],
+    *,
+    stat_id: str = _GDP_GROWTH_STAT_ID,
+    publication_date: str,
+) -> list[str]:
+    """
+    Apply every (period_label, value) pair in `points` to the named stat
+    in doc["statistics"], in place. Returns a list of human-readable
+    revision/anomaly notes (e.g. "Revised Q2 2025: 0.8% -> 0.6%", plus any
+    _check_qoq_jump() anomaly warnings) — surfaced in the version-entry
+    notes for the human reviewer, since a silent multi-quarter revision is
+    exactly the kind of change that benefits from an explicit summary.
+
+    For each point, in the order given (chronological):
+      - If the series already has a data point with this label:
+          - If the value differs from the existing one by more than
+            0.001, overwrite it in place and record a revision note (plus
+            an anomaly flag if the swing exceeds
+            _GDP_GROWTH_JUMP_WARNING_THRESHOLD). Exact equality is not
+            required — reuses the same 0.001 tolerance
+            _apply_qlfs_rate_map() already uses.
+          - If it doesn't differ, leave it untouched (no note).
+      - If the series has no data point with this label, append one,
+        flagging an anomaly if the jump from the immediately preceding
+        chronological point exceeds the threshold.
+      - If the stat has no series at all yet, seed it with the first
+        point (mirrors _apply_qlfs_rate_map()'s seed case).
+
+    After all points are applied, update the stat's headline fields
+    (value, rawValue, change, changeLabel, trend, lastUpdated,
+    source.publicationDate) from ONLY the chronologically last point in
+    `points` — mirroring _apply_qlfs_rate_map()'s existing field-update
+    logic and formatting (value as f"{rate:.1f}%"; change computed against
+    the series' new second-to-last chronological point AFTER revisions
+    are applied, not against whatever it was before this run).
+
+    Only `stat_id`'s fields are touched. No other stat in `doc` (e.g.
+    gdp-annual-growth, gdp-nominal, gdp-per-capita) is read or modified —
+    this is the mechanism that keeps this milestone's blast radius
+    limited to gdp-growth.
+    """
+    notes: list[str] = []
+
+    target_stat: dict[str, Any] | None = None
+    for stat in doc.get("statistics", []):
+        if stat.get("id") == stat_id:
+            target_stat = stat
+            break
+    if target_stat is None or not points:
+        return notes
+
+    if not target_stat.get("series"):
+        first_label, first_value = points[0]
+        target_stat["series"] = [
+            {
+                "name": target_stat.get("title", stat_id),
+                "unit": target_stat.get("unit", "%"),
+                "data": [{"label": first_label, "value": first_value}],
+            }
+        ]
+        log.debug(
+            "Seeded first series point %r -> %.1f for %s",
+            first_label, first_value, stat_id,
+        )
+        remaining = points[1:]
+    else:
+        remaining = points
+
+    series = target_stat["series"]
+    data = series[0].setdefault("data", [])
+
+    for label, value in remaining:
+        existing = next((pt for pt in data if pt["label"] == label), None)
+        if existing is None:
+            prev_value = data[-1]["value"] if data else None
+            data.append({"label": label, "value": value})
+            log.debug("Appended series point %r -> %.1f for %s", label, value, stat_id)
+            warning = _check_qoq_jump(
+                prev_value, value, label,
+                threshold=_GDP_GROWTH_JUMP_WARNING_THRESHOLD,
+            )
+            if warning:
+                notes.append(warning)
+        else:
+            if abs(existing["value"] - value) > 0.001:
+                old_value = existing["value"]
+                log.info(
+                    "Revising existing series point %r: %.1f -> %.1f for %s",
+                    label, old_value, value, stat_id,
+                )
+                notes.append(f"Revised {label}: {old_value}% -> {value}%")
+                existing["value"] = value
+                warning = _check_qoq_jump(
+                    old_value, value, label,
+                    threshold=_GDP_GROWTH_JUMP_WARNING_THRESHOLD,
+                )
+                if warning:
+                    notes.append(warning)
+
+    revision_count = sum(1 for n in notes if n.startswith("Revised "))
+    if revision_count > 2:
+        log.info(
+            "_apply_gdp_growth_points revised %d historical points in a "
+            "single run for %s — a normal, documented Stats SA practice, "
+            "not a defect (IMPLEMENTATION-SPEC-GDP.md §6 item 5).",
+            revision_count, stat_id,
+        )
+
+    newest_label, newest_value = points[-1]
+    prev_value = None
+    prev_label = None
+    for i, pt in enumerate(data):
+        if pt["label"] == newest_label and i > 0:
+            prev_value = data[i - 1]["value"]
+            prev_label = data[i - 1]["label"]
+            break
+
+    change = 0.0
+    if prev_value is not None:
+        change = round(newest_value - prev_value, 1)
+
+    target_stat["value"] = f"{newest_value:.1f}%"
+    target_stat["rawValue"] = newest_value
+    target_stat["change"] = change
+    target_stat["changeLabel"] = f"from {prev_label}" if prev_label else newest_label
+    if prev_value is None:
+        target_stat["trend"] = "stable"
+    elif newest_value > prev_value:
+        target_stat["trend"] = "up"
+    elif newest_value < prev_value:
+        target_stat["trend"] = "down"
+    else:
+        target_stat["trend"] = "stable"
+    target_stat["lastUpdated"] = publication_date
+    if isinstance(target_stat.get("source"), dict):
+        target_stat["source"]["publicationDate"] = publication_date
+
+    return notes
+
+
+def _update_gdp_meta(
+    doc: dict[str, Any],
+    *,
+    release_period: str,
+    publication_date: str,
+    source_url: str,
+) -> None:
+    """Update the shared _meta block, following the SARB/QLFS _meta pattern."""
+    if "_meta" not in doc:
+        doc["_meta"] = {}
+    today_str = date.today().isoformat()
+    doc["_meta"]["last_verified"] = today_str
+    doc["_meta"]["lastUpdated"] = publication_date
+    doc["_meta"]["source_url"] = source_url
+    doc["_meta"]["automation"] = {
+        "updatedBy": "statssa-adapter/gdp",
+        "updatedAt": datetime.now(tz=timezone.utc).isoformat(),
+        "releasePeriod": release_period,
+        "sourceFile": source_url,
+    }
+
+
+def _transform_gdp(
+    doc: dict[str, Any],
+    extract: GDPExtract,
+    source_url: str = "",
+) -> tuple[dict[str, Any], list[str]]:
+    """
+    Deep-copy `doc`, apply _apply_gdp_growth_points() to the gdp-growth
+    stat only, update the shared _meta block (mirroring
+    _update_qlfs_meta()'s pattern: last_verified, lastUpdated, source_url,
+    and an `automation` sub-block with updatedBy="statssa-adapter/gdp"),
+    and return (new_doc, warnings) where warnings is the combined list of
+    revision notes and any anomaly flags from _check_qoq_jump() (both
+    produced by _apply_gdp_growth_points()).
+
+    Matches _transform_unemployment()'s contract exactly: input document
+    is never mutated; the return value is a new dict.
+    """
+    new_doc = copy.deepcopy(doc)
+    warnings = _apply_gdp_growth_points(
+        new_doc,
+        extract.growth_points,
+        publication_date=extract.publication_date,
+    )
+    _update_gdp_meta(
+        new_doc,
+        release_period=extract.release_period,
+        publication_date=extract.publication_date,
+        source_url=source_url,
+    )
+    return new_doc, warnings
+
+
+# ---------------------------------------------------------------------------
 # QLFS validation helpers (Phase 2)
 # ---------------------------------------------------------------------------
 
@@ -1187,7 +1901,7 @@ class StatsSAAdapter(BaseAdapter):
     source_id = "statssa"
     display_name = "Statistics South Africa"
     priority = 10   # Run first — largest number of datasets
-    version = "0.3.0"  # 0.1.0 Phase A stub -> 0.2.0 Phase 1 (download) -> 0.3.0 Phase 2 (parse/transform/stage)
+    version = "0.4.0"  # 0.1.0 Phase A stub -> 0.2.0 Phase 1 (download) -> 0.3.0 Phase 2 (QLFS parse/transform/stage) -> 0.4.0 Phase 3a (GDP parse/transform/stage)
 
     def __init__(
         self,
@@ -1198,6 +1912,8 @@ class StatsSAAdapter(BaseAdapter):
         # Run-level cache: QLFS hub check is shared across all three QLFS datasets.
         # Avoids three identical HTTP fetches per runner invocation.
         self._qlfs_check_cache: DatasetCheckResult | None = None
+        # Run-level cache for the GDP hub check (parallels _qlfs_check_cache).
+        self._gdp_check_cache: DatasetCheckResult | None = None
 
     def validate_config(self) -> list[str]:
         """
@@ -1267,6 +1983,13 @@ class StatsSAAdapter(BaseAdapter):
                 notes=cached.notes,
             )
 
+        # GDP — Phase 3a: real ETag/content-hash check against the P0441
+        # release hub, mirroring the QLFS caching pattern above.
+        if dataset_id == "gdp":
+            if self._gdp_check_cache is None:
+                self._gdp_check_cache = self._check_gdp(dataset_id, dataset_config)
+            return self._gdp_check_cache
+
         # ---------- Phase A stubs for remaining datasets ----------
 
         # Static datasets — Census and municipalities
@@ -1284,22 +2007,6 @@ class StatsSAAdapter(BaseAdapter):
                     "municipalities.json is current (verified 2026-06-04). "
                     "census.json is correct until ~2032."
                 ),
-            )
-
-        # GDP
-        if dataset_id == "gdp":
-            return DatasetCheckResult(
-                dataset_id=dataset_id,
-                status="unknown",
-                message=(
-                    "[Phase A] GDP P0441. Phase B will implement calendar-windowed "
-                    "check (~65–70 days after quarter-end) with Excel download. "
-                    "Note: GDP revisions require overwrite of historical points, "
-                    "not blind append."
-                ),
-                current_period="Q4 2025",
-                latest_period="Q1 2026 (released 9 June 2026 — not yet in JSON)",
-                source_url="https://www.statssa.gov.za/?page_id=1854&PPN=P0441",
             )
 
         # CPI (inflation, Stats SA component only)
@@ -1498,6 +2205,136 @@ class StatsSAAdapter(BaseAdapter):
             self._log.warning("Cannot save QLFS hub hash to %s: %s", p, exc)
 
     # ------------------------------------------------------------------
+    # GDP-specific check (Phase 3a)
+    # ------------------------------------------------------------------
+
+    def _check_gdp(
+        self,
+        dataset_id: str,
+        dataset_config: DatasetConfig | None,
+    ) -> DatasetCheckResult:
+        """
+        Real release detection for GDP (P0441).
+
+        Performs an ETag/content-hash check against the P0441 release hub,
+        mirroring _check_qlfs() structurally exactly.
+        """
+        client = _build_http_client(self.source_config)
+        previous_hash = self._load_gdp_previous_hash()
+
+        self._log.info(
+            "Checking GDP release hub: %s (previous_hash=%s…)",
+            _GDP_HUB_URL,
+            previous_hash[:8] if previous_hash else "none",
+        )
+
+        try:
+            changed, response = with_retry(
+                lambda: client.etag_check(
+                    _GDP_HUB_URL,
+                    previous_sha256=previous_hash,
+                ),
+                policy=WATCH_POLICY,
+                label="GDP release hub ETag check",
+            )
+        except AutomationHTTPError as exc:
+            return DatasetCheckResult(
+                dataset_id=dataset_id,
+                status="error",
+                message=f"GDP release hub returned HTTP {exc.status}: {exc.reason}",
+                source_url=_GDP_HUB_URL,
+            )
+        except Exception as exc:
+            return DatasetCheckResult(
+                dataset_id=dataset_id,
+                status="error",
+                message=f"Failed to check GDP release hub: {exc}",
+                source_url=_GDP_HUB_URL,
+            )
+
+        # WAF check — same guard as _check_qlfs(), copied rather than
+        # factored into a shared helper (see IMPLEMENTATION-SPEC-GDP.md §8:
+        # consolidating this is a future refactor, out of scope here since
+        # it would touch _check_qlfs()'s code path).
+        if response.body:
+            body_text = response.body.decode("utf-8", errors="replace")
+            if "_Incapsula_Resource" in body_text or "incapsula" in body_text.lower():
+                self._log.error("WAF challenge detected on GDP release hub")
+                return DatasetCheckResult(
+                    dataset_id=dataset_id,
+                    status="error",
+                    message="WAF_BLOCKED: Incapsula WAF challenge detected. Cannot check for updates.",
+                    source_url=_GDP_HUB_URL,
+                )
+
+        release_period = _extract_release_period(response.body)
+
+        if not changed:
+            self._log.info(
+                "GDP release hub unchanged (sha256=%s…)", previous_hash[:8]
+            )
+            return DatasetCheckResult(
+                dataset_id=dataset_id,
+                status="up_to_date",
+                message=(
+                    "GDP P0441 release hub page is unchanged since last check. "
+                    "No new publication detected."
+                ),
+                latest_period=release_period or "unknown",
+                source_url=_GDP_HUB_URL,
+            )
+
+        self._save_gdp_hash(response.content_sha256)
+        self._log.info(
+            "GDP release hub changed — new sha256=%s… — update likely available",
+            response.content_sha256[:8],
+        )
+
+        excel_url = _extract_excel_url(response.body)
+
+        return DatasetCheckResult(
+            dataset_id=dataset_id,
+            status="update_available",
+            message=(
+                "GDP P0441 release hub page has changed. "
+                "A new GDP publication is likely available."
+            ),
+            latest_period=release_period or "unknown (check release hub)",
+            source_url=_GDP_HUB_URL,
+            notes=(
+                f"Excel workbook URL detected: {excel_url or 'not found — check hub manually'}. "
+                "Run fetch_and_apply() to download and archive the workbook."
+            ),
+        )
+
+    # ------------------------------------------------------------------
+    # GDP hash persistence helpers (parallel to the QLFS ones above)
+    # ------------------------------------------------------------------
+
+    def _gdp_hash_path(self) -> Path:
+        """Return the path to the stored GDP hub content hash."""
+        return self.config.report_dir / "versions" / "gdp_hub.sha256"
+
+    def _load_gdp_previous_hash(self) -> str:
+        """Return the last-known SHA-256 of the GDP hub page, or ''."""
+        p = self._gdp_hash_path()
+        if not p.exists():
+            return ""
+        try:
+            return p.read_text(encoding="utf-8").strip()
+        except OSError:
+            return ""
+
+    def _save_gdp_hash(self, sha256: str) -> None:
+        """Persist the new SHA-256 of the GDP hub page."""
+        p = self._gdp_hash_path()
+        try:
+            p.parent.mkdir(parents=True, exist_ok=True)
+            p.write_text(sha256, encoding="utf-8")
+        except OSError as exc:
+            self._log.warning("Cannot save GDP hub hash to %s: %s", p, exc)
+
+    # ------------------------------------------------------------------
     # fetch_and_apply — Phase 1: QLFS discovery + download + archive
     # ------------------------------------------------------------------
 
@@ -1566,6 +2403,16 @@ class StatsSAAdapter(BaseAdapter):
               dry_run           — echo of the dry_run flag
               notes             — human-readable summary
               errors            — list of error strings
+              gdp               — (Phase 3a, additive) nested dict describing the
+                                   independent GDP flow's own outcome: status
+                                   ("ok" | "no_change" | "no_publication_found" |
+                                   "error"), hub_url, file_url, release_period,
+                                   archive_path, sha256, file_size_bytes,
+                                   version_id (singular — gdp.json is one
+                                   dataset, not three), notes, errors. A GDP
+                                   failure never changes the top-level `status`
+                                   above, which continues to describe the QLFS
+                                   run only (see IMPLEMENTATION-SPEC-GDP.md §9).
         """
         result: dict[str, Any] = {
             "status": "error",
@@ -1577,6 +2424,21 @@ class StatsSAAdapter(BaseAdapter):
             "file_size_bytes": None,
             "version_ids": [],
             "dry_run": dry_run,
+            "notes": "",
+            "errors": [],
+        }
+        # GDP (Phase 3a) — additive key, see §9.1 of IMPLEMENTATION-SPEC-GDP.md.
+        # Every key above keeps its existing meaning, describing the QLFS run
+        # only. This nested dict is the sole place GDP's own outcome lives.
+        result["gdp"] = {
+            "status": "error",
+            "hub_url": _GDP_HUB_URL,
+            "file_url": None,
+            "release_period": "",
+            "archive_path": None,
+            "sha256": None,
+            "file_size_bytes": None,
+            "version_id": None,
             "notes": "",
             "errors": [],
         }
@@ -1940,6 +2802,235 @@ class StatsSAAdapter(BaseAdapter):
             except Exception as exc:
                 self._log.warning("Could not update QLFS hub hash: %s", exc)
 
+        # ============================================================
+        # GDP flow (Phase 3a) — Excel discovery + download + archive +
+        # parse + transform + validate + stage for gdp-growth only.
+        # Runs after the QLFS flow above and is fully independent of it:
+        # a GDP-specific failure is recorded only in result["gdp"] (and
+        # appended to the top-level errors list for visibility) and never
+        # changes the top-level `status`, which continues to reflect the
+        # QLFS flow only (IMPLEMENTATION-SPEC-GDP.md §9.2). GDP writes no
+        # dataset JSON directly — only gdp.json's staging area.
+        # ============================================================
+        gdp_client = _build_http_client(self.source_config)
+        gdp_hub_html: bytes | None = None
+
+        try:
+            self._log.info("Fetching GDP release hub: %s", _GDP_HUB_URL)
+            excel_url, release_period, gdp_hub_html = _discover_gdp_excel(gdp_client)
+            result["gdp"]["release_period"] = release_period
+
+            if excel_url is None:
+                q, y = _determine_current_gdp_quarter()
+                excel_url = _probe_gdp_publication_url(gdp_client, q, y)
+            result["gdp"]["file_url"] = excel_url
+
+            if excel_url is None:
+                msg = (
+                    "No publication link found for GDP. Direct probes "
+                    "failed (likely no standard naming) and HTML scrape "
+                    f"failed (likely WAF blocked). Hub URL: {_GDP_HUB_URL}"
+                )
+                self._log.warning(msg)
+                result["gdp"]["status"] = "no_publication_found"
+                result["gdp"]["errors"].append(msg)
+            else:
+                self._log.info("Located GDP publication: %s", excel_url)
+                gdp_file_bytes = with_retry(
+                    lambda: _download_publication(gdp_client, excel_url),  # type: ignore[arg-type]
+                    policy=STATSSA_POLICY,
+                    label=f"GDP file download ({excel_url})",
+                )
+                result["gdp"]["file_size_bytes"] = len(gdp_file_bytes)
+
+                gdp_file_ext = (
+                    Path(urllib.parse.urlparse(excel_url).path).suffix.lower() or ".bin"
+                )
+                if not dry_run:
+                    try:
+                        gdp_archive_dest, gdp_sha256 = save_to_archive(
+                            self.config.raw_archive_dir,
+                            gdp_file_bytes,
+                            dataset_id="gdp",
+                            source_id=self.source_id,
+                            suffix=gdp_file_ext,
+                        )
+                        result["gdp"]["archive_path"] = portable_archive_path(
+                            self.config.raw_archive_dir, gdp_archive_dest
+                        )
+                        result["gdp"]["sha256"] = gdp_sha256
+                        self._log.info(
+                            "GDP file archived → %s (sha256=%s…, %d bytes)",
+                            gdp_archive_dest, gdp_sha256[:8], len(gdp_file_bytes),
+                        )
+                    except Exception as archive_exc:
+                        self._log.warning("GDP archive write failed: %s", archive_exc)
+                else:
+                    from automation.core.files import sha256_of_bytes
+                    result["gdp"]["sha256"] = sha256_of_bytes(gdp_file_bytes)
+                    self._log.info(
+                        "[DRY RUN] Would archive GDP file (%d bytes, sha256=%s…)",
+                        len(gdp_file_bytes), result["gdp"]["sha256"][:8],
+                    )
+
+                if gdp_file_ext not in (".xlsx", ".xls"):
+                    msg = (
+                        f"Downloaded GDP publication is not an Excel "
+                        f"workbook (extension {gdp_file_ext!r}, "
+                        f"url={excel_url}). PDF parsing is explicitly out "
+                        f"of scope — falling back to the manual-review "
+                        f"path (Track B) rather than guessing at "
+                        f"PDF-extracted values."
+                    )
+                    result["gdp"]["status"] = "error"
+                    result["gdp"]["errors"].append(msg)
+                    self._log.error(msg)
+                else:
+                    extract = parse_gdp_workbook(gdp_file_bytes)
+                    result["gdp"]["release_period"] = extract.release_period
+                    self._log.info(
+                        "GDP workbook parsed OK — release period %s, "
+                        "%d growth point(s) found",
+                        extract.release_period, len(extract.growth_points),
+                    )
+
+                    current_gdp_doc = _read_current_dataset_json(_GDP_DATASET_JSON)
+
+                    range_errors: list[str] = []
+                    for label, value in extract.growth_points:
+                        range_errors += _validate_gdp_growth_rate(value, label)
+                        range_errors += _validate_quarterly_label(label)
+
+                    if range_errors:
+                        result["gdp"]["status"] = "error"
+                        result["gdp"]["errors"].extend(range_errors)
+                        self._log.error(
+                            "GDP validation failed: %s", "; ".join(range_errors)
+                        )
+                    elif not _gdp_growth_values_changed(
+                        current_gdp_doc, extract.growth_points
+                    ):
+                        # Computed from the raw extracted points against
+                        # the current on-disk document — BEFORE calling
+                        # _transform_gdp() — since _transform_gdp() always
+                        # refreshes _meta's timestamps, which would make a
+                        # full-document equality check never match even on
+                        # a genuine no-op run. Mirrors the QLFS flow's
+                        # pre-transform dataset_changed check.
+                        result["gdp"]["status"] = "no_change"
+                        result["gdp"]["notes"] = (
+                            f"No change: {extract.release_period} GDP "
+                            f"growth value(s) already match gdp.json."
+                        )
+                        self._log.info(
+                            "No change detected — gdp.json is already current."
+                        )
+                    else:
+                        new_gdp_doc, gdp_warnings = _transform_gdp(
+                            current_gdp_doc, extract, excel_url
+                        )
+                        protected_violations = check_protected_fields(
+                            current_gdp_doc, new_gdp_doc
+                        )
+                        if protected_violations:
+                            msg = f"Protected field violation: {protected_violations}"
+                            result["gdp"]["status"] = "error"
+                            result["gdp"]["errors"].append(msg)
+                            self._log.error(msg)
+                        else:
+                            gdp_entry = new_version_entry(
+                                dataset_id="gdp",
+                                source_id=self.source_id,
+                                source_url=excel_url,
+                                sha256=result["gdp"]["sha256"] or "",
+                                archive_path=result["gdp"]["archive_path"] or "",
+                                adapter_version=self.version,
+                                notes=(
+                                    f"GDP {extract.release_period} parsed and "
+                                    f"staged. Hub URL: {_GDP_HUB_URL}. "
+                                    + ("; ".join(gdp_warnings) + ". " if gdp_warnings else "")
+                                    + "Manual approval required before promotion."
+                                ),
+                                run_id=run_id,
+                            )
+
+                            if not dry_run:
+                                try:
+                                    write_staged_dataset(
+                                        self.config.report_dir,
+                                        dataset_id="gdp",
+                                        version_id=gdp_entry.version_id,
+                                        document=new_gdp_doc,
+                                    )
+                                    save_version_entry(self.config.report_dir, gdp_entry)
+                                    self._log.info(
+                                        "Staged gdp — version %s (status=pending)",
+                                        gdp_entry.version_id,
+                                    )
+                                    result["gdp"]["version_id"] = gdp_entry.version_id
+                                    result["version_ids"].append(gdp_entry.version_id)
+                                    result["gdp"]["status"] = "ok"
+                                    result["gdp"]["notes"] = (
+                                        "; ".join(gdp_warnings) if gdp_warnings else ""
+                                    )
+                                except Exception as exc:
+                                    msg = f"Staging failed for gdp: {exc}"
+                                    result["gdp"]["status"] = "error"
+                                    result["gdp"]["errors"].append(msg)
+                                    self._log.error(msg)
+                            else:
+                                self._log.info(
+                                    "[DRY RUN] Would stage gdp — version %s",
+                                    gdp_entry.version_id,
+                                )
+                                result["gdp"]["version_id"] = gdp_entry.version_id
+                                result["version_ids"].append(gdp_entry.version_id)
+                                result["gdp"]["status"] = "ok"
+                                result["gdp"]["notes"] = (
+                                    "; ".join(gdp_warnings) if gdp_warnings else ""
+                                )
+        except ValueError as exc:
+            msg = f"GDP workbook parse failed: {exc}"
+            result["gdp"]["status"] = "error"
+            result["gdp"]["errors"].append(msg)
+            self._log.error(msg)
+        except AutomationHTTPError as exc:
+            msg = f"GDP release hub/file HTTP error: {exc.status} {exc.reason}"
+            result["gdp"]["status"] = "error"
+            result["gdp"]["errors"].append(msg)
+            self._log.error(msg)
+        except Exception as exc:
+            msg = f"GDP fetch_and_apply failed: {exc}"
+            result["gdp"]["status"] = "error"
+            result["gdp"]["errors"].append(msg)
+            self._log.error(msg)
+
+        # Deliberate deviation from IMPLEMENTATION-SPEC-GDP.md §9.1's
+        # illustrative pseudocode (explicitly non-literal): GDP errors are
+        # NOT merged into the top-level `errors` list. §9.1's own
+        # constraint is that every existing key "keeps its existing
+        # meaning... required so that none of the six existing
+        # fetch_and_apply-based tests need to change" — those six tests
+        # assert on `result["errors"]` describing the QLFS run only (e.g.
+        # `assert not result["errors"]` on a successful QLFS-only stage).
+        # Merging GDP's own errors into that shared list would silently
+        # change its meaning for callers who have relied on it describing
+        # QLFS alone, and would break those six tests the moment GDP's
+        # discovery doesn't find a publication (its default outcome
+        # whenever a caller/test only mocks QLFS's discovery functions).
+        # GDP's errors remain fully visible in result["gdp"]["errors"].
+        #
+        # Update GDP hub hash so the next check_for_updates call sees the
+        # new baseline (mirrors the QLFS hash-update step above).
+        if not dry_run and gdp_hub_html is not None:
+            try:
+                from automation.core.files import sha256_of_bytes
+                gdp_hub_hash = sha256_of_bytes(gdp_hub_html)
+                self._save_gdp_hash(gdp_hub_hash)
+                self._log.debug("GDP hub hash updated: %s…", gdp_hub_hash[:8])
+            except Exception as exc:
+                self._log.warning("Could not update GDP hub hash: %s", exc)
+
         return result
 
     # ------------------------------------------------------------------
@@ -1981,13 +3072,30 @@ class StatsSAAdapter(BaseAdapter):
                 "_transform_* family) — reuses the existing staging/approval/"
                 "promote pipeline; fetch_and_apply() stages up to 3 pending "
                 "version entries (one per QLFS output dataset) and writes no "
-                "dataset JSON directly. GDP/CPI/population/housing/census/"
+                "dataset JSON directly. CPI/population/housing/census/"
                 "municipalities remain Phase A stubs — out of scope for this build."
+            ),
+            "phase_3a_status": (
+                "GDP (P0441): real ETag/hash detection (_check_gdp(), mirroring "
+                "_check_qlfs()) + Excel discovery/download/archive + parse "
+                "(parse_gdp_workbook(), label-matched, reads EVERY available "
+                "quarter column — not just the latest — to support revisions) "
+                "+ transform (_transform_gdp() / _apply_gdp_growth_points(), "
+                "overwrites revised historical points in place per gdp.yaml's "
+                "overwrites_historical_points: true) + validate + stage, "
+                "reusing the same staging/approval/promote pipeline as SARB "
+                "and QLFS. fetch_and_apply() stages at most one pending "
+                "version entry for gdp-growth only; gdp-annual-growth, "
+                "gdp-nominal, and gdp-per-capita are never read or modified — "
+                "out of scope for this build. The P0441 URL-naming convention "
+                "and _GDP_GROWTH_SPEC's label match are unverified against a "
+                "real workbook, same caveat class as QLFS's Excel layout."
             ),
             "notes": (
                 "One release, one job: QLFS family uses a single extractor. "
                 "Population source guard is mandatory in Phase B. "
-                "GDP ETL must overwrite historical points (revisions), not append."
+                "GDP ETL overwrites historical points (revisions), not append — "
+                "implemented in Phase 3a via _apply_gdp_growth_points()."
             ),
         }
 
