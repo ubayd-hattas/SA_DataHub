@@ -31,7 +31,7 @@ Template-method pattern via `BaseAdapter` (`validate_config()`, `datasets()`, `c
 | Adapter | Detection (`check_for_updates`) | Write path (`fetch_and_apply`) |
 |---|---|---|
 | `SARBAdapter` | Live API poll (SARB WebIndicators), business-rule validation (`prime = repo + spread`), effective-date inference from a maintained MPC meeting calendar (not the API's refresh timestamp). | Implemented and gated: fetches, validates, diffs, transforms, then **writes to the staging area** and records a `pending` version entry. Does not touch `interest-rates.json` directly. |
-| `StatsSAAdapter` | Live QLFS release-hub detection (ETag/hash), with an explicit WAF-challenge guard (see §5). GDP/CPI/population/housing/census/municipalities remain detection stubs. | Implemented and gated, for the QLFS family only: discovers, downloads, and archives the raw QLFS workbook, then parses it (`parse_qlfs_workbook()`), transforms it into `unemployment.json` / `youth-unemployment.json` / `labour-force.json` via `_transform_unemployment()` / `_transform_youth_unemployment()` / `_transform_labour_force()`, validates each candidate (rate bounds, quarterly-label format, `check_protected_fields()`, a quarter-over-quarter anomaly flag), and **writes to the staging area**, recording one `pending` version entry per changed dataset (up to three). Does not touch `unemployment.json` / `youth-unemployment.json` / `labour-force.json` directly. GDP/CPI/population/housing/census/municipalities remain download/archive-only or detection stubs. |
+| `StatsSAAdapter` | Live QLFS release-hub detection (ETag/hash), with an explicit WAF-challenge guard (see §5). Live GDP (P0441) release-hub detection (`_check_gdp()`, mirroring `_check_qlfs()` exactly). CPI/population/housing/census/municipalities remain detection stubs. | Implemented and gated, for the QLFS family AND `gdp-growth` (two independent flows within one `fetch_and_apply()` call): QLFS discovers, downloads, and archives the raw QLFS workbook, then parses it (`parse_qlfs_workbook()`), transforms it into `unemployment.json` / `youth-unemployment.json` / `labour-force.json`, validates each candidate (rate bounds, quarterly-label format, `check_protected_fields()`, a quarter-over-quarter anomaly flag), and **writes to the staging area**, recording one `pending` version entry per changed dataset (up to three). GDP discovers, downloads, and archives the raw GDP Excel publication, parses it (`parse_gdp_workbook()`, reading **every** available quarter column — not just the latest — to support Stats SA's routine revisions), transforms it into `gdp.json`'s `gdp-growth` stat only via `_transform_gdp()`/`_apply_gdp_growth_points()` (overwriting revised historical points in place, appending new ones), validates it (a genuinely new plausibility range since GDP growth can be negative, quarterly-label format, `check_protected_fields()`, a wider GDP-specific anomaly threshold), and **writes to the staging area**, recording at most one `pending` version entry for `gdp`. Neither flow ever writes any dataset JSON directly. `gdp-annual-growth`, `gdp-nominal`, and `gdp-per-capita` are untouched — out of scope. CPI/population/housing/census/municipalities remain download/archive-only or detection stubs. |
 | `SAPSAdapter` | Honest stub — no live check implemented. | Not implemented. |
 | `WorldBankAdapter` | Honest stub — no live check implemented. | Not implemented. |
 
@@ -49,12 +49,12 @@ python -m automation.runner --promote <ds> <ver>    # approved → written to pr
 ```
 
 ### 1.4 Test Suite (`automation/**/tests/`)
-38 tests, all passing, zero collection errors:
+53 tests, all passing, zero collection errors:
 - `core/tests/test_metadata.py` — `check_protected_fields()` (no-violation, top-level, nested, list-of-dicts, absent-field cases).
 - `core/tests/test_files.py` — `atomic_write()` success and failure-path cleanup.
 - `core/tests/test_pipeline_integration.py` — end-to-end staging → approve → promote cycle for SARB, including both the happy path and the negative cases (promotion refused pre-approval; promotion refused after rejection; unknown version raises).
 - `adapters/tests/test_sarb.py` — `_validate_prime_spread()` (exact match / within tolerance / violation) and `_transform_interest_rates()` (first-ever update, in-place revision, append new point).
-- `adapters/tests/test_statss.py` — 21 tests covering the QLFS parser, validation/anomaly helpers, all three transform functions, and `fetch_and_apply()`'s `"ok"` / `"no_change"` / `"error"` paths (network mocked), including `test_qlfs_staged_candidate_requires_approve_then_promote` — the QLFS-specific equivalent of `test_pipeline_integration.py`'s end-to-end proof, using a real version produced by `fetch_and_apply()` rather than a hand-built fixture.
+- `adapters/tests/test_statss.py` — 36 tests: 21 covering the QLFS parser, validation/anomaly helpers, all three transform functions, and `fetch_and_apply()`'s `"ok"` / `"no_change"` / `"error"` paths (network mocked), including `test_qlfs_staged_candidate_requires_approve_then_promote`; plus 15 new GDP tests covering `parse_gdp_workbook()` (multi-quarter extraction, two fail-loudly paths, blank-column skipping), `_validate_gdp_growth_rate()`, `_apply_gdp_growth_points()` (append, in-place revision — the single most important test in the GDP milestone — and empty-series seeding), `_transform_gdp()`'s scope boundary, the GDP-specific quarter-over-quarter anomaly threshold, `_check_gdp()`'s hub-change detection, and four `fetch_and_apply()` integration tests (GDP staged without direct write and without affecting the QLFS portion of the same call; GDP no-change; a GDP protected-field violation isolated from a simultaneously succeeding QLFS run; and `test_gdp_staged_candidate_requires_approve_then_promote`, the GDP-specific end-to-end approve→promote proof).
 
 ---
 
@@ -76,6 +76,13 @@ python -m automation.runner --promote <ds> <ver>    # approved → written to pr
   - A QLFS-specific end-to-end approve→promote test (`test_qlfs_staged_candidate_requires_approve_then_promote`), closing the acceptance-criterion gap the post-implementation audit found: the staging→approval→promote guarantee is now proven for a real QLFS-produced version, not only for `interest-rates`.
   - A downstream reference sweep for the removed bare `youth-unemployment` statistic ID across the files available to this project (`src/data/`); no further hits found beyond the `stories.ts` references already repointed in the Phase 2 build. `src/lib/registry.ts`, `src/lib/citation.ts`, and `src/lib/insights.ts` were not available to any session to date and remain unswept — see §5.
   - **Still open after this closeout:** `parse_qlfs_workbook()` has never been run against a real, downloaded Stats SA QLFS workbook — only synthetic fixtures. This is the single most significant remaining risk in the QLFS write path and is tracked as its own item, not closed by this milestone (see §5 and §7).
+- **GDP (P0441) write path — Phase 3a** (this milestone, dated 2026-07-19): `gdp.json`'s `gdp-growth` statistic now has a third working, gated write path alongside SARB and QLFS, wired through the same staging → approval → promote pipeline, implemented within the same `fetch_and_apply()` call as the (unmodified) QLFS flow. Shipped:
+  - `parse_gdp_workbook()` (header/label matching, fails loudly on a missing quarter-header row or growth row, no PDF fallback), reading **every** available quarter column in the growth table — not just the latest — so Stats SA's routine revisions to previously published quarters are captured, not just the newest print.
+  - `_transform_gdp()` / `_apply_gdp_growth_points()`: overwrites a revised historical series point in place (with a human-readable revision note) and appends a genuinely new one, satisfying `gdp.yaml`'s `overwrites_historical_points: true` requirement directly — proven by a dedicated test, not just asserted in comments. Headline fields are driven only by the chronologically newest point.
+  - Per-point validation (a genuinely new plausibility range since GDP growth can be negative, unlike QLFS's `[0, 100]` rates; quarterly-label format; `check_protected_fields()` reuse; a wider GDP-specific quarter-over-quarter anomaly threshold) and `"ok"` / `"no_change"` / `"error"` staging behaviour for `gdp`, matching SARB's and QLFS's semantics — including a pre-transform "did anything actually change" check (mirroring QLFS's `dataset_changed` pattern) so a genuine no-op run reports `"no_change"` rather than always re-staging due to `_meta`'s ever-fresh timestamps.
+  - A GDP-specific end-to-end approve→promote test (`test_gdp_staged_candidate_requires_approve_then_promote`), built from the start of this milestone rather than retrofitted afterward (as QLFS's equivalent test was, in the Phase 2 closeout).
+  - `gdp-annual-growth`, `gdp-nominal`, and `gdp-per-capita` remain untouched — deliberately out of scope pending their own sourcing audit (see `CHANGELOG.md`).
+  - **Still open after this milestone:** `parse_gdp_workbook()` and the P0441 URL-naming convention have never been run against a real, downloaded Stats SA GDP workbook — only synthetic fixtures, the same open item as QLFS's Excel-layout caveat (see §5 and §7).
 
 ---
 
@@ -87,7 +94,7 @@ python -m automation.runner --promote <ds> <ver>    # approved → written to pr
  (SARB API, Stats SA │   check_for_updates()       │  ← read-only detection,
   release hub, ...)  │   fetch_and_apply()         │    safe to run unattended
                      └──────────────┬──────────────┘
-                                    │ (SARB only, today)
+                                    │ (SARB, Stats SA QLFS, and Stats SA GDP, today)
                                     ▼
                      ┌─────────────────────────────┐
                      │  core/staging.py             │  ← file-based interim
@@ -111,7 +118,7 @@ python -m automation.runner --promote <ds> <ver>    # approved → written to pr
                      src/data/datasets/*.json  (production)
 ```
 
-This is a direct, verified implementation of the non-negotiable rule in `SA-Data-Hub-Automation-Architecture.md` §0.1 ("nothing auto-deploys to production data") for the one adapter (SARB) that currently has a write path. No adapter can currently write to `src/data/datasets/*.json` except through `promote_version()`, and `promote_version()` enforces the approved state.
+This is a direct, verified implementation of the non-negotiable rule in `SA-Data-Hub-Automation-Architecture.md` §0.1 ("nothing auto-deploys to production data") for the adapters/flows that currently have a write path: SARB, Stats SA QLFS, and Stats SA GDP (`gdp-growth` only). No adapter can currently write to `src/data/datasets/*.json` except through `promote_version()`, and `promote_version()` enforces the approved state.
 
 **Deliberate deviations from the long-term architecture document, both explicitly authorized as interim measures:**
 - Staging is file-based (`automation/reports/staging/`), not the PostgreSQL `staging.*` schema described in the architecture document — acceptable pending the DB migration (`ai-context.md` confirms no production DB reads exist yet).
@@ -121,17 +128,17 @@ This is a direct, verified implementation of the non-negotiable rule in `SA-Data
 
 ## 4. Production Readiness
 
-**Ready, for two adapters (SARB and Stats SA QLFS), under human operation, within their current scope.**
+**Ready, for three write-gated flows (SARB, Stats SA QLFS, and Stats SA GDP's `gdp-growth`), under human operation, within their current scope.**
 
 - The package imports and runs cleanly (`python -m automation.runner --list/--describe/--apply/--approve/--promote` all execute without error).
-- The regression suite passes in full (38/38) and includes a proof — not just an assertion — that a version cannot reach production without going through approval, for both `interest-rates` (SARB) and a real QLFS-produced dataset (`unemployment`).
-- SARB and the Stats SA QLFS family (`unemployment`, `youth-unemployment`, `labour-force`) each have a functioning write path; both are gated end-to-end.
+- The regression suite passes in full (53/53) and includes a proof — not just an assertion — that a version cannot reach production without going through approval, for `interest-rates` (SARB), a real QLFS-produced dataset (`unemployment`), and a real GDP-produced dataset (`gdp`).
+- SARB, the Stats SA QLFS family (`unemployment`, `youth-unemployment`, `labour-force`), and Stats SA GDP (`gdp-growth` only) each have a functioning write path; all are gated end-to-end.
 
 **Not ready** for:
-- Unattended/scheduled operation without a human running `--approve`/`--promote` — this is by design, not a gap; the architecture requires a human in this loop for every dataset, including SARB and QLFS.
-- Any adapter other than SARB or Stats SA QLFS reaching production data — GDP, CPI, population, housing, census, municipalities, crime, and World Bank datasets currently write nothing beyond raw-file archiving or detection stubs.
+- Unattended/scheduled operation without a human running `--approve`/`--promote` — this is by design, not a gap; the architecture requires a human in this loop for every dataset, including SARB, QLFS, and GDP.
+- Any adapter/stat other than SARB, Stats SA QLFS, or Stats SA GDP's `gdp-growth` reaching production data — CPI, population, housing, census, municipalities, crime, World Bank datasets, and GDP's own `gdp-annual-growth`/`gdp-nominal`/`gdp-per-capita` stats currently write nothing beyond raw-file archiving or detection stubs.
 - CI/CD integration — there is no GitHub Actions workflow yet; the approval gate today is a local CLI sequence, not a PR-based one.
-- Unattended QLFS `--apply` runs against a real Stats SA release — `parse_qlfs_workbook()` has not yet been empirically verified against a real workbook (see §5).
+- Unattended QLFS or GDP `--apply` runs against a real Stats SA release — neither `parse_qlfs_workbook()` nor `parse_gdp_workbook()` has yet been empirically verified against a real workbook (see §5).
 
 ---
 
@@ -144,6 +151,7 @@ This is a direct, verified implementation of the non-negotiable rule in `SA-Data
 - **No GitHub Actions / CI integration.** Detection, staging, and promotion are all manually triggered from a local shell today.
 - **No equivalence testing or `statistic_snapshots`/story regeneration.** The architecture document's steps 9–10 (equivalence tests, deployment report as a durable artifact) are not implemented; `core/report.py` produces a per-run Markdown/JSON report but does not compare DB output to JSON output (there is no DB write path yet at all).
 - **The QLFS Excel layout assumed by `_QLFS_METRIC_SPECS` is mitigated by design, not yet empirically resolved.** `parse_qlfs_workbook()` locates tables by header/label matching rather than fixed cell coordinates, and fails loudly (naming the missing indicator) rather than guessing — but it has only ever been tested against synthetic fixtures built to the documented Stats SA convention; no session to date has had network access to `statssa.gov.za` to obtain a real archived workbook. The first live `--apply` run against a real downloaded workbook is the actual empirical test of this parser. A parse failure on that first real run is expected-possible, not a regression — the correct response is to update `_QLFS_METRIC_SPECS`'s label-matching rules to match the real layout, re-run, and only then treat this item as resolved. See `automation/adapters/statss.py`'s module docstring, `automation/docs/developer-guide.md`, and `CHANGELOG.md`.
+- **The GDP Excel layout assumed by `_GDP_GROWTH_SPEC`, and the P0441 URL-naming convention assumed by `_build_gdp_candidate_urls()`, are likewise mitigated by design, not yet empirically resolved** — the exact same open item as the QLFS one immediately above, for the same underlying reason (no session to date has had network access to `statssa.gov.za`). `parse_gdp_workbook()` fails loudly (distinguishing "no quarter-header row found" from "a quarter-header row was found but no row matched the GDP growth label") rather than guessing or falling back to a stale value. The first live `--apply` run against a real downloaded GDP workbook is the actual empirical test. See `automation/adapters/statss.py`'s module docstring and `CHANGELOG.md`.
 
 ---
 
@@ -151,19 +159,21 @@ This is a direct, verified implementation of the non-negotiable rule in `SA-Data
 
 In rough priority order, all outside the scope of the completed sprints:
 
-1. **GDP write path**, following the QLFS pattern now proven twice (SARB, then Stats SA QLFS) — parse the GDP Excel release (P0441) and produce write-gated output through the existing staging/approve/promote pipeline. GDP ETL must overwrite historical points (revisions), not append.
-2. **CPI write path** (`inflation.json`), following the same pattern once GDP is proven; also retires the duplicate `repo-rate` stat via the SARB API repo-rate reference, per the sourcing plan.
-3. GitHub Actions PR-based approval flow, replacing the local CLI gate with the architecture document's §7 design, once GDP has run through a full real-world cycle in addition to SARB and QLFS.
-4. Equivalence tests (DB vs. JSON) — blocked on the PostgreSQL write path existing at all.
-5. The documentation/robustness items noted in §5 (`--apply` allowlist, `get_production_dataset_path()`'s hardcoded `.parent` hops) — small, non-blocking cleanup, appropriate to fold into the start of the next sprint rather than opening a dedicated one.
-6. Real-workbook empirical verification of `parse_qlfs_workbook()` against a genuine downloaded Stats SA QLFS release, and separately, human verification of the `labour-force-participation` / `lfpr-overall` value discrepancy against the Stats SA QLFS P0211 release tables (see §5) — both open, tracked items, neither blocking GDP.
+1. **CPI write path** (`inflation.json`, Stats SA component only), following the same pattern now proven three times (SARB, Stats SA QLFS, Stats SA GDP); also retires the duplicate `repo-rate` stat via the SARB API repo-rate reference, per the sourcing plan. This is a genuinely new field-ownership boundary against the SARB-owned `repo-rate` stat living in the same `inflation.json` file, not just a repeat of the GDP pattern.
+2. GitHub Actions PR-based approval flow, replacing the local CLI gate with the architecture document's §7 design, once CPI has run through a full real-world cycle in addition to SARB, QLFS, and GDP.
+3. Equivalence tests (DB vs. JSON) — blocked on the PostgreSQL write path existing at all.
+4. The documentation/robustness items noted in §5 (`--apply` allowlist, `get_production_dataset_path()`'s hardcoded `.parent` hops) — small, non-blocking cleanup, appropriate to fold into the start of the next sprint rather than opening a dedicated one.
+5. Real-workbook empirical verification of `parse_qlfs_workbook()` and `parse_gdp_workbook()` against genuine downloaded Stats SA releases, and separately, human verification of the `labour-force-participation` / `lfpr-overall` value discrepancy against the Stats SA QLFS P0211 release tables (see §5) — all open, tracked items, none blocking CPI.
+6. A sourcing audit for `gdp-annual-growth`, `gdp-nominal`, and `gdp-per-capita` (currently untouched by the GDP write path — see `CHANGELOG.md`'s 2026-07-19 entry) before any of the three is safely automatable.
 
 ---
 
 ## 7. Immediate Next Milestone
 
-**GDP write path: Excel parsing and the `gdp` dataset, following the Stats SA QLFS pattern.**
+**CPI write path: Excel parsing for the Stats SA component of `inflation.json`, following the Stats SA QLFS and GDP pattern.**
 
-This is the highest-priority next step per `SA-Data-Hub-Dataset-Sourcing-Plan.md`'s Automation Priority ordering, now that the staging/approve/promote pipeline has been proven end-to-end for two materially different adapters (SARB's JSON API, and Stats SA QLFS's Excel-parsing path). This document does not begin GDP implementation — it only records GDP as the next milestone.
+This is the next step per `SA-Data-Hub-Dataset-Sourcing-Plan.md`'s Automation Priority ordering, now that the staging/approve/promote pipeline has been proven end-to-end for three materially different flows (SARB's JSON API, Stats SA QLFS's Excel-parsing path, and Stats SA GDP's Excel-parsing path with historical-revision handling). This document does not begin CPI implementation — it only records CPI as the next milestone.
 
-The first real `--apply` run of the QLFS adapter against a genuine downloaded workbook remains the empirical test of `parse_qlfs_workbook()` (see §5) and should happen before or alongside the start of GDP work, since GDP's Excel parser is expected to follow the same header/label-matching approach and would benefit from whatever real-layout lessons that first QLFS run surfaces. A parse failure on that first real QLFS run is expected-possible, not a regression — the correct response is to update `_QLFS_METRIC_SPECS`'s label-matching rules to match the real layout, re-run, and only then treat the item as resolved.
+CPI introduces a genuinely new complication neither QLFS nor GDP had: `inflation.json` also carries a SARB-owned `repo-rate` stat, duplicated against `interest-rates.json`'s canonical `repo-rate-sarb`. The CPI write path must touch only the Stats SA CPI stats in that file and must not re-fetch or re-derive the repo-rate value — retiring that duplication (referencing `interest-rates.json`'s value rather than independently fetching it, per the sourcing plan) is part of the same piece of work, not a follow-up.
+
+The first real `--apply` run of the QLFS adapter against a genuine downloaded workbook remains the empirical test of `parse_qlfs_workbook()` (see §5), and the first real `--apply` run of the GDP flow against a genuine downloaded P0441 workbook is the equivalent empirical test of `parse_gdp_workbook()`. Both should happen before or alongside the start of CPI work, since CPI's Excel parser is expected to follow the same header/label-matching approach and would benefit from whatever real-layout lessons those first runs surface. A parse failure on either first real run is expected-possible, not a regression — the correct response is to update the relevant label-matching spec (`_QLFS_METRIC_SPECS` or `_GDP_GROWTH_SPEC`) to match the real layout, re-run, and only then treat the item as resolved.
