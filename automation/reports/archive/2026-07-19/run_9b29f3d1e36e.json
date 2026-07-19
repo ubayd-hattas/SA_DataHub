@@ -1,0 +1,38 @@
+{
+  "run_id": "9b29f3d1e36e",
+  "started_at": "2026-07-19T19:32:08.941951+00:00",
+  "finished_at": "2026-07-19T19:32:10.849624+00:00",
+  "dry_run": false,
+  "adapters": [
+    {
+      "adapter_id": "statssa",
+      "display_name": "Statistics South Africa",
+      "status": "no_change",
+      "datasets_checked": [
+        "unemployment",
+        "youth-unemployment",
+        "labour-force",
+        "gdp",
+        "inflation",
+        "population",
+        "housing",
+        "census",
+        "municipalities"
+      ],
+      "datasets_changed": [],
+      "warnings": [],
+      "errors": [],
+      "duration_ms": 1820,
+      "notes": ""
+    }
+  ],
+  "global_warnings": [],
+  "global_errors": [],
+  "config_summary": {
+    "sources_configured": 4,
+    "datasets_configured": 13,
+    "adapters_registered": 4,
+    "adapters_run": 1,
+    "log_level": "INFO"
+  }
+}

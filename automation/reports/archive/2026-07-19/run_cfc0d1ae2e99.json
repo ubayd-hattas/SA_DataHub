@@ -1,0 +1,43 @@
+{
+  "run_id": "cfc0d1ae2e99",
+  "started_at": "2026-07-19T11:58:27.181295+00:00",
+  "finished_at": "2026-07-19T11:58:27.414838+00:00",
+  "dry_run": false,
+  "adapters": [
+    {
+      "adapter_id": "statssa",
+      "display_name": "Statistics South Africa",
+      "status": "warning",
+      "datasets_checked": [
+        "unemployment",
+        "youth-unemployment",
+        "labour-force",
+        "gdp",
+        "inflation",
+        "population",
+        "housing",
+        "census",
+        "municipalities"
+      ],
+      "datasets_changed": [],
+      "warnings": [
+        "Dataset unemployment: check failed \u2014 WAF_BLOCKED: Incapsula WAF challenge detected. Cannot check for updates.",
+        "Dataset youth-unemployment: check failed \u2014 WAF_BLOCKED: Incapsula WAF challenge detected. Cannot check for updates.",
+        "Dataset labour-force: check failed \u2014 WAF_BLOCKED: Incapsula WAF challenge detected. Cannot check for updates.",
+        "Dataset gdp: check failed \u2014 WAF_BLOCKED: Incapsula WAF challenge detected. Cannot check for updates."
+      ],
+      "errors": [],
+      "duration_ms": 201,
+      "notes": ""
+    }
+  ],
+  "global_warnings": [],
+  "global_errors": [],
+  "config_summary": {
+    "sources_configured": 4,
+    "datasets_configured": 13,
+    "adapters_registered": 4,
+    "adapters_run": 1,
+    "log_level": "INFO"
+  }
+}
