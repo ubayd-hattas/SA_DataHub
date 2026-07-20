@@ -93,9 +93,69 @@ method call (see ``IMPLEMENTATION-SPEC-GDP.md``):
      ``core/staging.py``/``core/version.py`` pipeline already proven for
      SARB and QLFS. No direct write to ``gdp.json`` ever happens here.
 
-CPI, population, housing, census, and municipalities remain Phase A
+Phase 3b scope (CPI) — parse + transform + stage (this build)
+-----------------------------------------------------------------
+Continuing from where Phase 3a left GDP, ``fetch_and_apply()`` now also
+processes CPI (P0141) as a third, fully independent flow within the same
+method call (see ``IMPLEMENTATION-SPEC-CPI.md``):
+  1. Real ETag/content-hash detection against the P0141 release hub
+     (``_check_cpi()``, mirroring ``_check_qlfs()``/``_check_gdp()``).
+  2. Discover → download → archive the raw CPI Excel publication.
+  3. Parse the workbook (``parse_cpi_workbook()``) by header/label
+     matching, extracting only the **latest month's** value per metric —
+     unlike GDP, CPI does not routinely revise previously published
+     months, so a single-column read (mirroring
+     ``parse_qlfs_workbook()``'s approach, not ``parse_gdp_workbook()``'s)
+     is sufficient (assumption flagged for confirmation, see below).
+  4. Transform (``_transform_inflation()``, reusing ``_apply_qlfs_rate_map()``
+     unchanged — see §12.1 of the spec) into ``inflation.json``'s
+     ``cpi-headline`` and ``food-inflation`` stats only; ``repo-rate``
+     (SARB-owned) and ``annual-cpi-avg`` (deferred, see §0.2) are never
+     read or modified by this flow.
+  5. Validate (a genuinely new plausibility range tolerating negative/
+     deflationary values, monthly label format, protected-field diff via
+     the reused ``check_protected_fields()``, and a CPI-specific
+     month-over-month anomaly threshold) **and** enforce, as a dedicated
+     hard-fail check distinct from ``check_protected_fields()``, the
+     ownership boundary against ``repo-rate``/``annual-cpi-avg``
+     (``_assert_cpi_ownership_boundary()`` — deep-compares every
+     non-owned stat between the previous and proposed document and
+     hard-fails staging on any difference, including a stat silently
+     added or removed). Then stage the candidate via the same
+     ``core/staging.py``/``core/version.py`` pipeline already proven for
+     SARB, QLFS, and GDP. No direct write to ``inflation.json`` ever
+     happens here.
+
+The ``repo-rate``/``repo-rate-sarb`` de-duplication and ``annual-cpi-avg``
+automation are explicitly deferred to their own follow-on milestones (see
+``IMPLEMENTATION-SPEC-CPI.md`` §0.1 and §0.2) — this build's blast radius
+is limited to ``cpi-headline`` and ``food-inflation``.
+
+Population, housing, census, and municipalities remain Phase A
 stubs — explicitly out of scope for this build (see
-``IMPLEMENTATION-SPEC-GDP.md`` §13).
+``IMPLEMENTATION-SPEC-CPI.md`` §1).
+
+CPI Excel layout — verification status (read before touching the parser)
+--------------------------------------------------------------------------
+Exactly as with QLFS and GDP, no archived CPI ``.xlsx`` file was available
+in this implementation session to inspect (no session to date has had
+network access to ``statssa.gov.za``). ``parse_cpi_workbook()`` and
+``_CPI_METRIC_SPECS``'s label-matching rules were built against the
+*documented* Stats SA convention (a header row of month-year labels, e.g.
+``May 2026``, with "All items" and "Food" indicator rows identified by
+label text), not empirically verified against a real P0141 release file —
+only against synthetic fixtures (see
+``automation/adapters/tests/test_statss.py``). The P0141 URL-naming
+convention used by ``_build_cpi_candidate_urls()`` is likewise
+unconfirmed, carried forward the same way the QLFS and GDP URL
+conventions were at the start of their own milestones. The numeric
+judgement calls ``_CPI_PLAUSIBLE_RANGE = (-5.0, 30.0)`` and
+``_CPI_JUMP_WARNING_THRESHOLD = 1.5`` are this document's own assumptions,
+not sourced from ``dataset-analysis.md`` or the sourcing plan — flagged
+for stakeholder confirmation. This is mitigated by design (fail loudly,
+no guessing, no PDF fallback), not resolved by observation — the first
+live run against a real downloaded CPI workbook is the actual empirical
+test of this parser.
 
 GDP Excel layout — verification status (read before touching the parser)
 --------------------------------------------------------------------------
@@ -310,6 +370,67 @@ _GDP_GROWTH_JUMP_WARNING_THRESHOLD = 5.0
 # genuinely new plausibility range, not a reuse of _validate_percentage()'s
 # [0, 100] assumption (IMPLEMENTATION-SPEC-GDP.md §6 item 1).
 _GDP_GROWTH_PLAUSIBLE_RANGE: tuple[float, float] = (-20.0, 20.0)
+
+# CPI (P0141) release hub — used for ETag/content-hash change detection.
+# Same WAF caveats as the QLFS/GDP hubs above.
+_CPI_HUB_URL = f"{_RELEASE_HUB_BASE}&PPN=P0141"
+_CPI_PUBLICATION_CODE = "P0141"
+
+# Direct publication base URL — mirrors _QLFS_PUBLICATION_BASE's /
+# _GDP_PUBLICATION_BASE's pattern. **Unconfirmed** against a real Stats SA
+# release — see the module docstring's "CPI Excel layout — verification
+# status" section.
+_CPI_PUBLICATION_BASE = "https://www.statssa.gov.za/publications/P0141/"
+
+# inflation.json — the sole dataset JSON touched by the CPI flow. Shared
+# with the (untouched) SARB-owned repo-rate stat and the (deferred)
+# annual-cpi-avg stat — see IMPLEMENTATION-SPEC-CPI.md §0.1/§0.2/§7.
+_CPI_DATASET_JSON: Path = _DATASETS_DIR / "inflation.json"
+_CPI_HEADLINE_STAT_ID = "cpi-headline"
+_CPI_FOOD_STAT_ID = "food-inflation"
+
+# The complete set of stat IDs this milestone's code is permitted to
+# read/write inside inflation.json. Used both to build
+# _transform_inflation()'s rate_map and, more importantly, as the boundary
+# _assert_cpi_ownership_boundary() enforces against every OTHER stat in
+# the same file (repo-rate, annual-cpi-avg) — see IMPLEMENTATION-SPEC-
+# CPI.md §7 and §11 item 5.
+_CPI_OWNED_STAT_IDS: frozenset[str] = frozenset(
+    {_CPI_HEADLINE_STAT_ID, _CPI_FOOD_STAT_ID}
+)
+
+# CPI is year-on-year % change and, unlike QLFS's [0, 100] rates, can in
+# principle go negative (deflation) — this document's own judgement call,
+# not sourced from dataset-analysis.md or the sourcing plan
+# (IMPLEMENTATION-SPEC-CPI.md §11 item 1 / §17 assumption 2). Flagged for
+# stakeholder confirmation before this is treated as final.
+_CPI_PLAUSIBLE_RANGE: tuple[float, float] = (-5.0, 30.0)
+
+# Narrower than GDP's 5.0 and QLFS's 3.0 default: inflation.json's own
+# historical CPI series moves by well under 1pp month-to-month in almost
+# every observed case (the +0.9pp April 2026 jump already on file being
+# the one exception) — a judgement call, not sourced from the uploaded
+# documentation (IMPLEMENTATION-SPEC-CPI.md §11 item 4 / §17 assumption 2).
+_CPI_JUMP_WARNING_THRESHOLD = 1.5
+
+# Matches dataset-analysis.md's documented monthly_label rule verbatim.
+_MONTHLY_LABEL_RE = re.compile(r"^[A-Z][a-z]{2} \d{4}$")
+
+# CPI month-header cells, e.g. "May 2026" or "May-2026" / "May. 2026".
+_MONTH_HEADER_PATTERN = re.compile(
+    r"(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+(\d{4})",
+    re.IGNORECASE,
+)
+
+# Three-letter month name normalisation (case-insensitive input -> the
+# canonical "Mon" form already used by inflation.json's series labels).
+_MONTH_ABBR_TO_NUM: dict[str, int] = {
+    "jan": 1, "feb": 2, "mar": 3, "apr": 4, "may": 5, "jun": 6,
+    "jul": 7, "aug": 8, "sep": 9, "oct": 10, "nov": 11, "dec": 12,
+}
+_MONTH_NUM_TO_ABBR: dict[int, str] = {
+    num: abbr.capitalize() for abbr, num in _MONTH_ABBR_TO_NUM.items()
+}
 
 # ---------------------------------------------------------------------------
 # HTTP client helpers
@@ -1623,6 +1744,504 @@ def _transform_gdp(
 
 
 # ---------------------------------------------------------------------------
+# CPI Excel parsing (Phase 3b)
+#
+# CPI, like QLFS, only needs the newest month's value per metric — Stats SA
+# does not routinely revise previously published CPI prints the way it
+# routinely revises GDP quarters (IMPLEMENTATION-SPEC-CPI.md §10.1,
+# assumption flagged in §17 item 1). _find_latest_month_column() is
+# therefore a direct parallel to _find_latest_quarter_column() (single
+# newest column), not to _find_all_quarter_columns() (every column) — it
+# does not replace or modify _find_latest_quarter_column(); QLFS keeps
+# using its own version, unchanged.
+# ---------------------------------------------------------------------------
+
+
+def _find_latest_month_column(ws: Any) -> tuple[int, str] | None:
+    """
+    Scan the first several rows of a worksheet for CPI month-header cells
+    (e.g. "May 2026" or "May-2026") and return the column index and
+    normalised "Mon YYYY" label of the chronologically latest one found.
+
+    Direct parallel to _find_latest_quarter_column() for month-year
+    headers instead of quarter-year headers. Does not replace or modify
+    _find_latest_quarter_column() — QLFS keeps using its own version,
+    unchanged.
+
+    Returns None if no month-header cell is found in this sheet.
+    """
+    best: tuple[tuple[int, int], int, str] | None = None
+    max_header_rows = min(15, ws.max_row or 1)
+    for row in ws.iter_rows(min_row=1, max_row=max_header_rows):
+        for cell in row:
+            val = cell.value
+            if not isinstance(val, str):
+                continue
+            match = _MONTH_HEADER_PATTERN.search(val)
+            if not match:
+                continue
+            month_str, year_str = match.group(1), match.group(2)
+            month_num = _MONTH_ABBR_TO_NUM.get(month_str.lower()[:3])
+            if month_num is None:
+                continue
+            year = int(year_str)
+            key = (year, month_num)
+            label = f"{_MONTH_NUM_TO_ABBR[month_num]} {year}"
+            if best is None or key > best[0]:
+                best = (key, cell.column, label)
+    if best is None:
+        return None
+    return best[1], best[2]
+
+
+@dataclass
+class CPIExtract:
+    """Named values extracted from a single CPI Excel workbook."""
+
+    release_period: str        # latest month found, e.g. "May 2026"
+    publication_date: str      # ISO YYYY-MM-DD, best-effort
+    cpi_headline: float
+    food_inflation: float
+
+
+# Label spec used to locate cpi-headline / food-inflation by text match.
+# **Unverified** against a real Stats SA P0141 workbook — no session to
+# date has had network access to statssa.gov.za (IMPLEMENTATION-SPEC-
+# CPI.md §10.3 / §17 assumption 3). If the real labels differ,
+# parse_cpi_workbook() fails loudly rather than guessing, and this spec is
+# the first and only place that needs correcting.
+_CPI_METRIC_SPECS: dict[str, dict[str, tuple[str, ...]]] = {
+    "cpi_headline": {
+        "include": ("all items",),
+        "exclude": ("food",),
+    },
+    "food_inflation": {
+        "include": ("food",),
+        "exclude": (),
+    },
+}
+
+
+def parse_cpi_workbook(file_bytes: bytes) -> CPIExtract:
+    """
+    Parse a CPI Excel workbook and extract the latest month's headline and
+    food CPI values, by label/header matching (not fixed cell
+    coordinates) — same philosophy as parse_qlfs_workbook().
+
+    Raises
+    ------
+    ValueError
+        If the workbook cannot be opened, or if either required indicator
+        cannot be located by label match in any worksheet. The message
+        names exactly which metric(s) failed to resolve, mirroring
+        parse_qlfs_workbook()'s and parse_gdp_workbook()'s fail-loudly
+        contract — no PDF fallback, no guessing, no stale-value
+        substitution.
+    """
+    try:
+        wb = openpyxl.load_workbook(
+            BytesIO(file_bytes), data_only=True, read_only=True
+        )
+    except Exception as exc:
+        raise ValueError(
+            f"Cannot open CPI file as an Excel workbook — not a valid "
+            f".xlsx/.xls file, or the file is corrupted: {exc}"
+        ) from exc
+
+    resolved: dict[str, float] = {}
+    release_period: str | None = None
+    missing: list[str] = []
+    month_header_found = False
+
+    for metric_key, spec in _CPI_METRIC_SPECS.items():
+        value: float | None = None
+        period_for_value: str | None = None
+        for ws in wb.worksheets:
+            header = _find_latest_month_column(ws)
+            if header is None:
+                continue
+            month_header_found = True
+            col_idx, period_label = header
+            found = _find_metric_value(
+                ws, col_idx, spec["include"], spec.get("exclude", ())
+            )
+            if found is not None:
+                value = found
+                period_for_value = period_label
+                break
+
+        if value is None:
+            missing.append(metric_key)
+            continue
+
+        resolved[metric_key] = value
+        if release_period is None:
+            release_period = period_for_value
+        elif period_for_value is not None and period_for_value != release_period:
+            log.warning(
+                "CPI parser: metric %s resolved to period %s, which "
+                "differs from the period already resolved for other "
+                "metrics (%s). Using %s for this run's release_period.",
+                metric_key, period_for_value, release_period, release_period,
+            )
+
+    if not month_header_found:
+        raise ValueError(
+            "CPI workbook parse failed — no month-header row (e.g. "
+            "'May 2026') could be located in any worksheet. This most "
+            "likely means the Stats SA P0141 Excel layout differs from "
+            "the header-matching rules in _find_latest_month_column() "
+            "(automation/adapters/statss.py) — per IMPLEMENTATION-SPEC-"
+            "CPI.md §10, this must fail loudly rather than guess or fall "
+            "back to a stale value. Manual review (Track B) is the "
+            "correct next step, not a PDF-parsing fallback (explicitly "
+            "out of scope for this phase)."
+        )
+
+    if missing or release_period is None:
+        raise ValueError(
+            "CPI workbook parse failed — could not locate the following "
+            f"required indicator(s) by label match: {', '.join(missing)}. "
+            "This most likely means the Stats SA Excel layout for this "
+            "release differs from the label-matching rules in "
+            "_CPI_METRIC_SPECS (automation/adapters/statss.py) — per "
+            "IMPLEMENTATION-SPEC-CPI.md §10.3, this must fail loudly "
+            "rather than guess or fall back to a stale value. Manual "
+            "review (Track B) is the correct next step, not a "
+            "PDF-parsing fallback (explicitly out of scope for this "
+            "phase)."
+        )
+
+    publication_date = _best_effort_publication_date(wb)
+    if publication_date is None:
+        publication_date = date.today().isoformat()
+        log.warning(
+            "CPI parser: could not find an explicit publication date in "
+            "the workbook — using today's date (%s) as a best-effort "
+            "fallback for lastUpdated/source.publicationDate fields.",
+            publication_date,
+        )
+
+    return CPIExtract(
+        release_period=release_period,
+        publication_date=publication_date,
+        cpi_headline=resolved["cpi_headline"],
+        food_inflation=resolved["food_inflation"],
+    )
+
+
+# ---------------------------------------------------------------------------
+# CPI direct URL construction and probing (Phase 3b)
+#
+# Mirrors the QLFS/GDP discovery pattern exactly, parameterised for P0141
+# and its monthly cadence. **Unconfirmed** against a real Stats SA release
+# — see the module docstring's "CPI Excel layout — verification status"
+# section.
+# ---------------------------------------------------------------------------
+
+_CPI_MONTH_NAMES: dict[int, str] = {
+    1: "January", 2: "February", 3: "March", 4: "April", 5: "May", 6: "June",
+    7: "July", 8: "August", 9: "September", 10: "October", 11: "November",
+    12: "December",
+}
+
+
+def _build_cpi_candidate_urls(month: int, year: int) -> list[str]:
+    """
+    Build an ordered list of candidate Excel/PDF URLs for the given CPI
+    release month, following _build_qlfs_candidate_urls()'s /
+    _build_gdp_candidate_urls()'s structure scaled to P0141's naming
+    convention. **Unconfirmed** against a real release — see the module
+    docstring.
+    """
+    base = _CPI_PUBLICATION_BASE
+    month_name = _CPI_MONTH_NAMES.get(month, "")
+
+    stat_release_prefix = f"Statistical%20release%20P0141%20{month_name}%20{year}"
+    media_release_prefix = f"CPI%20Media%20Release%20{month_name}%20{year}"
+    data_prefix = f"P0141{month_name}{year}"
+
+    candidates: list[str] = []
+    for prefix in [stat_release_prefix, media_release_prefix, data_prefix]:
+        for ext in (".xlsx", ".xls", ".pdf"):
+            candidates.append(f"{base}{prefix}{ext}")
+
+    return candidates
+
+
+def _determine_current_cpi_month() -> tuple[int, int]:
+    """
+    Determine the most recently expected CPI release month.
+
+    CPI for month M is released ~22nd of month M+1 (dataset-analysis.md;
+    SA-Data-Hub-Dataset-Sourcing-Plan.md §4 notes this drifts and is not a
+    fixed calendar day). Before the ~22nd of the current month, the most
+    recently released figure is for two months prior; from the 22nd
+    onward, it is for the previous month.
+
+    Returns
+    -------
+    (month, year)
+        The month and year of the most recently expected CPI release.
+    """
+    today = date.today()
+    m = today.month
+    y = today.year
+
+    if today.day < 22:
+        m -= 2
+    else:
+        m -= 1
+
+    while m < 1:
+        m += 12
+        y -= 1
+
+    return m, y
+
+
+def _probe_cpi_publication_url(
+    client: HTTPClient,
+    month: int,
+    year: int,
+) -> str | None:
+    """
+    Probe candidate URLs for the CPI release month and return the first
+    that responds with a valid file (HTTP 200, size > 10 KB).
+    Structurally identical to _probe_qlfs_publication_url() /
+    _probe_gdp_publication_url().
+    """
+    candidates = _build_cpi_candidate_urls(month, year)
+    log.debug(
+        "Probing %d candidate URLs for CPI %s %d …",
+        len(candidates), _CPI_MONTH_NAMES.get(month, month), year,
+    )
+    for url in candidates:
+        try:
+            resp = client.get(url)
+            if resp.status == 200 and len(resp.body) > 10_240:
+                log.info(
+                    "CPI publication found via direct URL probe: %s (%d bytes)",
+                    url, len(resp.body),
+                )
+                return url
+            log.debug("Probe %s → %d bytes (too small or error)", url, len(resp.body))
+        except AutomationHTTPError as exc:
+            if exc.status != 404:
+                log.warning("Probe %s → HTTP %s: %s", url, exc.status, exc.reason)
+        except Exception as exc:
+            log.debug("Probe %s → %s", url, exc)
+    return None
+
+
+def _discover_cpi_excel(
+    client: HTTPClient,
+    *,
+    hub_url: str = _CPI_HUB_URL,
+) -> tuple[str | None, str, bytes]:
+    """
+    Discover and return the CPI Excel workbook URL and hub HTML.
+    Structurally identical to _discover_qlfs_excel() /
+    _discover_gdp_excel(), reusing the fully generic
+    _fetch_release_hub_html() / _extract_excel_url() /
+    _extract_release_period() unchanged.
+
+    Returns
+    -------
+    (excel_url, release_period, hub_html)
+        excel_url:      Absolute URL of the Excel workbook, or None.
+        release_period: Detected month label (e.g. 'May 2026') or ''.
+        hub_html:       Raw HTML bytes of the release hub.
+    """
+    hub_html = _fetch_release_hub_html(client, hub_url)
+    excel_url = _extract_excel_url(hub_html)
+    release_period = _extract_release_period(hub_html)
+    return excel_url, release_period, hub_html
+
+
+# ---------------------------------------------------------------------------
+# CPI validation helpers (Phase 3b)
+# ---------------------------------------------------------------------------
+
+
+def _validate_cpi_rate(value: float, label: str) -> list[str]:
+    """
+    Validate a CPI year-on-year rate is a plausible percentage in
+    _CPI_PLAUSIBLE_RANGE. Unlike QLFS rates, CPI can in principle be
+    negative (deflation), so this is a genuinely new validator, not a
+    reuse of _validate_percentage()'s [0, 100] range.
+    """
+    low, high = _CPI_PLAUSIBLE_RANGE
+    if not (low <= value <= high):
+        return [
+            f"{label} CPI value {value} is outside the plausible "
+            f"[{low}, {high}] range."
+        ]
+    return []
+
+
+def _validate_monthly_label(label: str) -> list[str]:
+    """Validate a period label matches the monthly format (dataset-analysis.md RULES)."""
+    if not _MONTHLY_LABEL_RE.match(label):
+        return [f"Release period {label!r} does not match the expected 'Mon YYYY' format."]
+    return []
+
+
+# ---------------------------------------------------------------------------
+# CPI ownership boundary (Phase 3b)
+#
+# The single most load-bearing new function in this milestone
+# (IMPLEMENTATION-SPEC-CPI.md §7 / §11 item 5). Stricter than
+# check_protected_fields(): it hard-fails on ANY difference — not just a
+# protected-field change — in a stat this milestone does not own.
+# ---------------------------------------------------------------------------
+
+
+def _assert_cpi_ownership_boundary(
+    previous_doc: dict[str, Any],
+    proposed_doc: dict[str, Any],
+) -> list[str]:
+    """
+    Deep-compare every statistics[] entry in `proposed_doc` whose id is
+    NOT in _CPI_OWNED_STAT_IDS against the corresponding entry in
+    `previous_doc` (matched by id). Returns a list of violation messages —
+    empty if repo-rate and annual-cpi-avg (and any other non-owned stat)
+    are byte-for-byte identical between the two documents, and the set of
+    stat IDs present is unchanged.
+    """
+    violations: list[str] = []
+
+    previous_by_id = {s.get("id"): s for s in previous_doc.get("statistics", [])}
+    proposed_by_id = {s.get("id"): s for s in proposed_doc.get("statistics", [])}
+
+    if set(previous_by_id.keys()) != set(proposed_by_id.keys()):
+        violations.append(
+            "CPI ownership boundary violation: the set of stat IDs in "
+            "inflation.json changed (added/removed a stat) — previous="
+            f"{sorted(k for k in previous_by_id if k is not None)!r}, "
+            f"proposed={sorted(k for k in proposed_by_id if k is not None)!r}."
+        )
+
+    for stat_id, prev_stat in previous_by_id.items():
+        if stat_id in _CPI_OWNED_STAT_IDS:
+            continue
+        proposed_stat = proposed_by_id.get(stat_id)
+        if proposed_stat != prev_stat:
+            violations.append(
+                f"CPI ownership boundary violation: non-owned stat "
+                f"{stat_id!r} changed. This milestone's code MUST NOT "
+                f"modify repo-rate or annual-cpi-avg (IMPLEMENTATION-"
+                f"SPEC-CPI.md §0.1/§0.2/§7)."
+            )
+
+    return violations
+
+
+# ---------------------------------------------------------------------------
+# CPI transform helpers (Phase 3b)
+#
+# _apply_qlfs_rate_map() (§5, unchanged) is reused directly for CPI — see
+# IMPLEMENTATION-SPEC-CPI.md §12.1: despite its name, it has no
+# QLFS-specific logic and only mutates stats whose id is a key in the
+# rate_map it's given, which is exactly the scoping mechanism this
+# milestone's ownership boundary depends on.
+# ---------------------------------------------------------------------------
+
+
+def _update_cpi_meta(
+    doc: dict[str, Any],
+    *,
+    release_period: str,
+    publication_date: str,
+) -> None:
+    """
+    Update ONLY doc["_meta"]["last_verified"] and doc["_meta"]["automation"].
+
+    Deliberately does NOT touch _meta["source"], _meta["source_url"],
+    _meta["update_frequency"], or _meta["notes"] — unlike
+    _update_qlfs_meta()/_update_gdp_meta(), which overwrite source_url
+    unconditionally. inflation.json's _meta block is shared prose
+    describing BOTH the Stats SA CPI component and the SARB repo-rate
+    component (its "notes" field explicitly mentions MPC cadence).
+    Rewriting those fields is a documentation/copy decision that belongs
+    to a human editing the file deliberately, not something an automated
+    CPI-only write path should do as a side effect of updating two
+    numbers (IMPLEMENTATION-SPEC-CPI.md §12.3).
+    """
+    if "_meta" not in doc:
+        doc["_meta"] = {}
+    doc["_meta"]["last_verified"] = date.today().isoformat()
+    doc["_meta"]["automation"] = {
+        "updatedBy": "statssa-adapter/cpi",
+        "updatedAt": datetime.now(tz=timezone.utc).isoformat(),
+        "releasePeriod": release_period,
+        "sourceFile": publication_date,
+    }
+
+
+def _transform_inflation(
+    current_doc: dict[str, Any],
+    extract: CPIExtract,
+    source_url: str = "",
+) -> dict[str, Any]:
+    """
+    Apply CPI values to the existing inflation.json document shape.
+    Touches cpi-headline and food-inflation only. repo-rate and
+    annual-cpi-avg are never read or written by this function — the
+    deep-copy at the top preserves them exactly as they were in
+    current_doc, and _apply_qlfs_rate_map() only mutates stats whose id
+    is a key in rate_map.
+    """
+    doc = copy.deepcopy(current_doc)
+    rate_map = {
+        _CPI_HEADLINE_STAT_ID: extract.cpi_headline,
+        _CPI_FOOD_STAT_ID: extract.food_inflation,
+    }
+    # Defensive assertion (IMPLEMENTATION-SPEC-CPI.md §11 item 6): a
+    # rate_map key outside _CPI_OWNED_STAT_IDS would be a programming
+    # error in this function itself, not a data problem — fail loudly
+    # here rather than relying solely on _assert_cpi_ownership_boundary()
+    # to catch it downstream.
+    assert set(rate_map.keys()) <= _CPI_OWNED_STAT_IDS, (
+        "_transform_inflation() built a rate_map with a key outside "
+        "_CPI_OWNED_STAT_IDS — this is a programming error, not a data "
+        "problem (IMPLEMENTATION-SPEC-CPI.md §11 item 6)."
+    )
+    _apply_qlfs_rate_map(
+        doc, rate_map,
+        release_period=extract.release_period,
+        publication_date=extract.publication_date,
+    )
+    _update_cpi_meta(
+        doc,
+        release_period=extract.release_period,
+        publication_date=extract.publication_date,
+    )
+    return doc
+
+
+def _cpi_values_changed(
+    current_doc: dict[str, Any],
+    extract: CPIExtract,
+) -> bool:
+    """
+    Return True if either cpi_headline or food_inflation differs from the
+    current on-disk rawValue for that stat (or the stat has no rawValue
+    yet), mirroring the QLFS/GDP flows' pre-transform "did anything
+    actually change" check. Must be computed BEFORE _transform_inflation()
+    runs, since that function always refreshes _meta["last_verified"].
+    """
+    current_headline = _get_current_stat_rate(current_doc, _CPI_HEADLINE_STAT_ID)
+    current_food = _get_current_stat_rate(current_doc, _CPI_FOOD_STAT_ID)
+
+    if current_headline is None or abs(current_headline - extract.cpi_headline) > 0.001:
+        return True
+    if current_food is None or abs(current_food - extract.food_inflation) > 0.001:
+        return True
+    return False
+
+
+# ---------------------------------------------------------------------------
 # QLFS validation helpers (Phase 2)
 # ---------------------------------------------------------------------------
 
@@ -1947,7 +2566,7 @@ class StatsSAAdapter(BaseAdapter):
     source_id = "statssa"
     display_name = "Statistics South Africa"
     priority = 10   # Run first — largest number of datasets
-    version = "0.4.1"  # 0.1.0 Phase A stub -> 0.2.0 Phase 1 (download) -> 0.3.0 Phase 2 (QLFS parse/transform/stage) -> 0.4.0 Phase 3a (GDP parse/transform/stage) -> 0.4.1 WAF Tier 1 (header hardening + direct-URL fallback probe)
+    version = "0.5.0"  # 0.1.0 Phase A stub -> 0.2.0 Phase 1 (download) -> 0.3.0 Phase 2 (QLFS parse/transform/stage) -> 0.4.0 Phase 3a (GDP parse/transform/stage) -> 0.4.1 WAF Tier 1 (header hardening + direct-URL fallback probe) -> 0.5.0 Phase 3b (CPI parse/transform/stage + ownership boundary)
 
     def __init__(
         self,
@@ -1960,6 +2579,8 @@ class StatsSAAdapter(BaseAdapter):
         self._qlfs_check_cache: DatasetCheckResult | None = None
         # Run-level cache for the GDP hub check (parallels _qlfs_check_cache).
         self._gdp_check_cache: DatasetCheckResult | None = None
+        # Run-level cache for the CPI hub check (parallels _gdp_check_cache).
+        self._cpi_check_cache: DatasetCheckResult | None = None
 
     def validate_config(self) -> list[str]:
         """
@@ -2055,20 +2676,14 @@ class StatsSAAdapter(BaseAdapter):
                 ),
             )
 
-        # CPI (inflation, Stats SA component only)
+        # CPI — Phase 3b: real ETag/content-hash check against the P0141
+        # release hub, mirroring the QLFS/GDP caching pattern above. Repo
+        # rate (SARB-owned, same inflation.json file) is never touched by
+        # this check — see IMPLEMENTATION-SPEC-CPI.md §0.1/§7.
         if dataset_id == "inflation":
-            return DatasetCheckResult(
-                dataset_id=dataset_id,
-                status="unknown",
-                message=(
-                    "[Phase A] CPI P0141 (Stats SA component only). "
-                    "Repo rate component is handled by the SARB adapter. "
-                    "Phase B will implement monthly Excel download on ~22nd of month."
-                ),
-                current_period="April 2026",
-                latest_period="May 2026 (4.5% headline — not yet in JSON)",
-                source_url="https://www.statssa.gov.za/?page_id=1854&PPN=P0141",
-            )
+            if self._cpi_check_cache is None:
+                self._cpi_check_cache = self._check_cpi(dataset_id, dataset_config)
+            return self._cpi_check_cache
 
         # Population (MYPE)
         if dataset_id == "population":
@@ -2448,6 +3063,171 @@ class StatsSAAdapter(BaseAdapter):
             self._log.warning("Cannot save GDP hub hash to %s: %s", p, exc)
 
     # ------------------------------------------------------------------
+    # CPI-specific check (Phase 3b)
+    # ------------------------------------------------------------------
+
+    def _check_cpi(
+        self,
+        dataset_id: str,
+        dataset_config: DatasetConfig | None,
+    ) -> DatasetCheckResult:
+        """
+        Real release detection for CPI (P0141).
+
+        Performs an ETag/content-hash check against the P0141 release hub,
+        mirroring _check_qlfs() / _check_gdp() structurally exactly. Never
+        reads or writes repo-rate (the SARB-owned stat in the same
+        inflation.json file) — this method only ever inspects the P0141
+        release hub page.
+        """
+        client = _build_http_client(self.source_config)
+        previous_hash = self._load_cpi_previous_hash()
+
+        self._log.info(
+            "Checking CPI release hub: %s (previous_hash=%s…)",
+            _CPI_HUB_URL,
+            previous_hash[:8] if previous_hash else "none",
+        )
+
+        try:
+            changed, response = with_retry(
+                lambda: client.etag_check(
+                    _CPI_HUB_URL,
+                    previous_sha256=previous_hash,
+                ),
+                policy=WATCH_POLICY,
+                label="CPI release hub ETag check",
+            )
+        except AutomationHTTPError as exc:
+            return DatasetCheckResult(
+                dataset_id=dataset_id,
+                status="error",
+                message=f"CPI release hub returned HTTP {exc.status}: {exc.reason}",
+                source_url=_CPI_HUB_URL,
+            )
+        except Exception as exc:
+            return DatasetCheckResult(
+                dataset_id=dataset_id,
+                status="error",
+                message=f"Failed to check CPI release hub: {exc}",
+                source_url=_CPI_HUB_URL,
+            )
+
+        # WAF check — same guard as _check_qlfs()/_check_gdp(), copied
+        # rather than factored into a shared helper (same reasoning as
+        # _check_gdp()'s copy of _check_qlfs()'s guard — consolidating
+        # this is a future refactor, out of scope here).
+        if response.body:
+            body_text = response.body.decode("utf-8", errors="replace")
+            if "_Incapsula_Resource" in body_text or "incapsula" in body_text.lower():
+                self._log.error("WAF challenge detected on CPI release hub")
+                # Tier 1 fallback (IMPLEMENTATION-SPEC-STATSSA-WAF.md §6.1
+                # step 2), mirroring _check_qlfs()'s/_check_gdp()'s
+                # fallback exactly — copied rather than shared, for the
+                # same reason as the WAF scan above.
+                m, y = _determine_current_cpi_month()
+                try:
+                    fallback_url = _probe_cpi_publication_url(client, m, y)
+                except Exception as probe_exc:
+                    self._log.warning(
+                        "CPI direct-URL fallback probe raised: %s", probe_exc
+                    )
+                    fallback_url = None
+                if fallback_url:
+                    self._log.info(
+                        "CPI hub WAF-blocked, but a direct publication URL "
+                        "is reachable: %s", fallback_url,
+                    )
+                    return DatasetCheckResult(
+                        dataset_id=dataset_id,
+                        status="unknown",
+                        message=(
+                            "WAF_BLOCKED: Incapsula WAF challenge detected on "
+                            "the CPI release hub, but a direct publication "
+                            "URL is reachable. This is a probe-based signal, "
+                            "not a hub-diff signal — it confirms a candidate "
+                            "file can be fetched, not that a new release "
+                            "exists. Run fetch_and_apply() to attempt "
+                            "download."
+                        ),
+                        source_url=_CPI_HUB_URL,
+                        notes=f"Direct-URL fallback probe found: {fallback_url}",
+                    )
+                return DatasetCheckResult(
+                    dataset_id=dataset_id,
+                    status="error",
+                    message="WAF_BLOCKED: Incapsula WAF challenge detected. Cannot check for updates.",
+                    source_url=_CPI_HUB_URL,
+                )
+
+        release_period = _extract_release_period(response.body)
+
+        if not changed:
+            self._log.info(
+                "CPI release hub unchanged (sha256=%s…)", previous_hash[:8]
+            )
+            return DatasetCheckResult(
+                dataset_id=dataset_id,
+                status="up_to_date",
+                message=(
+                    "CPI P0141 release hub page is unchanged since last check. "
+                    "No new publication detected."
+                ),
+                latest_period=release_period or "unknown",
+                source_url=_CPI_HUB_URL,
+            )
+
+        self._save_cpi_hash(response.content_sha256)
+        self._log.info(
+            "CPI release hub changed — new sha256=%s… — update likely available",
+            response.content_sha256[:8],
+        )
+
+        excel_url = _extract_excel_url(response.body)
+
+        return DatasetCheckResult(
+            dataset_id=dataset_id,
+            status="update_available",
+            message=(
+                "CPI P0141 release hub page has changed. "
+                "A new CPI publication is likely available."
+            ),
+            latest_period=release_period or "unknown (check release hub)",
+            source_url=_CPI_HUB_URL,
+            notes=(
+                f"Excel workbook URL detected: {excel_url or 'not found — check hub manually'}. "
+                "Run fetch_and_apply() to download and archive the workbook."
+            ),
+        )
+
+    # ------------------------------------------------------------------
+    # CPI hash persistence helpers (parallel to the QLFS/GDP ones above)
+    # ------------------------------------------------------------------
+
+    def _cpi_hash_path(self) -> Path:
+        """Return the path to the stored CPI hub content hash."""
+        return self.config.report_dir / "versions" / "cpi_hub.sha256"
+
+    def _load_cpi_previous_hash(self) -> str:
+        """Return the last-known SHA-256 of the CPI hub page, or ''."""
+        p = self._cpi_hash_path()
+        if not p.exists():
+            return ""
+        try:
+            return p.read_text(encoding="utf-8").strip()
+        except OSError:
+            return ""
+
+    def _save_cpi_hash(self, sha256: str) -> None:
+        """Persist the new SHA-256 of the CPI hub page."""
+        p = self._cpi_hash_path()
+        try:
+            p.parent.mkdir(parents=True, exist_ok=True)
+            p.write_text(sha256, encoding="utf-8")
+        except OSError as exc:
+            self._log.warning("Cannot save CPI hub hash to %s: %s", p, exc)
+
+    # ------------------------------------------------------------------
     # fetch_and_apply — Phase 1: QLFS discovery + download + archive
     # ------------------------------------------------------------------
 
@@ -2526,6 +3306,19 @@ class StatsSAAdapter(BaseAdapter):
                                    failure never changes the top-level `status`
                                    above, which continues to describe the QLFS
                                    run only (see IMPLEMENTATION-SPEC-GDP.md §9).
+              cpi               — (Phase 3b, additive) nested dict describing
+                                   the independent CPI flow's own outcome,
+                                   same shape as `gdp` above (status,
+                                   hub_url, file_url, release_period,
+                                   archive_path, sha256, file_size_bytes,
+                                   version_id — singular, inflation.json is
+                                   one dataset — notes, errors). Touches
+                                   cpi-headline and food-inflation only;
+                                   repo-rate and annual-cpi-avg are never
+                                   read or written. A CPI failure never
+                                   changes the top-level `status` above or
+                                   `result["gdp"]` (see
+                                   IMPLEMENTATION-SPEC-CPI.md §14).
         """
         result: dict[str, Any] = {
             "status": "error",
@@ -2546,6 +3339,22 @@ class StatsSAAdapter(BaseAdapter):
         result["gdp"] = {
             "status": "error",
             "hub_url": _GDP_HUB_URL,
+            "file_url": None,
+            "release_period": "",
+            "archive_path": None,
+            "sha256": None,
+            "file_size_bytes": None,
+            "version_id": None,
+            "notes": "",
+            "errors": [],
+        }
+        # CPI (Phase 3b) — additive key, mirroring result["gdp"]'s shape
+        # exactly. Every key above keeps its existing meaning, describing
+        # the QLFS run only. This nested dict is the sole place CPI's own
+        # outcome lives. See IMPLEMENTATION-SPEC-CPI.md §14.
+        result["cpi"] = {
+            "status": "error",
+            "hub_url": _CPI_HUB_URL,
             "file_url": None,
             "release_period": "",
             "archive_path": None,
@@ -3144,6 +3953,263 @@ class StatsSAAdapter(BaseAdapter):
             except Exception as exc:
                 self._log.warning("Could not update GDP hub hash: %s", exc)
 
+        # ============================================================
+        # CPI flow (Phase 3b) — Excel discovery + download + archive +
+        # parse + transform + validate + stage for cpi-headline and
+        # food-inflation only. Runs after the QLFS and GDP flows above and
+        # is fully independent of both: a CPI-specific failure is recorded
+        # only in result["cpi"] and never changes the top-level `status`,
+        # which continues to reflect the QLFS flow only, and never affects
+        # result["gdp"] (IMPLEMENTATION-SPEC-CPI.md §14). CPI writes no
+        # dataset JSON directly — only inflation.json's staging area — and
+        # never reads or writes repo-rate/annual-cpi-avg (§0.1/§0.2/§7).
+        # ============================================================
+        cpi_client = _build_http_client(self.source_config)
+        cpi_hub_html: bytes | None = None
+
+        try:
+            self._log.info("Fetching CPI release hub: %s", _CPI_HUB_URL)
+            excel_url, release_period, cpi_hub_html = _discover_cpi_excel(cpi_client)
+            result["cpi"]["release_period"] = release_period
+
+            if excel_url is None:
+                m, y = _determine_current_cpi_month()
+                excel_url = _probe_cpi_publication_url(cpi_client, m, y)
+            result["cpi"]["file_url"] = excel_url
+
+            if excel_url is None:
+                msg = (
+                    "No publication link found for CPI. Direct probes "
+                    "failed (likely no standard naming) and HTML scrape "
+                    f"failed (likely WAF blocked). Hub URL: {_CPI_HUB_URL}"
+                )
+                self._log.warning(msg)
+                result["cpi"]["status"] = "no_publication_found"
+                result["cpi"]["errors"].append(msg)
+            else:
+                self._log.info("Located CPI publication: %s", excel_url)
+                cpi_file_bytes = with_retry(
+                    lambda: _download_publication(cpi_client, excel_url),  # type: ignore[arg-type]
+                    policy=STATSSA_POLICY,
+                    label=f"CPI file download ({excel_url})",
+                )
+                result["cpi"]["file_size_bytes"] = len(cpi_file_bytes)
+
+                cpi_file_ext = (
+                    Path(urllib.parse.urlparse(excel_url).path).suffix.lower() or ".bin"
+                )
+                if not dry_run:
+                    try:
+                        cpi_archive_dest, cpi_sha256 = save_to_archive(
+                            self.config.raw_archive_dir,
+                            cpi_file_bytes,
+                            dataset_id="inflation",
+                            source_id=self.source_id,
+                            suffix=cpi_file_ext,
+                        )
+                        result["cpi"]["archive_path"] = portable_archive_path(
+                            self.config.raw_archive_dir, cpi_archive_dest
+                        )
+                        result["cpi"]["sha256"] = cpi_sha256
+                        self._log.info(
+                            "CPI file archived → %s (sha256=%s…, %d bytes)",
+                            cpi_archive_dest, cpi_sha256[:8], len(cpi_file_bytes),
+                        )
+                    except Exception as archive_exc:
+                        self._log.warning("CPI archive write failed: %s", archive_exc)
+                else:
+                    from automation.core.files import sha256_of_bytes
+                    result["cpi"]["sha256"] = sha256_of_bytes(cpi_file_bytes)
+                    self._log.info(
+                        "[DRY RUN] Would archive CPI file (%d bytes, sha256=%s…)",
+                        len(cpi_file_bytes), result["cpi"]["sha256"][:8],
+                    )
+
+                if cpi_file_ext not in (".xlsx", ".xls"):
+                    msg = (
+                        f"Downloaded CPI publication is not an Excel "
+                        f"workbook (extension {cpi_file_ext!r}, "
+                        f"url={excel_url}). PDF parsing is explicitly out "
+                        f"of scope — falling back to the manual-review "
+                        f"path (Track B) rather than guessing at "
+                        f"PDF-extracted values."
+                    )
+                    result["cpi"]["status"] = "error"
+                    result["cpi"]["errors"].append(msg)
+                    self._log.error(msg)
+                else:
+                    extract = parse_cpi_workbook(cpi_file_bytes)
+                    result["cpi"]["release_period"] = extract.release_period
+                    self._log.info(
+                        "CPI workbook parsed OK — release period %s "
+                        "(cpi_headline=%.1f, food_inflation=%.1f)",
+                        extract.release_period,
+                        extract.cpi_headline, extract.food_inflation,
+                    )
+
+                    current_cpi_doc = _read_current_dataset_json(_CPI_DATASET_JSON)
+
+                    range_errors: list[str] = []
+                    range_errors += _validate_cpi_rate(
+                        extract.cpi_headline, _CPI_HEADLINE_STAT_ID
+                    )
+                    range_errors += _validate_cpi_rate(
+                        extract.food_inflation, _CPI_FOOD_STAT_ID
+                    )
+                    range_errors += _validate_monthly_label(extract.release_period)
+
+                    if range_errors:
+                        result["cpi"]["status"] = "error"
+                        result["cpi"]["errors"].extend(range_errors)
+                        self._log.error(
+                            "CPI validation failed: %s", "; ".join(range_errors)
+                        )
+                    elif not _cpi_values_changed(current_cpi_doc, extract):
+                        # Computed from the raw extracted values against the
+                        # current on-disk document — BEFORE calling
+                        # _transform_inflation() — since that function
+                        # always refreshes _meta["last_verified"], which
+                        # would make a full-document equality check never
+                        # match even on a genuine no-op run. Mirrors the
+                        # QLFS/GDP flows' pre-transform dataset_changed
+                        # check.
+                        result["cpi"]["status"] = "no_change"
+                        result["cpi"]["notes"] = (
+                            f"No change: {extract.release_period} CPI "
+                            f"value(s) already match inflation.json."
+                        )
+                        self._log.info(
+                            "No change detected — inflation.json is already current."
+                        )
+                    else:
+                        new_cpi_doc = _transform_inflation(
+                            current_cpi_doc, extract, excel_url
+                        )
+                        protected_violations = check_protected_fields(
+                            current_cpi_doc, new_cpi_doc
+                        )
+                        # The ownership boundary (IMPLEMENTATION-SPEC-CPI.md
+                        # §7/§11 item 5) — the load-bearing check this
+                        # milestone exists to add. Stricter than
+                        # check_protected_fields(): it hard-fails on ANY
+                        # difference (not just a protected-field change) in
+                        # repo-rate or annual-cpi-avg, and on the stat-ID
+                        # set changing at all.
+                        ownership_violations = _assert_cpi_ownership_boundary(
+                            current_cpi_doc, new_cpi_doc
+                        )
+                        all_violations = protected_violations + ownership_violations
+                        if all_violations:
+                            msg = f"Protected field violation: {all_violations}"
+                            result["cpi"]["status"] = "error"
+                            result["cpi"]["errors"].append(msg)
+                            self._log.error(msg)
+                        else:
+                            cpi_jump_warnings: list[str] = []
+                            prev_headline = _get_current_stat_rate(
+                                current_cpi_doc, _CPI_HEADLINE_STAT_ID
+                            )
+                            prev_food = _get_current_stat_rate(
+                                current_cpi_doc, _CPI_FOOD_STAT_ID
+                            )
+                            for prev_val, new_val, stat_label in (
+                                (prev_headline, extract.cpi_headline, _CPI_HEADLINE_STAT_ID),
+                                (prev_food, extract.food_inflation, _CPI_FOOD_STAT_ID),
+                            ):
+                                warning = _check_qoq_jump(
+                                    prev_val, new_val, stat_label,
+                                    threshold=_CPI_JUMP_WARNING_THRESHOLD,
+                                )
+                                if warning:
+                                    cpi_jump_warnings.append(warning)
+
+                            cpi_entry = new_version_entry(
+                                dataset_id="inflation",
+                                source_id=self.source_id,
+                                source_url=excel_url,
+                                sha256=result["cpi"]["sha256"] or "",
+                                archive_path=result["cpi"]["archive_path"] or "",
+                                adapter_version=self.version,
+                                notes=(
+                                    f"CPI {extract.release_period} parsed and "
+                                    f"staged (cpi-headline, food-inflation "
+                                    f"only). Hub URL: {_CPI_HUB_URL}. "
+                                    + ("; ".join(cpi_jump_warnings) + ". " if cpi_jump_warnings else "")
+                                    + "Manual approval required before promotion."
+                                ),
+                                run_id=run_id,
+                            )
+
+                            if not dry_run:
+                                try:
+                                    write_staged_dataset(
+                                        self.config.report_dir,
+                                        dataset_id="inflation",
+                                        version_id=cpi_entry.version_id,
+                                        document=new_cpi_doc,
+                                    )
+                                    save_version_entry(self.config.report_dir, cpi_entry)
+                                    self._log.info(
+                                        "Staged inflation — version %s (status=pending)",
+                                        cpi_entry.version_id,
+                                    )
+                                    result["cpi"]["version_id"] = cpi_entry.version_id
+                                    result["version_ids"].append(cpi_entry.version_id)
+                                    result["cpi"]["status"] = "ok"
+                                    result["cpi"]["notes"] = (
+                                        "; ".join(cpi_jump_warnings) if cpi_jump_warnings else ""
+                                    )
+                                except Exception as exc:
+                                    msg = f"Staging failed for inflation: {exc}"
+                                    result["cpi"]["status"] = "error"
+                                    result["cpi"]["errors"].append(msg)
+                                    self._log.error(msg)
+                            else:
+                                self._log.info(
+                                    "[DRY RUN] Would stage inflation — version %s",
+                                    cpi_entry.version_id,
+                                )
+                                result["cpi"]["version_id"] = cpi_entry.version_id
+                                result["version_ids"].append(cpi_entry.version_id)
+                                result["cpi"]["status"] = "ok"
+                                result["cpi"]["notes"] = (
+                                    "; ".join(cpi_jump_warnings) if cpi_jump_warnings else ""
+                                )
+        except ValueError as exc:
+            msg = f"CPI workbook parse failed: {exc}"
+            result["cpi"]["status"] = "error"
+            result["cpi"]["errors"].append(msg)
+            self._log.error(msg)
+        except AutomationHTTPError as exc:
+            msg = f"CPI release hub/file HTTP error: {exc.status} {exc.reason}"
+            result["cpi"]["status"] = "error"
+            result["cpi"]["errors"].append(msg)
+            self._log.error(msg)
+        except Exception as exc:
+            msg = f"CPI fetch_and_apply failed: {exc}"
+            result["cpi"]["status"] = "error"
+            result["cpi"]["errors"].append(msg)
+            self._log.error(msg)
+
+        # Deliberate deviation, identical in kind to the GDP flow's own
+        # deviation from IMPLEMENTATION-SPEC-GDP.md §9.1 above: CPI errors
+        # are NOT merged into the top-level `errors` list, for the same
+        # reason (preserving every existing key's meaning for the six
+        # pre-existing QLFS-only tests, and now also the GDP tests, which
+        # assert on `result["errors"]` describing the QLFS run only). CPI's
+        # errors remain fully visible in result["cpi"]["errors"].
+        #
+        # Update CPI hub hash so the next check_for_updates call sees the
+        # new baseline (mirrors the QLFS/GDP hash-update steps above).
+        if not dry_run and cpi_hub_html is not None:
+            try:
+                from automation.core.files import sha256_of_bytes
+                cpi_hub_hash = sha256_of_bytes(cpi_hub_html)
+                self._save_cpi_hash(cpi_hub_hash)
+                self._log.debug("CPI hub hash updated: %s…", cpi_hub_hash[:8])
+            except Exception as exc:
+                self._log.warning("Could not update CPI hub hash: %s", exc)
+
         return result
 
     # ------------------------------------------------------------------
@@ -3165,7 +4231,7 @@ class StatsSAAdapter(BaseAdapter):
                 "youth-unemployment": "hybrid",
                 "labour-force": "hybrid",
                 "gdp": "hybrid",
-                "inflation": "hybrid (CPI only; repo-rate via SARB)",
+                "inflation": "hybrid (cpi-headline, food-inflation only; repo-rate via SARB, untouched; annual-cpi-avg deferred)",
                 "population": "manual (source correction required first)",
                 "housing": "hybrid (pending GHS source confirmation)",
                 "census": "static (erratum watch only)",
@@ -3185,8 +4251,9 @@ class StatsSAAdapter(BaseAdapter):
                 "_transform_* family) — reuses the existing staging/approval/"
                 "promote pipeline; fetch_and_apply() stages up to 3 pending "
                 "version entries (one per QLFS output dataset) and writes no "
-                "dataset JSON directly. CPI/population/housing/census/"
-                "municipalities remain Phase A stubs — out of scope for this build."
+                "dataset JSON directly. Population/housing/census/"
+                "municipalities remain Phase A stubs — out of scope for this build. "
+                "CPI is now implemented — see phase_3b_status."
             ),
             "phase_3a_status": (
                 "GDP (P0441): real ETag/hash detection (_check_gdp(), mirroring "
@@ -3203,6 +4270,28 @@ class StatsSAAdapter(BaseAdapter):
                 "out of scope for this build. The P0441 URL-naming convention "
                 "and _GDP_GROWTH_SPEC's label match are unverified against a "
                 "real workbook, same caveat class as QLFS's Excel layout."
+            ),
+            "phase_3b_status": (
+                "CPI (P0141): real ETag/hash detection (_check_cpi(), "
+                "mirroring _check_qlfs()/_check_gdp()) + Excel discovery/"
+                "download/archive + parse (parse_cpi_workbook(), "
+                "label-matched, reads only the latest month's column per "
+                "metric — CPI does not routinely revise prior months the "
+                "way GDP revises prior quarters) + transform "
+                "(_transform_inflation(), reusing _apply_qlfs_rate_map() "
+                "unchanged) + validate + stage, reusing the same staging/"
+                "approval/promote pipeline as SARB, QLFS, and GDP. "
+                "fetch_and_apply() stages at most one pending version "
+                "entry for cpi-headline and food-inflation only; repo-rate "
+                "(SARB-owned) and annual-cpi-avg (deferred) are never read "
+                "or modified — enforced by a dedicated, tested "
+                "_assert_cpi_ownership_boundary() hard-fail check that runs "
+                "before staging, in addition to check_protected_fields(). "
+                "The P0141 URL-naming convention, _CPI_METRIC_SPECS's label "
+                "match, and the _CPI_PLAUSIBLE_RANGE/_CPI_JUMP_WARNING_"
+                "THRESHOLD judgement calls are unverified against a real "
+                "workbook, same caveat class as QLFS's and GDP's Excel "
+                "layouts."
             ),
             "waf_access_status": (
                 "IMPLEMENTATION-SPEC-STATSSA-WAF.md Tier 1 implemented: "

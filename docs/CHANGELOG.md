@@ -4,6 +4,213 @@ All notable changes to the SA Data Hub automation framework are documented in th
 
 ---
 
+## 2026-07-20 — CPI (P0141) Monthly Write Path: cpi-headline / food-inflation
+
+### Summary
+Implements `IMPLEMENTATION-SPEC-CPI.md` for `inflation.json`'s two Stats
+SA-owned stats, following on from the GDP milestone below using the same
+staging/approval/promote pattern already proven for SARB, QLFS, and GDP.
+Scope is deliberately narrow, matching the spec's own §0.1/§0.2 boundaries:
+only `cpi-headline` and `food-inflation` are read or written. `repo-rate`
+(SARB-owned, same `inflation.json` file) is never touched, and its
+QLFS/GDP-style de-duplication against `interest-rates.json`'s
+`repo-rate-sarb` is explicitly out of scope for this milestone.
+`annual-cpi-avg` (different cadence, unverified table layout — same class
+of deferral GDP applied to `gdp-nominal`/`gdp-per-capita`) is likewise not
+implemented. Exactly two files changed code
+(`automation/adapters/statss.py`, `automation/adapters/tests/test_statss.py`),
+plus this file, `CURRENT_STATE.md`, and `ai-context.md` — no core module,
+no other adapter, and no `src/data/datasets/*.json` file touched.
+
+### Added
+- `automation/adapters/statss.py::parse_cpi_workbook()` /
+  `_find_latest_month_column()` / `CPIExtract` / `_CPI_METRIC_SPECS` — label-
+  matched Excel parsing that reads only the **latest month's** column per
+  metric (`cpi_headline`, `food_inflation`), a deliberate parallel to
+  `parse_qlfs_workbook()`'s single-latest-value approach rather than
+  `parse_gdp_workbook()`'s multi-quarter one: Stats SA does not routinely
+  revise previously published CPI prints the way it revises GDP quarters.
+  Fails loudly (naming the missing metric) rather than guessing or falling
+  back to PDF parsing, matching the QLFS/GDP parsers' contract exactly.
+- `automation/adapters/statss.py::_build_cpi_candidate_urls()` /
+  `_determine_current_cpi_month()` / `_probe_cpi_publication_url()` /
+  `_discover_cpi_excel()` — direct-URL discovery for P0141, structurally
+  identical to the QLFS/GDP equivalents, reusing the fully generic
+  `_fetch_release_hub_html()` / `_extract_excel_url()` /
+  `_extract_release_period()` unchanged.
+- `automation/adapters/statss.py::_validate_cpi_rate()` — a genuinely new
+  plausibility-range validator (`_CPI_PLAUSIBLE_RANGE = (-5.0, 30.0)`), not
+  a reuse of QLFS's `_validate_percentage()`'s `[0, 100]` assumption: CPI
+  can in principle be negative (deflation). `_validate_monthly_label()`
+  validates the `"Mon YYYY"` format documented in `dataset-analysis.md`.
+- `automation/adapters/statss.py::_assert_cpi_ownership_boundary()` — the
+  single most load-bearing new function in this milestone. Deep-compares
+  every non-owned stat (`repo-rate`, `annual-cpi-avg`) between the previous
+  and proposed `inflation.json` document and hard-fails staging on **any**
+  difference, including the stat-ID set itself changing — stricter than the
+  reused `check_protected_fields()`, which only catches protected-field
+  (e.g. `id`) changes, not an arbitrary value like `rawValue` being
+  silently altered.
+- `automation/adapters/statss.py::_transform_inflation()` — reuses
+  `_apply_qlfs_rate_map()` **unchanged**: despite its name, that function
+  has no QLFS-specific logic and only mutates stats whose id is a key in
+  the `rate_map` it's given, which is exactly the scoping mechanism this
+  milestone's ownership boundary depends on. `_update_cpi_meta()`
+  deliberately updates only `_meta.last_verified` and `_meta.automation`,
+  never `_meta.source`/`_meta.source_url`/`_meta.update_frequency`/
+  `_meta.notes` — unlike `_update_qlfs_meta()`/`_update_gdp_meta()`, since
+  `inflation.json`'s `_meta` block is shared prose describing **both** the
+  Stats SA CPI component and the SARB repo-rate component.
+- `automation/adapters/statss.py::_check_cpi()` — real ETag/content-hash
+  detection against the P0141 release hub, structurally mirroring
+  `_check_qlfs()`/`_check_gdp()` exactly (same WAF-challenge guard and Tier
+  1 direct-URL fallback probe, copied rather than factored into a shared
+  helper), cached per run via a new `self._cpi_check_cache` instance
+  attribute, and persisted via new `_cpi_hash_path()` /
+  `_load_cpi_previous_hash()` / `_save_cpi_hash()` methods to a sibling
+  `cpi_hub.sha256` file. `check_for_updates()`'s `"inflation"` branch is
+  replaced with a real dispatch to this method (previously a Phase A stub
+  returning `status="unknown"` with hardcoded literal strings).
+- `automation/adapters/statss.py::StatsSAAdapter.fetch_and_apply()` —
+  extended, additively, to also run a CPI flow after the existing QLFS and
+  GDP flows within the same method call. Discovers, downloads, and
+  archives the CPI Excel publication, parses it, validates it (range,
+  monthly-label format, `check_protected_fields()` reuse, **and** the new
+  `_assert_cpi_ownership_boundary()` check), and — if the extracted values
+  actually differ from what's already in `inflation.json` — stages exactly
+  one candidate document via the existing `core/staging.py`/`core/version.py`
+  pipeline, recording a single `pending` version entry for `inflation`. No
+  dataset JSON is ever written directly; `repo-rate` and `annual-cpi-avg`
+  are never read or written by this flow. The result dict gains one new,
+  additive `result["cpi"]` key (status, hub_url, file_url, release_period,
+  archive_path, sha256, file_size_bytes, a single `version_id`, notes,
+  errors) describing the CPI flow's own outcome; every previously
+  documented top-level key (including `result["gdp"]`) keeps its exact
+  existing meaning — required so none of the pre-existing
+  `fetch_and_apply`-based tests needed to change.
+- `automation/adapters/tests/test_statss.py` — 23 new tests (§15 of the
+  spec — the spec's own 20 numbered items expand to 23 functions once item
+  6's "/" and item 15's "three tests" are counted individually; see Known
+  Issues), appended after the existing QLFS/GDP/WAF tests: full parser
+  extraction against a fixture workbook and its `Mon YYYY` label
+  normalisation; two fail-loudly parser paths (missing-metric,
+  no-month-header) plus a not-an-Excel-file path; the CPI rate range
+  validator (in-range including a negative/deflationary value, and
+  out-of-range) and the monthly-label validator (valid and invalid
+  format); the CPI-specific month-over-month anomaly threshold;
+  `_transform_inflation()`'s scope boundary (`repo-rate`/`annual-cpi-avg`
+  provably byte-for-byte untouched — **the single most important test in
+  this milestone**); `_assert_cpi_ownership_boundary()`'s three direct
+  cases (tampered `repo-rate` value detected, stat added/removed detected,
+  a legitimate CPI-only change passes clean); `_update_cpi_meta()`'s
+  narrow-scope proof; `_check_cpi()`'s hub-change detection; five
+  `fetch_and_apply()` integration tests (network mocked for QLFS, GDP, and
+  CPI together) covering: staging a CPI candidate with zero direct writes
+  while QLFS/GDP are unaffected; a CPI no-change run producing
+  `status="no_change"`; a CPI protected-field (`id`) violation aborting
+  only the CPI portion while QLFS/GDP still succeed in the same call; a
+  CPI **ownership-boundary** violation (a non-`id` field — `repo-rate`'s
+  `rawValue` — silently tampered, which `check_protected_fields()` alone
+  would not catch) aborting staging; and the CPI-specific
+  approve→promote end-to-end proof, including a final assertion that
+  `repo-rate`/`annual-cpi-avg` are still byte-for-byte identical after
+  promotion; and three Tier-1 WAF-fallback tests for `_check_cpi()`,
+  mirroring the QLFS/GDP WAF tests exactly. Test count (this file):
+  43 → 66. Test count (full `automation/` suite): 60 → 83.
+
+### Changed
+- `automation/adapters/statss.py::check_for_updates()` — the `"inflation"`
+  branch is no longer a Phase A stub; it dispatches to `_check_cpi()`,
+  cached the same way as the QLFS/GDP branches, and is positioned before
+  the remaining Phase A stubs (population, housing, census,
+  municipalities — all unchanged).
+- `automation/adapters/statss.py::describe()` — added a new
+  `phase_3b_status` entry describing the CPI write path; corrected
+  `phase_2_status`'s closing sentence, which previously listed CPI among
+  the remaining Phase A stubs (no longer true); `automation_levels.inflation`
+  updated to spell out the `cpi-headline`/`food-inflation`-only scope and
+  that `repo-rate`/`annual-cpi-avg` are untouched/deferred respectively.
+- `automation/adapters/statss.py::StatsSAAdapter.version` bumped
+  `0.4.1` → `0.5.0`.
+- `automation/adapters/statss.py` module docstring — added a "Phase 3b
+  scope (CPI)" section and a "CPI Excel layout — verification status"
+  section, following the exact structure and tone of the existing
+  QLFS/GDP-equivalent sections; updated the Phase-A-stubs closing sentence
+  to no longer list CPI.
+- `ai-context.md` — none required; `inflation` was already listed under
+  Dataset Files and no URL, ID, or public contract changed.
+
+### Verified (no code change)
+- **The "did anything actually change" check for CPI
+  (`_cpi_values_changed()`) is computed from the raw extracted values
+  against the current on-disk document, before `_transform_inflation()`
+  runs** — mirroring the QLFS/GDP flows' pre-transform `dataset_changed`
+  check, for the identical reason: `_transform_inflation()` always
+  refreshes `_meta.last_verified`/`_meta.automation.updatedAt`, so a
+  post-transform full-document comparison would never match even on a
+  genuine no-op run. Verified directly by
+  `test_fetch_and_apply_cpi_no_change_produces_no_change_status`.
+- **CPI-flow errors are recorded only in `result["cpi"]["errors"]`, not
+  merged into the shared top-level `result["errors"]`** — the same
+  documented deviation class GDP already established relative to its own
+  spec's illustrative (non-literal) pseudocode, for the identical reason:
+  preserving every pre-existing test's assertions about `result["errors"]`
+  describing the QLFS run alone.
+- **`_assert_cpi_ownership_boundary()` is a hard-fail, not a warning** —
+  confirmed by `test_fetch_and_apply_cpi_ownership_violation_aborts_staging`:
+  a non-`id` field change on `repo-rate` (which `check_protected_fields()`
+  does not catch, since `rawValue` is not in `PROTECTED_FIELDS`) still
+  aborts CPI staging entirely, with zero `pending` version entries created
+  and `inflation.json` left byte-for-byte unchanged on disk.
+
+### Known Issues
+- **`parse_cpi_workbook()` and `_build_cpi_candidate_urls()`'s P0141
+  URL-naming/label convention have never been run against a real,
+  downloaded Stats SA CPI workbook** — only synthetic fixtures, the same
+  open item QLFS and GDP each carried into their own first live runs. A
+  parse or discovery failure on the first real `--apply` run is
+  expected-possible, not a regression — the correct response is to update
+  `_CPI_METRIC_SPECS` and/or `_build_cpi_candidate_urls()` to match the
+  real layout/convention, re-run, and only then treat this item as
+  resolved.
+- **`_CPI_PLAUSIBLE_RANGE = (-5.0, 30.0)` and
+  `_CPI_JUMP_WARNING_THRESHOLD = 1.5` are this implementation's own
+  judgement calls**, not sourced from `dataset-analysis.md` or the
+  sourcing plan — flagged for stakeholder confirmation before being
+  treated as final, per `IMPLEMENTATION-SPEC-CPI.md` §11 items 1/4 and
+  §17 assumption 2.
+- **`repo-rate` in `inflation.json` remains stale and un-deduplicated
+  against `interest-rates.json`'s `repo-rate-sarb`** — explicitly out of
+  scope for this milestone (§0.1) and not resolved by it. This milestone
+  actively *prevents* `repo-rate` from being touched, which is correct
+  scope discipline, but does not reduce its staleness — flagging this back
+  to the stakeholder as a follow-up priority, not treating "not my
+  problem" as the end of the story.
+- **`annual-cpi-avg` remains entirely unautomated** — deliberately
+  deferred pending confirmation of its real table layout and cadence in
+  the P0141 workbook, the same class of deferral already applied to
+  `gdp-nominal`/`gdp-per-capita` in the GDP milestone.
+- **Spec/test-count arithmetic discrepancy in `IMPLEMENTATION-SPEC-CPI.md`
+  §15**: the section's own prose says "Target: 20 new tests, 80 total,"
+  but its 20 numbered items expand to 23 distinct test functions once
+  item 6 ("/" separating two functions) and item 15 ("three tests") are
+  read literally. This implementation followed the more precise, named
+  function list (23 functions; full-suite total 83) rather than the
+  summary count, treating the enumerated list as authoritative per this
+  milestone's own instruction to follow the spec over an inconsistent
+  summary line where the two disagree.
+
+### Next Milestone
+Per `CURRENT_STATE.md` §7 (updated in this build): `repo-rate`/
+`repo-rate-sarb` de-duplication (requires a human decision on which value
+is authoritative and a cross-dataset ownership design, not just an
+adapter change) and/or `annual-cpi-avg` automation are the two candidate
+next steps; population/housing/census/municipalities remain Phase A stubs
+beyond that. GDP's and CPI's real-workbook verification items above remain
+open, tracked, and do not block either.
+
+---
+
 ## 2026-07-19 — Stats SA Release-Hub WAF Access: Tier 1 Implemented
 
 ### Summary
