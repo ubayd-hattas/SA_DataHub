@@ -131,9 +131,90 @@ automation are explicitly deferred to their own follow-on milestones (see
 ``IMPLEMENTATION-SPEC-CPI.md`` §0.1 and §0.2) — this build's blast radius
 is limited to ``cpi-headline`` and ``food-inflation``.
 
-Population, housing, census, and municipalities remain Phase A
-stubs — explicitly out of scope for this build (see
-``IMPLEMENTATION-SPEC-CPI.md`` §1).
+Housing, census, and municipalities remain Phase A stubs — explicitly out
+of scope for this build (see ``IMPLEMENTATION-SPEC-CPI.md`` §1). Population
+was a Phase A stub as of CPI Phase 3b; it is now implemented — see "Phase 4
+scope (Population)" below.
+
+Phase 4 scope (Population) — parse + transform + stage (this build)
+-----------------------------------------------------------------------
+Continuing from where Phase 3b left CPI, ``fetch_and_apply()`` now also
+processes Population (MYPE, P0302) as a fourth, fully independent flow
+within the same method call (see ``IMPLEMENTATION-SPEC-POPULATION.md``).
+Unlike QLFS/GDP/CPI, this is not a green-field automation — it is a
+data-integrity fix shaped like one: the current ``population.json``
+``population-total`` value is suspected to be sourced from World Bank,
+not Stats SA (see ``SA-Data-Hub-Dataset-Sourcing-Plan.md`` §9), so this
+milestone's ``fetch_and_apply()`` flow must make that class of error
+structurally impossible going forward:
+  1. Real ETag/content-hash detection against the P0302 release hub
+     (``_check_population()``, mirroring ``_check_qlfs()``/``_check_gdp()``/
+     ``_check_cpi()``).
+  2. Discover → download → archive the raw MYPE Excel publication.
+  3. Parse the workbook (``parse_population_workbook()``) by header/label
+     matching, extracting only the **latest year's** total-population
+     value — MYPE has one release per year, so a single-column read
+     (mirroring ``parse_qlfs_workbook()``'s/``parse_cpi_workbook()``'s
+     approach) is sufficient.
+  4. **Enforce Stats SA provenance** (``_assert_population_source_guard()``)
+     as a hard-fail gate, checked twice — immediately after discovery
+     (URL-level, before download) and again immediately before staging
+     (extract-level) — deliberately redundant rather than relying on a
+     single check. This is the genuinely new complication this milestone
+     introduces and the direct enforcement of ``population.yaml``'s
+     ``source_guard_required: true`` / ``source_guard_domain:
+     "statssa.gov.za"``.
+  5. Transform (``_transform_population()`` / ``_apply_population_total_point()``,
+     a new, small, single-purpose helper — **not** a reuse of
+     ``_apply_qlfs_rate_map()``, since ``population-total``'s display shape
+     is materially different: bare-year series labels and a millions
+     magnitude with a dual millions/raw-headcount on-disk convention, see
+     §8.2 of the spec) into ``population.json``'s ``population-total`` stat
+     only; ``population-urban`` and ``population-median-age`` are never
+     read or modified by this flow.
+  6. Validate (a wide plausibility range for South Africa's slow-moving
+     population, annual label format, protected-field diff via the reused
+     ``check_protected_fields()``, and a Population-specific
+     year-over-year anomaly threshold expected to fire on the one-time
+     production correction run — see §9/§14 item 7 of the spec) **and**
+     enforce, as a dedicated hard-fail check distinct from
+     ``check_protected_fields()``, the ownership boundary against
+     ``population-urban``/``population-median-age``
+     (``_assert_population_ownership_boundary()`` — a direct structural
+     copy of ``_assert_cpi_ownership_boundary()``). Then stage the
+     candidate via the same ``core/staging.py``/``core/version.py``
+     pipeline already proven for SARB, QLFS, GDP, and CPI. No direct write
+     to ``population.json`` ever happens here.
+
+Housing, census, and municipalities remain Phase A stubs — explicitly out
+of scope for this build (see ``IMPLEMENTATION-SPEC-POPULATION.md`` §3).
+
+Population Excel layout — verification status (read before touching the parser)
+-----------------------------------------------------------------------------------
+Exactly as with QLFS, GDP, and CPI, no archived MYPE ``.xlsx`` file was
+available in this implementation session to inspect (no session to date
+has had network access to ``statssa.gov.za``). ``parse_population_workbook()``
+and ``_POPULATION_METRIC_SPECS``'s label-matching rules were built against
+the *documented* Stats SA convention (a header row of bare 4-digit years,
+e.g. ``2026``, with a "total population" indicator row identified by label
+text), not empirically verified against a real P0302 release file — only
+against synthetic fixtures (see ``automation/adapters/tests/test_statss.py``).
+The P0302 URL-naming convention used by ``_build_population_candidate_urls()``
+is likewise unconfirmed, carried forward the same way the QLFS/GDP/CPI URL
+conventions were at the start of their own milestones. The
+raw-headcount-vs-millions representation in the source workbook is also
+unconfirmed — ``parse_population_workbook()`` applies a documented,
+single heuristic (values over 1000 are treated as a raw headcount and
+divided by 1,000,000) and logs which branch it took, rather than guessing
+silently. The numeric judgement calls ``_POPULATION_PLAUSIBLE_RANGE =
+(40.0, 90.0)`` and ``_POPULATION_JUMP_WARNING_THRESHOLD = 2.0`` are this
+document's own assumptions, not sourced from ``dataset-analysis.md`` or
+the sourcing plan — flagged for stakeholder confirmation. This is
+mitigated by design (fail loudly, no guessing, no PDF fallback), not
+resolved by observation — the first live run against a real downloaded
+MYPE workbook is the actual empirical test of this parser, and is also
+the vehicle for the one-time production correction described in
+``IMPLEMENTATION-SPEC-POPULATION.md`` §9.
 
 CPI Excel layout — verification status (read before touching the parser)
 --------------------------------------------------------------------------
@@ -431,6 +512,59 @@ _MONTH_ABBR_TO_NUM: dict[str, int] = {
 _MONTH_NUM_TO_ABBR: dict[int, str] = {
     num: abbr.capitalize() for abbr, num in _MONTH_ABBR_TO_NUM.items()
 }
+
+# Population (MYPE, P0302) release hub — used for ETag/content-hash change
+# detection. Same WAF caveats as the QLFS/GDP/CPI hubs above.
+_POPULATION_HUB_URL = f"{_RELEASE_HUB_BASE}&PPN=P0302"
+_POPULATION_PUBLICATION_CODE = "P0302"
+
+# Direct publication base URL — mirrors _QLFS_PUBLICATION_BASE's /
+# _GDP_PUBLICATION_BASE's / _CPI_PUBLICATION_BASE's pattern. **Unconfirmed**
+# against a real Stats SA release — see the module docstring's "Population
+# Excel layout — verification status" section.
+_POPULATION_PUBLICATION_BASE = "https://www.statssa.gov.za/publications/P0302/"
+
+# population.json — the sole dataset JSON touched by the Population flow.
+# Shared with the (untouched) Census-2022-sourced population-urban and
+# population-median-age stats — see IMPLEMENTATION-SPEC-POPULATION.md
+# §0.1/§3/§7.4.
+_POPULATION_DATASET_JSON: Path = _DATASETS_DIR / "population.json"
+_POPULATION_TOTAL_STAT_ID = "population-total"
+
+# The complete set of stat IDs this milestone's code is permitted to
+# read/write inside population.json. Used both by _transform_population()
+# and, more importantly, as the boundary
+# _assert_population_ownership_boundary() enforces against every OTHER stat
+# in the same file (population-urban, population-median-age) — see
+# IMPLEMENTATION-SPEC-POPULATION.md §7.4 and §11.
+_POPULATION_OWNED_STAT_IDS: frozenset[str] = frozenset({_POPULATION_TOTAL_STAT_ID})
+
+# South Africa's population is well-documented and slow-moving, so this
+# band is deliberately wide — this document's own judgement call, not
+# sourced from dataset-analysis.md or the sourcing plan
+# (IMPLEMENTATION-SPEC-POPULATION.md §10 / §14 item 3). Flagged for
+# stakeholder confirmation before this is treated as final.
+_POPULATION_PLAUSIBLE_RANGE: tuple[float, float] = (40.0, 90.0)
+
+# A healthy annual population change is typically 1-2% — this document's
+# own judgement call, not sourced from dataset-analysis.md or the sourcing
+# plan (IMPLEMENTATION-SPEC-POPULATION.md §10 / §14 item 3). Flagged for
+# stakeholder confirmation. Deliberately expected to fire on the one-time
+# production correction run (§9/§14 item 7) — that is not a parser bug.
+_POPULATION_JUMP_WARNING_THRESHOLD = 2.0
+
+# Matches population.json's existing bare-year series label convention
+# (e.g. "2024"), not QLFS's quarterly or CPI's monthly label shape.
+_ANNUAL_LABEL_RE = re.compile(r"^\d{4}$")
+
+# The direct enforcement mechanism of population.yaml's
+# source_guard_required / source_guard_domain — see
+# _assert_population_source_guard() and IMPLEMENTATION-SPEC-POPULATION.md
+# §7.3. This is the load-bearing constant of this milestone: it is what
+# makes the World-Bank-sourced data-integrity bug
+# (SA-Data-Hub-Dataset-Sourcing-Plan.md §9) structurally impossible to
+# reintroduce via this flow.
+_POPULATION_SOURCE_GUARD_DOMAIN = "statssa.gov.za"
 
 # ---------------------------------------------------------------------------
 # HTTP client helpers
@@ -1931,6 +2065,190 @@ def parse_cpi_workbook(file_bytes: bytes) -> CPIExtract:
 
 
 # ---------------------------------------------------------------------------
+# Population (MYPE, P0302) Excel parsing (Phase 4)
+#
+# Same header/label-matching philosophy as parse_qlfs_workbook() /
+# parse_gdp_workbook() / parse_cpi_workbook(), adapted for a bare 4-digit
+# year header row instead of a quarterly or monthly one — see
+# IMPLEMENTATION-SPEC-POPULATION.md §7.
+# ---------------------------------------------------------------------------
+
+_YEAR_HEADER_PATTERN = re.compile(r"^\s*(\d{4})\s*$")
+
+
+@dataclass
+class PopulationExtract:
+    """Named values extracted from a single MYPE Excel workbook."""
+
+    release_period: str          # the estimate year, e.g. "2026"
+    publication_date: str        # ISO YYYY-MM-DD, best-effort
+    total_population_millions: float   # e.g. 63.1
+    # Domain the workbook was downloaded from — feeds the source guard
+    # (§7.3). This is the one field with no analogue in
+    # QLFSExtract/GDPExtract/CPIExtract: it lets the source guard be
+    # enforced with data the parser itself observed, not just the URL the
+    # caller happened to pass in.
+    source_domain: str
+
+
+# Label spec used to locate the "total population" row by text match.
+# **Unverified** against a real Stats SA P0302 workbook — no session to
+# date has had network access to statssa.gov.za (IMPLEMENTATION-SPEC-
+# POPULATION.md §14 item 1). If the real labels differ,
+# parse_population_workbook() fails loudly rather than guessing, and this
+# spec is the first and only place that needs correcting.
+_POPULATION_METRIC_SPECS: dict[str, dict[str, tuple[str, ...]]] = {
+    "total_population": {
+        "include": ("total", "rsa", "south africa"),
+        "exclude": (),
+    },
+}
+
+
+def _find_latest_year_column(ws: Any) -> tuple[int, str] | None:
+    """
+    Scan the first several rows of a worksheet for bare 4-digit-year header
+    cells (e.g. "2026", not "Q1 2026" or "May 2026") and return the column
+    index and label of the chronologically latest one found.
+
+    Parallel to _find_latest_quarter_column() / _find_latest_month_column()
+    for an annual header instead of a quarterly/monthly one. Does not
+    replace or modify either — QLFS/GDP and CPI keep using their own
+    versions, unchanged.
+
+    Returns None if no year-header cell is found in this sheet.
+    """
+    best: tuple[int, int, str] | None = None
+    max_header_rows = min(15, ws.max_row or 1)
+    for row in ws.iter_rows(min_row=1, max_row=max_header_rows):
+        for cell in row:
+            val = cell.value
+            year: int | None = None
+            if isinstance(val, (int, float)) and not isinstance(val, bool):
+                if 1900 <= int(val) <= 2100 and float(val).is_integer():
+                    year = int(val)
+            elif isinstance(val, str):
+                match = _YEAR_HEADER_PATTERN.match(val)
+                if match:
+                    year = int(match.group(1))
+            if year is None:
+                continue
+            if best is None or year > best[0]:
+                best = (year, cell.column, str(year))
+    if best is None:
+        return None
+    return best[1], best[2]
+
+
+def parse_population_workbook(file_bytes: bytes) -> PopulationExtract:
+    """
+    Parse a Population (MYPE) Excel workbook and extract the latest year's
+    total population figure, by label/header matching (not fixed cell
+    coordinates) — same philosophy as parse_qlfs_workbook() /
+    parse_gdp_workbook() / parse_cpi_workbook().
+
+    Raises
+    ------
+    ValueError
+        If the workbook cannot be opened, or if no year-header row or no
+        matching "total population" row can be located in any worksheet.
+        The message names exactly which indicator failed to resolve,
+        mirroring the three prior parsers' fail-loudly contract — no PDF
+        fallback, no guessing, no stale-value substitution.
+    """
+    try:
+        wb = openpyxl.load_workbook(
+            BytesIO(file_bytes), data_only=True, read_only=True
+        )
+    except Exception as exc:
+        raise ValueError(
+            f"Cannot open Population file as an Excel workbook — not a "
+            f"valid .xlsx/.xls file, or the file is corrupted: {exc}"
+        ) from exc
+
+    release_period: str | None = None
+    raw_value: float | None = None
+    year_header_found = False
+
+    spec = _POPULATION_METRIC_SPECS["total_population"]
+    for ws in wb.worksheets:
+        header = _find_latest_year_column(ws)
+        if header is None:
+            continue
+        year_header_found = True
+        col_idx, period_label = header
+        found = _find_metric_value(ws, col_idx, spec["include"], spec.get("exclude", ()))
+        if found is not None:
+            raw_value = found
+            release_period = period_label
+            break
+
+    if not year_header_found:
+        raise ValueError(
+            "Population workbook parse failed — no year-header row (e.g. "
+            "'2026') could be located in any worksheet. This most likely "
+            "means the Stats SA P0302 Excel layout differs from the "
+            "header-matching rules in _find_latest_year_column() "
+            "(automation/adapters/statss.py) — per IMPLEMENTATION-SPEC-"
+            "POPULATION.md §7.2, this must fail loudly rather than guess "
+            "or fall back to a stale value. Manual review is the correct "
+            "next step, not a PDF-parsing fallback (explicitly out of "
+            "scope for this phase)."
+        )
+
+    if raw_value is None or release_period is None:
+        raise ValueError(
+            "Population workbook parse failed — could not locate the "
+            "'total population' row by label match. This most likely "
+            "means the Stats SA Excel layout for this release differs "
+            "from the label-matching rules in _POPULATION_METRIC_SPECS "
+            "(automation/adapters/statss.py) — per IMPLEMENTATION-SPEC-"
+            "POPULATION.md §7.2, this must fail loudly rather than guess "
+            "or fall back to a stale value. Manual review is the correct "
+            "next step, not a PDF-parsing fallback (explicitly out of "
+            "scope for this phase)."
+        )
+
+    # Raw-headcount-vs-millions heuristic (IMPLEMENTATION-SPEC-POPULATION.md
+    # §7.2 / §14 item 2): the workbook may express the total either as a raw
+    # headcount (e.g. 63100000) or already in millions (e.g. 63.1). This is
+    # genuinely unconfirmed against a real release, so the branch taken is
+    # logged rather than silently assumed.
+    if raw_value > 1000:
+        total_population_millions = raw_value / 1_000_000
+        log.info(
+            "Population parser: value %s > 1000 — treating as a raw "
+            "headcount and dividing by 1,000,000 → %.1fM.",
+            raw_value, total_population_millions,
+        )
+    else:
+        total_population_millions = raw_value
+        log.info(
+            "Population parser: value %s <= 1000 — treating as already "
+            "expressed in millions.",
+            raw_value,
+        )
+
+    publication_date = _best_effort_publication_date(wb)
+    if publication_date is None:
+        publication_date = date.today().isoformat()
+        log.warning(
+            "Population parser: could not find an explicit publication "
+            "date in the workbook — using today's date (%s) as a "
+            "best-effort fallback for lastUpdated/source.publicationDate "
+            "fields.",
+            publication_date,
+        )
+
+    return PopulationExtract(
+        release_period=release_period,
+        publication_date=publication_date,
+        total_population_millions=total_population_millions,
+        source_domain="",  # filled in by the caller once the source URL is known
+    )
+
+
+# ---------------------------------------------------------------------------
 # CPI direct URL construction and probing (Phase 3b)
 #
 # Mirrors the QLFS/GDP discovery pattern exactly, parameterised for P0141
@@ -2051,6 +2369,107 @@ def _discover_cpi_excel(
     (excel_url, release_period, hub_html)
         excel_url:      Absolute URL of the Excel workbook, or None.
         release_period: Detected month label (e.g. 'May 2026') or ''.
+        hub_html:       Raw HTML bytes of the release hub.
+    """
+    hub_html = _fetch_release_hub_html(client, hub_url)
+    excel_url = _extract_excel_url(hub_html)
+    release_period = _extract_release_period(hub_html)
+    return excel_url, release_period, hub_html
+
+
+# ---------------------------------------------------------------------------
+# Population direct URL construction and probing (Phase 4)
+#
+# Mirrors the QLFS/GDP/CPI discovery pattern exactly, parameterised for
+# P0302's annual cadence (one release per year, not per quarter/month).
+# **Unconfirmed** against a real Stats SA release — see the module
+# docstring's "Population Excel layout — verification status" section.
+# ---------------------------------------------------------------------------
+
+
+def _build_population_candidate_urls(year: int) -> list[str]:
+    """
+    Build an ordered list of candidate Excel/PDF URLs for the given MYPE
+    release year, following _build_qlfs_candidate_urls()'s /
+    _build_gdp_candidate_urls()'s / _build_cpi_candidate_urls()'s structure
+    scaled to P0302's naming convention. **Unconfirmed** against a real
+    release — see the module docstring.
+    """
+    base = _POPULATION_PUBLICATION_BASE
+    stat_release_prefix = f"Statistical%20release%20P0302%20{year}"
+    media_release_prefix = f"MYPE%20Media%20Release%20{year}"
+    data_prefix = f"P0302{year}"
+    candidates: list[str] = []
+    for prefix in [stat_release_prefix, media_release_prefix, data_prefix]:
+        for ext in (".xlsx", ".xls", ".pdf"):
+            candidates.append(f"{base}{prefix}{ext}")
+    return candidates
+
+
+def _determine_current_population_year() -> int:
+    """
+    Determine the most recently expected MYPE release year.
+
+    MYPE for year Y is released in late July of year Y. Before ~28 July of
+    the current year, the most recently expected release is for the
+    *prior* year; from ~28 July onward, the current year's release is
+    expected. Simpler than CPI's day-of-month cutoff since there is
+    exactly one release window per year, not twelve.
+    """
+    today = date.today()
+    return today.year if today.month > 7 or (today.month == 7 and today.day >= 28) else today.year - 1
+
+
+def _probe_population_publication_url(
+    client: HTTPClient,
+    year: int,
+) -> str | None:
+    """
+    Probe candidate URLs for the MYPE release year and return the first
+    that responds with a valid file (HTTP 200, size > 10 KB).
+    Structurally identical to _probe_qlfs_publication_url() /
+    _probe_gdp_publication_url() / _probe_cpi_publication_url().
+    """
+    candidates = _build_population_candidate_urls(year)
+    log.debug(
+        "Probing %d candidate URLs for Population MYPE %d …",
+        len(candidates), year,
+    )
+    for url in candidates:
+        try:
+            resp = client.get(url)
+            if resp.status == 200 and len(resp.body) > 10_240:
+                log.info(
+                    "Population publication found via direct URL probe: %s (%d bytes)",
+                    url, len(resp.body),
+                )
+                return url
+            log.debug("Probe %s → %d bytes (too small or error)", url, len(resp.body))
+        except AutomationHTTPError as exc:
+            if exc.status != 404:
+                log.warning("Probe %s → HTTP %s: %s", url, exc.status, exc.reason)
+        except Exception as exc:
+            log.debug("Probe %s → %s", url, exc)
+    return None
+
+
+def _discover_population_excel(
+    client: HTTPClient,
+    *,
+    hub_url: str = _POPULATION_HUB_URL,
+) -> tuple[str | None, str, bytes]:
+    """
+    Discover and return the Population Excel workbook URL and hub HTML.
+    Structurally identical to _discover_qlfs_excel() / _discover_gdp_excel()
+    / _discover_cpi_excel(), reusing the fully generic
+    _fetch_release_hub_html() / _extract_excel_url() /
+    _extract_release_period() unchanged.
+
+    Returns
+    -------
+    (excel_url, release_period, hub_html)
+        excel_url:      Absolute URL of the Excel workbook, or None.
+        release_period: Detected year label (e.g. '2026') or ''.
         hub_html:       Raw HTML bytes of the release hub.
     """
     hub_html = _fetch_release_hub_html(client, hub_url)
@@ -2239,6 +2658,299 @@ def _cpi_values_changed(
     if current_food is None or abs(current_food - extract.food_inflation) > 0.001:
         return True
     return False
+
+
+# ---------------------------------------------------------------------------
+# Population validation helpers (Phase 4)
+# ---------------------------------------------------------------------------
+
+
+def _validate_population_total(value: float, label: str) -> list[str]:
+    """
+    Validate a total-population figure (in millions) is a plausible
+    magnitude in _POPULATION_PLAUSIBLE_RANGE. South Africa's population is
+    well-documented and slow-moving, so this band is deliberately wide —
+    IMPLEMENTATION-SPEC-POPULATION.md §10 / §14 item 3.
+    """
+    low, high = _POPULATION_PLAUSIBLE_RANGE
+    if not (low <= value <= high):
+        return [
+            f"{label} population value {value}M is outside the plausible "
+            f"[{low}, {high}] million range."
+        ]
+    return []
+
+
+def _validate_annual_label(label: str) -> list[str]:
+    """Validate a period label matches the bare-year format (dataset-analysis.md-style RULES)."""
+    if not _ANNUAL_LABEL_RE.match(label):
+        return [f"Release period {label!r} does not match the expected 'YYYY' format."]
+    return []
+
+
+def _check_yoy_jump(
+    current: float | None,
+    new: float,
+    stat_label: str,
+    threshold: float = _POPULATION_JUMP_WARNING_THRESHOLD,
+) -> str | None:
+    """
+    Return a human-readable anomaly warning if the year-over-year percentage
+    change for ``stat_label`` exceeds ``threshold`` percentage points.
+    Parallel to _check_qoq_jump(), scaled for an annual rather than
+    quarterly/monthly cadence — IMPLEMENTATION-SPEC-POPULATION.md §10.
+
+    This is a review aid, not a hard failure. It is deliberately expected
+    to fire on the one-time production correction run (§9/§14 item 7) —
+    the human reviewer should expect and accept that flag on that specific
+    run, not treat it as a parser bug.
+    """
+    if current is None or current == 0:
+        return None
+    delta_pct = (new - current) / current * 100
+    if abs(delta_pct) > threshold:
+        sign = "+" if delta_pct > 0 else ""
+        return (
+            f"ANOMALY: {stat_label} moved {sign}{delta_pct:.1f}% year-over-year "
+            f"({current:.1f} → {new:.1f}), exceeding the {threshold:.1f}% "
+            "review threshold. Verify against the official release before approving."
+        )
+    return None
+
+
+# ---------------------------------------------------------------------------
+# Population source guard (Phase 4) — this milestone's genuinely new
+# complication.
+#
+# The direct enforcement of population.yaml's source_guard_required /
+# source_guard_domain — the mechanism that makes the World-Bank-sourced
+# data-integrity bug (SA-Data-Hub-Dataset-Sourcing-Plan.md §9) structurally
+# impossible to reintroduce via this flow. See IMPLEMENTATION-SPEC-
+# POPULATION.md §7.3.
+# ---------------------------------------------------------------------------
+
+
+def _assert_population_source_guard(url: str) -> list[str]:
+    """
+    Hard-fail check: ``url`` must resolve to the statssa.gov.za domain (or
+    a documented Stats SA subdomain).
+
+    This is the direct enforcement of population.yaml's
+    source_guard_required — the mechanism that makes the World-Bank-
+    sourced data-integrity bug (SA-Data-Hub-Dataset-Sourcing-Plan.md §9)
+    structurally impossible to reintroduce via this flow. Checked twice
+    (URL-level, before download, and extract-level, before staging) —
+    deliberately redundant rather than relying on a single check
+    (IMPLEMENTATION-SPEC-POPULATION.md §7.3).
+    """
+    parsed = urllib.parse.urlparse(url)
+    domain = parsed.netloc.lower()
+    if not (domain == _POPULATION_SOURCE_GUARD_DOMAIN
+            or domain.endswith(f".{_POPULATION_SOURCE_GUARD_DOMAIN}")):
+        return [
+            f"Population source guard violation: resolved publication URL "
+            f"{url!r} does not originate from "
+            f"{_POPULATION_SOURCE_GUARD_DOMAIN!r} (population.yaml's "
+            f"source_guard_domain). This is the exact class of error that "
+            f"produced the current data-integrity bug in population.json "
+            f"(SA-Data-Hub-Dataset-Sourcing-Plan.md §9) and must hard-fail, "
+            f"not warn."
+        ]
+    return []
+
+
+# ---------------------------------------------------------------------------
+# Population ownership boundary (Phase 4)
+#
+# Structurally identical to _assert_cpi_ownership_boundary(), scoped to
+# population.json's non-owned stats (population-urban,
+# population-median-age) — no new design, reuse of the proven pattern.
+# See IMPLEMENTATION-SPEC-POPULATION.md §7.4.
+# ---------------------------------------------------------------------------
+
+
+def _assert_population_ownership_boundary(
+    previous_doc: dict[str, Any],
+    proposed_doc: dict[str, Any],
+) -> list[str]:
+    """
+    Deep-compare every statistics[] entry in ``proposed_doc`` whose id is
+    NOT in _POPULATION_OWNED_STAT_IDS against the corresponding entry in
+    ``previous_doc`` (matched by id). Returns a list of violation messages
+    — empty if population-urban and population-median-age (and any other
+    non-owned stat) are byte-for-byte identical between the two documents,
+    and the set of stat IDs present is unchanged.
+    """
+    violations: list[str] = []
+
+    previous_by_id = {s.get("id"): s for s in previous_doc.get("statistics", [])}
+    proposed_by_id = {s.get("id"): s for s in proposed_doc.get("statistics", [])}
+
+    if set(previous_by_id.keys()) != set(proposed_by_id.keys()):
+        violations.append(
+            "Population ownership boundary violation: the set of stat "
+            "IDs in population.json changed (added/removed a stat) — "
+            f"previous={sorted(k for k in previous_by_id if k is not None)!r}, "
+            f"proposed={sorted(k for k in proposed_by_id if k is not None)!r}."
+        )
+
+    for stat_id, prev_stat in previous_by_id.items():
+        if stat_id in _POPULATION_OWNED_STAT_IDS:
+            continue
+        proposed_stat = proposed_by_id.get(stat_id)
+        if proposed_stat != prev_stat:
+            violations.append(
+                f"Population ownership boundary violation: non-owned stat "
+                f"{stat_id!r} changed. This milestone's code MUST NOT "
+                f"modify population-urban or population-median-age "
+                f"(IMPLEMENTATION-SPEC-POPULATION.md §3/§7.4)."
+            )
+
+    return violations
+
+
+# ---------------------------------------------------------------------------
+# Population transform helpers (Phase 4)
+#
+# _apply_qlfs_rate_map() is NOT reused here (unlike CPI) — population-total
+# has a materially different display shape (bare-year labels, millions
+# magnitude with a dual millions/raw-headcount convention) — see
+# IMPLEMENTATION-SPEC-POPULATION.md §8.2.
+# ---------------------------------------------------------------------------
+
+
+def _apply_population_total_point(
+    doc: dict[str, Any],
+    new_value_millions: float,
+    *,
+    release_period: str,
+    publication_date: str,
+) -> None:
+    """
+    Seed-or-append-or-revise the population-total stat's series, following
+    the same structural pattern as _apply_qlfs_rate_map() and
+    _apply_gdp_growth_points(), but formatted for a millions-of-people
+    magnitude with a bare-year label instead of a percentage rate with a
+    quarterly/monthly label.
+
+    Note: ``rawValue`` is stored as a raw headcount (e.g. 64000000),
+    matching the existing on-disk convention in population.json, while the
+    series stores millions (e.g. 64.0) — this preserves the existing, if
+    slightly inconsistent, dual convention already present in the
+    production file rather than "fixing" it as an uninvited refactor
+    (IMPLEMENTATION-SPEC-POPULATION.md §8.2).
+    """
+    for stat in doc.get("statistics", []):
+        if stat.get("id") != _POPULATION_TOTAL_STAT_ID:
+            continue
+        prev_value = stat.get("rawValue")
+        change_pct = None
+        if isinstance(prev_value, (int, float)) and prev_value:
+            change_pct = round(
+                (new_value_millions * 1_000_000 - prev_value) / prev_value * 100, 1
+            )
+        stat["value"] = f"{new_value_millions:.1f}M"
+        stat["rawValue"] = round(new_value_millions * 1_000_000)
+        if change_pct is not None:
+            stat["change"] = change_pct
+        stat["changeLabel"] = f"from {int(release_period) - 1}"
+        stat["trend"] = "up" if (change_pct or 0) >= 0 else "down"
+        stat["lastUpdated"] = publication_date
+        if isinstance(stat.get("source"), dict):
+            stat["source"]["publicationDate"] = publication_date
+            stat["source"]["publicationName"] = f"Mid-Year Population Estimates {release_period}"
+
+        # Series: same seed-or-append-or-revise pattern as
+        # _apply_qlfs_rate_map(), storing the value in millions (matching
+        # the existing series' unit) not the raw headcount. Handles both
+        # a missing "series" key AND an existing-but-empty series list —
+        # setdefault() alone only covers the former.
+        series_list = stat.setdefault("series", [])
+        if not series_list:
+            series_list.append(
+                {"name": "Population (millions)", "unit": "million", "data": []}
+            )
+        series = series_list[0]
+        existing_labels = {pt["label"] for pt in series.get("data", [])}
+        if release_period not in existing_labels:
+            series.setdefault("data", []).append(
+                {"label": release_period, "value": round(new_value_millions, 1)}
+            )
+        else:
+            for pt in series["data"]:
+                if pt["label"] == release_period:
+                    pt["value"] = round(new_value_millions, 1)
+                    break
+    return
+
+
+def _update_population_meta(
+    doc: dict[str, Any],
+    *,
+    release_period: str,
+    publication_date: str,
+    source_url: str = "",
+) -> None:
+    """
+    Update _meta.last_verified, _meta.lastUpdated, _meta.source_url, and
+    _meta.automation. Follows _update_qlfs_meta()'s pattern (overwrite,
+    not narrow-scope like _update_cpi_meta()) because — unlike
+    inflation.json — population.json's _meta block describes only Stats SA
+    content; there is no SARB-owned prose sharing the file that a blanket
+    _meta rewrite would clobber (IMPLEMENTATION-SPEC-POPULATION.md §8.3).
+    """
+    if "_meta" not in doc:
+        doc["_meta"] = {}
+    doc["_meta"]["last_verified"] = date.today().isoformat()
+    doc["_meta"]["lastUpdated"] = publication_date
+    if source_url:
+        doc["_meta"]["source_url"] = source_url
+    doc["_meta"]["automation"] = {
+        "updatedBy": "statssa-adapter/population",
+        "updatedAt": datetime.now(tz=timezone.utc).isoformat(),
+        "releasePeriod": release_period,
+        "sourceFile": publication_date,
+    }
+
+
+def _transform_population(
+    current_doc: dict[str, Any],
+    extract: PopulationExtract,
+    source_url: str = "",
+) -> dict[str, Any]:
+    """
+    Apply the MYPE total-population value to the existing population.json
+    document shape. Touches population-total only. population-urban and
+    population-median-age are never read or written — the deep-copy at
+    the top preserves them exactly.
+    """
+    doc = copy.deepcopy(current_doc)
+    _apply_population_total_point(
+        doc, extract.total_population_millions,
+        release_period=extract.release_period,
+        publication_date=extract.publication_date,
+    )
+    _update_population_meta(
+        doc,
+        release_period=extract.release_period,
+        publication_date=extract.publication_date,
+        source_url=source_url,
+    )
+    return doc
+
+
+def _population_value_changed(current_doc: dict[str, Any], extract: PopulationExtract) -> bool:
+    """
+    Mirrors _cpi_values_changed()'s pre-transform check, computed before
+    _transform_population() runs (which always refreshes
+    _meta.last_verified).
+    """
+    for stat in current_doc.get("statistics", []):
+        if stat.get("id") == _POPULATION_TOTAL_STAT_ID:
+            current_raw = stat.get("rawValue")
+            new_raw = round(extract.total_population_millions * 1_000_000)
+            return current_raw is None or abs(current_raw - new_raw) > 1000
+    return True
 
 
 # ---------------------------------------------------------------------------
@@ -2566,7 +3278,7 @@ class StatsSAAdapter(BaseAdapter):
     source_id = "statssa"
     display_name = "Statistics South Africa"
     priority = 10   # Run first — largest number of datasets
-    version = "0.5.0"  # 0.1.0 Phase A stub -> 0.2.0 Phase 1 (download) -> 0.3.0 Phase 2 (QLFS parse/transform/stage) -> 0.4.0 Phase 3a (GDP parse/transform/stage) -> 0.4.1 WAF Tier 1 (header hardening + direct-URL fallback probe) -> 0.5.0 Phase 3b (CPI parse/transform/stage + ownership boundary)
+    version = "0.6.0"  # 0.1.0 Phase A stub -> 0.2.0 Phase 1 (download) -> 0.3.0 Phase 2 (QLFS parse/transform/stage) -> 0.4.0 Phase 3a (GDP parse/transform/stage) -> 0.4.1 WAF Tier 1 (header hardening + direct-URL fallback probe) -> 0.5.0 Phase 3b (CPI parse/transform/stage + ownership boundary) -> 0.6.0 Phase 4 (Population parse/transform/stage + source guard)
 
     def __init__(
         self,
@@ -2581,6 +3293,8 @@ class StatsSAAdapter(BaseAdapter):
         self._gdp_check_cache: DatasetCheckResult | None = None
         # Run-level cache for the CPI hub check (parallels _gdp_check_cache).
         self._cpi_check_cache: DatasetCheckResult | None = None
+        # Run-level cache for the Population hub check (parallels _cpi_check_cache).
+        self._population_check_cache: DatasetCheckResult | None = None
 
     def validate_config(self) -> list[str]:
         """
@@ -2685,27 +3399,17 @@ class StatsSAAdapter(BaseAdapter):
                 self._cpi_check_cache = self._check_cpi(dataset_id, dataset_config)
             return self._cpi_check_cache
 
-        # Population (MYPE)
+        # Population — Phase 4: real ETag/content-hash check against the
+        # P0302 release hub, mirroring the QLFS/GDP/CPI caching pattern
+        # above. This replaces the Phase A advisory stub entirely — the
+        # stub's warning content (data-integrity bug, source guard
+        # requirement) is now enforced in code by
+        # _assert_population_source_guard(), not left as dead advisory
+        # text (IMPLEMENTATION-SPEC-POPULATION.md §12 item 13).
         if dataset_id == "population":
-            return DatasetCheckResult(
-                dataset_id=dataset_id,
-                status="unknown",
-                message=(
-                    "[Phase A] Population MYPE P0302. "
-                    "CRITICAL: current JSON may be sourced from World Bank, not "
-                    "Stats SA. Phase B MUST include a source guard that hard-fails "
-                    "if the resolved data does not originate from statssa.gov.za. "
-                    "Current JSON (64.0M, 2024) conflicts with Stats SA MYPE 2025 "
-                    "(63.1M) — this is a data-integrity bug, not just staleness."
-                ),
-                current_period="2024 (possibly wrong source)",
-                latest_period="2025 MYPE: 63.1M (released 28 Jul 2025)",
-                source_url="https://www.statssa.gov.za/?page_id=1854&PPN=P0302",
-                notes=(
-                    "Do not automate until source is corrected. "
-                    "See automation architecture §5 Population-specific note."
-                ),
-            )
+            if self._population_check_cache is None:
+                self._population_check_cache = self._check_population(dataset_id, dataset_config)
+            return self._population_check_cache
 
         # Housing (GHS component)
         if dataset_id == "housing":
@@ -3228,6 +3932,172 @@ class StatsSAAdapter(BaseAdapter):
             self._log.warning("Cannot save CPI hub hash to %s: %s", p, exc)
 
     # ------------------------------------------------------------------
+    # Population-specific check (Phase 4)
+    # ------------------------------------------------------------------
+
+    def _check_population(
+        self,
+        dataset_id: str,
+        dataset_config: DatasetConfig | None,
+    ) -> DatasetCheckResult:
+        """
+        Real release detection for Population (MYPE, P0302).
+
+        Performs an ETag/content-hash check against the P0302 release hub,
+        mirroring _check_qlfs() / _check_gdp() / _check_cpi() structurally
+        exactly. Never reads or writes population-urban or
+        population-median-age (the Census-2022-owned stats in the same
+        population.json file) — this method only ever inspects the P0302
+        release hub page.
+        """
+        client = _build_http_client(self.source_config)
+        previous_hash = self._load_population_previous_hash()
+
+        self._log.info(
+            "Checking Population release hub: %s (previous_hash=%s…)",
+            _POPULATION_HUB_URL,
+            previous_hash[:8] if previous_hash else "none",
+        )
+
+        try:
+            changed, response = with_retry(
+                lambda: client.etag_check(
+                    _POPULATION_HUB_URL,
+                    previous_sha256=previous_hash,
+                ),
+                policy=WATCH_POLICY,
+                label="Population release hub ETag check",
+            )
+        except AutomationHTTPError as exc:
+            return DatasetCheckResult(
+                dataset_id=dataset_id,
+                status="error",
+                message=f"Population release hub returned HTTP {exc.status}: {exc.reason}",
+                source_url=_POPULATION_HUB_URL,
+            )
+        except Exception as exc:
+            return DatasetCheckResult(
+                dataset_id=dataset_id,
+                status="error",
+                message=f"Failed to check Population release hub: {exc}",
+                source_url=_POPULATION_HUB_URL,
+            )
+
+        # WAF check — same guard as _check_qlfs()/_check_gdp()/_check_cpi(),
+        # copied rather than factored into a shared helper (same reasoning
+        # as _check_cpi()'s copy of _check_gdp()'s guard — consolidating
+        # this is a future refactor, out of scope here).
+        if response.body:
+            body_text = response.body.decode("utf-8", errors="replace")
+            if "_Incapsula_Resource" in body_text or "incapsula" in body_text.lower():
+                self._log.error("WAF challenge detected on Population release hub")
+                # Tier 1 fallback (IMPLEMENTATION-SPEC-STATSSA-WAF.md §6.1
+                # step 2), mirroring _check_qlfs()'s/_check_gdp()'s/
+                # _check_cpi()'s fallback exactly — copied rather than
+                # shared, for the same reason as the WAF scan above.
+                y = _determine_current_population_year()
+                try:
+                    fallback_url = _probe_population_publication_url(client, y)
+                except Exception as probe_exc:
+                    self._log.warning(
+                        "Population direct-URL fallback probe raised: %s", probe_exc
+                    )
+                    fallback_url = None
+                if fallback_url:
+                    self._log.info(
+                        "Population hub WAF-blocked, but a direct publication "
+                        "URL is reachable: %s", fallback_url,
+                    )
+                    return DatasetCheckResult(
+                        dataset_id=dataset_id,
+                        status="unknown",
+                        message=(
+                            "WAF_BLOCKED: Incapsula WAF challenge detected on "
+                            "the Population release hub, but a direct "
+                            "publication URL is reachable. This is a "
+                            "probe-based signal, not a hub-diff signal — it "
+                            "confirms a candidate file can be fetched, not "
+                            "that a new release exists. Run fetch_and_apply() "
+                            "to attempt download."
+                        ),
+                        source_url=_POPULATION_HUB_URL,
+                        notes=f"Direct-URL fallback probe found: {fallback_url}",
+                    )
+                return DatasetCheckResult(
+                    dataset_id=dataset_id,
+                    status="error",
+                    message="WAF_BLOCKED: Incapsula WAF challenge detected. Cannot check for updates.",
+                    source_url=_POPULATION_HUB_URL,
+                )
+
+        release_period = _extract_release_period(response.body)
+
+        if not changed:
+            self._log.info(
+                "Population release hub unchanged (sha256=%s…)", previous_hash[:8]
+            )
+            return DatasetCheckResult(
+                dataset_id=dataset_id,
+                status="up_to_date",
+                message=(
+                    "Population P0302 release hub page is unchanged since "
+                    "last check. No new publication detected."
+                ),
+                latest_period=release_period or "unknown",
+                source_url=_POPULATION_HUB_URL,
+            )
+
+        self._save_population_hash(response.content_sha256)
+        self._log.info(
+            "Population release hub changed — new sha256=%s… — update likely available",
+            response.content_sha256[:8],
+        )
+
+        excel_url = _extract_excel_url(response.body)
+
+        return DatasetCheckResult(
+            dataset_id=dataset_id,
+            status="update_available",
+            message=(
+                "Population P0302 release hub page has changed. "
+                "A new MYPE publication is likely available."
+            ),
+            latest_period=release_period or "unknown (check release hub)",
+            source_url=_POPULATION_HUB_URL,
+            notes=(
+                f"Excel workbook URL detected: {excel_url or 'not found — check hub manually'}. "
+                "Run fetch_and_apply() to download and archive the workbook."
+            ),
+        )
+
+    # ------------------------------------------------------------------
+    # Population hash persistence helpers (parallel to the CPI ones above)
+    # ------------------------------------------------------------------
+
+    def _population_hash_path(self) -> Path:
+        """Return the path to the stored Population hub content hash."""
+        return self.config.report_dir / "versions" / "population_hub.sha256"
+
+    def _load_population_previous_hash(self) -> str:
+        """Return the last-known SHA-256 of the Population hub page, or ''."""
+        p = self._population_hash_path()
+        if not p.exists():
+            return ""
+        try:
+            return p.read_text(encoding="utf-8").strip()
+        except OSError:
+            return ""
+
+    def _save_population_hash(self, sha256: str) -> None:
+        """Persist the new SHA-256 of the Population hub page."""
+        p = self._population_hash_path()
+        try:
+            p.parent.mkdir(parents=True, exist_ok=True)
+            p.write_text(sha256, encoding="utf-8")
+        except OSError as exc:
+            self._log.warning("Cannot save Population hub hash to %s: %s", p, exc)
+
+    # ------------------------------------------------------------------
     # fetch_and_apply — Phase 1: QLFS discovery + download + archive
     # ------------------------------------------------------------------
 
@@ -3319,6 +4189,20 @@ class StatsSAAdapter(BaseAdapter):
                                    changes the top-level `status` above or
                                    `result["gdp"]` (see
                                    IMPLEMENTATION-SPEC-CPI.md §14).
+              population        — (Phase 4, additive) nested dict describing
+                                   the independent Population flow's own
+                                   outcome, same shape as `gdp`/`cpi` above
+                                   (status, hub_url, file_url,
+                                   release_period, archive_path, sha256,
+                                   file_size_bytes, version_id — singular,
+                                   population.json is one dataset — notes,
+                                   errors). Touches population-total only;
+                                   population-urban and
+                                   population-median-age are never read or
+                                   written. A Population failure never
+                                   changes the top-level `status` above or
+                                   `result["gdp"]`/`result["cpi"]` (see
+                                   IMPLEMENTATION-SPEC-POPULATION.md §11).
         """
         result: dict[str, Any] = {
             "status": "error",
@@ -3355,6 +4239,23 @@ class StatsSAAdapter(BaseAdapter):
         result["cpi"] = {
             "status": "error",
             "hub_url": _CPI_HUB_URL,
+            "file_url": None,
+            "release_period": "",
+            "archive_path": None,
+            "sha256": None,
+            "file_size_bytes": None,
+            "version_id": None,
+            "notes": "",
+            "errors": [],
+        }
+        # Population (Phase 4) — additive key, mirroring result["cpi"]'s
+        # shape exactly. Every key above keeps its existing meaning,
+        # describing the QLFS run only. This nested dict is the sole place
+        # Population's own outcome lives. See IMPLEMENTATION-SPEC-
+        # POPULATION.md §11.
+        result["population"] = {
+            "status": "error",
+            "hub_url": _POPULATION_HUB_URL,
             "file_url": None,
             "release_period": "",
             "archive_path": None,
@@ -4210,6 +5111,330 @@ class StatsSAAdapter(BaseAdapter):
             except Exception as exc:
                 self._log.warning("Could not update CPI hub hash: %s", exc)
 
+        # ============================================================
+        # Population flow (Phase 4) — Excel discovery + download + archive
+        # + parse + transform + validate + stage for population-total
+        # only. Runs after the QLFS/GDP/CPI flows above and is fully
+        # independent of all three: a Population-specific failure is
+        # recorded only in result["population"] and never changes the
+        # top-level `status`, which continues to reflect the QLFS flow
+        # only, and never affects result["gdp"]/result["cpi"]
+        # (IMPLEMENTATION-SPEC-POPULATION.md §11). Population writes no
+        # dataset JSON directly — only population.json's staging area —
+        # and never reads or writes population-urban/population-median-age
+        # (§3/§7.4). Enforces the source guard (§7.3) at two independent
+        # points, deliberately redundant rather than relying on a single
+        # check.
+        # ============================================================
+        population_client = _build_http_client(self.source_config)
+        population_hub_html: bytes | None = None
+
+        try:
+            self._log.info("Fetching Population release hub: %s", _POPULATION_HUB_URL)
+            excel_url, release_period, population_hub_html = _discover_population_excel(
+                population_client
+            )
+            result["population"]["release_period"] = release_period
+
+            if excel_url is None:
+                y = _determine_current_population_year()
+                excel_url = _probe_population_publication_url(population_client, y)
+            result["population"]["file_url"] = excel_url
+
+            if excel_url is None:
+                msg = (
+                    "No publication link found for Population. Direct "
+                    "probes failed (likely no standard naming) and HTML "
+                    "scrape failed (likely WAF blocked). Hub URL: "
+                    f"{_POPULATION_HUB_URL}"
+                )
+                self._log.warning(msg)
+                result["population"]["status"] = "no_publication_found"
+                result["population"]["errors"].append(msg)
+            else:
+                # Source guard, step 1 (URL-level) — checked immediately
+                # after discovery, before download. Hard-fails the flow if
+                # the resolved publication URL does not originate from
+                # statssa.gov.za (IMPLEMENTATION-SPEC-POPULATION.md §7.3
+                # step 1). This is the exact class of error that produced
+                # the current data-integrity bug in population.json.
+                guard_violations = _assert_population_source_guard(excel_url)
+                if guard_violations:
+                    result["population"]["status"] = "error"
+                    result["population"]["errors"].extend(guard_violations)
+                    self._log.error(
+                        "Population source guard failed: %s",
+                        "; ".join(guard_violations),
+                    )
+                else:
+                    self._log.info("Located Population publication: %s", excel_url)
+                    population_file_bytes = with_retry(
+                        lambda: _download_publication(population_client, excel_url),  # type: ignore[arg-type]
+                        policy=STATSSA_POLICY,
+                        label=f"Population file download ({excel_url})",
+                    )
+                    result["population"]["file_size_bytes"] = len(population_file_bytes)
+
+                    population_file_ext = (
+                        Path(urllib.parse.urlparse(excel_url).path).suffix.lower() or ".bin"
+                    )
+                    if not dry_run:
+                        try:
+                            population_archive_dest, population_sha256 = save_to_archive(
+                                self.config.raw_archive_dir,
+                                population_file_bytes,
+                                dataset_id="population",
+                                source_id=self.source_id,
+                                suffix=population_file_ext,
+                            )
+                            result["population"]["archive_path"] = portable_archive_path(
+                                self.config.raw_archive_dir, population_archive_dest
+                            )
+                            result["population"]["sha256"] = population_sha256
+                            self._log.info(
+                                "Population file archived → %s (sha256=%s…, %d bytes)",
+                                population_archive_dest, population_sha256[:8],
+                                len(population_file_bytes),
+                            )
+                        except Exception as archive_exc:
+                            self._log.warning(
+                                "Population archive write failed: %s", archive_exc
+                            )
+                    else:
+                        from automation.core.files import sha256_of_bytes
+                        result["population"]["sha256"] = sha256_of_bytes(population_file_bytes)
+                        self._log.info(
+                            "[DRY RUN] Would archive Population file (%d bytes, sha256=%s…)",
+                            len(population_file_bytes), result["population"]["sha256"][:8],
+                        )
+
+                    if population_file_ext not in (".xlsx", ".xls"):
+                        msg = (
+                            f"Downloaded Population publication is not an "
+                            f"Excel workbook (extension {population_file_ext!r}, "
+                            f"url={excel_url}). PDF parsing is explicitly "
+                            f"out of scope — falling back to the "
+                            f"manual-review path rather than guessing at "
+                            f"PDF-extracted values."
+                        )
+                        result["population"]["status"] = "error"
+                        result["population"]["errors"].append(msg)
+                        self._log.error(msg)
+                    else:
+                        extract = parse_population_workbook(population_file_bytes)
+                        # source_domain is set here, from the same URL the
+                        # parser was actually given — the extract-level
+                        # guard (step 2 below) re-derives from this field,
+                        # not from excel_url directly, catching a wiring
+                        # bug in this flow's own code rather than a data
+                        # problem (§7.3 step 2).
+                        extract.source_domain = urllib.parse.urlparse(excel_url).netloc.lower()
+                        result["population"]["release_period"] = extract.release_period
+                        self._log.info(
+                            "Population workbook parsed OK — release period %s "
+                            "(total_population_millions=%.1f)",
+                            extract.release_period,
+                            extract.total_population_millions,
+                        )
+
+                        # Source guard, step 2 (extract-level) — a
+                        # defensive, redundant check, in the same spirit as
+                        # _transform_inflation()'s internal rate_map
+                        # assertion: catching a wiring bug in this flow's
+                        # own code before it can ever reach staging
+                        # (§7.3 step 2).
+                        extract_guard_violations = _assert_population_source_guard(
+                            f"https://{extract.source_domain}/"
+                        )
+                        if extract_guard_violations:
+                            result["population"]["status"] = "error"
+                            result["population"]["errors"].extend(extract_guard_violations)
+                            self._log.error(
+                                "Population extract-level source guard failed: %s",
+                                "; ".join(extract_guard_violations),
+                            )
+                        else:
+                            current_population_doc = _read_current_dataset_json(
+                                _POPULATION_DATASET_JSON
+                            )
+
+                            range_errors: list[str] = []
+                            range_errors += _validate_population_total(
+                                extract.total_population_millions,
+                                _POPULATION_TOTAL_STAT_ID,
+                            )
+                            range_errors += _validate_annual_label(extract.release_period)
+
+                            if range_errors:
+                                result["population"]["status"] = "error"
+                                result["population"]["errors"].extend(range_errors)
+                                self._log.error(
+                                    "Population validation failed: %s",
+                                    "; ".join(range_errors),
+                                )
+                            elif not _population_value_changed(current_population_doc, extract):
+                                # Computed from the raw extracted value
+                                # against the current on-disk document —
+                                # BEFORE calling _transform_population() —
+                                # since that function always refreshes
+                                # _meta["last_verified"], which would make
+                                # a full-document equality check never
+                                # match even on a genuine no-op run.
+                                # Mirrors the QLFS/GDP/CPI flows'
+                                # pre-transform dataset_changed check.
+                                result["population"]["status"] = "no_change"
+                                result["population"]["notes"] = (
+                                    f"No change: {extract.release_period} "
+                                    f"Population value already matches "
+                                    f"population.json."
+                                )
+                                self._log.info(
+                                    "No change detected — population.json is already current."
+                                )
+                            else:
+                                new_population_doc = _transform_population(
+                                    current_population_doc, extract, excel_url
+                                )
+                                protected_violations = check_protected_fields(
+                                    current_population_doc, new_population_doc
+                                )
+                                # The ownership boundary
+                                # (IMPLEMENTATION-SPEC-POPULATION.md
+                                # §7.4/§11) — hard-fails on ANY difference
+                                # (not just a protected-field change) in
+                                # population-urban or
+                                # population-median-age, and on the
+                                # stat-ID set changing at all.
+                                ownership_violations = _assert_population_ownership_boundary(
+                                    current_population_doc, new_population_doc
+                                )
+                                all_violations = protected_violations + ownership_violations
+                                if all_violations:
+                                    msg = f"Protected field violation: {all_violations}"
+                                    result["population"]["status"] = "error"
+                                    result["population"]["errors"].append(msg)
+                                    self._log.error(msg)
+                                else:
+                                    population_jump_warnings: list[str] = []
+                                    # _get_current_stat_rate() returns the
+                                    # on-disk rawValue, which for
+                                    # population-total is a raw headcount
+                                    # (e.g. 64000000), not millions — unlike
+                                    # CPI's rawValue, which already is the
+                                    # rate. Convert to millions before
+                                    # comparing against
+                                    # extract.total_population_millions.
+                                    prev_total_raw = _get_current_stat_rate(
+                                        current_population_doc, _POPULATION_TOTAL_STAT_ID
+                                    )
+                                    prev_total_millions = (
+                                        prev_total_raw / 1_000_000
+                                        if prev_total_raw is not None else None
+                                    )
+                                    warning = _check_yoy_jump(
+                                        prev_total_millions,
+                                        extract.total_population_millions,
+                                        _POPULATION_TOTAL_STAT_ID,
+                                        threshold=_POPULATION_JUMP_WARNING_THRESHOLD,
+                                    )
+                                    if warning:
+                                        population_jump_warnings.append(warning)
+
+                                    population_entry = new_version_entry(
+                                        dataset_id="population",
+                                        source_id=self.source_id,
+                                        source_url=excel_url,
+                                        sha256=result["population"]["sha256"] or "",
+                                        archive_path=result["population"]["archive_path"] or "",
+                                        adapter_version=self.version,
+                                        notes=(
+                                            f"Population {extract.release_period} "
+                                            f"parsed and staged (population-total "
+                                            f"only). Hub URL: {_POPULATION_HUB_URL}. "
+                                            + ("; ".join(population_jump_warnings) + ". "
+                                               if population_jump_warnings else "")
+                                            + "Manual approval required before promotion."
+                                        ),
+                                        run_id=run_id,
+                                    )
+
+                                    if not dry_run:
+                                        try:
+                                            write_staged_dataset(
+                                                self.config.report_dir,
+                                                dataset_id="population",
+                                                version_id=population_entry.version_id,
+                                                document=new_population_doc,
+                                            )
+                                            save_version_entry(
+                                                self.config.report_dir, population_entry
+                                            )
+                                            self._log.info(
+                                                "Staged population — version %s (status=pending)",
+                                                population_entry.version_id,
+                                            )
+                                            result["population"]["version_id"] = population_entry.version_id
+                                            result["version_ids"].append(population_entry.version_id)
+                                            result["population"]["status"] = "ok"
+                                            result["population"]["notes"] = (
+                                                "; ".join(population_jump_warnings)
+                                                if population_jump_warnings else ""
+                                            )
+                                        except Exception as exc:
+                                            msg = f"Staging failed for population: {exc}"
+                                            result["population"]["status"] = "error"
+                                            result["population"]["errors"].append(msg)
+                                            self._log.error(msg)
+                                    else:
+                                        self._log.info(
+                                            "[DRY RUN] Would stage population — version %s",
+                                            population_entry.version_id,
+                                        )
+                                        result["population"]["version_id"] = population_entry.version_id
+                                        result["version_ids"].append(population_entry.version_id)
+                                        result["population"]["status"] = "ok"
+                                        result["population"]["notes"] = (
+                                            "; ".join(population_jump_warnings)
+                                            if population_jump_warnings else ""
+                                        )
+        except ValueError as exc:
+            msg = f"Population workbook parse failed: {exc}"
+            result["population"]["status"] = "error"
+            result["population"]["errors"].append(msg)
+            self._log.error(msg)
+        except AutomationHTTPError as exc:
+            msg = f"Population release hub/file HTTP error: {exc.status} {exc.reason}"
+            result["population"]["status"] = "error"
+            result["population"]["errors"].append(msg)
+            self._log.error(msg)
+        except Exception as exc:
+            msg = f"Population fetch_and_apply failed: {exc}"
+            result["population"]["status"] = "error"
+            result["population"]["errors"].append(msg)
+            self._log.error(msg)
+
+        # Deliberate deviation, identical in kind to the GDP/CPI flows' own
+        # deviation above: Population errors are NOT merged into the
+        # top-level `errors` list, for the same reason (preserving every
+        # existing key's meaning for the pre-existing QLFS/GDP/CPI tests,
+        # which assert on `result["errors"]` describing the QLFS run
+        # only). Population's errors remain fully visible in
+        # result["population"]["errors"].
+        #
+        # Update Population hub hash so the next check_for_updates call
+        # sees the new baseline (mirrors the QLFS/GDP/CPI hash-update
+        # steps above).
+        if not dry_run and population_hub_html is not None:
+            try:
+                from automation.core.files import sha256_of_bytes
+                population_hub_hash = sha256_of_bytes(population_hub_html)
+                self._save_population_hash(population_hub_hash)
+                self._log.debug(
+                    "Population hub hash updated: %s…", population_hub_hash[:8]
+                )
+            except Exception as exc:
+                self._log.warning("Could not update Population hub hash: %s", exc)
+
         return result
 
     # ------------------------------------------------------------------
@@ -4232,7 +5457,7 @@ class StatsSAAdapter(BaseAdapter):
                 "labour-force": "hybrid",
                 "gdp": "hybrid",
                 "inflation": "hybrid (cpi-headline, food-inflation only; repo-rate via SARB, untouched; annual-cpi-avg deferred)",
-                "population": "manual (source correction required first)",
+                "population": "hybrid (population-total only; source-guarded to statssa.gov.za; population-urban/population-median-age untouched)",
                 "housing": "hybrid (pending GHS source confirmation)",
                 "census": "static (erratum watch only)",
                 "municipalities": "static (erratum watch only)",
@@ -4251,9 +5476,10 @@ class StatsSAAdapter(BaseAdapter):
                 "_transform_* family) — reuses the existing staging/approval/"
                 "promote pipeline; fetch_and_apply() stages up to 3 pending "
                 "version entries (one per QLFS output dataset) and writes no "
-                "dataset JSON directly. Population/housing/census/"
-                "municipalities remain Phase A stubs — out of scope for this build. "
-                "CPI is now implemented — see phase_3b_status."
+                "dataset JSON directly. Housing/census/municipalities "
+                "remain Phase A stubs — out of scope for this build. "
+                "CPI is now implemented — see phase_3b_status. Population "
+                "is now implemented — see phase_4_status."
             ),
             "phase_3a_status": (
                 "GDP (P0441): real ETag/hash detection (_check_gdp(), mirroring "
@@ -4293,6 +5519,38 @@ class StatsSAAdapter(BaseAdapter):
                 "workbook, same caveat class as QLFS's and GDP's Excel "
                 "layouts."
             ),
+            "phase_4_status": (
+                "Population (P0302, MYPE): real ETag/hash detection "
+                "(_check_population(), mirroring _check_qlfs()/_check_gdp()/"
+                "_check_cpi()) + Excel discovery/download/archive + parse "
+                "(parse_population_workbook(), label-matched, reads only "
+                "the latest year's column) + transform "
+                "(_transform_population()/_apply_population_total_point(), "
+                "a new small helper — not a reuse of _apply_qlfs_rate_map(), "
+                "since population-total's display shape is materially "
+                "different) + validate + stage, reusing the same staging/"
+                "approval/promote pipeline as SARB, QLFS, GDP, and CPI. "
+                "fetch_and_apply() stages at most one pending version "
+                "entry for population-total only; population-urban and "
+                "population-median-age are never read or modified — "
+                "enforced by a dedicated, tested "
+                "_assert_population_ownership_boundary() hard-fail check "
+                "that runs before staging, in addition to "
+                "check_protected_fields(). This milestone's genuinely new "
+                "complication is the source guard "
+                "(_assert_population_source_guard()), checked twice "
+                "(URL-level before download, extract-level before "
+                "staging): it hard-fails the flow if the resolved "
+                "publication does not originate from statssa.gov.za — the "
+                "direct fix for the World-Bank-sourced data-integrity bug "
+                "documented in SA-Data-Hub-Dataset-Sourcing-Plan.md §9. "
+                "The P0302 URL-naming convention, _POPULATION_METRIC_"
+                "SPECS's label match, the raw-headcount-vs-millions "
+                "heuristic, and the _POPULATION_PLAUSIBLE_RANGE/"
+                "_POPULATION_JUMP_WARNING_THRESHOLD judgement calls are "
+                "unverified against a real workbook, same caveat class as "
+                "QLFS's/GDP's/CPI's Excel layouts."
+            ),
             "waf_access_status": (
                 "IMPLEMENTATION-SPEC-STATSSA-WAF.md Tier 1 implemented: "
                 "_build_http_client() now sends an ordinary-browser-"
@@ -4307,7 +5565,9 @@ class StatsSAAdapter(BaseAdapter):
             ),
             "notes": (
                 "One release, one job: QLFS family uses a single extractor. "
-                "Population source guard is mandatory in Phase B. "
+                "Population source guard is implemented "
+                "(_assert_population_source_guard(), Phase 4) — hard-fails "
+                "on any non-statssa.gov.za origin. "
                 "GDP ETL overwrites historical points (revisions), not append — "
                 "implemented in Phase 3a via _apply_gdp_growth_points()."
             ),

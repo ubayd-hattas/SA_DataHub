@@ -4,6 +4,236 @@ All notable changes to the SA Data Hub automation framework are documented in th
 
 ---
 
+## 2026-07-21 — Population (P0302, MYPE) Annual Write Path: population-total
+
+### Summary
+Implements `IMPLEMENTATION-SPEC-POPULATION.md` for `population.json`'s
+`population-total` stat, following on from the CPI milestone below using
+the same staging/approval/promote pattern already proven for SARB, QLFS,
+GDP, and CPI. Unlike the prior three Stats SA milestones, this one is a
+data-integrity fix shaped like a green-field automation: the current
+`population-total` value was suspected to be sourced from World Bank
+rather than Stats SA MYPE (`SA-Data-Hub-Dataset-Sourcing-Plan.md` §9).
+Scope is deliberately narrow, matching the spec's own §3/§7.4 boundaries:
+only `population-total` is read or written. `population-urban` and
+`population-median-age` (same `population.json` file) are never touched.
+Exactly two files changed code (`automation/adapters/statss.py`,
+`automation/adapters/tests/test_statss.py`), plus
+`automation/config/datasets/population.yaml`, this file, and
+`CURRENT_STATE.md` — no core module, no other adapter, and no
+`src/data/datasets/*.json` file touched.
+
+### Added
+- `automation/adapters/statss.py::parse_population_workbook()` /
+  `_find_latest_year_column()` / `PopulationExtract` /
+  `_POPULATION_METRIC_SPECS` — label-matched Excel parsing that reads only
+  the **latest year's** column, a deliberate parallel to
+  `parse_qlfs_workbook()`'s/`parse_cpi_workbook()`'s single-latest-value
+  approach rather than `parse_gdp_workbook()`'s multi-quarter one: MYPE has
+  exactly one release per year. Includes a documented, logged heuristic
+  for the raw-headcount-vs-millions representation ambiguity in the source
+  workbook (values over 1000 are treated as a raw headcount and divided by
+  1,000,000). Fails loudly (naming the missing indicator) rather than
+  guessing or falling back to PDF parsing, matching the QLFS/GDP/CPI
+  parsers' contract exactly.
+- `automation/adapters/statss.py::_build_population_candidate_urls()` /
+  `_determine_current_population_year()` /
+  `_probe_population_publication_url()` / `_discover_population_excel()` —
+  direct-URL discovery for P0302, structurally identical to the
+  QLFS/GDP/CPI equivalents, reusing the fully generic
+  `_fetch_release_hub_html()` / `_extract_excel_url()` /
+  `_extract_release_period()` unchanged.
+- `automation/adapters/statss.py::_validate_population_total()` — a wide
+  plausibility-range validator (`_POPULATION_PLAUSIBLE_RANGE = (40.0,
+  90.0)`), deliberately wide since South Africa's population is
+  well-documented and slow-moving. `_validate_annual_label()` validates
+  the bare `"YYYY"` format matching `population.json`'s existing series
+  convention (distinct from QLFS's quarterly or CPI's monthly label
+  shape). `_check_yoy_jump()` — a Population-specific year-over-year
+  anomaly threshold (`_POPULATION_JUMP_WARNING_THRESHOLD = 2.0`), parallel
+  to `_check_qoq_jump()`.
+- `automation/adapters/statss.py::_assert_population_source_guard()` —
+  **the single most load-bearing new function in this milestone.** Checked
+  at two independent points (immediately after URL discovery, and again
+  immediately before staging): hard-fails the flow if the resolved
+  publication URL does not originate from `statssa.gov.za` (or a
+  documented Stats SA subdomain). This is the direct, structural
+  enforcement of `population.yaml`'s `source_guard_required: true` /
+  `source_guard_domain: "statssa.gov.za"`, and the exact fix for the class
+  of error that produced the historical data-integrity bug.
+- `automation/adapters/statss.py::_assert_population_ownership_boundary()`
+  — a structural copy of `_assert_cpi_ownership_boundary()`. Deep-compares
+  every non-owned stat (`population-urban`, `population-median-age`)
+  between the previous and proposed `population.json` document and
+  hard-fails staging on **any** difference, including the stat-ID set
+  itself changing — stricter than the reused `check_protected_fields()`,
+  which only catches protected-field (e.g. `id`) changes, not an arbitrary
+  value like `rawValue` being silently altered.
+- `automation/adapters/statss.py::_transform_population()` /
+  `_apply_population_total_point()` — a new, small, single-purpose helper.
+  **Not** a reuse of `_apply_qlfs_rate_map()`: `population-total`'s
+  display shape (bare-year series labels, millions magnitude with a dual
+  millions/raw-headcount on-disk convention) is materially different from
+  a percentage rate. `_update_population_meta()` follows
+  `_update_qlfs_meta()`'s blanket-overwrite pattern (not CPI's
+  narrow-scope one), since `population.json`'s `_meta` block describes
+  only Stats SA content — there is no SARB-owned prose sharing the file
+  the way `inflation.json`'s does.
+- `automation/adapters/statss.py::_check_population()` — real
+  ETag/content-hash detection against the P0302 release hub, structurally
+  mirroring `_check_qlfs()`/`_check_gdp()`/`_check_cpi()` exactly (same
+  WAF-challenge guard and Tier 1 direct-URL fallback probe, copied rather
+  than factored into a shared helper), cached per run via a new
+  `self._population_check_cache` instance attribute, and persisted via new
+  `_population_hash_path()` / `_load_population_previous_hash()` /
+  `_save_population_hash()` methods to a sibling `population_hub.sha256`
+  file. `check_for_updates()`'s `"population"` branch is replaced with a
+  real dispatch to this method (previously a Phase A stub returning
+  `status="unknown"` with hardcoded literal strings describing the
+  data-integrity bug).
+- `automation/adapters/statss.py::StatsSAAdapter.fetch_and_apply()` —
+  extended, additively, to also run a Population flow after the existing
+  QLFS, GDP, and CPI flows within the same method call. Discovers,
+  downloads, and archives the MYPE Excel publication, enforces the
+  URL-level source guard, parses it, validates it (range, annual-label
+  format, `check_protected_fields()` reuse, **and** the new
+  `_assert_population_ownership_boundary()` check), enforces the
+  extract-level source guard, and — if the extracted value actually
+  differs from what's already in `population.json` — stages exactly one
+  candidate document via the existing `core/staging.py`/`core/version.py`
+  pipeline, recording a single `pending` version entry for `population`.
+  No dataset JSON is ever written directly; `population-urban` and
+  `population-median-age` are never read or written by this flow. The
+  result dict gains one new, additive `result["population"]` key (status,
+  hub_url, file_url, release_period, archive_path, sha256,
+  file_size_bytes, a single `version_id`, notes, errors) describing the
+  Population flow's own outcome; every previously documented top-level key
+  (including `result["gdp"]`/`result["cpi"]`) keeps its exact existing
+  meaning — required so none of the pre-existing `fetch_and_apply`-based
+  tests needed to change.
+- `automation/adapters/tests/test_statss.py` — 33 new tests, appended
+  after the existing QLFS/GDP/CPI/WAF tests: full parser extraction
+  against a fixture workbook and its bare-year label; a dedicated test for
+  each of the millions and raw-headcount source representations; two
+  fail-loudly parser paths (missing-metric, no-year-header) plus a
+  not-an-Excel-file path; the population-total range validator (in-range,
+  out-of-range-high, out-of-range-low) and the annual-label validator
+  (valid and invalid format); the year-over-year anomaly threshold
+  (within-threshold, beyond-threshold, no-current-value); four direct
+  `_assert_population_source_guard()` tests (statssa.gov.za pass,
+  statssa.gov.za subdomain pass, World Bank hard-fail, unrelated-domain
+  hard-fail — **the highest-value tests in this milestone**, the direct
+  regression test against the historical data-integrity bug);
+  `_apply_population_total_point()`'s three structural cases (empty-series
+  seeding, in-place revision, append); `_transform_population()`'s scope
+  boundary (`population-urban`/`population-median-age` provably
+  byte-for-byte untouched); `_assert_population_ownership_boundary()`'s
+  three direct cases (tampered `population-urban` value detected, stat
+  added/removed detected, a legitimate population-total-only change passes
+  clean); `_check_population()`'s hub-change detection; six
+  `fetch_and_apply()` integration tests (network mocked for QLFS, GDP,
+  CPI, and Population together) covering: staging a Population candidate
+  with zero direct writes while QLFS/GDP/CPI are unaffected; a Population
+  no-change run producing `status="no_change"`; a Population
+  protected-field (`id`) violation aborting only the Population portion
+  while QLFS/GDP/CPI still succeed in the same call; a Population
+  **ownership-boundary** violation (a non-`id` field —
+  `population-urban`'s `rawValue` — silently tampered, which
+  `check_protected_fields()` alone would not catch) aborting staging; the
+  end-to-end **source-guard** proof (a mocked World Bank discovery URL
+  never reaches `_transform_population()` and never stages anything, while
+  QLFS/GDP/CPI still succeed in the same call); and the Population-specific
+  approve→promote end-to-end proof, including a final assertion that
+  `population-urban`/`population-median-age` are still byte-for-byte
+  identical after promotion, and that the year-over-year anomaly check
+  fires as expected on the corrective swing exercised by that test; plus
+  three Tier-1 WAF-fallback tests for `_check_population()`, mirroring the
+  QLFS/GDP/CPI WAF tests exactly. Test count (this file): 66 → 99. Test
+  count (full `automation/` suite): 83 → 116.
+
+### Changed
+- `automation/adapters/statss.py::check_for_updates()` — the
+  `"population"` branch is no longer a Phase A stub; it dispatches to
+  `_check_population()`, cached the same way as the QLFS/GDP/CPI
+  branches, and is positioned before the remaining Phase A stubs (housing,
+  census, municipalities — all unchanged).
+- `automation/adapters/statss.py::describe()` — added a new
+  `phase_4_status` entry describing the Population write path; corrected
+  `phase_2_status`'s closing sentence, which previously listed Population
+  among the remaining Phase A stubs (no longer true); `automation_levels.
+  population` updated from `"manual (source correction required first)"`
+  to a `hybrid` description spelling out the `population-total`-only scope
+  and the source guard.
+- `automation/adapters/statss.py::StatsSAAdapter.version` bumped `0.5.0` →
+  `0.6.0`.
+- `automation/adapters/statss.py` module docstring — added a "Phase 4
+  scope (Population)" section and a "Population Excel layout —
+  verification status" section, following the exact structure and tone of
+  the existing QLFS/GDP/CPI-equivalent sections; updated the
+  Phase-A-stubs closing sentence to no longer list Population.
+- `automation/config/datasets/population.yaml::automation_level` — `manual`
+  → `hybrid`, now that the source guard is implemented and tested.
+  `source_guard_required`/`source_guard_domain` retained as living
+  documentation of why the guard exists (matching the project's existing
+  convention of retaining rationale comments after a fix ships, e.g.
+  `gdp.yaml`'s `overwrites_historical_points`).
+
+### Verified (no code change)
+- **The "did anything actually change" check for Population
+  (`_population_value_changed()`) is computed from the raw extracted value
+  against the current on-disk document, before `_transform_population()`
+  runs** — mirroring the QLFS/GDP/CPI flows' pre-transform
+  `dataset_changed` check, for the identical reason:
+  `_transform_population()` always refreshes
+  `_meta.last_verified`/`_meta.automation.updatedAt`, so a post-transform
+  full-document comparison would never match even on a genuine no-op run.
+  Verified directly by
+  `test_fetch_and_apply_population_no_change_produces_no_change_status`.
+- **Population-flow errors are recorded only in
+  `result["population"]["errors"]`, not merged into the shared top-level
+  `result["errors"]`** — the same documented deviation class GDP and CPI
+  already established relative to their own specs' illustrative
+  (non-literal) pseudocode, for the identical reason: preserving every
+  pre-existing test's assertions about `result["errors"]` describing the
+  QLFS run alone.
+- **`_assert_population_source_guard()` is a hard-fail, checked twice, not
+  a warning checked once** — confirmed by
+  `test_fetch_and_apply_population_non_statssa_source_never_stages`: a
+  mocked non-statssa.gov.za discovery URL never reaches
+  `_transform_population()` (tracked directly in the test) and never
+  stages anything, with zero `pending` version entries created and
+  `population.json` left byte-for-byte unchanged on disk.
+- **`_assert_population_ownership_boundary()` is a hard-fail, not a
+  warning** — confirmed by
+  `test_fetch_and_apply_population_ownership_violation_aborts_staging`: a
+  non-`id` field change on `population-urban` (which
+  `check_protected_fields()` does not catch, since `rawValue` is not in
+  `PROTECTED_FIELDS`) still aborts Population staging entirely.
+
+### Known Issues
+- **`parse_population_workbook()`, `_build_population_candidate_urls()`'s
+  P0302 URL-naming convention, and the raw-headcount-vs-millions heuristic
+  have never been run against a real, downloaded Stats SA MYPE
+  workbook** — only synthetic fixtures, the same open item QLFS, GDP, and
+  CPI each carried into their own first live runs. A parse or discovery
+  failure on the first real `--apply` run is expected-possible, not a
+  regression — the correct response is to update
+  `_POPULATION_METRIC_SPECS` and/or `_build_population_candidate_urls()`
+  to match the real layout/convention, re-run, and only then treat this
+  item as resolved.
+- **`_POPULATION_PLAUSIBLE_RANGE = (40.0, 90.0)` and
+  `_POPULATION_JUMP_WARNING_THRESHOLD = 2.0` are this implementation's own
+  judgement calls**, not sourced from `dataset-analysis.md` or the
+  sourcing plan — flagged for stakeholder confirmation, the same caveat
+  class as CPI's own thresholds.
+- **The actual on-disk `population-total` value has not yet been
+  corrected.** This milestone shipped the pipeline and its source guard,
+  but promotion of a real corrected value still requires a genuine MYPE
+  download, a passing `--apply` run, and a human `--approve`/`--promote`
+  — none of which has happened yet outside of tests.
+
+---
+
 ## 2026-07-20 — CPI (P0141) Monthly Write Path: cpi-headline / food-inflation
 
 ### Summary
