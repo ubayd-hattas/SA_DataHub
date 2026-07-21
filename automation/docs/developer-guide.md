@@ -229,3 +229,10 @@ No parser, transform, validation, staging, approval, or promotion code was
 touched. No file outside `automation/adapters/statss.py`,
 `automation/adapters/tests/test_statss.py`, and this documentation set
 changed.
+
+### AutomationHTTPError argument fix — 2026-07-21
+
+An audit confirmed that the `AutomationHTTPError` raised by `_fetch_release_hub_html()` when encountering a WAF challenge was missing the `url` positional argument, resulting in a `TypeError`. This bug is now fixed.
+
+Additionally, the audit confirmed that a PDF/Excel content-type guard was already present in all `fetch_and_apply()` flows prior to this audit. The CPI publication URL pattern remains unconfirmed pending manual browser investigation.
+
