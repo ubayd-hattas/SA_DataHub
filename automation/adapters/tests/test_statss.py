@@ -51,30 +51,42 @@ import automation.adapters.statss as statss_mod
 from automation.adapters.statss import (
     CPIExtract,
     GDPExtract,
+    PopulationExtract,
     QLFSExtract,
     StatsSAAdapter,
     _apply_gdp_growth_points,
+    _apply_population_total_point,
     _assert_cpi_ownership_boundary,
+    _assert_population_ownership_boundary,
+    _assert_population_source_guard,
     _check_qoq_jump,
+    _check_yoy_jump,
     _CPI_HEADLINE_STAT_ID,
     _CPI_FOOD_STAT_ID,
     _CPI_JUMP_WARNING_THRESHOLD,
     _CPI_OWNED_STAT_IDS,
     _GDP_GROWTH_JUMP_WARNING_THRESHOLD,
     _GDP_GROWTH_PLAUSIBLE_RANGE,
+    _POPULATION_JUMP_WARNING_THRESHOLD,
+    _POPULATION_OWNED_STAT_IDS,
+    _POPULATION_TOTAL_STAT_ID,
     _transform_gdp,
     _transform_inflation,
     _transform_labour_force,
+    _transform_population,
     _transform_unemployment,
     _transform_youth_unemployment,
     _update_cpi_meta,
+    _validate_annual_label,
     _validate_cpi_rate,
     _validate_gdp_growth_rate,
     _validate_monthly_label,
     _validate_percentage,
+    _validate_population_total,
     _validate_quarterly_label,
     parse_cpi_workbook,
     parse_gdp_workbook,
+    parse_population_workbook,
     parse_qlfs_workbook,
 )
 from automation.core.config import AutomationConfig, SourceConfig
@@ -2267,6 +2279,980 @@ def test_check_cpi_no_waf_fallback_probe_not_invoked(tmp_path, monkeypatch):
     )
 
     result = adapter.check_for_updates("inflation", None)
+
+    assert result.status == "update_available"
+    assert probe_calls == []
+
+
+# ---------------------------------------------------------------------------
+# Population (Phase 4) — IMPLEMENTATION-SPEC-POPULATION.md §13
+#
+# New tests appended after the existing QLFS/GDP/CPI/WAF tests above. No
+# existing test in this file is modified.
+#
+# Scope discipline mirrors the spec exactly: only population-total is
+# exercised here. population-urban and population-median-age appear ONLY
+# as the untouched "control" stats these tests prove were not modified —
+# never as something this milestone's code is meant to update. The
+# source-guard tests are, per the spec, the highest-value tests in this
+# section — they are the direct regression test against the actual
+# historical World-Bank-sourced data-integrity bug.
+# ---------------------------------------------------------------------------
+
+_POPULATION_TOTAL_LABEL = "Total Population (RSA) South Africa"
+
+
+def _build_population_fixture_workbook(
+    headers: tuple[str, ...] = ("2024", "2025", "2026"),
+    values: tuple[float, ...] = (62.4, 63.1, 63.8),
+    include_total_row: bool = True,
+) -> bytes:
+    """
+    Build a minimal, representative Population (MYPE)-style workbook: a
+    bare-year header row plus a "Total Population (RSA) South Africa"
+    indicator row, with a value under each year column. Only the LATEST
+    year's value is expected to be read by parse_population_workbook() —
+    a deliberate parallel to the QLFS/CPI fixture builders' single-
+    latest-value philosophy, not GDP's multi-quarter one. Values default
+    to the millions representation (§7.2); see
+    _build_population_fixture_workbook_raw_headcount() for the raw-
+    headcount representation used to test the parser's heuristic.
+    """
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "MYPE Time Series"
+    ws.cell(row=1, column=1, value="Indicator")
+    for i, h in enumerate(headers, start=2):
+        ws.cell(row=1, column=i, value=int(h))
+
+    if include_total_row:
+        ws.cell(row=2, column=1, value=_POPULATION_TOTAL_LABEL)
+        for c, v in enumerate(values, start=2):
+            ws.cell(row=2, column=c, value=v)
+
+    buf = BytesIO()
+    wb.save(buf)
+    return buf.getvalue()
+
+
+# ---------------------------------------------------------------------------
+# 1. Parser
+# ---------------------------------------------------------------------------
+
+
+def test_parse_population_workbook_extracts_total_population():
+    data = _build_population_fixture_workbook()
+    extract = parse_population_workbook(data)
+
+    assert extract.release_period == "2026"
+    assert extract.total_population_millions == 63.8
+
+
+def test_parse_population_workbook_missing_metric_fails_loudly():
+    data = _build_population_fixture_workbook()
+    wb = openpyxl.load_workbook(BytesIO(data))
+    ws = wb.active
+    for row in ws.iter_rows():
+        for cell in row:
+            if cell.value == _POPULATION_TOTAL_LABEL:
+                cell.value = "Some unrelated row"
+    buf = BytesIO()
+    wb.save(buf)
+
+    with pytest.raises(ValueError, match="total population"):
+        parse_population_workbook(buf.getvalue())
+
+
+def test_parse_population_workbook_no_year_headers_fails_loudly():
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.cell(row=1, column=1, value="Indicator")
+    ws.cell(row=1, column=2, value="Not a year")
+    ws.cell(row=2, column=1, value=_POPULATION_TOTAL_LABEL)
+    ws.cell(row=2, column=2, value=63.1)
+    buf = BytesIO()
+    wb.save(buf)
+
+    with pytest.raises(ValueError, match="year-header"):
+        parse_population_workbook(buf.getvalue())
+
+
+def test_parse_population_workbook_not_an_excel_file_fails_loudly():
+    with pytest.raises(ValueError, match="Excel workbook"):
+        parse_population_workbook(b"this is not a valid xlsx file")
+
+
+def test_parse_population_workbook_millions_representation():
+    """The workbook expresses the total already in millions (e.g. 63.1) —
+    parse_population_workbook() must NOT divide this value further."""
+    data = _build_population_fixture_workbook(
+        headers=("2025", "2026"), values=(63.1, 63.8),
+    )
+    extract = parse_population_workbook(data)
+    assert extract.total_population_millions == 63.8
+
+
+def test_parse_population_workbook_raw_headcount_representation():
+    """The workbook expresses the total as a raw headcount (e.g. 63800000)
+    — parse_population_workbook() must divide by 1,000,000 per the
+    documented heuristic (IMPLEMENTATION-SPEC-POPULATION.md §7.2 / §14
+    item 2)."""
+    data = _build_population_fixture_workbook(
+        headers=("2025", "2026"), values=(63_100_000, 63_800_000),
+    )
+    extract = parse_population_workbook(data)
+    assert extract.total_population_millions == pytest.approx(63.8)
+
+
+# ---------------------------------------------------------------------------
+# 2. Validation
+# ---------------------------------------------------------------------------
+
+
+def test_validate_population_total_in_range_and_out_of_range():
+    assert _validate_population_total(63.8, _POPULATION_TOTAL_STAT_ID) == []
+
+    errors = _validate_population_total(120.0, _POPULATION_TOTAL_STAT_ID)
+    assert len(errors) == 1
+    assert _POPULATION_TOTAL_STAT_ID in errors[0]
+
+    errors_low = _validate_population_total(5.0, _POPULATION_TOTAL_STAT_ID)
+    assert len(errors_low) == 1
+
+
+def test_validate_annual_label_ok():
+    assert _validate_annual_label("2026") == []
+
+
+def test_validate_annual_label_bad_format():
+    errors = _validate_annual_label("Q1 2026")
+    assert len(errors) == 1
+    assert "Q1 2026" in errors[0]
+
+
+# ---------------------------------------------------------------------------
+# 3. Year-over-year anomaly threshold (Population-specific)
+# ---------------------------------------------------------------------------
+
+
+def test_check_yoy_jump_within_threshold_no_warning():
+    # 62.4 -> 63.1 is about +1.1% — within the 2.0% default threshold.
+    assert _check_yoy_jump(62.4, 63.1, _POPULATION_TOTAL_STAT_ID) is None
+
+
+def test_check_yoy_jump_beyond_threshold_flags_anomaly_not_error():
+    # 64.0 -> 63.1 is about -1.4%, still within threshold; use a much
+    # larger swing to exceed _POPULATION_JUMP_WARNING_THRESHOLD (2.0%) —
+    # this is the swing IMPLEMENTATION-SPEC-POPULATION.md §14 item 7
+    # expects on the one-time production correction run.
+    warning = _check_yoy_jump(
+        64.0, 60.0, _POPULATION_TOTAL_STAT_ID,
+        threshold=_POPULATION_JUMP_WARNING_THRESHOLD,
+    )
+    assert warning is not None
+    assert "ANOMALY" in warning
+
+
+def test_check_yoy_jump_no_current_value_no_warning():
+    assert _check_yoy_jump(None, 63.8, _POPULATION_TOTAL_STAT_ID) is None
+
+
+# ---------------------------------------------------------------------------
+# 4. Source guard — the highest-value tests in this milestone
+#    (IMPLEMENTATION-SPEC-POPULATION.md §13)
+# ---------------------------------------------------------------------------
+
+
+def test_assert_population_source_guard_passes_for_statssa_domain():
+    assert _assert_population_source_guard(
+        "https://www.statssa.gov.za/publications/P0302/mype2026.xlsx"
+    ) == []
+
+
+def test_assert_population_source_guard_hard_fails_for_worldbank_domain():
+    """The direct regression test against the actual historical bug — the
+    single most important test in this spec (IMPLEMENTATION-SPEC-
+    POPULATION.md §13)."""
+    violations = _assert_population_source_guard(
+        "https://data.worldbank.org/indicator/SP.POP.TOTL?locations=ZA"
+    )
+    assert len(violations) == 1
+    assert "source guard violation" in violations[0]
+    assert "statssa.gov.za" in violations[0]
+
+
+def test_assert_population_source_guard_hard_fails_for_unrelated_domain():
+    violations = _assert_population_source_guard("https://example.com/mype.xlsx")
+    assert len(violations) == 1
+    assert "source guard violation" in violations[0]
+
+
+def test_assert_population_source_guard_passes_for_statssa_subdomain():
+    assert _assert_population_source_guard(
+        "https://census.statssa.gov.za/mype2026.xlsx"
+    ) == []
+
+
+# ---------------------------------------------------------------------------
+# 5. _transform_population() / ownership boundary
+# ---------------------------------------------------------------------------
+
+
+def _population_total_stat(series_data=None, **overrides) -> dict:
+    stat = {
+        "id": _POPULATION_TOTAL_STAT_ID,
+        "categoryId": "population",
+        "title": "Total Population",
+        "value": "64.0M",
+        "rawValue": 64_000_000,
+        "unit": "people",
+        "change": 1.3,
+        "changeLabel": "from 2023",
+        "trend": "up",
+        "description": "South Africa's estimated total population.",
+        "source": {
+            "name": "Statistics South Africa",
+            "shortName": "Stats SA",
+            "url": "https://www.statssa.gov.za/?page_id=1854&PPN=P0302",
+            "publicationName": "Mid-Year Population Estimates 2024",
+            "publicationDate": "2024-07-30",
+        },
+        "lastUpdated": "2024-07-30",
+        "series": [
+            {
+                "name": "Population (millions)",
+                "unit": "million",
+                "data": series_data if series_data is not None else [
+                    {"label": "2023", "value": 63.2},
+                    {"label": "2024", "value": 64.0},
+                ],
+            }
+        ],
+    }
+    stat.update(overrides)
+    return stat
+
+
+def _population_urban_stat() -> dict:
+    return {
+        "id": "population-urban",
+        "categoryId": "population",
+        "title": "Urban Population Share",
+        "value": "63.7%",
+        "rawValue": 63.7,
+        "unit": "%",
+        "change": 0.1,
+        "changeLabel": "from 2023",
+        "trend": "up",
+        "source": {"name": "Statistics South Africa", "shortName": "Stats SA"},
+        "lastUpdated": "2023-10-10",
+    }
+
+
+def _population_median_age_stat() -> dict:
+    return {
+        "id": "population-median-age",
+        "categoryId": "population",
+        "title": "Median Age",
+        "value": "28.0",
+        "rawValue": 28.0,
+        "unit": "years",
+        "change": 1.5,
+        "changeLabel": "from Census 2011",
+        "trend": "up",
+        "source": {"name": "Statistics South Africa", "shortName": "Stats SA"},
+        "lastUpdated": "2023-10-10",
+    }
+
+
+def _population_doc(**overrides) -> dict:
+    doc = {
+        "_meta": {
+            "source": "Statistics South Africa — Census 2022; Mid-Year Population Estimates",
+            "source_url": "https://www.statssa.gov.za/?page_id=1854&PPN=P0302",
+            "update_frequency": "Census: decennial; Mid-year estimates: annual (July)",
+            "last_verified": "2026-05-30",
+            "notes": "Census 2022 is the definitive source.",
+        },
+        "statistics": [
+            _population_total_stat(),
+            _population_urban_stat(),
+            _population_median_age_stat(),
+        ],
+    }
+    doc.update(overrides)
+    return doc
+
+
+def test_apply_population_total_point_seeds_empty_series():
+    doc = _population_doc()
+    for stat in doc["statistics"]:
+        if stat["id"] == _POPULATION_TOTAL_STAT_ID:
+            stat["series"] = []
+
+    _apply_population_total_point(
+        doc, 63.8, release_period="2026", publication_date="2026-07-29",
+    )
+
+    stat = next(s for s in doc["statistics"] if s["id"] == _POPULATION_TOTAL_STAT_ID)
+    assert stat["series"][0]["data"] == [{"label": "2026", "value": 63.8}]
+    assert stat["rawValue"] == 63_800_000
+    assert stat["value"] == "63.8M"
+
+
+def test_apply_population_total_point_revises_existing_year():
+    doc = _population_doc()
+    _apply_population_total_point(
+        doc, 63.3, release_period="2024", publication_date="2024-08-01",
+    )
+    stat = next(s for s in doc["statistics"] if s["id"] == _POPULATION_TOTAL_STAT_ID)
+    labels = [pt["label"] for pt in stat["series"][0]["data"]]
+    assert labels.count("2024") == 1
+    revised = next(pt for pt in stat["series"][0]["data"] if pt["label"] == "2024")
+    assert revised["value"] == 63.3
+
+
+def test_apply_population_total_point_appends_new_year():
+    doc = _population_doc()
+    _apply_population_total_point(
+        doc, 63.8, release_period="2026", publication_date="2026-07-29",
+    )
+    stat = next(s for s in doc["statistics"] if s["id"] == _POPULATION_TOTAL_STAT_ID)
+    labels = [pt["label"] for pt in stat["series"][0]["data"]]
+    assert labels == ["2023", "2024", "2026"]
+    assert stat["rawValue"] == 63_800_000
+    assert stat["value"] == "63.8M"
+    assert stat["changeLabel"] == "from 2025"
+
+
+def test_transform_population_only_touches_population_total():
+    doc = _population_doc()
+    extract = PopulationExtract(
+        release_period="2026",
+        publication_date="2026-07-29",
+        total_population_millions=63.8,
+        source_domain="www.statssa.gov.za",
+    )
+    new_doc = _transform_population(doc, extract, "https://www.statssa.gov.za/mype2026.xlsx")
+
+    original_stats = {s["id"]: s for s in doc["statistics"]}
+    new_stats = {s["id"]: s for s in new_doc["statistics"]}
+
+    for stat_id in ("population-urban", "population-median-age"):
+        assert new_stats[stat_id] == original_stats[stat_id]
+
+    assert new_stats[_POPULATION_TOTAL_STAT_ID]["rawValue"] == 63_800_000
+    # Deep copy — original input document is not mutated.
+    assert doc["statistics"][0]["rawValue"] == 64_000_000
+
+
+def test_assert_population_ownership_boundary_detects_tamper():
+    previous = _population_doc()
+    proposed = copy.deepcopy(previous)
+    proposed["statistics"][1]["rawValue"] = 70.0  # tamper population-urban
+
+    violations = _assert_population_ownership_boundary(previous, proposed)
+    assert len(violations) == 1
+    assert "population-urban" in violations[0]
+
+
+def test_assert_population_ownership_boundary_detects_stat_removed_or_added():
+    previous = _population_doc()
+
+    proposed_removed = copy.deepcopy(previous)
+    proposed_removed["statistics"] = [
+        s for s in proposed_removed["statistics"] if s["id"] != "population-median-age"
+    ]
+    removed_violations = _assert_population_ownership_boundary(previous, proposed_removed)
+    assert any("stat IDs" in v for v in removed_violations)
+
+    proposed_added = copy.deepcopy(previous)
+    proposed_added["statistics"].append({"id": "some-new-stat", "rawValue": 1.0})
+    added_violations = _assert_population_ownership_boundary(previous, proposed_added)
+    assert any("stat IDs" in v for v in added_violations)
+
+
+def test_assert_population_ownership_boundary_passes_on_legitimate_change():
+    previous = _population_doc()
+    extract = PopulationExtract(
+        release_period="2026",
+        publication_date="2026-07-29",
+        total_population_millions=63.8,
+        source_domain="www.statssa.gov.za",
+    )
+    proposed = _transform_population(previous, extract, "https://www.statssa.gov.za/mype2026.xlsx")
+
+    assert _assert_population_ownership_boundary(previous, proposed) == []
+
+
+# ---------------------------------------------------------------------------
+# 6. _check_population() — hub-change detection
+# ---------------------------------------------------------------------------
+
+
+def test_check_population_detects_hub_change(tmp_path, monkeypatch):
+    adapter = _make_adapter(tmp_path)
+
+    changed_response = HTTPResponse(
+        url=statss_mod._POPULATION_HUB_URL,
+        status=200,
+        headers={},
+        body=b"<html>2026 MYPE release</html>",
+        content_sha256="new-hash",
+    )
+    monkeypatch.setattr(
+        "automation.core.http_client.HTTPClient.etag_check",
+        lambda self, url, **kwargs: (True, changed_response),
+    )
+    result = adapter.check_for_updates("population", None)
+    assert result.status == "update_available"
+
+    # Fresh adapter (new cache), hub now reports unchanged.
+    adapter2 = _make_adapter(tmp_path)
+    unchanged_response = HTTPResponse(
+        url=statss_mod._POPULATION_HUB_URL,
+        status=200,
+        headers={},
+        body=b"<html>2026 MYPE release</html>",
+        content_sha256="new-hash",
+    )
+    monkeypatch.setattr(
+        "automation.core.http_client.HTTPClient.etag_check",
+        lambda self, url, **kwargs: (False, unchanged_response),
+    )
+    result2 = adapter2.check_for_updates("population", None)
+    assert result2.status == "up_to_date"
+
+
+# ---------------------------------------------------------------------------
+# 7. fetch_and_apply() integration — network layer mocked,
+#    QLFS + GDP + CPI + Population combined
+# ---------------------------------------------------------------------------
+
+
+def _patch_all_network(
+    monkeypatch,
+    qlfs_bytes: bytes,
+    qlfs_url: str,
+    gdp_bytes: bytes,
+    gdp_url: str,
+    cpi_bytes: bytes,
+    cpi_url: str,
+    population_bytes: bytes,
+    population_url: str,
+) -> None:
+    """Combined network patch, extending _patch_qlfs_gdp_cpi_network with a
+    fourth, fully independent Population discovery/download path within a
+    single fetch_and_apply() call.
+    """
+    _patch_qlfs_gdp_cpi_network(
+        monkeypatch, qlfs_bytes, qlfs_url, gdp_bytes, gdp_url, cpi_bytes, cpi_url,
+    )
+
+    monkeypatch.setattr(statss_mod, "_determine_current_population_year", lambda: 2026)
+    monkeypatch.setattr(
+        statss_mod, "_discover_population_excel",
+        lambda client, **kwargs: (population_url, "2026", b"<html>2026 MYPE release</html>"),
+    )
+
+    def _download(client, url):
+        if url == qlfs_url:
+            return qlfs_bytes
+        if url == gdp_url:
+            return gdp_bytes
+        if url == cpi_url:
+            return cpi_bytes
+        if url == population_url:
+            return population_bytes
+        raise AssertionError(f"Unexpected download URL in test: {url}")
+
+    monkeypatch.setattr(statss_mod, "_download_publication", _download)
+
+
+def _setup_prod_dir_for_all_flows(tmp_path, monkeypatch):
+    """Write stale QLFS/GDP/CPI production docs to disk and monkeypatch
+    their dataset-JSON paths, returning (prod_dir, stale docs/paths) so
+    each Population test can focus on population.json without repeating
+    this boilerplate."""
+    prod_dir = tmp_path / "production"
+    prod_dir.mkdir()
+    stale_qlfs_docs, qlfs_paths = _stale_qlfs_docs_and_paths(prod_dir)
+    monkeypatch.setattr(statss_mod, "_QLFS_DATASET_JSON", qlfs_paths)
+
+    stale_gdp_doc = _gdp_doc()
+    gdp_path = prod_dir / "gdp.json"
+    gdp_path.write_text(json.dumps(stale_gdp_doc), encoding="utf-8")
+    monkeypatch.setattr(statss_mod, "_GDP_DATASET_JSON", gdp_path)
+
+    stale_inflation_doc = _inflation_doc()
+    inflation_path = prod_dir / "inflation.json"
+    inflation_path.write_text(json.dumps(stale_inflation_doc), encoding="utf-8")
+    monkeypatch.setattr(statss_mod, "_CPI_DATASET_JSON", inflation_path)
+
+    return prod_dir, qlfs_paths, gdp_path, inflation_path
+
+
+def test_fetch_and_apply_stages_population_without_direct_write(tmp_path, monkeypatch):
+    qlfs_bytes = _build_fixture_workbook()
+    qlfs_url = "https://www.statssa.gov.za/publications/P0211/fixture.xlsx"
+    gdp_bytes = _build_gdp_fixture_workbook(
+        headers=("Q4 2025", "Q1 2026"), values=(0.4, 0.5), include_annual_row=False,
+    )
+    gdp_url = "https://www.statssa.gov.za/publications/P0441/gdp_fixture.xlsx"
+    cpi_bytes = _build_cpi_fixture_workbook(
+        headers=("Mar 2026", "Apr 2026"), headline_values=(3.1, 4.0), food_values=(3.6, 2.9),
+    )
+    cpi_url = "https://www.statssa.gov.za/publications/P0141/cpi_fixture.xlsx"
+    population_bytes = _build_population_fixture_workbook(
+        headers=("2025", "2026"), values=(63.1, 63.8),
+    )
+    population_url = "https://www.statssa.gov.za/publications/P0302/population_fixture.xlsx"
+    _patch_all_network(
+        monkeypatch, qlfs_bytes, qlfs_url, gdp_bytes, gdp_url, cpi_bytes, cpi_url,
+        population_bytes, population_url,
+    )
+
+    prod_dir, qlfs_paths, gdp_path, inflation_path = _setup_prod_dir_for_all_flows(
+        tmp_path, monkeypatch
+    )
+
+    stale_population_doc = _population_doc()  # population-total rawValue=64,000,000
+    population_path = prod_dir / "population.json"
+    population_path.write_text(json.dumps(stale_population_doc), encoding="utf-8")
+    monkeypatch.setattr(statss_mod, "_POPULATION_DATASET_JSON", population_path)
+
+    adapter = _make_adapter(tmp_path)
+    result = adapter.fetch_and_apply(dry_run=False, run_id="test-run")
+
+    # QLFS/GDP/CPI portions of the result are unaffected by Population
+    # being added.
+    assert result["status"] == "ok"
+    assert not result["errors"]
+    assert len(result["version_ids"]) == 6  # 3 QLFS + 1 GDP + 1 CPI + 1 Population
+
+    # Population staged, no direct write to population.json.
+    assert result["population"]["status"] == "ok"
+    assert result["population"]["version_id"] is not None
+    assert result["population"]["version_id"] in result["version_ids"]
+    assert json.loads(population_path.read_text(encoding="utf-8")) == stale_population_doc
+
+    pending = pending_versions(adapter.config.report_dir, "population")
+    assert len(pending) == 1
+    staged_doc = read_staged_dataset(adapter.config.report_dir, "population", pending[0].version_id)
+    staged_by_id = {s["id"]: s for s in staged_doc["statistics"]}
+    assert staged_by_id[_POPULATION_TOTAL_STAT_ID]["rawValue"] == 63_800_000
+    # population-urban / population-median-age carried through unchanged
+    # in the staged doc.
+    assert staged_by_id["population-urban"] == stale_population_doc["statistics"][1]
+    assert staged_by_id["population-median-age"] == stale_population_doc["statistics"][2]
+
+
+def test_fetch_and_apply_population_no_change_produces_no_change_status(tmp_path, monkeypatch):
+    qlfs_bytes = _build_fixture_workbook()
+    qlfs_url = "https://www.statssa.gov.za/publications/P0211/fixture.xlsx"
+    gdp_bytes = _build_gdp_fixture_workbook(
+        headers=("Q3 2025", "Q4 2025"), values=(0.3, 0.4), include_annual_row=False,
+    )
+    gdp_url = "https://www.statssa.gov.za/publications/P0441/gdp_fixture.xlsx"
+    cpi_bytes = _build_cpi_fixture_workbook(
+        headers=("Feb 2026", "Mar 2026"), headline_values=(3.0, 3.1), food_values=(3.8, 3.6),
+    )
+    cpi_url = "https://www.statssa.gov.za/publications/P0141/cpi_fixture.xlsx"
+    population_bytes = _build_population_fixture_workbook(
+        headers=("2025", "2026"), values=(63.1, 64.0),
+    )
+    population_url = "https://www.statssa.gov.za/publications/P0302/population_fixture.xlsx"
+    _patch_all_network(
+        monkeypatch, qlfs_bytes, qlfs_url, gdp_bytes, gdp_url, cpi_bytes, cpi_url,
+        population_bytes, population_url,
+    )
+
+    prod_dir = tmp_path / "production"
+    prod_dir.mkdir()
+    # Make QLFS values already match the fixture so QLFS/GDP/CPI are all
+    # no_change, keeping this test focused on the Population no_change path.
+    qlfs_paths = {}
+    for ds_id, doc in {
+        "unemployment": {
+            "_meta": {},
+            "statistics": [
+                {"id": "unemployment-national", "rawValue": 32.7,
+                 "series": [{"data": [{"label": "Q1 2026", "value": 32.7}]}]}
+            ],
+        },
+        "youth-unemployment": {
+            "_meta": {},
+            "statistics": [
+                {"id": "youth-unemployment-narrow", "rawValue": 46.3, "series": []},
+                {"id": "youth-unemployment-1524", "rawValue": 60.9, "series": []},
+                {"id": "youth-unemployment-expanded", "rawValue": 58.1, "series": []},
+                {"id": "youth-neet-rate", "rawValue": 37.6, "series": []},
+            ],
+        },
+        "labour-force": {
+            "_meta": {},
+            "statistics": [
+                {"id": "lfpr-overall", "rawValue": 60.5, "series": []},
+                {"id": "female-labour-participation", "rawValue": 55.0, "series": []},
+            ],
+        },
+    }.items():
+        p = prod_dir / f"{ds_id}.json"
+        p.write_text(json.dumps(doc), encoding="utf-8")
+        qlfs_paths[ds_id] = p
+    monkeypatch.setattr(statss_mod, "_QLFS_DATASET_JSON", qlfs_paths)
+
+    stale_gdp_doc = _gdp_doc()  # series already ends at Q3 2025: 0.3, Q4 2025: 0.4
+    gdp_path = prod_dir / "gdp.json"
+    gdp_path.write_text(json.dumps(stale_gdp_doc), encoding="utf-8")
+    monkeypatch.setattr(statss_mod, "_GDP_DATASET_JSON", gdp_path)
+
+    stale_inflation_doc = _inflation_doc()  # cpi-headline=3.1, food-inflation=3.6
+    inflation_path = prod_dir / "inflation.json"
+    inflation_path.write_text(json.dumps(stale_inflation_doc), encoding="utf-8")
+    monkeypatch.setattr(statss_mod, "_CPI_DATASET_JSON", inflation_path)
+
+    # population-total rawValue already matches the fixture's latest
+    # (2026) column: 64.0M == 64,000,000.
+    stale_population_doc = _population_doc()
+    population_path = prod_dir / "population.json"
+    population_path.write_text(json.dumps(stale_population_doc), encoding="utf-8")
+    monkeypatch.setattr(statss_mod, "_POPULATION_DATASET_JSON", population_path)
+
+    adapter = _make_adapter(tmp_path)
+    result = adapter.fetch_and_apply(dry_run=False, run_id="test-run")
+
+    assert result["population"]["status"] == "no_change"
+    assert result["population"]["version_id"] is None
+    assert pending_versions(adapter.config.report_dir, "population") == []
+    assert json.loads(population_path.read_text(encoding="utf-8")) == stale_population_doc
+
+
+def test_fetch_and_apply_population_protected_field_violation_aborts_only_that_dataset(tmp_path, monkeypatch):
+    qlfs_bytes = _build_fixture_workbook()
+    qlfs_url = "https://www.statssa.gov.za/publications/P0211/fixture.xlsx"
+    gdp_bytes = _build_gdp_fixture_workbook(
+        headers=("Q4 2025", "Q1 2026"), values=(0.4, 0.5), include_annual_row=False,
+    )
+    gdp_url = "https://www.statssa.gov.za/publications/P0441/gdp_fixture.xlsx"
+    cpi_bytes = _build_cpi_fixture_workbook(
+        headers=("Mar 2026", "Apr 2026"), headline_values=(3.1, 4.0), food_values=(3.6, 2.9),
+    )
+    cpi_url = "https://www.statssa.gov.za/publications/P0141/cpi_fixture.xlsx"
+    population_bytes = _build_population_fixture_workbook(
+        headers=("2025", "2026"), values=(63.1, 63.8),
+    )
+    population_url = "https://www.statssa.gov.za/publications/P0302/population_fixture.xlsx"
+    _patch_all_network(
+        monkeypatch, qlfs_bytes, qlfs_url, gdp_bytes, gdp_url, cpi_bytes, cpi_url,
+        population_bytes, population_url,
+    )
+
+    prod_dir, qlfs_paths, gdp_path, inflation_path = _setup_prod_dir_for_all_flows(
+        tmp_path, monkeypatch
+    )
+
+    stale_population_doc = _population_doc()
+    population_path = prod_dir / "population.json"
+    population_path.write_text(json.dumps(stale_population_doc), encoding="utf-8")
+    monkeypatch.setattr(statss_mod, "_POPULATION_DATASET_JSON", population_path)
+
+    # Sabotage the Population transform to violate a protected field (id).
+    original_transform_population = statss_mod._transform_population
+
+    def _sabotaged_transform_population(current_doc, extract, source_url=""):
+        doc = original_transform_population(current_doc, extract, source_url)
+        doc["statistics"][0]["id"] = "population-total-TAMPERED"
+        return doc
+
+    monkeypatch.setattr(statss_mod, "_transform_population", _sabotaged_transform_population)
+
+    adapter = _make_adapter(tmp_path)
+    result = adapter.fetch_and_apply(dry_run=False, run_id="test-run")
+
+    # Population failed due to the protected-field violation …
+    assert result["population"]["status"] == "error"
+    assert any("Protected field violation" in e for e in result["population"]["errors"])
+    assert pending_versions(adapter.config.report_dir, "population") == []
+    assert json.loads(population_path.read_text(encoding="utf-8")) == stale_population_doc
+
+    # … while the QLFS/GDP/CPI portions of the SAME fetch_and_apply() call
+    # still succeeded normally — direct proof the four flows are isolated.
+    assert result["status"] == "ok"
+    assert not result["errors"]
+    assert result["gdp"]["status"] == "ok"
+    assert result["cpi"]["status"] == "ok"
+
+
+def test_fetch_and_apply_population_ownership_violation_aborts_staging(tmp_path, monkeypatch):
+    """Proves _assert_population_ownership_boundary() catches what
+    check_protected_fields() cannot: a non-id field (rawValue) on a
+    non-owned stat (population-urban) silently changing.
+    """
+    qlfs_bytes = _build_fixture_workbook()
+    qlfs_url = "https://www.statssa.gov.za/publications/P0211/fixture.xlsx"
+    gdp_bytes = _build_gdp_fixture_workbook(
+        headers=("Q4 2025", "Q1 2026"), values=(0.4, 0.5), include_annual_row=False,
+    )
+    gdp_url = "https://www.statssa.gov.za/publications/P0441/gdp_fixture.xlsx"
+    cpi_bytes = _build_cpi_fixture_workbook(
+        headers=("Mar 2026", "Apr 2026"), headline_values=(3.1, 4.0), food_values=(3.6, 2.9),
+    )
+    cpi_url = "https://www.statssa.gov.za/publications/P0141/cpi_fixture.xlsx"
+    population_bytes = _build_population_fixture_workbook(
+        headers=("2025", "2026"), values=(63.1, 63.8),
+    )
+    population_url = "https://www.statssa.gov.za/publications/P0302/population_fixture.xlsx"
+    _patch_all_network(
+        monkeypatch, qlfs_bytes, qlfs_url, gdp_bytes, gdp_url, cpi_bytes, cpi_url,
+        population_bytes, population_url,
+    )
+
+    prod_dir, qlfs_paths, gdp_path, inflation_path = _setup_prod_dir_for_all_flows(
+        tmp_path, monkeypatch
+    )
+
+    stale_population_doc = _population_doc()
+    population_path = prod_dir / "population.json"
+    population_path.write_text(json.dumps(stale_population_doc), encoding="utf-8")
+    monkeypatch.setattr(statss_mod, "_POPULATION_DATASET_JSON", population_path)
+
+    # Sabotage the Population transform to silently change
+    # population-urban's rawValue — not the id field, so
+    # check_protected_fields() alone would NOT catch this.
+    original_transform_population = statss_mod._transform_population
+
+    def _sabotaged_transform_population(current_doc, extract, source_url=""):
+        doc = original_transform_population(current_doc, extract, source_url)
+        for stat in doc["statistics"]:
+            if stat["id"] == "population-urban":
+                stat["rawValue"] = 70.0
+        return doc
+
+    monkeypatch.setattr(statss_mod, "_transform_population", _sabotaged_transform_population)
+
+    adapter = _make_adapter(tmp_path)
+    result = adapter.fetch_and_apply(dry_run=False, run_id="test-run")
+
+    assert result["population"]["status"] == "error"
+    assert any("ownership boundary" in e for e in result["population"]["errors"])
+    assert pending_versions(adapter.config.report_dir, "population") == []
+    assert json.loads(population_path.read_text(encoding="utf-8")) == stale_population_doc
+
+
+def test_fetch_and_apply_population_non_statssa_source_never_stages(tmp_path, monkeypatch):
+    """The direct end-to-end proof of the source guard
+    (IMPLEMENTATION-SPEC-POPULATION.md §13): a mocked non-statssa.gov.za
+    discovery result must never reach _transform_population() and must
+    never stage anything.
+    """
+    qlfs_bytes = _build_fixture_workbook()
+    qlfs_url = "https://www.statssa.gov.za/publications/P0211/fixture.xlsx"
+    gdp_bytes = _build_gdp_fixture_workbook(
+        headers=("Q4 2025", "Q1 2026"), values=(0.4, 0.5), include_annual_row=False,
+    )
+    gdp_url = "https://www.statssa.gov.za/publications/P0441/gdp_fixture.xlsx"
+    cpi_bytes = _build_cpi_fixture_workbook(
+        headers=("Mar 2026", "Apr 2026"), headline_values=(3.1, 4.0), food_values=(3.6, 2.9),
+    )
+    cpi_url = "https://www.statssa.gov.za/publications/P0141/cpi_fixture.xlsx"
+    population_bytes = _build_population_fixture_workbook(
+        headers=("2025", "2026"), values=(63.1, 63.8),
+    )
+    # Deliberately a World Bank URL — the exact wrong source the sourcing
+    # plan identified as the historical bug.
+    population_url = "https://data.worldbank.org/indicator/mype2026.xlsx"
+    _patch_all_network(
+        monkeypatch, qlfs_bytes, qlfs_url, gdp_bytes, gdp_url, cpi_bytes, cpi_url,
+        population_bytes, population_url,
+    )
+
+    prod_dir, qlfs_paths, gdp_path, inflation_path = _setup_prod_dir_for_all_flows(
+        tmp_path, monkeypatch
+    )
+
+    stale_population_doc = _population_doc()
+    population_path = prod_dir / "population.json"
+    population_path.write_text(json.dumps(stale_population_doc), encoding="utf-8")
+    monkeypatch.setattr(statss_mod, "_POPULATION_DATASET_JSON", population_path)
+
+    transform_calls: list = []
+    original_transform_population = statss_mod._transform_population
+
+    def _tracking_transform_population(current_doc, extract, source_url=""):
+        transform_calls.append(source_url)
+        return original_transform_population(current_doc, extract, source_url)
+
+    monkeypatch.setattr(statss_mod, "_transform_population", _tracking_transform_population)
+
+    adapter = _make_adapter(tmp_path)
+    result = adapter.fetch_and_apply(dry_run=False, run_id="test-run")
+
+    assert result["population"]["status"] == "error"
+    assert any("source guard" in e.lower() for e in result["population"]["errors"])
+    assert transform_calls == []
+    assert pending_versions(adapter.config.report_dir, "population") == []
+    assert json.loads(population_path.read_text(encoding="utf-8")) == stale_population_doc
+
+    # QLFS/GDP/CPI are unaffected by the Population source-guard failure.
+    assert result["status"] == "ok"
+    assert not result["errors"]
+    assert result["gdp"]["status"] == "ok"
+    assert result["cpi"]["status"] == "ok"
+
+
+def test_population_staged_candidate_requires_approve_then_promote(tmp_path, monkeypatch):
+    """The Population-specific equivalent of
+    test_cpi_staged_candidate_requires_approve_then_promote — closes this
+    acceptance-criterion class for population (IMPLEMENTATION-SPEC-
+    POPULATION.md §13/§15 item 7). This is also the vehicle proving the
+    one-time production correction (§9) works end-to-end.
+    """
+    qlfs_bytes = _build_fixture_workbook()
+    qlfs_url = "https://www.statssa.gov.za/publications/P0211/fixture.xlsx"
+    gdp_bytes = _build_gdp_fixture_workbook(
+        headers=("Q4 2025", "Q1 2026"), values=(0.4, 0.5), include_annual_row=False,
+    )
+    gdp_url = "https://www.statssa.gov.za/publications/P0441/gdp_fixture.xlsx"
+    cpi_bytes = _build_cpi_fixture_workbook(
+        headers=("Mar 2026", "Apr 2026"), headline_values=(3.1, 4.0), food_values=(3.6, 2.9),
+    )
+    cpi_url = "https://www.statssa.gov.za/publications/P0141/cpi_fixture.xlsx"
+    # The one-time production correction: this run's swing is deliberately
+    # large enough to exceed _POPULATION_JUMP_WARNING_THRESHOLD (2.0%) —
+    # per IMPLEMENTATION-SPEC-POPULATION.md §14 item 7, this is expected
+    # and correct on such a run, not a parser bug.
+    population_bytes = _build_population_fixture_workbook(
+        headers=("2024", "2025"), values=(64.0, 61.0),
+    )
+    population_url = "https://www.statssa.gov.za/publications/P0302/population_fixture.xlsx"
+    _patch_all_network(
+        monkeypatch, qlfs_bytes, qlfs_url, gdp_bytes, gdp_url, cpi_bytes, cpi_url,
+        population_bytes, population_url,
+    )
+
+    prod_dir, qlfs_paths, gdp_path, inflation_path = _setup_prod_dir_for_all_flows(
+        tmp_path, monkeypatch
+    )
+
+    stale_population_doc = _population_doc()  # population-total = 64.0M (2024)
+    population_path = prod_dir / "population.json"
+    population_path.write_text(json.dumps(stale_population_doc), encoding="utf-8")
+    monkeypatch.setattr(statss_mod, "_POPULATION_DATASET_JSON", population_path)
+
+    monkeypatch.setattr(
+        "automation.core.promote.get_production_dataset_path",
+        lambda dataset_id: {
+            **qlfs_paths, "gdp": gdp_path, "inflation": inflation_path,
+            "population": population_path,
+        }[dataset_id],
+    )
+
+    adapter = _make_adapter(tmp_path)
+    report_dir = adapter.config.report_dir
+
+    # (a) Stage a genuine Population change — the one-time correction.
+    result = adapter.fetch_and_apply(dry_run=False, run_id="test-run")
+    assert result["population"]["status"] == "ok"
+    # The year-over-year anomaly check fires on this specific run, per
+    # §14 item 7 — this is expected and correct, not a parser bug.
+    assert "ANOMALY" in result["population"]["notes"]
+
+    pending = pending_versions(report_dir, "population")
+    assert len(pending) == 1
+    version_id = pending[0].version_id
+
+    # population.json's on-disk content is unchanged immediately after staging.
+    assert json.loads(population_path.read_text(encoding="utf-8")) == stale_population_doc
+
+    # (b) Promotion must be refused before approval.
+    with pytest.raises(ValueError, match="requires 'approved'"):
+        promote_version(report_dir, "population", version_id)
+    assert json.loads(population_path.read_text(encoding="utf-8")) == stale_population_doc
+
+    # (c) Approve.
+    approve_version(report_dir, "population", version_id, approver="test-reviewer")
+    assert pending_versions(report_dir, "population") == []
+
+    # (d) Promote — now allowed. The written file matches the staged document.
+    staged_doc = read_staged_dataset(report_dir, "population", version_id)
+    result_path = promote_version(report_dir, "population", version_id)
+    assert result_path == population_path
+    written = json.loads(population_path.read_text(encoding="utf-8"))
+    assert written == staged_doc
+    # (e) Only now — after promotion — has the on-disk content changed,
+    # and it reflects the corrected figure, not the stale 64.0M.
+    assert written != stale_population_doc
+    written_by_id = {s["id"]: s for s in written["statistics"]}
+    assert written_by_id[_POPULATION_TOTAL_STAT_ID]["rawValue"] == 61_000_000
+    # (f) population-urban / population-median-age are identical before
+    # and after promotion — the ownership boundary held all the way
+    # through staging, approval, and promotion.
+    stale_by_id = {s["id"]: s for s in stale_population_doc["statistics"]}
+    assert written_by_id["population-urban"] == stale_by_id["population-urban"]
+    assert written_by_id["population-median-age"] == stale_by_id["population-median-age"]
+
+
+# ---------------------------------------------------------------------------
+# 8. IMPLEMENTATION-SPEC-STATSSA-WAF.md-style Tier 1 WAF-fallback tests for
+#    Population — mirrors the QLFS/GDP/CPI WAF tests above exactly,
+#    extended to _check_population() / _probe_population_publication_url().
+# ---------------------------------------------------------------------------
+
+
+def test_check_population_waf_blocked_fallback_probe_succeeds_returns_unknown(tmp_path, monkeypatch):
+    adapter = _make_adapter(tmp_path)
+    monkeypatch.setattr(
+        "automation.core.http_client.HTTPClient.etag_check",
+        lambda self, url, **kwargs: (True, _waf_response(statss_mod._POPULATION_HUB_URL)),
+    )
+    found_url = "https://www.statssa.gov.za/publications/P0302/found.xlsx"
+    monkeypatch.setattr(
+        statss_mod, "_probe_population_publication_url", lambda client, y: found_url
+    )
+
+    result = adapter.check_for_updates("population", None)
+
+    assert result.status == "unknown"
+    assert "WAF_BLOCKED" in result.message
+    assert "probe-based signal" in result.message
+    assert found_url in result.notes
+
+
+def test_check_population_waf_blocked_fallback_probe_also_fails_returns_error(tmp_path, monkeypatch):
+    adapter = _make_adapter(tmp_path)
+    monkeypatch.setattr(
+        "automation.core.http_client.HTTPClient.etag_check",
+        lambda self, url, **kwargs: (True, _waf_response(statss_mod._POPULATION_HUB_URL)),
+    )
+    monkeypatch.setattr(
+        statss_mod, "_probe_population_publication_url", lambda client, y: None
+    )
+
+    result = adapter.check_for_updates("population", None)
+
+    assert result.status == "error"
+    assert result.message == (
+        "WAF_BLOCKED: Incapsula WAF challenge detected. Cannot check for updates."
+    )
+
+
+def test_check_population_no_waf_fallback_probe_not_invoked(tmp_path, monkeypatch):
+    adapter = _make_adapter(tmp_path)
+    monkeypatch.setattr(
+        "automation.core.http_client.HTTPClient.etag_check",
+        lambda self, url, **kwargs: (
+            True, _clean_response(statss_mod._POPULATION_HUB_URL, b"<html>2026 MYPE release</html>"),
+        ),
+    )
+    probe_calls: list[tuple] = []
+    monkeypatch.setattr(
+        statss_mod,
+        "_probe_population_publication_url",
+        lambda client, y: probe_calls.append((y,)) or "unused",
+    )
+
+    result = adapter.check_for_updates("population", None)
 
     assert result.status == "update_available"
     assert probe_calls == []

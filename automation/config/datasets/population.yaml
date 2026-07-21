@@ -3,14 +3,18 @@ source_id: statssa
 display_name: "Population (MYPE P0302)"
 enabled: true
 cadence: annual
-automation_level: manual   # Deliberately manual until source is corrected
+automation_level: hybrid   # Phase 4: source guard implemented + tested; see IMPLEMENTATION-SPEC-POPULATION.md
 priority: 30
 release_publication: "P0302"
 release_month: July  # MYPE typically released late July
-# DATA INTEGRITY BUG: current JSON likely sourced from World Bank, not Stats SA.
-# JSON shows 64.0M (2024); Stats SA MYPE 2025 says 63.1M.
-# DO NOT automate until the source is corrected to statssa.gov.za P0302.
-# Phase B MUST include a source guard that hard-fails if resolved data
-# does not originate from statssa.gov.za.
+# DATA INTEGRITY BUG (historical): current JSON was likely sourced from
+# World Bank, not Stats SA. JSON showed 64.0M (2024); Stats SA MYPE 2025
+# says 63.1M. This is now enforced structurally by
+# _assert_population_source_guard() in automation/adapters/statss.py,
+# which hard-fails fetch_and_apply()'s population flow if the resolved
+# publication does not originate from statssa.gov.za. These flags are
+# left in place as living documentation of why the guard exists, per the
+# project's existing convention (see gdp.yaml's
+# overwrites_historical_points / inflation.yaml's repo_rate_dedup_required).
 source_guard_required: true
 source_guard_domain: "statssa.gov.za"
