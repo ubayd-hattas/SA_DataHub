@@ -1269,6 +1269,65 @@ def test_gdp_staged_candidate_requires_approve_then_promote(tmp_path, monkeypatc
     assert written != stale_gdp_doc
 
 
+def test_fetch_release_hub_html_waf_raises_automation_http_error(monkeypatch):
+    """
+    _fetch_release_hub_html() must raise AutomationHTTPError (not TypeError)
+    when WAF challenge is detected. This test exercises the bug at line 674
+    that previously caused TypeError due to missing url positional argument.
+    """
+    from automation.core.http_client import HTTPClient, HTTPResponse, AutomationHTTPError
+    from automation.core.config import SourceConfig
+    import automation.adapters.statss as statss_mod
+
+    hub_url = "https://www.statssa.gov.za/?page_id=1854&PPN=P0211"
+    waf_body = b"<html><body>_Incapsula_Resource challenge</body></html>"
+    waf_resp = HTTPResponse(
+        url=hub_url, status=200, headers={}, body=waf_body,
+        content_sha256="waf-hash",
+    )
+    monkeypatch.setattr(HTTPClient, "get", lambda self, url, **kw: waf_resp)
+
+    client = statss_mod._build_http_client(
+        SourceConfig(source_id="statssa", display_name="Stats SA")
+    )
+    with pytest.raises(AutomationHTTPError) as exc_info:
+        statss_mod._fetch_release_hub_html(client, hub_url)
+
+    assert exc_info.value.url == hub_url
+    assert exc_info.value.status == 403
+    assert "WAF_BLOCKED" in exc_info.value.reason
+
+
+def test_download_publication_headers(monkeypatch):
+    from automation.core.http_client import HTTPClient
+    import automation.adapters.statss as statss_mod
+
+    captured_kwargs = {}
+    original_init = HTTPClient.__init__
+
+    def mock_init(self, **kwargs):
+        captured_kwargs.update(kwargs)
+        # Call original init to avoid breaking things, but we only need the kwargs
+        original_init(self, **kwargs)
+
+    monkeypatch.setattr(HTTPClient, "__init__", mock_init)
+    
+    # Mock get to avoid network call
+    monkeypatch.setattr(HTTPClient, "get", lambda self, url: type('Resp', (), {'body': b'A'*2048})())
+
+    statss_mod._download_publication(HTTPClient(), "http://fake")
+
+    headers = captured_kwargs.get("extra_headers", {})
+    
+    # Assert _STATSSA_BROWSER_HEADERS are present
+    for k, v in statss_mod._STATSSA_BROWSER_HEADERS.items():
+        if k != "Accept":
+            assert headers.get(k) == v
+        
+    # Assert Accept is also present and correct
+    assert headers.get("Accept") == "application/vnd.ms-excel,application/pdf,*/*"
+
+
 # ---------------------------------------------------------------------------
 # 7. IMPLEMENTATION-SPEC-STATSSA-WAF.md §8 — Tier 1 WAF-fallback tests
 #

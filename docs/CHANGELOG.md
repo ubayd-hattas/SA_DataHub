@@ -4,6 +4,24 @@ All notable changes to the SA Data Hub automation framework are documented in th
 
 ---
 
+## 2026-07-21 — Stats SA WAF/Excel Production-Readiness Fixes
+
+### Summary
+Fixed the `AutomationHTTPError` argument-order bug and improved header consistency for `_download_publication()`, matching the exact scope of the production network audit.
+
+### Added
+- `test_fetch_release_hub_html_waf_raises_automation_http_error` in `test_statss.py` to prevent regression of the WAF challenge error handling.
+- `test_download_publication_headers` in `test_statss.py` to verify consistent browser header usage.
+
+### Fixed
+- `_fetch_release_hub_html()` in `automation/adapters/statss.py` now correctly provides the `url` positional argument when raising `AutomationHTTPError` upon WAF block, fixing a `TypeError`.
+- `_download_publication()` in `automation/adapters/statss.py` now merges `_STATSSA_BROWSER_HEADERS` into its `extra_headers` to ensure a consistent `User-Agent`.
+
+### Investigated (No Code Change)
+- **Excel discovery**: Direct-URL probing continues to miss Excel files as they are dynamically linked.
+- **PDF/Excel content-type guard**: A guard was confirmed to be already present in all `fetch_and_apply()` flows, so no new guard was added.
+- **CPI URL pattern**: Remains unconfirmed; requires manual browser verification before new URL candidates can be added.
+
 ## 2026-07-21 — Population (P0302, MYPE) Annual Write Path: population-total
 
 ### Summary

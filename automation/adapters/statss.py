@@ -671,7 +671,7 @@ def _fetch_release_hub_html(client: HTTPClient, hub_url: str) -> bytes:
         
     body_text = response.body.decode("utf-8", errors="replace")
     if "_Incapsula_Resource" in body_text or "incapsula" in body_text.lower():
-        raise AutomationHTTPError(status=403, reason="WAF_BLOCKED: Incapsula WAF challenge detected")
+        raise AutomationHTTPError(hub_url, 403, "WAF_BLOCKED: Incapsula WAF challenge detected")
 
     return response.body
 
@@ -941,7 +941,10 @@ def _download_publication(client: HTTPClient, url: str) -> bytes:
     """
     dl_client = HTTPClient(
         timeout_seconds=120,  # Files can be large
-        extra_headers={"Accept": "application/vnd.ms-excel,application/pdf,*/*"},
+        extra_headers={
+            **dict(_STATSSA_BROWSER_HEADERS),
+            "Accept": "application/vnd.ms-excel,application/pdf,*/*",
+        },
     )
     response = dl_client.get(url)
     if len(response.body) < 1024:
