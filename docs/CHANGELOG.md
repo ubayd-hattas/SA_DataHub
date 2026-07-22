@@ -4,6 +4,21 @@ All notable changes to the SA Data Hub automation framework are documented in th
 
 ---
 
+## 2026-07-22 — Stats SA Discovery Fetch-Path Fix & Resolver Consolidation
+
+### Summary
+Fixed the fetch-path WAF asymmetry bug where `_fetch_release_hub_html` would raise an `AutomationHTTPError` upon encountering a WAF block, causing the entire `fetch_and_apply` flow to abort before reaching the direct URL probe fallback. Consolidated the discovery logic for QLFS, GDP, CPI, and Population into a single `_resolve_publication_url` helper that implements the "probe first, scrape fallback" architecture as described in the architecture review workbook.
+
+### Added
+- `_resolve_publication_url()` helper in `automation/adapters/statss.py` to enforce the discovery strategy hierarchy.
+- `test_resolve_publication_url_waf_fallback` in `automation/adapters/tests/test_statss.py` to verify that the WAF exception is correctly handled and allows the direct URL probe (Strategy 1) to succeed.
+
+### Changed
+- `_discover_qlfs_excel()`, `_discover_gdp_excel()` (fixed in a later commit to properly use the wrapper), `_discover_cpi_excel()`, and `_discover_population_excel()` rewritten to wrap `_resolve_publication_url()`.
+- The `fetch_and_apply()` functions for all four datasets simplified to remove duplicated manual probing logic, relying on the return from their respective discovery wrappers.
+
+---
+
 ## 2026-07-21 — Stats SA WAF/Excel Production-Readiness Fixes
 
 ### Summary
