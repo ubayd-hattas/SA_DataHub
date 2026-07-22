@@ -1,7 +1,7 @@
 # SA Data Hub — Automation Framework: Current State
 
-**Snapshot date:** 2026-07-21
-**Status:** Automation Framework Hardening Sprint — **Complete**; Stats SA QLFS Phase 2 — **Complete**; Stats SA GDP Phase 3a — **Complete**; Stats SA CPI Phase 3b (`cpi-headline`, `food-inflation`) — **Complete** (2026-07-20); Stats SA Population Phase 4 (`population-total`) — **Complete** (2026-07-21)
+**Snapshot date:** 2026-07-22
+**Status:** Automation Framework Hardening Sprint — **Complete**; Stats SA QLFS Phase 2 — **Complete**; Stats SA GDP Phase 3a — **Complete**; Stats SA CPI Phase 3b (`cpi-headline`, `food-inflation`) — **Complete** (2026-07-20); Stats SA Population Phase 4 (`population-total`) — **Complete** (2026-07-21); Stats SA Discovery Fetch-Path Fix & Resolver Consolidation — **Complete** (2026-07-22)
 **Scope of this document:** `automation/` package only. For the wider SA Data Hub platform (Next.js app, PostgreSQL migration, ETL, API), see `ai-context.md` and the rest of `/docs`.
 
 This document describes the framework **as it exists today**, verified by direct execution (`python -m automation.runner`, `pytest`), not by summary. It supersedes any characterization of the automation framework in earlier planning documents. It does not narrate how the project got here — see `CHANGELOG.md` for that.
@@ -100,6 +100,7 @@ python -m automation.runner --promote <ds> <ver>    # approved → written to pr
   - A Population-specific end-to-end approve→promote test (`test_population_staged_candidate_requires_approve_then_promote`), built from the start of this milestone, with a final assertion that `population-urban`/`population-median-age` remain byte-for-byte identical after promotion, and that the year-over-year anomaly check fires as expected on a large corrective swing.
   - `population.yaml`'s `automation_level` flipped from `manual` to `hybrid` now that the source guard is implemented and tested; `source_guard_required`/`source_guard_domain` are retained as living documentation of why the guard exists.
   - **Still open after this milestone:** `parse_population_workbook()`, the P0302 URL-naming convention, and the raw-headcount-vs-millions heuristic have never been run against a real, downloaded Stats SA MYPE workbook — only synthetic fixtures, the same open item QLFS, GDP, and CPI each carried into their own first live runs (see §5 and §6). `_POPULATION_PLAUSIBLE_RANGE`/`_POPULATION_JUMP_WARNING_THRESHOLD` are this implementation's own judgement calls, flagged for stakeholder confirmation, the same caveat class as CPI's own thresholds.
+- **Stats SA Discovery Fetch-Path Fix & Resolver Consolidation** (this milestone, dated 2026-07-22): Fixed the bug where WAF blocks in the fetch path skipped the direct URL probe. Refactored all four Stats SA datasets (QLFS, GDP, CPI, Population) to use a unified `_resolve_publication_url()` helper that implements the "probe first, scrape fallback" architecture. (Note: GDP was initially missed in this refactor and was fixed in a subsequent commit to properly use the unified helper).
 
 ---
 

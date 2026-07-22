@@ -1100,6 +1100,59 @@ def test_fetch_and_apply_stages_gdp_without_direct_write(tmp_path, monkeypatch):
     assert staged_growth["rawValue"] == 0.5
 
 
+def test_fetch_and_apply_stages_gdp_waf_fallback_real(tmp_path, monkeypatch):
+    """
+    Ensures that if the GDP hub is WAF-blocked, _discover_gdp_excel successfully
+    falls back to the direct-URL probe via _resolve_publication_url.
+    """
+    from automation.core.http_client import AutomationHTTPError
+    qlfs_bytes = _build_fixture_workbook()
+    qlfs_url = "https://www.statssa.gov.za/publications/P0211/fixture.xlsx"
+    gdp_bytes = _build_gdp_fixture_workbook(
+        headers=("Q4 2025", "Q1 2026"), values=(0.4, 0.5), include_annual_row=False,
+    )
+    gdp_url = "https://www.statssa.gov.za/publications/P0441/gdp_fixture.xlsx"
+
+    monkeypatch.setattr(statss_mod, "_extract_release_period", lambda html: "Q1 2026")
+    monkeypatch.setattr(statss_mod, "_determine_current_qlfs_quarter", lambda: (1, 2026))
+    monkeypatch.setattr(statss_mod, "_probe_qlfs_publication_url", lambda client, q, y: qlfs_url)
+
+    def mock_fetch_hub(client, url):
+        if url == statss_mod._GDP_HUB_URL:
+            raise AutomationHTTPError(url, 403, "WAF_BLOCKED: Incapsula WAF challenge detected")
+        return b"<html>Q1 2026 QLFS release</html>"
+        
+    monkeypatch.setattr(statss_mod, "_fetch_release_hub_html", mock_fetch_hub)
+
+    monkeypatch.setattr(statss_mod, "_determine_current_gdp_quarter", lambda: (1, 2026))
+    monkeypatch.setattr(statss_mod, "_probe_gdp_publication_url", lambda client, q, y: gdp_url)
+    
+    def _download(client, url):
+        if url == qlfs_url:
+            return qlfs_bytes
+        if url == gdp_url:
+            return gdp_bytes
+        raise AssertionError(f"Unexpected download URL in test: {url}")
+
+    monkeypatch.setattr(statss_mod, "_download_publication", _download)
+
+    prod_dir = tmp_path / "production"
+    prod_dir.mkdir()
+    stale_qlfs_docs, qlfs_paths = _stale_qlfs_docs_and_paths(prod_dir)
+    monkeypatch.setattr(statss_mod, "_QLFS_DATASET_JSON", qlfs_paths)
+
+    stale_gdp_doc = _gdp_doc()
+    gdp_path = prod_dir / "gdp.json"
+    gdp_path.write_text(json.dumps(stale_gdp_doc), encoding="utf-8")
+    monkeypatch.setattr(statss_mod, "_GDP_DATASET_JSON", gdp_path)
+
+    adapter = _make_adapter(tmp_path)
+    result = adapter.fetch_and_apply(dry_run=False, run_id="test-run")
+
+    assert result["gdp"]["status"] == "ok"
+    assert result["gdp"]["version_id"] is not None
+
+
 def test_fetch_and_apply_gdp_no_change_produces_no_change_status(tmp_path, monkeypatch):
     qlfs_bytes = _build_fixture_workbook()
     qlfs_url = "https://www.statssa.gov.za/publications/P0211/fixture.xlsx"
@@ -1297,6 +1350,43 @@ def test_fetch_release_hub_html_waf_raises_automation_http_error(monkeypatch):
     assert exc_info.value.status == 403
     assert "WAF_BLOCKED" in exc_info.value.reason
 
+
+def test_resolve_publication_url_waf_fallback(monkeypatch):
+    """
+    If the release hub is WAF-blocked (raising AutomationHTTPError), the fallback
+    scrape is bypassed but the primary probed URL (Strategy 1) is still returned.
+    This asserts the fix for the fetch-path WAF asymmetry bug.
+    """
+    from automation.core.http_client import HTTPClient, AutomationHTTPError
+    import automation.adapters.statss as statss_mod
+    
+    hub_url = "https://www.statssa.gov.za/fake_hub"
+    probed_url = "https://www.statssa.gov.za/fake_probe.xlsx"
+    
+    # 1. Strategy 1 (probe) succeeds
+    def mock_probe():
+        return probed_url
+        
+    # 2. Strategy 2 (hub scrape) fails due to WAF
+    def mock_fetch_hub(client, url):
+        raise AutomationHTTPError(url, 403, "WAF_BLOCKED: Incapsula WAF challenge detected")
+        
+    monkeypatch.setattr(statss_mod, "_fetch_release_hub_html", mock_fetch_hub)
+    
+    client = HTTPClient()
+    
+    # Act
+    file_url, release_period, hub_html = statss_mod._resolve_publication_url(
+        client=client,
+        hub_url=hub_url,
+        probe_func=mock_probe,
+        fallback_period_label="Q1 2026",
+    )
+    
+    # Assert - The probe URL is returned, WAF error is caught and logged
+    assert file_url == probed_url
+    assert release_period == "Q1 2026"
+    assert hub_html is None
 
 def test_download_publication_headers(monkeypatch):
     from automation.core.http_client import HTTPClient

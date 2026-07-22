@@ -152,6 +152,8 @@ finding. This item can be closed with an explicit, dated, request-counted
 observation once real network access is available; until then it should be
 treated as mitigated, not resolved.
 
+*Update 2026-07-22:* The WAF mitigation logic has been extended from the detection path into the fetch path. The discovery flow now strictly attempts the direct URL probe first (Strategy 1) before falling back to the release hub scrape (Strategy 2). If Strategy 2 encounters a `WAF_BLOCKED` error, the flow no longer aborts; it simply skips the scrape, allowing the directly probed URL to be successfully downloaded.
+
 ### Phase 0 finding — 2026-07-19 (`IMPLEMENTATION-SPEC-STATSSA-WAF.md`)
 
 An implementation session first attempted the four Phase 0 checks required

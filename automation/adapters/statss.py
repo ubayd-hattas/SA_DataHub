@@ -300,7 +300,7 @@ from dataclasses import dataclass
 from datetime import date, datetime, timezone
 from io import BytesIO
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 import openpyxl
 
@@ -904,11 +904,48 @@ def _probe_qlfs_publication_url(
 # ---------------------------------------------------------------------------
 
 
+def _resolve_publication_url(
+    client: HTTPClient,
+    hub_url: str,
+    probe_func: Callable[[], str | None],
+    fallback_period_label: str,
+) -> tuple[str | None, str | None, bytes | None]:
+    """
+    Resolve the publication URL using the ordered discovery architecture:
+    Strategy 1: Direct URL probe
+    Strategy 2: Release-hub scrape
+    """
+    file_url = probe_func()
+    
+    hub_html = None
+    release_period = fallback_period_label if file_url else None
+    
+    try:
+        hub_html = with_retry(
+            lambda: _fetch_release_hub_html(client, hub_url),
+            policy=STATSSA_POLICY,
+            label=f"Release hub fetch ({hub_url})",
+        )
+        hub_period = _extract_release_period(hub_html)
+        if hub_period:
+            release_period = hub_period
+            
+        if not file_url:
+            file_url = _extract_excel_url(hub_html)
+    except AutomationHTTPError as exc:
+        if "WAF_BLOCKED" in getattr(exc, "reason", str(exc)):
+            log.warning("WAF block encountered during release hub scrape: %s", exc)
+        else:
+            raise
+            
+    return file_url, release_period, hub_html
+
+
 def _discover_qlfs_excel(
     client: HTTPClient,
     *,
     hub_url: str = _QLFS_HUB_URL,
-) -> tuple[str | None, str, bytes]:
+) -> tuple[str | None, str | None, bytes | None]:
     """
     Discover and return the QLFS Excel workbook URL and hub HTML.
 
@@ -919,10 +956,13 @@ def _discover_qlfs_excel(
         release_period: Detected quarter label (e.g. 'Q1 2026') or ''.
         hub_html:       Raw HTML bytes of the release hub.
     """
-    hub_html = _fetch_release_hub_html(client, hub_url)
-    excel_url = _extract_excel_url(hub_html)
-    release_period = _extract_release_period(hub_html)
-    return excel_url, release_period, hub_html
+    q, y = _determine_current_qlfs_quarter()
+    return _resolve_publication_url(
+        client=client,
+        hub_url=hub_url,
+        probe_func=lambda: _probe_qlfs_publication_url(client, q, y),
+        fallback_period_label=f"Q{q} {y}"
+    )
 
 
 def _download_publication(client: HTTPClient, url: str) -> bytes:
@@ -1591,7 +1631,7 @@ def _discover_gdp_excel(
     client: HTTPClient,
     *,
     hub_url: str = _GDP_HUB_URL,
-) -> tuple[str | None, str, bytes]:
+) -> tuple[str | None, str | None, bytes | None]:
     """
     Discover and return the GDP Excel workbook URL and hub HTML.
     Structurally identical to _discover_qlfs_excel(), reusing the fully
@@ -1605,10 +1645,13 @@ def _discover_gdp_excel(
         release_period: Detected quarter label (e.g. 'Q1 2026') or ''.
         hub_html:       Raw HTML bytes of the release hub.
     """
-    hub_html = _fetch_release_hub_html(client, hub_url)
-    excel_url = _extract_excel_url(hub_html)
-    release_period = _extract_release_period(hub_html)
-    return excel_url, release_period, hub_html
+    q, y = _determine_current_gdp_quarter()
+    return _resolve_publication_url(
+        client=client,
+        hub_url=hub_url,
+        probe_func=lambda: _probe_gdp_publication_url(client, q, y),
+        fallback_period_label=f"Q{q} {y}"
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -2359,7 +2402,7 @@ def _discover_cpi_excel(
     client: HTTPClient,
     *,
     hub_url: str = _CPI_HUB_URL,
-) -> tuple[str | None, str, bytes]:
+) -> tuple[str | None, str | None, bytes | None]:
     """
     Discover and return the CPI Excel workbook URL and hub HTML.
     Structurally identical to _discover_qlfs_excel() /
@@ -2374,10 +2417,14 @@ def _discover_cpi_excel(
         release_period: Detected month label (e.g. 'May 2026') or ''.
         hub_html:       Raw HTML bytes of the release hub.
     """
-    hub_html = _fetch_release_hub_html(client, hub_url)
-    excel_url = _extract_excel_url(hub_html)
-    release_period = _extract_release_period(hub_html)
-    return excel_url, release_period, hub_html
+    m, y = _determine_current_cpi_month()
+    month_name = _CPI_MONTH_NAMES.get(m, str(m))
+    return _resolve_publication_url(
+        client=client,
+        hub_url=hub_url,
+        probe_func=lambda: _probe_cpi_publication_url(client, m, y),
+        fallback_period_label=f"{month_name} {y}"
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -2460,7 +2507,7 @@ def _discover_population_excel(
     client: HTTPClient,
     *,
     hub_url: str = _POPULATION_HUB_URL,
-) -> tuple[str | None, str, bytes]:
+) -> tuple[str | None, str | None, bytes | None]:
     """
     Discover and return the Population Excel workbook URL and hub HTML.
     Structurally identical to _discover_qlfs_excel() / _discover_gdp_excel()
@@ -2475,10 +2522,13 @@ def _discover_population_excel(
         release_period: Detected year label (e.g. '2026') or ''.
         hub_html:       Raw HTML bytes of the release hub.
     """
-    hub_html = _fetch_release_hub_html(client, hub_url)
-    excel_url = _extract_excel_url(hub_html)
-    release_period = _extract_release_period(hub_html)
-    return excel_url, release_period, hub_html
+    y = _determine_current_population_year()
+    return _resolve_publication_url(
+        client=client,
+        hub_url=hub_url,
+        probe_func=lambda: _probe_population_publication_url(client, y),
+        fallback_period_label=str(y)
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -4272,15 +4322,11 @@ class StatsSAAdapter(BaseAdapter):
         client = _build_http_client(self.source_config)
 
         # ----------------------------------------------------------
-        # Step 1: Fetch the QLFS release hub page
+        # Step 1 & 2: Discover publication link
         # ----------------------------------------------------------
         self._log.info("Fetching QLFS release hub: %s", _QLFS_HUB_URL)
         try:
-            hub_html = with_retry(
-                lambda: _fetch_release_hub_html(client, _QLFS_HUB_URL),
-                policy=STATSSA_POLICY,
-                label="QLFS release hub fetch",
-            )
+            file_url, release_period, hub_html = _discover_qlfs_excel(client)
         except AutomationHTTPError as exc:
             msg = f"QLFS release hub returned HTTP {exc.status}: {exc.reason}"
             result["errors"].append(msg)
@@ -4291,27 +4337,12 @@ class StatsSAAdapter(BaseAdapter):
             result["errors"].append(msg)
             self._log.error(msg)
             return result
-
-        # ----------------------------------------------------------
-        # Step 2: Locate the publication link
-        # ----------------------------------------------------------
-        # First, try to extract the release period from the hub page (for context)
-        release_period = _extract_release_period(hub_html)
-        result["release_period"] = release_period
+            
+        result["release_period"] = release_period or ""
         self._log.info(
             "QLFS release hub fetched — detected period: %r",
             release_period or "(not detected)",
         )
-
-        # Primary discovery strategy: probe direct publication URLs
-        q, y = _determine_current_qlfs_quarter()
-        file_url = _probe_qlfs_publication_url(client, q, y)
-
-        # Fallback strategy: try to scrape the hub HTML in case WAF is off or 
-        # a new URL structure was used
-        if file_url is None:
-            self._log.debug("Direct URL probe failed, attempting HTML scrape fallback...")
-            file_url = _extract_excel_url(hub_html)
 
         result["file_url"] = file_url
 
@@ -4644,11 +4675,7 @@ class StatsSAAdapter(BaseAdapter):
         try:
             self._log.info("Fetching GDP release hub: %s", _GDP_HUB_URL)
             excel_url, release_period, gdp_hub_html = _discover_gdp_excel(gdp_client)
-            result["gdp"]["release_period"] = release_period
-
-            if excel_url is None:
-                q, y = _determine_current_gdp_quarter()
-                excel_url = _probe_gdp_publication_url(gdp_client, q, y)
+            result["gdp"]["release_period"] = release_period or ""
             result["gdp"]["file_url"] = excel_url
 
             if excel_url is None:
@@ -4874,11 +4901,7 @@ class StatsSAAdapter(BaseAdapter):
         try:
             self._log.info("Fetching CPI release hub: %s", _CPI_HUB_URL)
             excel_url, release_period, cpi_hub_html = _discover_cpi_excel(cpi_client)
-            result["cpi"]["release_period"] = release_period
-
-            if excel_url is None:
-                m, y = _determine_current_cpi_month()
-                excel_url = _probe_cpi_publication_url(cpi_client, m, y)
+            result["cpi"]["release_period"] = release_period or ""
             result["cpi"]["file_url"] = excel_url
 
             if excel_url is None:
@@ -5137,11 +5160,7 @@ class StatsSAAdapter(BaseAdapter):
             excel_url, release_period, population_hub_html = _discover_population_excel(
                 population_client
             )
-            result["population"]["release_period"] = release_period
-
-            if excel_url is None:
-                y = _determine_current_population_year()
-                excel_url = _probe_population_publication_url(population_client, y)
+            result["population"]["release_period"] = release_period or ""
             result["population"]["file_url"] = excel_url
 
             if excel_url is None:
