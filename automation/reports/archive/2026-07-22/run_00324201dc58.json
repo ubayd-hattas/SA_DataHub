@@ -1,0 +1,30 @@
+{
+  "run_id": "00324201dc58",
+  "started_at": "2026-07-22T19:02:10.961774+00:00",
+  "finished_at": "2026-07-22T19:02:12.482737+00:00",
+  "dry_run": false,
+  "adapters": [
+    {
+      "adapter_id": "statssa",
+      "display_name": "Statistics South Africa",
+      "status": "error",
+      "datasets_checked": [
+        "unknown"
+      ],
+      "datasets_changed": [],
+      "warnings": [],
+      "errors": [],
+      "duration_ms": 0,
+      "notes": ""
+    }
+  ],
+  "global_warnings": [],
+  "global_errors": [],
+  "config_summary": {
+    "sources_configured": 4,
+    "datasets_configured": 13,
+    "adapters_registered": 4,
+    "adapters_run": 1,
+    "log_level": "INFO"
+  }
+}
