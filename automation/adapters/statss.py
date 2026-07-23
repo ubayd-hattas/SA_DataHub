@@ -4219,6 +4219,16 @@ class StatsSAAdapter(BaseAdapter):
               dry_run           — echo of the dry_run flag
               notes             — human-readable summary
               errors            — list of error strings
+              qlfs_datasets     — (additive) per-dataset breakdown for the QLFS
+                                   family, keyed by "unemployment",
+                                   "youth-unemployment", "labour-force". Each
+                                   value is {status, version_id, notes, errors}
+                                   describing that dataset alone — e.g. one
+                                   dataset can be "ok" with its own version_id
+                                   while another is "no_change" in the same run.
+                                   The top-level status/notes/version_ids above
+                                   remain a QLFS-run-wide summary; this key is
+                                   the sole place per-dataset granularity lives.
               gdp               — (Phase 3a, additive) nested dict describing the
                                    independent GDP flow's own outcome: status
                                    ("ok" | "no_change" | "no_publication_found" |
@@ -4269,6 +4279,23 @@ class StatsSAAdapter(BaseAdapter):
             "dry_run": dry_run,
             "notes": "",
             "errors": [],
+        }
+        # Per-dataset breakdown for the QLFS family — additive key. Every
+        # key above keeps its existing meaning (a QLFS-run-wide summary),
+        # but the top-level status/notes/version_ids alone cannot express
+        # "unemployment changed and staged but labour-force didn't" — that
+        # granularity already exists internally (see `dataset_changed`
+        # below) and is surfaced here so the runner's translation layer
+        # can report each of the three QLFS datasets independently instead
+        # of blob-merging them (audit finding #3).
+        result["qlfs_datasets"] = {
+            ds_id: {
+                "status": "error",
+                "version_id": None,
+                "notes": "",
+                "errors": [],
+            }
+            for ds_id in sorted(_QLFS_FAMILY)
         }
         # GDP (Phase 3a) — additive key, see §9.1 of IMPLEMENTATION-SPEC-GDP.md.
         # Every key above keeps its existing meaning, describing the QLFS run
@@ -4323,30 +4350,52 @@ class StatsSAAdapter(BaseAdapter):
 
         # ----------------------------------------------------------
         # Step 1 & 2: Discover publication link
+        #
+        # NOTE (audit finding #8): none of the QLFS-specific failure paths
+        # below (`return result`) are used any more. Every failure mode —
+        # hub HTTP error, hub fetch exception, no publication found,
+        # download HTTP error/exception, non-Excel file, parse failure —
+        # is recorded on `result` (status/errors/notes) and execution
+        # falls through to the GDP/CPI/Population flows further down,
+        # which must run independently of whatever happened to QLFS.
         # ----------------------------------------------------------
+        file_url: str | None = None
+        hub_html: bytes | None = None
+        file_bytes: bytes | None = None
+        extract = None
+        # NOTE: result["status"] defaults to "error" in the initial dict
+        # above, so it cannot be used to detect "did the hub fetch raise"
+        # — it's already "error" before we've even tried. Use an explicit
+        # flag instead.
+        hub_fetch_failed = False
+
         self._log.info("Fetching QLFS release hub: %s", _QLFS_HUB_URL)
         try:
             file_url, release_period, hub_html = _discover_qlfs_excel(client)
         except AutomationHTTPError as exc:
             msg = f"QLFS release hub returned HTTP {exc.status}: {exc.reason}"
             result["errors"].append(msg)
+            result["status"] = "error"
+            hub_fetch_failed = True
             self._log.error(msg)
-            return result
         except Exception as exc:
             msg = f"Failed to fetch QLFS release hub: {exc}"
             result["errors"].append(msg)
+            result["status"] = "error"
+            hub_fetch_failed = True
             self._log.error(msg)
-            return result
-            
-        result["release_period"] = release_period or ""
-        self._log.info(
-            "QLFS release hub fetched — detected period: %r",
-            release_period or "(not detected)",
-        )
+        else:
+            result["release_period"] = release_period or ""
+            self._log.info(
+                "QLFS release hub fetched — detected period: %r",
+                release_period or "(not detected)",
+            )
+            result["file_url"] = file_url
 
-        result["file_url"] = file_url
-
-        if file_url is None:
+        # "No publication found" only applies when the hub itself was
+        # fetched successfully but no publication link could be located —
+        # not when the hub fetch raised (that's already status="error").
+        if file_url is None and not hub_fetch_failed:
             msg = (
                 "No publication link found for QLFS. "
                 "Direct probes failed (likely no standard naming) and HTML scrape "
@@ -4377,81 +4426,37 @@ class StatsSAAdapter(BaseAdapter):
                     self._log.warning(
                         "Could not archive hub HTML: %s", archive_exc
                     )
-            return result
-
-        self._log.info("Located publication: %s", file_url)
 
         # ----------------------------------------------------------
         # Step 3: Download the publication
         # ----------------------------------------------------------
-        self._log.info("Downloading QLFS publication from %s …", file_url)
-        try:
-            file_bytes = with_retry(
-                lambda: _download_publication(client, file_url),  # type: ignore[arg-type]
-                policy=STATSSA_POLICY,
-                label=f"QLFS file download ({file_url})",
-            )
-        except AutomationHTTPError as exc:
-            msg = (
-                f"QLFS file download failed — HTTP {exc.status}: {exc.reason} "
-                f"(URL: {file_url})"
-            )
-            result["errors"].append(msg)
-            self._log.error(msg)
-            return result
-        except Exception as exc:
-            msg = f"QLFS file download failed: {exc}"
-            result["errors"].append(msg)
-            self._log.error(msg)
-            return result
-
-        result["file_size_bytes"] = len(file_bytes)
-        self._log.info(
-            "Downloaded QLFS publication: %d bytes", len(file_bytes)
-        )
-
-        # ----------------------------------------------------------
-        # Step 4: Archive the raw file
-        # ----------------------------------------------------------
-        file_ext = Path(urllib.parse.urlparse(file_url).path).suffix.lower() or ".bin"
-        if not dry_run:
+        if file_url is not None:
+            self._log.info("Located publication: %s", file_url)
+            self._log.info("Downloading QLFS publication from %s …", file_url)
             try:
-                archive_dest, sha256 = save_to_archive(
-                    self.config.raw_archive_dir,
-                    file_bytes,
-                    dataset_id="unemployment",  # canonical QLFS dataset slug
-                    source_id=self.source_id,
-                    suffix=file_ext,
+                file_bytes = with_retry(
+                    lambda: _download_publication(client, file_url),  # type: ignore[arg-type]
+                    policy=STATSSA_POLICY,
+                    label=f"QLFS file download ({file_url})",
                 )
-                result["archive_path"] = portable_archive_path(
-                    self.config.raw_archive_dir, archive_dest
+            except AutomationHTTPError as exc:
+                msg = (
+                    f"QLFS file download failed — HTTP {exc.status}: {exc.reason} "
+                    f"(URL: {file_url})"
                 )
-                result["sha256"] = sha256
-                self._log.info(
-                    "QLFS file archived → %s (sha256=%s…, %d bytes)",
-                    archive_dest,
-                    sha256[:8],
-                    len(file_bytes),
-                )
-            except Exception as exc:
-                msg = f"Archive write failed: {exc}"
                 result["errors"].append(msg)
+                result["status"] = "error"
                 self._log.error(msg)
-                # Non-fatal — continue to version recording
-        else:
-            from automation.core.files import sha256_of_bytes
-            sha256 = sha256_of_bytes(file_bytes)
-            result["sha256"] = sha256
-            self._log.info(
-                "[DRY RUN] Would archive %d bytes (sha256=%s…)",
-                len(file_bytes),
-                sha256[:8],
-            )
-
-        sha256 = result["sha256"] or ""
+                file_bytes = None
+            except Exception as exc:
+                msg = f"QLFS file download failed: {exc}"
+                result["errors"].append(msg)
+                result["status"] = "error"
+                self._log.error(msg)
+                file_bytes = None
 
         # ----------------------------------------------------------
-        # Step 4.5: Parse the workbook (Phase 2)
+        # Step 4 & 4.5: Archive the raw file and parse the workbook
         #
         # PDF parsing is explicitly out of scope for this phase (see
         # IMPLEMENTATION-SPEC-STATSSA-PHASE2.md §2/§5). If the URL probe in
@@ -4460,184 +4465,265 @@ class StatsSAAdapter(BaseAdapter):
         # status="error" path used for every other unparseable-file case
         # here — not a best-effort PDF scrape.
         # ----------------------------------------------------------
-        if file_ext not in (".xlsx", ".xls"):
-            msg = (
-                f"Downloaded QLFS publication is not an Excel workbook "
-                f"(extension {file_ext!r}, url={file_url}). PDF parsing is "
-                f"explicitly out of scope for this phase — falling back to "
-                f"the manual-review path (Track B) rather than guessing at "
-                f"PDF-extracted values."
+        if file_bytes is not None:
+            result["file_size_bytes"] = len(file_bytes)
+            self._log.info(
+                "Downloaded QLFS publication: %d bytes", len(file_bytes)
             )
-            result["errors"].append(msg)
-            result["status"] = "error"
-            self._log.error(msg)
-            return result
 
-        try:
-            extract = parse_qlfs_workbook(file_bytes)
-        except Exception as exc:
-            msg = f"QLFS workbook parse failed: {exc}"
-            result["errors"].append(msg)
-            result["status"] = "error"
-            self._log.error(msg)
-            return result
-
-        result["release_period"] = extract.release_period
-        self._log.info(
-            "QLFS workbook parsed OK — release period %s, "
-            "unemployment=%.1f%%, youth-narrow=%.1f%%, youth-1524=%.1f%%, "
-            "youth-expanded=%.1f%%, NEET=%.1f%%, LFPR=%.1f%%, LFPR-female=%.1f%%",
-            extract.release_period,
-            extract.unemployment_rate,
-            extract.youth_unemployment_narrow,
-            extract.youth_unemployment_1524,
-            extract.youth_unemployment_expanded,
-            extract.neet_rate,
-            extract.lfpr_overall,
-            extract.lfpr_female,
-        )
-
-        # ----------------------------------------------------------
-        # Step 5: Transform, validate, diff, stage — one pass per QLFS
-        # output dataset. No dataset JSON is ever written directly; the
-        # only outputs of this step are staged candidates + pending
-        # version entries, exactly as SARBAdapter.fetch_and_apply() does
-        # for interest-rates.json.
-        # ----------------------------------------------------------
-        current_docs = {
-            ds_id: _read_current_dataset_json(path)
-            for ds_id, path in _QLFS_DATASET_JSON.items()
-        }
-
-        new_values = {
-            "unemployment-national": extract.unemployment_rate,
-            "youth-unemployment-narrow": extract.youth_unemployment_narrow,
-            "youth-unemployment-1524": extract.youth_unemployment_1524,
-            "youth-unemployment-expanded": extract.youth_unemployment_expanded,
-            "youth-neet-rate": extract.neet_rate,
-            "lfpr-overall": extract.lfpr_overall,
-            "female-labour-participation": extract.lfpr_female,
-        }
-
-        # Per-dataset "did anything actually change" flags, mirroring
-        # SARBAdapter's repo_changed/prime_changed pattern — and, per
-        # IMPLEMENTATION-SPEC-STATSSA-PHASE2.md §10 acceptance criterion 6,
-        # the basis for producing status="no_change" with zero side
-        # effects when nothing has moved.
-        dataset_changed: dict[str, bool] = {ds_id: False for ds_id in _QLFS_FAMILY}
-        for stat_id, new_val in new_values.items():
-            ds_id = _QLFS_STAT_TO_DATASET[stat_id]
-            current_val = _get_current_stat_rate(current_docs[ds_id], stat_id)
-            if current_val is None or abs(new_val - current_val) > 0.05:
-                dataset_changed[ds_id] = True
-
-        if not any(dataset_changed.values()):
-            result["status"] = "no_change"
-            result["notes"] = (
-                f"No change: {extract.release_period} values already match "
-                f"unemployment.json / youth-unemployment.json / labour-force.json."
-            )
-            self._log.info("No change detected — all three QLFS JSON files are already current.")
-            # Still worth refreshing the hub hash baseline below.
-        else:
-            version_ids: list[str] = []
-            for ds_id in sorted(_QLFS_FAMILY):
-                if not dataset_changed[ds_id]:
-                    continue  # this dataset's own values are unchanged; leave it alone
-
-                current_doc = current_docs[ds_id]
-                updated_doc = _QLFS_TRANSFORMS[ds_id](current_doc, extract, file_url)
-
-                # --- schema/range validation ---
-                validation_errors: list[str] = []
-                validation_errors += _validate_quarterly_label(extract.release_period)
-                for stat_id, new_val in new_values.items():
-                    if _QLFS_STAT_TO_DATASET[stat_id] != ds_id:
-                        continue
-                    validation_errors += _validate_percentage(new_val, stat_id)
-
-                if validation_errors:
-                    msg = f"Validation failed for {ds_id}: {'; '.join(validation_errors)}"
+            file_ext = Path(urllib.parse.urlparse(file_url).path).suffix.lower() or ".bin"
+            if not dry_run:
+                try:
+                    archive_dest, sha256 = save_to_archive(
+                        self.config.raw_archive_dir,
+                        file_bytes,
+                        dataset_id="unemployment",  # canonical QLFS dataset slug
+                        source_id=self.source_id,
+                        suffix=file_ext,
+                    )
+                    result["archive_path"] = portable_archive_path(
+                        self.config.raw_archive_dir, archive_dest
+                    )
+                    result["sha256"] = sha256
+                    self._log.info(
+                        "QLFS file archived → %s (sha256=%s…, %d bytes)",
+                        archive_dest,
+                        sha256[:8],
+                        len(file_bytes),
+                    )
+                except Exception as exc:
+                    msg = f"Archive write failed: {exc}"
                     result["errors"].append(msg)
                     self._log.error(msg)
-                    continue  # do not stage this dataset
-
-                # --- protected-field check (reused unchanged) ---
-                if current_doc:
-                    violations = check_protected_fields(current_doc, updated_doc)
-                    if violations:
-                        msg = f"Protected field violation(s) for {ds_id}: {violations}"
-                        result["errors"].append(msg)
-                        result.setdefault("protected_field_violations", {})[ds_id] = violations
-                        self._log.error(msg)
-                        continue  # abort staging for this document only
-
-                # --- anomaly / plausibility check (warning, not a hard fail) ---
-                anomaly_notes: list[str] = []
-                for stat_id, new_val in new_values.items():
-                    if _QLFS_STAT_TO_DATASET[stat_id] != ds_id:
-                        continue
-                    current_val = _get_current_stat_rate(current_doc, stat_id)
-                    warning = _check_qoq_jump(current_val, new_val, stat_id)
-                    if warning:
-                        anomaly_notes.append(warning)
-                        self._log.warning(warning)
-
-                # --- stage + version entry ---
-                entry = new_version_entry(
-                    dataset_id=ds_id,
-                    source_id=self.source_id,
-                    source_url=file_url,
-                    sha256=sha256,
-                    archive_path=result["archive_path"] or "",
-                    adapter_version=self.version,
-                    notes=(
-                        f"QLFS {extract.release_period} parsed and staged. "
-                        f"Hub URL: {_QLFS_HUB_URL}. "
-                        + ("; ".join(anomaly_notes) + ". " if anomaly_notes else "")
-                        + "Manual approval required before promotion."
-                    ),
-                    run_id=run_id,
+                    # Non-fatal — continue to version recording
+            else:
+                from automation.core.files import sha256_of_bytes
+                sha256 = sha256_of_bytes(file_bytes)
+                result["sha256"] = sha256
+                self._log.info(
+                    "[DRY RUN] Would archive %d bytes (sha256=%s…)",
+                    len(file_bytes),
+                    sha256[:8],
                 )
 
-                if not dry_run:
-                    try:
-                        write_staged_dataset(
-                            self.config.report_dir,
-                            dataset_id=ds_id,
-                            version_id=entry.version_id,
-                            document=updated_doc,
+            sha256 = result["sha256"] or ""
+
+            if file_ext not in (".xlsx", ".xls"):
+                msg = (
+                    f"Downloaded QLFS publication is not an Excel workbook "
+                    f"(extension {file_ext!r}, url={file_url}). PDF parsing is "
+                    f"explicitly out of scope for this phase — falling back to "
+                    f"the manual-review path (Track B) rather than guessing at "
+                    f"PDF-extracted values."
+                )
+                result["errors"].append(msg)
+                result["status"] = "error"
+                self._log.error(msg)
+                # Do NOT return here - continue to GDP/CPI/Population flows
+
+            try:
+                extract = parse_qlfs_workbook(file_bytes)
+            except Exception as exc:
+                msg = f"QLFS workbook parse failed: {exc}"
+                result["errors"].append(msg)
+                result["status"] = "error"
+                self._log.error(msg)
+                # Do NOT return here - continue to GDP/CPI/Population flows
+                extract = None
+
+        # Only proceed with QLFS transformation if parse succeeded
+        if extract is not None:
+            result["release_period"] = extract.release_period
+            self._log.info(
+                "QLFS workbook parsed OK — release period %s, "
+                "unemployment=%.1f%%, youth-narrow=%.1f%%, youth-1524=%.1f%%, "
+                "youth-expanded=%.1f%%, NEET=%.1f%%, LFPR=%.1f%%, LFPR-female=%.1f%%",
+                extract.release_period,
+                extract.unemployment_rate,
+                extract.youth_unemployment_narrow,
+                extract.youth_unemployment_1524,
+                extract.youth_unemployment_expanded,
+                extract.neet_rate,
+                extract.lfpr_overall,
+                extract.lfpr_female,
+            )
+
+            # ----------------------------------------------------------
+            # Step 5: Transform, validate, diff, stage — one pass per QLFS
+            # output dataset. No dataset JSON is ever written directly; the
+            # only outputs of this step are staged candidates + pending
+            # version entries, exactly as SARBAdapter.fetch_and_apply() does
+            # for interest-rates.json.
+            # ----------------------------------------------------------
+            current_docs = {
+                ds_id: _read_current_dataset_json(path)
+                for ds_id, path in _QLFS_DATASET_JSON.items()
+            }
+
+            new_values = {
+                "unemployment-national": extract.unemployment_rate,
+                "youth-unemployment-narrow": extract.youth_unemployment_narrow,
+                "youth-unemployment-1524": extract.youth_unemployment_1524,
+                "youth-unemployment-expanded": extract.youth_unemployment_expanded,
+                "youth-neet-rate": extract.neet_rate,
+                "lfpr-overall": extract.lfpr_overall,
+                "female-labour-participation": extract.lfpr_female,
+            }
+
+            # Per-dataset "did anything actually change" flags, mirroring
+            # SARBAdapter's repo_changed/prime_changed pattern — and, per
+            # IMPLEMENTATION-SPEC-STATSSA-PHASE2.md §10 acceptance criterion 6,
+            # the basis for producing status="no_change" with zero side
+            # effects when nothing has moved.
+            dataset_changed: dict[str, bool] = {ds_id: False for ds_id in _QLFS_FAMILY}
+            for stat_id, new_val in new_values.items():
+                ds_id = _QLFS_STAT_TO_DATASET[stat_id]
+                current_val = _get_current_stat_rate(current_docs[ds_id], stat_id)
+                if current_val is None or abs(new_val - current_val) > 0.05:
+                    dataset_changed[ds_id] = True
+
+            if not any(dataset_changed.values()):
+                result["status"] = "no_change"
+                result["notes"] = (
+                    f"No change: {extract.release_period} values already match "
+                    f"unemployment.json / youth-unemployment.json / labour-force.json."
+                )
+                self._log.info("No change detected — all three QLFS JSON files are already current.")
+                # Still worth refreshing the hub hash baseline below.
+                for ds_id in _QLFS_FAMILY:
+                    result["qlfs_datasets"][ds_id]["status"] = "no_change"
+                    result["qlfs_datasets"][ds_id]["notes"] = result["notes"]
+            else:
+                version_ids: list[str] = []
+                for ds_id in sorted(_QLFS_FAMILY):
+                    if not dataset_changed[ds_id]:
+                        # This dataset's own values are unchanged; leave it
+                        # alone — reported independently as no_change, not
+                        # blob-merged with whatever the other two datasets
+                        # end up doing (audit finding #3).
+                        result["qlfs_datasets"][ds_id]["status"] = "no_change"
+                        result["qlfs_datasets"][ds_id]["notes"] = (
+                            f"{ds_id}: no change ({extract.release_period})."
                         )
-                        save_version_entry(self.config.report_dir, entry)
-                        self._log.info(
-                            "Staged %s — version %s (status=pending)",
-                            ds_id, entry.version_id,
-                        )
-                    except Exception as exc:
-                        msg = f"Staging failed for {ds_id}: {exc}"
-                        result["errors"].append(msg)
-                        self._log.error(msg)
                         continue
-                else:
-                    self._log.info(
-                        "[DRY RUN] Would stage %s — version %s", ds_id, entry.version_id,
+
+                    current_doc = current_docs[ds_id]
+                    updated_doc = _QLFS_TRANSFORMS[ds_id](current_doc, extract, file_url)
+
+                    # --- schema/range validation ---
+                    validation_errors: list[str] = []
+                    validation_errors += _validate_quarterly_label(extract.release_period)
+                    for stat_id, new_val in new_values.items():
+                        if _QLFS_STAT_TO_DATASET[stat_id] != ds_id:
+                            continue
+                        validation_errors += _validate_percentage(new_val, stat_id)
+
+                    if validation_errors:
+                        msg = f"Validation failed for {ds_id}: {'; '.join(validation_errors)}"
+                        result["errors"].append(msg)
+                        result["qlfs_datasets"][ds_id]["status"] = "error"
+                        result["qlfs_datasets"][ds_id]["notes"] = msg
+                        result["qlfs_datasets"][ds_id]["errors"].append(msg)
+                        self._log.error(msg)
+                        continue  # do not stage this dataset
+
+                    # --- protected-field check (reused unchanged) ---
+                    if current_doc:
+                        violations = check_protected_fields(current_doc, updated_doc)
+                        if violations:
+                            msg = f"Protected field violation(s) for {ds_id}: {violations}"
+                            result["errors"].append(msg)
+                            result.setdefault("protected_field_violations", {})[ds_id] = violations
+                            result["qlfs_datasets"][ds_id]["status"] = "error"
+                            result["qlfs_datasets"][ds_id]["notes"] = msg
+                            result["qlfs_datasets"][ds_id]["errors"].append(msg)
+                            self._log.error(msg)
+                            continue  # abort staging for this document only
+
+                    # --- anomaly / plausibility check (warning, not a hard fail) ---
+                    anomaly_notes: list[str] = []
+                    for stat_id, new_val in new_values.items():
+                        if _QLFS_STAT_TO_DATASET[stat_id] != ds_id:
+                            continue
+                        current_val = _get_current_stat_rate(current_doc, stat_id)
+                        warning = _check_qoq_jump(current_val, new_val, stat_id)
+                        if warning:
+                            anomaly_notes.append(warning)
+                            self._log.warning(warning)
+
+                    # --- stage + version entry ---
+                    entry = new_version_entry(
+                        dataset_id=ds_id,
+                        source_id=self.source_id,
+                        source_url=file_url,
+                        sha256=sha256,
+                        archive_path=result["archive_path"] or "",
+                        adapter_version=self.version,
+                        notes=(
+                            f"QLFS {extract.release_period} parsed and staged. "
+                            f"Hub URL: {_QLFS_HUB_URL}. "
+                            + ("; ".join(anomaly_notes) + ". " if anomaly_notes else "")
+                            + "Manual approval required before promotion."
+                        ),
+                        run_id=run_id,
                     )
 
-                version_ids.append(entry.version_id)
+                    if not dry_run:
+                        try:
+                            write_staged_dataset(
+                                self.config.report_dir,
+                                dataset_id=ds_id,
+                                version_id=entry.version_id,
+                                document=updated_doc,
+                            )
+                            save_version_entry(self.config.report_dir, entry)
+                            self._log.info(
+                                "Staged %s — version %s (status=pending)",
+                                ds_id, entry.version_id,
+                            )
+                        except Exception as exc:
+                            msg = f"Staging failed for {ds_id}: {exc}"
+                            result["errors"].append(msg)
+                            result["qlfs_datasets"][ds_id]["status"] = "error"
+                            result["qlfs_datasets"][ds_id]["notes"] = msg
+                            result["qlfs_datasets"][ds_id]["errors"].append(msg)
+                            self._log.error(msg)
+                            continue
+                    else:
+                        self._log.info(
+                            "[DRY RUN] Would stage %s — version %s", ds_id, entry.version_id,
+                        )
 
-            result["version_ids"] = version_ids
+                    version_ids.append(entry.version_id)
+                    result["qlfs_datasets"][ds_id]["status"] = "ok"
+                    result["qlfs_datasets"][ds_id]["version_id"] = entry.version_id
+                    result["qlfs_datasets"][ds_id]["notes"] = (
+                        "; ".join(anomaly_notes) if anomaly_notes else ""
+                    )
 
-            if version_ids:
-                result["status"] = "ok"
-            else:
-                # A change was detected but every candidate dataset failed
-                # validation/protected-field checks — nothing was staged.
-                result["status"] = "error"
+                result["version_ids"] = version_ids
+
+                if version_ids:
+                    result["status"] = "ok"
+                else:
+                    # A change was detected but every candidate dataset failed
+                    # validation/protected-field checks — nothing was staged.
+                    result["status"] = "error"
+        else:
+            # QLFS failed before any per-dataset information could even be
+            # computed (hub error, no_publication_found, download error,
+            # non-Excel file, or parse failure) — there is genuinely no
+            # per-dataset granularity here, unlike the branches above, so
+            # all three datasets legitimately share the same outcome.
+            for ds_id in _QLFS_FAMILY:
+                result["qlfs_datasets"][ds_id]["status"] = result["status"]
+                result["qlfs_datasets"][ds_id]["notes"] = result["notes"]
+                result["qlfs_datasets"][ds_id]["errors"] = list(result["errors"])
 
         # ----------------------------------------------------------
         # Step 6: Compose result and update QLFS hub hash
         # ----------------------------------------------------------
-        if not result.get("notes"):
+        if not result.get("notes") and extract is not None:
             result["notes"] = (
                 f"QLFS Phase 2 complete. "
                 f"Release period: {extract.release_period}. "
@@ -4649,7 +4735,7 @@ class StatsSAAdapter(BaseAdapter):
             )
 
         # Update hub hash so the next check_for_updates call sees the new baseline
-        if not dry_run:
+        if not dry_run and hub_html is not None:
             try:
                 # Re-fetch to get a fresh hash (we already have the bytes)
                 from automation.core.files import sha256_of_bytes
@@ -4821,7 +4907,6 @@ class StatsSAAdapter(BaseAdapter):
                                         gdp_entry.version_id,
                                     )
                                     result["gdp"]["version_id"] = gdp_entry.version_id
-                                    result["version_ids"].append(gdp_entry.version_id)
                                     result["gdp"]["status"] = "ok"
                                     result["gdp"]["notes"] = (
                                         "; ".join(gdp_warnings) if gdp_warnings else ""
@@ -4837,7 +4922,6 @@ class StatsSAAdapter(BaseAdapter):
                                     gdp_entry.version_id,
                                 )
                                 result["gdp"]["version_id"] = gdp_entry.version_id
-                                result["version_ids"].append(gdp_entry.version_id)
                                 result["gdp"]["status"] = "ok"
                                 result["gdp"]["notes"] = (
                                     "; ".join(gdp_warnings) if gdp_warnings else ""
@@ -5081,7 +5165,6 @@ class StatsSAAdapter(BaseAdapter):
                                         cpi_entry.version_id,
                                     )
                                     result["cpi"]["version_id"] = cpi_entry.version_id
-                                    result["version_ids"].append(cpi_entry.version_id)
                                     result["cpi"]["status"] = "ok"
                                     result["cpi"]["notes"] = (
                                         "; ".join(cpi_jump_warnings) if cpi_jump_warnings else ""
@@ -5097,7 +5180,6 @@ class StatsSAAdapter(BaseAdapter):
                                     cpi_entry.version_id,
                                 )
                                 result["cpi"]["version_id"] = cpi_entry.version_id
-                                result["version_ids"].append(cpi_entry.version_id)
                                 result["cpi"]["status"] = "ok"
                                 result["cpi"]["notes"] = (
                                     "; ".join(cpi_jump_warnings) if cpi_jump_warnings else ""
@@ -5396,7 +5478,6 @@ class StatsSAAdapter(BaseAdapter):
                                                 population_entry.version_id,
                                             )
                                             result["population"]["version_id"] = population_entry.version_id
-                                            result["version_ids"].append(population_entry.version_id)
                                             result["population"]["status"] = "ok"
                                             result["population"]["notes"] = (
                                                 "; ".join(population_jump_warnings)
@@ -5413,7 +5494,6 @@ class StatsSAAdapter(BaseAdapter):
                                             population_entry.version_id,
                                         )
                                         result["population"]["version_id"] = population_entry.version_id
-                                        result["version_ids"].append(population_entry.version_id)
                                         result["population"]["status"] = "ok"
                                         result["population"]["notes"] = (
                                             "; ".join(population_jump_warnings)

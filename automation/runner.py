@@ -39,6 +39,7 @@ import sys
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Any
 
 if hasattr(sys.stdout, "reconfigure"):
     try:
@@ -62,7 +63,7 @@ if str(_PROJECT_ROOT) not in sys.path:
 # ---------------------------------------------------------------------------
 
 from automation.adapters import autodiscover, get_registry
-from automation.adapters.base import AdapterResult, BaseAdapter
+from automation.adapters.base import AdapterResult, BaseAdapter, DatasetCheckResult
 from automation.core.config import AutomationConfig, load_config
 from automation.core.logging import configure_logging, get_logger, set_run_id
 from automation.core.report import (
@@ -91,10 +92,14 @@ _STATUS_ICONS = {
     "warning": "!",
     "error": "✖",
     "no_change": "○",
+    "no_publication_found": "?",
+    "unknown": "?",
     "OK": "✔",
     "WARNING": "!",
     "ERROR": "✖",
     "NO_CHANGE": "○",
+    "NO_PUBLICATION_FOUND": "?",
+    "UNKNOWN": "?",
 }
 
 
@@ -232,6 +237,225 @@ def _describe_adapter(config: AutomationConfig, source_id: str) -> int:
 
 
 # ---------------------------------------------------------------------------
+# Apply-path translation layer
+# ---------------------------------------------------------------------------
+
+# Status values a dataset-level result can legitimately carry. Anything
+# outside this vocabulary is mapped to "unknown" rather than silently
+# becoming "ok" (audit finding #5).
+_VALID_DATASET_STATUSES = ("ok", "no_change", "no_publication_found", "error")
+
+# Worst-status priority used for the QLFS-family roll-up below. "unknown"
+# has its own slot, strictly worse than "no_change"/"ok" — it must never
+# silently collapse to "ok" the way it did before this fix (audit finding
+# #5).
+_STATUS_PRIORITY = {
+    "error": 0,
+    "no_publication_found": 1,
+    "unknown": 2,
+    "no_change": 3,
+    "ok": 4,
+}
+_PRIORITY_TO_STATUS = {v: k for k, v in _STATUS_PRIORITY.items()}
+
+
+def _safe_ds_status(raw_status: str) -> str:
+    """Never let an unrecognised status value silently become "ok"."""
+    return raw_status if raw_status in _VALID_DATASET_STATUSES else "unknown"
+
+
+def translate_apply_result(
+    *,
+    source_id: str,
+    display_name: str,
+    res_dict: dict[str, Any],
+    started_at: datetime,
+) -> AdapterResult:
+    """
+    Convert a ``fetch_and_apply()`` result dict into a standard
+    :class:`AdapterResult`.
+
+    This is the apply-path "translation layer" the Phase 1 completion
+    audit found riddled with bugs: wrong dict keys, all three QLFS
+    datasets blob-merged into one shared status/notes/version_ids,
+    GDP/CPI/Population version_ids leaking into that shared list, and
+    unrecognised statuses silently collapsing to "ok". It is deliberately
+    a standalone, side-effect-free function (no I/O, no adapter
+    instantiation) so tests can call the REAL translation code directly
+    with a crafted ``res_dict`` instead of duplicating its logic inline —
+    a regression here will now actually fail a test (audit finding #9).
+
+    Parameters
+    ----------
+    source_id:
+        The adapter's source id (e.g. "statssa", "sarb"). Used both as
+        the ``AdapterResult.adapter_id``/``source_id`` and to select the
+        StatsSA multi-dataset branch vs. the generic single-dataset
+        branch.
+    display_name:
+        Human-readable adapter name for the report.
+    res_dict:
+        The dict returned by the adapter's ``fetch_and_apply()``.
+    started_at:
+        When this adapter's ``fetch_and_apply()`` call began — passed in
+        rather than captured here so the caller controls timing.
+    """
+    ar = AdapterResult(
+        adapter_id=source_id,
+        source_id=source_id,
+        display_name=display_name,
+        started_at=started_at,
+        status="ok",
+    )
+
+    if source_id == "statssa":
+        qlfs_release_period = res_dict.get("release_period", "")
+        qlfs_file_url = res_dict.get("file_url", "")
+        # Per-dataset breakdown (audit finding #3): each of the three
+        # QLFS datasets gets ITS OWN status/version_id/notes, sourced
+        # from the per-dataset information the adapter already computes
+        # internally (result["qlfs_datasets"]) — never a single shared
+        # blob copied onto all three.
+        qlfs_datasets = res_dict.get("qlfs_datasets", {})
+
+        for ds_id in ["unemployment", "youth-unemployment", "labour-force"]:
+            ds_info = qlfs_datasets.get(ds_id, {})
+            ds_status = _safe_ds_status(ds_info.get("status", "error"))
+            ds_own_notes = ds_info.get("notes", "")
+            ds_version_id = ds_info.get("version_id")
+
+            ds_notes = f"QLFS {qlfs_release_period}".strip()
+            if ds_own_notes:
+                ds_notes += f". {ds_own_notes}"
+            if ds_version_id:
+                ds_notes += f" Version ID: {ds_version_id}"
+
+            ds_res = DatasetCheckResult(
+                dataset_id=ds_id,
+                status=ds_status,
+                message=ds_own_notes,
+                latest_period=qlfs_release_period,
+                source_url=qlfs_file_url,
+                notes=ds_notes,
+            )
+            ar.datasets.append(ds_res)
+
+        # Add QLFS errors to adapter-level errors (single shared list —
+        # already correctly attributed per dataset in the message text
+        # where applicable, so this is not duplicated per-dataset here).
+        for e in res_dict.get("errors", []):
+            ar.add_error(e)
+
+        # GDP flow: 1 dataset
+        gdp_result = res_dict.get("gdp", {})
+        gdp_status = gdp_result.get("status", "error")
+        gdp_notes = gdp_result.get("notes", "")
+        gdp_errors = gdp_result.get("errors", [])
+        gdp_version_id = gdp_result.get("version_id")
+        gdp_release_period = gdp_result.get("release_period", "")
+
+        gdp_ds_status = _safe_ds_status(gdp_status)
+        gdp_ds_notes = f"GDP {gdp_release_period}. {gdp_notes}" if gdp_notes else f"GDP {gdp_release_period}"
+        if gdp_version_id:
+            gdp_ds_notes += f" Version ID: {gdp_version_id}"
+
+        gdp_ds_res = DatasetCheckResult(
+            dataset_id="gdp",
+            status=gdp_ds_status,
+            message=gdp_ds_notes,
+            latest_period=gdp_release_period,
+            source_url=gdp_result.get("file_url", ""),
+            notes=gdp_ds_notes,
+        )
+        ar.datasets.append(gdp_ds_res)
+
+        for e in gdp_errors:
+            ar.add_error(f"[GDP] {e}")
+
+        # CPI flow: 1 dataset
+        cpi_result = res_dict.get("cpi", {})
+        cpi_status = cpi_result.get("status", "error")
+        cpi_notes = cpi_result.get("notes", "")
+        cpi_errors = cpi_result.get("errors", [])
+        cpi_version_id = cpi_result.get("version_id")
+        cpi_release_period = cpi_result.get("release_period", "")
+
+        cpi_ds_status = _safe_ds_status(cpi_status)
+        cpi_ds_notes = f"CPI {cpi_release_period}. {cpi_notes}" if cpi_notes else f"CPI {cpi_release_period}"
+        if cpi_version_id:
+            cpi_ds_notes += f" Version ID: {cpi_version_id}"
+
+        cpi_ds_res = DatasetCheckResult(
+            dataset_id="inflation",
+            status=cpi_ds_status,
+            message=cpi_ds_notes,
+            latest_period=cpi_release_period,
+            source_url=cpi_result.get("file_url", ""),
+            notes=cpi_ds_notes,
+        )
+        ar.datasets.append(cpi_ds_res)
+
+        for e in cpi_errors:
+            ar.add_error(f"[CPI] {e}")
+
+        # Population flow: 1 dataset
+        pop_result = res_dict.get("population", {})
+        pop_status = pop_result.get("status", "error")
+        pop_notes = pop_result.get("notes", "")
+        pop_errors = pop_result.get("errors", [])
+        pop_version_id = pop_result.get("version_id")
+        pop_release_period = pop_result.get("release_period", "")
+
+        pop_ds_status = _safe_ds_status(pop_status)
+        pop_ds_notes = f"Population {pop_release_period}. {pop_notes}" if pop_notes else f"Population {pop_release_period}"
+        if pop_version_id:
+            pop_ds_notes += f" Version ID: {pop_version_id}"
+
+        pop_ds_res = DatasetCheckResult(
+            dataset_id="population",
+            status=pop_ds_status,
+            message=pop_ds_notes,
+            latest_period=pop_release_period,
+            source_url=pop_result.get("file_url", ""),
+            notes=pop_ds_notes,
+        )
+        ar.datasets.append(pop_ds_res)
+
+        for e in pop_errors:
+            ar.add_error(f"[Population] {e}")
+
+        # Set adapter-level status to worst of all dataset statuses.
+        worst_status = min(
+            (_STATUS_PRIORITY.get(ds.status, _STATUS_PRIORITY["unknown"]) for ds in ar.datasets),
+            default=_STATUS_PRIORITY["ok"],
+        )
+        ar.status = _PRIORITY_TO_STATUS[worst_status]
+
+    else:
+        # Single-dataset adapter (e.g., SARB)
+        dataset_id = res_dict.get("dataset_id", "unknown")
+        status = res_dict.get("status", "error")
+
+        ds_status = _safe_ds_status(status)
+        ds_res = DatasetCheckResult(
+            dataset_id=dataset_id,
+            status=ds_status,
+            message=res_dict.get("notes", ""),
+            source_url=res_dict.get("file_url", ""),
+            notes=res_dict.get("notes", ""),
+        )
+        ar.datasets.append(ds_res)
+
+        if res_dict.get("errors"):
+            for e in res_dict["errors"]:
+                ar.add_error(e)
+
+        ar.status = ds_status
+
+    return ar
+
+
+# ---------------------------------------------------------------------------
 # Main runner
 # ---------------------------------------------------------------------------
 
@@ -343,8 +567,6 @@ def run(
     global_warnings: list[str] = []
     global_errors: list[str] = []
 
-    from automation.adapters.base import DatasetCheckResult
-
     for adapter_cls in adapters_to_run:
         source_id = adapter_cls.source_id
         source_config = config.sources.get(source_id)
@@ -364,29 +586,20 @@ def run(
         try:
             if apply and hasattr(instance, "fetch_and_apply"):
                 log.info("Running fetch_and_apply for %s", source_id)
+                # NOTE: this must NOT be named `started_at` — that name is
+                # already bound to the run-level timestamp captured at the
+                # top of run() for ExecutionReport.started_at. Reusing it
+                # here previously corrupted report.duration_seconds after
+                # every --apply run (audit finding #4).
+                adapter_started_at = datetime.now(tz=timezone.utc)
                 res_dict = instance.fetch_and_apply(dry_run=dry_run, run_id=run_id)
-                dataset_id = res_dict.get("dataset_id", "unknown")
-                status = res_dict.get("status", "error")
-                
-                # Convert fetch_and_apply dict to standard AdapterResult
-                ar = AdapterResult(
-                    adapter_id=instance.source_id,
-                    source_id=instance.source_id,
+
+                ar = translate_apply_result(
+                    source_id=source_id,
                     display_name=instance.display_name,
-                    started_at=datetime.now(tz=timezone.utc),
-                    status="ok" if status != "error" else "error"
+                    res_dict=res_dict,
+                    started_at=adapter_started_at,
                 )
-                
-                ds_res = DatasetCheckResult(
-                    dataset_id=dataset_id,
-                    status=status if status in ("up_to_date", "update_available", "error", "skipped", "unknown") else "unknown",
-                    message=res_dict.get("change_summary", ""),
-                    notes=f"Version ID: {res_dict.get('version_id')}"
-                )
-                ar.datasets.append(ds_res)
-                if res_dict.get("validation_errors"):
-                    for e in res_dict["validation_errors"]:
-                        ar.add_error(e)
                 ar.finished_at = datetime.now(tz=timezone.utc)
                 adapter_results.append(ar)
             else:
@@ -457,9 +670,23 @@ def run(
         )
 
     # 11. Exit code
+    #
+    # Decision (audit finding #5/#10): "no_publication_found" must NOT be
+    # silently treated as success. It means the automated check couldn't
+    # even determine whether a new release exists — which is exactly the
+    # situation most likely to need a human to look, on a system meant to
+    # run unattended. We treat it as warning-level (exit code 2) rather
+    # than error-level (exit code 1): a missing publication is often a
+    # transient, expected state (the source hasn't published yet this
+    # cycle) rather than a hard failure of the framework itself, so it
+    # shouldn't page anyone the way a real error should — but it must
+    # never be indistinguishable from a fully clean run.
     if global_errors or any(r.status == "error" for r in adapter_results):
         return 1
-    if global_warnings or any(r.status == "warning" for r in adapter_results):
+    if global_warnings or any(
+        r.status in ("warning", "no_publication_found", "unknown")
+        for r in adapter_results
+    ):
         return 2
     return 0
 

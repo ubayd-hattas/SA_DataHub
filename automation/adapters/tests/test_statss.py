@@ -1082,14 +1082,19 @@ def test_fetch_and_apply_stages_gdp_without_direct_write(tmp_path, monkeypatch):
     # QLFS portion of the result is unaffected by GDP being added.
     assert result["status"] == "ok"
     assert not result["errors"]
-    assert len(result["version_ids"]) == 4  # 3 QLFS + 1 GDP
+    # result["version_ids"] is QLFS-only — GDP's version_id must never be
+    # appended into this shared list (audit fix: version_id
+    # cross-contamination).
+    assert len(result["version_ids"]) == 3  # 3 QLFS datasets only
     for ds_id, p in qlfs_paths.items():
         assert json.loads(p.read_text(encoding="utf-8")) == stale_qlfs_docs[ds_id]
 
     # GDP staged, no direct write to gdp.json.
     assert result["gdp"]["status"] == "ok"
     assert result["gdp"]["version_id"] is not None
-    assert result["gdp"]["version_id"] in result["version_ids"]
+    # GDP's version_id lives only in result["gdp"]["version_id"] — it must
+    # NOT be mixed into the QLFS-only result["version_ids"] list.
+    assert result["gdp"]["version_id"] not in result["version_ids"]
     assert json.loads(gdp_path.read_text(encoding="utf-8")) == stale_gdp_doc
 
     pending = pending_versions(adapter.config.report_dir, "gdp")
@@ -1098,6 +1103,162 @@ def test_fetch_and_apply_stages_gdp_without_direct_write(tmp_path, monkeypatch):
     assert staged_doc["statistics"]
     staged_growth = {s["id"]: s for s in staged_doc["statistics"]}["gdp-growth"]
     assert staged_growth["rawValue"] == 0.5
+
+
+def test_fetch_and_apply_qlfs_hub_exception_still_runs_gdp(tmp_path, monkeypatch):
+    """
+    Audit finding #8 (regression guard): if the QLFS hub fetch itself
+    raises (e.g. network down, non-WAF HTTP error), GDP must still
+    execute and stage successfully. Before the fix, this early
+    `return result` inside fetch_and_apply() prevented GDP/CPI/Population
+    from ever running this cycle.
+    """
+    gdp_bytes = _build_gdp_fixture_workbook(
+        headers=("Q4 2025", "Q1 2026"), values=(0.4, 0.5), include_annual_row=False,
+    )
+    gdp_url = "https://www.statssa.gov.za/publications/P0441/gdp_fixture.xlsx"
+
+    # QLFS discovery raises before a file_url can ever be resolved.
+    monkeypatch.setattr(statss_mod, "_determine_current_qlfs_quarter", lambda: (1, 2026))
+
+    def _boom(client, q, y):
+        raise RuntimeError("QLFS hub unreachable")
+
+    monkeypatch.setattr(statss_mod, "_probe_qlfs_publication_url", _boom)
+
+    monkeypatch.setattr(statss_mod, "_determine_current_gdp_quarter", lambda: (1, 2026))
+    monkeypatch.setattr(
+        statss_mod, "_discover_gdp_excel",
+        lambda client, **kwargs: (gdp_url, "Q1 2026", b"<html>Q1 2026 GDP release</html>"),
+    )
+    monkeypatch.setattr(statss_mod, "_download_publication", lambda client, url: gdp_bytes)
+
+    prod_dir = tmp_path / "production"
+    prod_dir.mkdir()
+    stale_gdp_doc = _gdp_doc()
+    gdp_path = prod_dir / "gdp.json"
+    gdp_path.write_text(json.dumps(stale_gdp_doc), encoding="utf-8")
+    monkeypatch.setattr(statss_mod, "_GDP_DATASET_JSON", gdp_path)
+
+    adapter = _make_adapter(tmp_path)
+    result = adapter.fetch_and_apply(dry_run=False, run_id="test-run")
+
+    # QLFS failed loudly ...
+    assert result["status"] == "error"
+    assert result["errors"]
+    assert not result["version_ids"]
+
+    # ... but GDP still ran independently and staged successfully.
+    assert result["gdp"]["status"] == "ok"
+    assert result["gdp"]["version_id"] is not None
+    assert result["gdp"]["version_id"] not in result["version_ids"]
+
+
+def test_fetch_and_apply_qlfs_no_publication_found_still_runs_gdp(tmp_path, monkeypatch):
+    """
+    Audit finding #8 (regression guard): if the QLFS hub is fetched
+    successfully but no publication link can be located at all (the
+    exact "no_publication_found" scenario the audit called out), GDP
+    must still execute and stage successfully.
+    """
+    gdp_bytes = _build_gdp_fixture_workbook(
+        headers=("Q4 2025", "Q1 2026"), values=(0.4, 0.5), include_annual_row=False,
+    )
+    gdp_url = "https://www.statssa.gov.za/publications/P0441/gdp_fixture.xlsx"
+
+    monkeypatch.setattr(
+        statss_mod, "_fetch_release_hub_html",
+        lambda client, url: b"<html>no excel link here</html>",
+    )
+    monkeypatch.setattr(statss_mod, "_extract_release_period", lambda html: "Q1 2026")
+    monkeypatch.setattr(statss_mod, "_determine_current_qlfs_quarter", lambda: (1, 2026))
+    # Neither the direct probe nor the hub scrape find a publication link.
+    monkeypatch.setattr(statss_mod, "_probe_qlfs_publication_url", lambda client, q, y: None)
+    monkeypatch.setattr(statss_mod, "_extract_excel_url", lambda html, base_url=None: None)
+
+    monkeypatch.setattr(statss_mod, "_determine_current_gdp_quarter", lambda: (1, 2026))
+    monkeypatch.setattr(
+        statss_mod, "_discover_gdp_excel",
+        lambda client, **kwargs: (gdp_url, "Q1 2026", b"<html>Q1 2026 GDP release</html>"),
+    )
+    monkeypatch.setattr(statss_mod, "_download_publication", lambda client, url: gdp_bytes)
+
+    prod_dir = tmp_path / "production"
+    prod_dir.mkdir()
+    stale_gdp_doc = _gdp_doc()
+    gdp_path = prod_dir / "gdp.json"
+    gdp_path.write_text(json.dumps(stale_gdp_doc), encoding="utf-8")
+    monkeypatch.setattr(statss_mod, "_GDP_DATASET_JSON", gdp_path)
+
+    adapter = _make_adapter(tmp_path)
+    result = adapter.fetch_and_apply(dry_run=False, run_id="test-run")
+
+    # QLFS correctly reports no_publication_found, not a generic error ...
+    assert result["status"] == "no_publication_found"
+    assert not result["version_ids"]
+
+    # ... but GDP still ran independently and staged successfully.
+    assert result["gdp"]["status"] == "ok"
+    assert result["gdp"]["version_id"] is not None
+    assert result["gdp"]["version_id"] not in result["version_ids"]
+
+
+def test_fetch_and_apply_qlfs_download_error_still_runs_gdp(tmp_path, monkeypatch):
+    """
+    Audit finding #8 (regression guard): if the QLFS publication link is
+    found but the file download itself fails, GDP must still execute and
+    stage successfully.
+    """
+    from automation.core.http_client import AutomationHTTPError
+
+    qlfs_url = "https://www.statssa.gov.za/publications/P0211/fixture.xlsx"
+    gdp_bytes = _build_gdp_fixture_workbook(
+        headers=("Q4 2025", "Q1 2026"), values=(0.4, 0.5), include_annual_row=False,
+    )
+    gdp_url = "https://www.statssa.gov.za/publications/P0441/gdp_fixture.xlsx"
+
+    monkeypatch.setattr(
+        statss_mod, "_fetch_release_hub_html",
+        lambda client, url: b"<html>Q1 2026 QLFS release</html>",
+    )
+    monkeypatch.setattr(statss_mod, "_extract_release_period", lambda html: "Q1 2026")
+    monkeypatch.setattr(statss_mod, "_determine_current_qlfs_quarter", lambda: (1, 2026))
+    monkeypatch.setattr(statss_mod, "_probe_qlfs_publication_url", lambda client, q, y: qlfs_url)
+
+    monkeypatch.setattr(statss_mod, "_determine_current_gdp_quarter", lambda: (1, 2026))
+    monkeypatch.setattr(
+        statss_mod, "_discover_gdp_excel",
+        lambda client, **kwargs: (gdp_url, "Q1 2026", b"<html>Q1 2026 GDP release</html>"),
+    )
+
+    def _download(client, url):
+        if url == qlfs_url:
+            raise AutomationHTTPError(url, 500, "Internal Server Error")
+        if url == gdp_url:
+            return gdp_bytes
+        raise AssertionError(f"Unexpected download URL in test: {url}")
+
+    monkeypatch.setattr(statss_mod, "_download_publication", _download)
+
+    prod_dir = tmp_path / "production"
+    prod_dir.mkdir()
+    stale_gdp_doc = _gdp_doc()
+    gdp_path = prod_dir / "gdp.json"
+    gdp_path.write_text(json.dumps(stale_gdp_doc), encoding="utf-8")
+    monkeypatch.setattr(statss_mod, "_GDP_DATASET_JSON", gdp_path)
+
+    adapter = _make_adapter(tmp_path)
+    result = adapter.fetch_and_apply(dry_run=False, run_id="test-run")
+
+    # QLFS failed loudly on download ...
+    assert result["status"] == "error"
+    assert result["errors"]
+    assert not result["version_ids"]
+
+    # ... but GDP still ran independently and staged successfully.
+    assert result["gdp"]["status"] == "ok"
+    assert result["gdp"]["version_id"] is not None
+    assert result["gdp"]["version_id"] not in result["version_ids"]
 
 
 def test_fetch_and_apply_stages_gdp_waf_fallback_real(tmp_path, monkeypatch):
@@ -2084,7 +2245,10 @@ def test_fetch_and_apply_stages_cpi_without_direct_write(tmp_path, monkeypatch):
     # QLFS/GDP portions of the result are unaffected by CPI being added.
     assert result["status"] == "ok"
     assert not result["errors"]
-    assert len(result["version_ids"]) == 5  # 3 QLFS + 1 GDP + 1 CPI
+    # result["version_ids"] is QLFS-only — GDP/CPI version_ids must never
+    # be appended into this shared list (audit fix: version_id
+    # cross-contamination).
+    assert len(result["version_ids"]) == 3  # 3 QLFS datasets only
     for ds_id, p in qlfs_paths.items():
         assert json.loads(p.read_text(encoding="utf-8")) == stale_qlfs_docs[ds_id]
     assert json.loads(gdp_path.read_text(encoding="utf-8")) == stale_gdp_doc
@@ -2092,7 +2256,8 @@ def test_fetch_and_apply_stages_cpi_without_direct_write(tmp_path, monkeypatch):
     # CPI staged, no direct write to inflation.json.
     assert result["cpi"]["status"] == "ok"
     assert result["cpi"]["version_id"] is not None
-    assert result["cpi"]["version_id"] in result["version_ids"]
+    assert result["cpi"]["version_id"] not in result["version_ids"]
+    assert result["gdp"]["version_id"] not in result["version_ids"]
     assert json.loads(inflation_path.read_text(encoding="utf-8")) == stale_inflation_doc
 
     pending = pending_versions(adapter.config.report_dir, "inflation")
@@ -2977,12 +3142,17 @@ def test_fetch_and_apply_stages_population_without_direct_write(tmp_path, monkey
     # being added.
     assert result["status"] == "ok"
     assert not result["errors"]
-    assert len(result["version_ids"]) == 6  # 3 QLFS + 1 GDP + 1 CPI + 1 Population
+    # result["version_ids"] is QLFS-only — GDP/CPI/Population version_ids
+    # must never be appended into this shared list (audit fix: version_id
+    # cross-contamination).
+    assert len(result["version_ids"]) == 3  # 3 QLFS datasets only
 
     # Population staged, no direct write to population.json.
     assert result["population"]["status"] == "ok"
     assert result["population"]["version_id"] is not None
-    assert result["population"]["version_id"] in result["version_ids"]
+    assert result["population"]["version_id"] not in result["version_ids"]
+    assert result["gdp"]["version_id"] not in result["version_ids"]
+    assert result["cpi"]["version_id"] not in result["version_ids"]
     assert json.loads(population_path.read_text(encoding="utf-8")) == stale_population_doc
 
     pending = pending_versions(adapter.config.report_dir, "population")

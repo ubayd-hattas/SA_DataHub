@@ -43,7 +43,16 @@ class DatasetCheckResult:
     """Result of checking a single dataset for new releases."""
 
     dataset_id: str
-    status: Literal["up_to_date", "update_available", "error", "skipped", "unknown"]
+    status: Literal[
+        # check_for_updates() (read-only, Phase A) vocabulary:
+        "up_to_date", "update_available", "error", "skipped", "unknown",
+        "no_publication_found",
+        # fetch_and_apply() (--apply, Phase B) vocabulary — the runner's
+        # apply-path translation layer constructs DatasetCheckResult with
+        # these values, so they must be part of the real contract, not
+        # just tolerated at runtime:
+        "ok", "no_change",
+    ]
     message: str = ""
     latest_period: str = ""      # e.g. "Q1 2026", "May 2026"
     current_period: str = ""     # period currently in the JSON
@@ -60,7 +69,15 @@ class AdapterResult:
     display_name: str
     started_at: datetime
     finished_at: datetime | None = None
-    status: Literal["ok", "skipped", "warning", "error", "no_change"] = "ok"
+    status: Literal[
+        "ok", "skipped", "warning", "error", "no_change",
+        # --apply path (StatsSAAdapter.fetch_and_apply()) can also
+        # produce this — added per audit finding #5/#10.
+        "no_publication_found",
+        # Defensive fallback for a status value the runner doesn't
+        # recognise; must never silently become "ok" (audit finding #5).
+        "unknown",
+    ] = "ok"
     datasets: list[DatasetCheckResult] = field(default_factory=list)
     warnings: list[str] = field(default_factory=list)
     errors: list[str] = field(default_factory=list)

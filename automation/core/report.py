@@ -41,7 +41,7 @@ class AdapterReport:
 
     adapter_id: str           # e.g. "statssa", "sarb"
     display_name: str
-    status: Literal["ok", "skipped", "warning", "error", "no_change"]
+    status: Literal["ok", "skipped", "warning", "error", "no_change", "no_publication_found", "unknown"]
     datasets_checked: list[str] = field(default_factory=list)
     datasets_changed: list[str] = field(default_factory=list)
     warnings: list[str] = field(default_factory=list)
@@ -73,7 +73,10 @@ class ExecutionReport:
     def overall_status(self) -> str:
         if any(a.status == "error" for a in self.adapters) or self.global_errors:
             return "ERROR"
-        if any(a.status == "warning" for a in self.adapters) or self.global_warnings:
+        if any(
+            a.status in ("warning", "no_publication_found", "unknown")
+            for a in self.adapters
+        ) or self.global_warnings:
             return "WARNING"
         if any(a.status == "ok" for a in self.adapters):
             return "OK"
@@ -90,10 +93,14 @@ _STATUS_ICONS = {
     "warning": "⚠️",
     "error": "❌",
     "no_change": "➖",
+    "no_publication_found": "❓",
+    "unknown": "❓",
     "OK": "✅",
     "WARNING": "⚠️",
     "ERROR": "❌",
     "NO_CHANGE": "➖",
+    "NO_PUBLICATION_FOUND": "❓",
+    "UNKNOWN": "❓",
 }
 
 
