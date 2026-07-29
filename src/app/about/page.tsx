@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { Database, RefreshCw, Shield, ExternalLink } from 'lucide-react'
+import { Database, RefreshCw, Shield, Github, Linkedin, Globe } from 'lucide-react'
 import { Breadcrumbs } from '@/components/seo/Breadcrumbs'
 import { JsonLd } from '@/components/seo/JsonLd'
 import { breadcrumbSchema } from '@/lib/schema'
@@ -9,7 +9,7 @@ import { buildPageMetadata, AUTHOR } from '@/lib/seo'
 export const metadata: Metadata = buildPageMetadata({
   title: 'About',
   description:
-    'Learn about SA Data Hub — an open, non-profit platform for South African public statistics. Data sources, methodology, update process, and maintainer information.',
+    'Learn about SA Data Hub — an open-source platform for South African public statistics, built by Ubayd Hattas, a Computer Science and Data Science student at UCT.',
   path: '/about',
 })
 
@@ -99,10 +99,11 @@ export default function AboutPage() {
         </p>
       </section>
 
-      <section className="card p-6">
-        <h2 className="font-semibold text-lg text-slate-900 dark:text-white mb-2">Maintainer</h2>
-        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed mb-4">
-          SA Data Hub is built and maintained by{' '}
+      <section className="card p-6" id="maintainer">
+        <h2 className="font-semibold text-lg text-slate-900 dark:text-white mb-3">Maintainer</h2>
+
+        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed mb-3">
+          SA Data Hub is designed, built, and maintained independently by{' '}
           <a
             href={AUTHOR.url}
             rel="me author"
@@ -110,26 +111,75 @@ export default function AboutPage() {
           >
             {AUTHOR.name}
           </a>
-          , a Computer Science, Statistics and Data Science student at UCT focused on public data tools and civic technology. The project is open source
-          and maintained in the maintainer&apos;s spare time.
+          , a BSc student at the{' '}
+          <a
+            href="https://www.uct.ac.za"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-brand-600 hover:underline dark:text-brand-400"
+          >
+            University of Cape Town
+          </a>
+          {' '}majoring in Computer Science, Statistics and Data Science.
         </p>
+
+        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed mb-3">
+          Ubayd&apos;s work sits at the intersection of data engineering, artificial intelligence, and civic
+          technology. He is interested in building software that turns raw government data into accessible,
+          useful tools — particularly for audiences in South Africa and the Global South. SA Data Hub is one
+          expression of that interest: an open-source platform that aggregates and contextualises official
+          South African statistics so that students, journalists, researchers, and citizens can explore them
+          without specialised training.
+        </p>
+
+        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed mb-4">
+          Beyond this platform, Ubayd built{' '}
+          <a
+            href="https://github.com/ubayd-hattas/AfriGuard"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-brand-600 hover:underline dark:text-brand-400"
+          >
+            AfriGuard
+          </a>
+          , a multilingual AI safety benchmark developed at the Global South AI Safety Hackathon. The project
+          red-teamed frontier large language models across seven South African languages and found that safety
+          guardrails degrade significantly outside English — evidence that AI safety research must extend
+          beyond high-resource languages.
+        </p>
+
+        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed mb-5">
+          SA Data Hub is open source and maintained in Ubayd&apos;s spare time. Contributions, corrections,
+          and feedback are welcome.
+        </p>
+
         <div className="flex flex-wrap gap-4 text-sm">
           <a
             href={AUTHOR.url}
             rel="me"
-            className="inline-flex items-center gap-1 text-slate-500 hover:text-brand-600 dark:text-slate-400 dark:hover:text-brand-400"
+            target="_blank"
+            className="inline-flex items-center gap-1.5 text-slate-500 hover:text-brand-600 dark:text-slate-400 dark:hover:text-brand-400"
           >
+            <Globe size={13} />
             ubayd.me
-            <ExternalLink size={12} />
           </a>
           <a
             href={AUTHOR.github}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-slate-500 hover:text-brand-600 dark:text-slate-400 dark:hover:text-brand-400"
+            className="inline-flex items-center gap-1.5 text-slate-500 hover:text-brand-600 dark:text-slate-400 dark:hover:text-brand-400"
           >
+            <Github size={13} />
             GitHub
-            <ExternalLink size={12} />
+          </a>
+          <a
+            href={AUTHOR.linkedin}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 text-slate-500 hover:text-brand-600 dark:text-slate-400 dark:hover:text-brand-400"
+          >
+            <Linkedin size={13} />
+            LinkedIn
           </a>
         </div>
       </section>

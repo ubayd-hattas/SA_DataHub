@@ -9,25 +9,25 @@ const PROVINCE_IDS = [
 ] as const
 
 /** Static routes with approximate change frequency for sitemap hints. */
-const STATIC_ROUTES: { path: string; priority: number; changeFrequency: MetadataRoute.Sitemap[0]['changeFrequency'] }[] = [
-  { path: '/', priority: 1, changeFrequency: 'weekly' },
-  { path: '/dashboard', priority: 0.9, changeFrequency: 'weekly' },
-  { path: '/municipalities', priority: 0.9, changeFrequency: 'monthly' },
-  { path: '/provinces', priority: 0.9, changeFrequency: 'monthly' },
-  { path: '/insights', priority: 0.8, changeFrequency: 'weekly' },
-  { path: '/downloads', priority: 0.8, changeFrequency: 'weekly' },
-  { path: '/methodology', priority: 0.7, changeFrequency: 'monthly' },
-  { path: '/about', priority: 0.6, changeFrequency: 'monthly' },
-  { path: '/updates', priority: 0.7, changeFrequency: 'weekly' },
-  { path: '/changelog', priority: 0.5, changeFrequency: 'monthly' },
+const STATIC_ROUTES: { path: string; priority: number; changeFrequency: MetadataRoute.Sitemap[0]['changeFrequency']; lastModified: Date }[] = [
+  { path: '/',              priority: 1,   changeFrequency: 'weekly',  lastModified: new Date('2026-07-01') },
+  { path: '/dashboard',    priority: 0.9, changeFrequency: 'weekly',  lastModified: new Date('2026-07-01') },
+  { path: '/municipalities', priority: 0.9, changeFrequency: 'monthly', lastModified: new Date('2026-05-01') },
+  { path: '/provinces',    priority: 0.9, changeFrequency: 'monthly', lastModified: new Date('2026-05-01') },
+  { path: '/insights',     priority: 0.8, changeFrequency: 'weekly',  lastModified: new Date('2026-07-01') },
+  { path: '/downloads',    priority: 0.8, changeFrequency: 'weekly',  lastModified: new Date('2026-07-01') },
+  { path: '/methodology',  priority: 0.7, changeFrequency: 'monthly', lastModified: new Date('2026-04-01') },
+  { path: '/about',        priority: 0.6, changeFrequency: 'monthly', lastModified: new Date('2026-07-29') },
+  { path: '/updates',      priority: 0.7, changeFrequency: 'weekly',  lastModified: new Date('2026-07-01') },
+  { path: '/changelog',    priority: 0.5, changeFrequency: 'monthly', lastModified: new Date('2026-04-01') },
 ]
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date()
 
-  const staticEntries: MetadataRoute.Sitemap = STATIC_ROUTES.map(({ path, priority, changeFrequency }) => ({
+  const staticEntries: MetadataRoute.Sitemap = STATIC_ROUTES.map(({ path, priority, changeFrequency, lastModified }) => ({
     url: `${SITE_URL}${path}`,
-    lastModified: now,
+    lastModified,
     changeFrequency,
     priority,
   }))

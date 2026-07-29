@@ -1,5 +1,6 @@
 {
   "/page": "app/page.js",
+  "/municipalities/page": "app/municipalities/page.js",
   "/manifest.webmanifest/route": "app/manifest.webmanifest/route.js",
-  "/dashboard/page": "app/dashboard/page.js"
+  "/icon.png/route": "app/icon.png/route.js"
 }

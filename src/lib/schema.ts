@@ -54,9 +54,15 @@ export function personSchema() {
     '@id': `${SITE_URL}/#person`,
     name: AUTHOR.name,
     url: AUTHOR.url,
-    sameAs: [AUTHOR.url, AUTHOR.github],
-    jobTitle: 'Software Engineer',
-    worksFor: { '@id': `${SITE_URL}/#organization` },
+    sameAs: [AUTHOR.url, AUTHOR.github, AUTHOR.linkedin],
+    jobTitle: 'BSc Student — Computer Science, Statistics & Data Science',
+    worksFor: {
+      '@type': 'Organization',
+      name: 'University of Cape Town',
+      url: 'https://www.uct.ac.za',
+    },
+    description:
+      'BSc student at the University of Cape Town majoring in Computer Science, Statistics and Data Science. Builder of SA Data Hub and AfriGuard, an AI safety benchmark for underserved South African languages.',
   }
 }
 
