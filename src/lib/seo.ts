@@ -13,6 +13,7 @@ export const AUTHOR = {
   name: 'Ubayd Hattas',
   url: 'https://ubayd.me',
   github: 'https://github.com/ubayd-hattas',
+  linkedin: 'https://www.linkedin.com/in/ubayd-hattas/',
 } as const
 
 export function absoluteUrl(path: string): string {

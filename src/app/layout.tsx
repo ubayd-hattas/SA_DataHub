@@ -49,7 +49,8 @@ export const metadata: Metadata = {
     siteName: SITE_NAME,
     locale: 'en_ZA',
     type: 'website',
-    url: SITE_URL,
+    // NOTE: url is intentionally omitted here — each page sets its own canonical
+    // URL via buildPageMetadata so Google always sees the correct per-page URL.
     images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: SITE_NAME }],
   },
   twitter: {
