@@ -20,11 +20,13 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from etl.lib.types import PipelineResult  # noqa: E402
-from etl.pipelines import unemployment, youth_unemployment  # noqa: E402
+from etl.pipelines import unemployment, youth_unemployment, interest_rates, labour_force  # noqa: E402
 
 PIPELINES = {
     "unemployment": unemployment.run,
     "youth-unemployment": youth_unemployment.run,
+    "interest-rates": interest_rates.run,
+    "labour-force": labour_force.run,
 }
 
 

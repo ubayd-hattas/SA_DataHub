@@ -1,3 +1,12 @@
+/**
+ * Youth-unemployment JSON ↔ PostgreSQL equivalence tests.
+ *
+ * Requires DATABASE_URL to be set and the youth-unemployment pipeline to have
+ * been run with --load.
+ *
+ * Run: npm run test:equivalence
+ */
+
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
@@ -21,8 +30,13 @@ function loadJsonDataset() {
   return JSON.parse(raw)
 }
 
-function jsonObservationsByStat(data) {
-  const byStat = {}
+function jsonObservationsByStat(data: {
+  statistics?: Array<{
+    id: string
+    series?: Array<{ data?: Array<{ label: string; value: number }> }>
+  }>
+}) {
+  const byStat: Record<string, Array<{ label: string; value: number }>> = {}
   for (const stat of data.statistics ?? []) {
     const points = (stat.series ?? []).flatMap((s) => s.data ?? [])
     byStat[stat.id] = points
@@ -31,10 +45,11 @@ function jsonObservationsByStat(data) {
 }
 
 describe.skipIf(!hasDb)('youth-unemployment: JSON ↔ PostgreSQL equivalence', () => {
-  let sql
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let sql: any
 
   beforeAll(() => {
-    sql = postgres(process.env.DATABASE_URL, { ssl: 'require', prepare: false, max: 1 })
+    sql = postgres(process.env.DATABASE_URL!, { ssl: 'require', prepare: false, max: 1 })
   })
 
   afterAll(async () => {
@@ -45,7 +60,7 @@ describe.skipIf(!hasDb)('youth-unemployment: JSON ↔ PostgreSQL equivalence', (
     const rows = await sql`
       SELECT stat_id FROM datasets WHERE stat_id = ANY(${STAT_IDS})
     `
-    const found = new Set(rows.map((r) => r.stat_id))
+    const found = new Set(rows.map((r: { stat_id: string }) => r.stat_id))
     for (const statId of STAT_IDS) {
       expect(found.has(statId), `missing datasets row for ${statId}`).toBe(true)
     }
@@ -70,15 +85,20 @@ describe.skipIf(!hasDb)('youth-unemployment: JSON ↔ PostgreSQL equivalence', (
 
       const expectedByLabel = new Map(expectedPoints.map((p) => [p.label, p.value]))
       for (const row of rows) {
-        expect(expectedByLabel.has(row.period_label), `${statId}: unexpected period ${row.period_label}`).toBe(true)
-        expect(Number(row.value)).toBeCloseTo(expectedByLabel.get(row.period_label), 6)
+        expect(
+          expectedByLabel.has(row.period_label),
+          `${statId}: unexpected period ${row.period_label}`,
+        ).toBe(true)
+        expect(Number(row.value)).toBeCloseTo(expectedByLabel.get(row.period_label)!, 6)
       }
     }
   })
 
   it('matches headline snapshot values between JSON and PostgreSQL', async () => {
     const data = loadJsonDataset()
-    const statsById = Object.fromEntries((data.statistics ?? []).map((s) => [s.id, s]))
+    const statsById = Object.fromEntries(
+      (data.statistics ?? []).map((s: { id: string }) => [s.id, s]),
+    )
 
     const rows = await sql`
       SELECT stat_id, display_value, raw_value, trend
@@ -89,7 +109,11 @@ describe.skipIf(!hasDb)('youth-unemployment: JSON ↔ PostgreSQL equivalence', (
     expect(rows.length).toBe(STAT_IDS.length)
 
     for (const row of rows) {
-      const expected = statsById[row.stat_id]
+      const expected = statsById[row.stat_id] as {
+        value: string
+        rawValue: number
+        trend: string
+      }
       expect(expected, `${row.stat_id}: not found in JSON`).toBeTruthy()
       expect(row.display_value).toBe(expected.value)
       expect(Number(row.raw_value)).toBeCloseTo(expected.rawValue, 6)
@@ -105,7 +129,10 @@ describe.skipIf(!hasDb)('youth-unemployment: JSON ↔ PostgreSQL equivalence', (
       ORDER BY fetched_at DESC
       LIMIT 1
     `
-    expect(version.length, 'no dataset_versions row found — run: npm run etl -- youth-unemployment --load').toBe(1)
+    expect(
+      version.length,
+      'no dataset_versions row found — run: npm run etl -- youth-unemployment --load',
+    ).toBe(1)
     expect(version[0].status).toBe('success')
   })
 })
