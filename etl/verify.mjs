@@ -30,6 +30,20 @@ const PIPELINE_CONFIG = {
     geographyCode: 'ZA',
     jsonPath: 'src/data/datasets/youth-unemployment.json',
   },
+  'interest-rates': {
+    slug: 'interest-rates',
+    statIds: ['repo-rate-sarb', 'prime-lending-rate'],
+    geographyCode: 'ZA',
+    jsonPath: 'src/data/datasets/interest-rates.json',
+  },
+  'labour-force': {
+    slug: 'labour-force',
+    // labour-force.json has 3 stats; the third has a known ~18pp discrepancy
+    // with lfpr-overall — documented in _meta.notes, loaded as-is.
+    statIds: ['lfpr-overall', 'female-labour-participation', 'labour-force-participation'],
+    geographyCode: 'ZA',
+    jsonPath: 'src/data/datasets/labour-force.json',
+  },
 }
 
 function loadEnvLocal() {

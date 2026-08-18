@@ -10,7 +10,7 @@
 
 SA Data Hub ([sadatahub.tech](https://sadatahub.tech)) is a Next.js 14 TypeScript app that visualises official South African statistics from Stats SA, SARB, SAPS, DBE, and World Bank. It serves 8 category pages, 9 province profiles, 213 municipality Census profiles, 5 data stories, CSV downloads, and citation widgets.
 
-**Current data storage:** Static JSON in `src/data/datasets/`, aggregated by `src/data/mock.ts`, bundled at build time. **No production database reads yet** — but Neon PostgreSQL is provisioned (`src/lib/db/client.ts`, `/api/test-db`).
+**Current data storage:** Static JSON in `src/data/datasets/`, aggregated by `src/data/mock.ts`, bundled at build time. **PostgreSQL (Neon) is now live for 4 migrated datasets** — `unemployment`, `youth-unemployment`, `interest-rates`, and `labour-force`. Set `DATA_SOURCE=database` to enable DB mode. JSON mode (`DATA_SOURCE=json`) remains the default and is unchanged.
 
 **Owner:** Solo developer project (portfolio + public good). Prefer simple, maintainable solutions over enterprise patterns.
 
@@ -178,9 +178,47 @@ Registry entry alone enables downloads, citations, freshness UI.
 - Use fact/dimension model — **not** one table per category
 - ETL stages: extract → transform → validate → load
 - Migrations in `db/migrations/NNN_name.sql` — apply with `npm run db:migrate`
-- Feature flag: `DATA_SOURCE=db` vs `json`
-- Equivalence tests required before flipping production
+- Feature flag: `DATA_SOURCE=database` (DB) vs `DATA_SOURCE=json` (default)
+- Equivalence tests in `tests/equivalence/` — run with `npm test`
 - See [migration-plan.md](./migration-plan.md) and [etl-pipeline.md](./etl-pipeline.md)
+
+### DB-backed datasets (as of 2026-08-18)
+
+| Dataset slug | Stat IDs | ETL command |
+|---|---|---|
+| `unemployment` | `unemployment-national` | `python -m etl.run unemployment --load` |
+| `youth-unemployment` | `youth-unemployment-narrow`, `youth-unemployment-1524`, `youth-unemployment-expanded`, `youth-neet-rate` | `python -m etl.run youth-unemployment --load` |
+| `interest-rates` | `repo-rate-sarb`, `prime-lending-rate` | `python -m etl.run interest-rates --load` |
+| `labour-force` | `lfpr-overall`, `female-labour-participation`, `labour-force-participation` | `python -m etl.run labour-force --load` |
+
+All other datasets remain JSON-only. In `DATA_SOURCE=database` mode, unmigrated stats fall back to JSON automatically.
+
+### How DATA_SOURCE switching works
+
+- `DATA_SOURCE=json` (default) → `src/data/providers/json.ts` → reads `src/data/mock.ts` directly
+- `DATA_SOURCE=database` → `src/data/providers/database.ts` → queries Neon PostgreSQL for migrated stat IDs; falls back to JSON for unmigrated stats
+- Pages call `getAppDataProvider()` from `src/data/providers/index.ts` — no SQL in page components
+- The provider returns the same `Statistic` type regardless of source
+
+### Running the ETL
+
+```bash
+# Preview (no DB writes)
+python -m etl.run unemployment
+
+# Full load
+python -m etl.run unemployment --load
+python -m etl.run youth-unemployment --load
+python -m etl.run interest-rates --load
+python -m etl.run labour-force --load
+
+# Verify loaded data
+npm run etl:verify unemployment
+npm run etl:verify interest-rates
+
+# Run equivalence tests (requires DATABASE_URL)
+npm test
+```
 
 ---
 
