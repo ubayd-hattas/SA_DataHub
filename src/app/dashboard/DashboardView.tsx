@@ -212,9 +212,7 @@ export default function DashboardView({ statistics, categories, provinces }: Das
         {/* Intent-aware search results */}
         {search.trim() && searchResults.length > 0 && (
           <div className="mb-8">
-            <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-slate-400">
-              Search results
-            </h2>
+            <h2 className="section-label mb-4">Search results</h2>
             <div className="flex flex-col gap-2">
               {searchResults.map((result) => (
                 <SearchResultRow key={`${result.kind}-${result.id}`} result={result} />
@@ -232,7 +230,7 @@ export default function DashboardView({ statistics, categories, provinces }: Das
         {/* Charts section */}
         {chartStats.length > 0 && (
           <div className="mb-8">
-            <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-slate-400">Trend charts</h2>
+            <h2 className="section-label mb-4">Trend charts</h2>
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
               {chartStats.map((stat) => (
                 <LineChartCard
@@ -247,9 +245,7 @@ export default function DashboardView({ statistics, categories, provinces }: Das
 
         {/* Stat cards grid */}
         <div>
-          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-slate-400">
-            All statistics
-          </h2>
+          <h2 className="section-label mb-4">All statistics</h2>
           {filtered.length === 0 ? (
             <div className="card flex flex-col items-center justify-center py-16 text-center">
               <p className="text-slate-400">
@@ -286,7 +282,7 @@ export default function DashboardView({ statistics, categories, provinces }: Das
           if (timelineSeries.length === 0) return null
           return (
             <div className="mt-10">
-              <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-slate-400">Historical context</h2>
+              <h2 className="section-label mb-4">Historical context</h2>
               <HistoricalTimeline
                 title="SA Key Indicators — Long-run view"
                 description="GDP growth and unemployment over time, with major economic and political events."

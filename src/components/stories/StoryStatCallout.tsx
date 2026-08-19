@@ -3,14 +3,13 @@
 /**
  * src/components/stories/StoryStatCallout.tsx
  *
- * Enhanced version of the existing StatCallout, specifically for use inside
- * the scroll story flow. Provides a slightly more compact layout suited to the
- * narrative column width.
+ * Compact stat callout for use inside scroll story narrative columns.
+ * More compact than the full StatCallout to suit the 7/12-width column.
  */
 
-import { TrendingUp, TrendingDown, Minus } from 'lucide-react'
 import { Statistic } from '@/types'
-import { cn, getTrendBadgeClass, isGoodWhenDown } from '@/lib/utils'
+import { cn, isGoodWhenDown } from '@/lib/utils'
+import { DeltaBadge, getDeltaSemantics } from '@/components/ui/DeltaBadge'
 
 interface StoryStatCalloutProps {
   stat: Statistic
@@ -19,31 +18,51 @@ interface StoryStatCalloutProps {
 
 export function StoryStatCallout({ stat, className }: StoryStatCalloutProps) {
   const goodDown = isGoodWhenDown(stat.categoryId)
-  const badgeClass = getTrendBadgeClass(stat.trend, goodDown)
-  const TrendIcon = stat.trend === 'up' ? TrendingUp : stat.trend === 'down' ? TrendingDown : Minus
+  const semantics = getDeltaSemantics(stat.trend, goodDown)
 
   return (
-    <div className={cn(
-      'my-6 flex items-start gap-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900',
-      className
-    )}>
-      <div className="flex-shrink-0">
-        <p className="font-mono text-3xl font-medium tabular-nums leading-none text-slate-900 dark:text-white">
-          {stat.value}
-        </p>
-        <div className="mt-2 flex items-center gap-1.5">
-          <span className={cn('flex items-center gap-0.5 rounded-full px-2 py-0.5 text-[11px] font-medium', badgeClass)}>
-            <TrendIcon size={10} />
-            {Math.abs(stat.change).toFixed(1)}{stat.unit === '%' ? 'pp' : '%'}
-          </span>
+    <div
+      className={cn(
+        'my-6 flex items-start gap-4 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900',
+        className
+      )}
+    >
+      {/* Semantic left border accent */}
+      <div
+        className={cn(
+          'w-1 self-stretch shrink-0',
+          semantics === 'positive'      && 'bg-brand-400',
+          semantics === 'negative'      && 'bg-red-400',
+          semantics === 'neutral'       && 'bg-slate-300 dark:bg-slate-700',
+          semantics === 'informational' && 'bg-blue-400'
+        )}
+        aria-hidden="true"
+      />
+
+      <div className="flex flex-1 flex-col gap-2 py-4 pr-4">
+        <div className="flex items-start justify-between gap-2">
+          <p className="font-mono text-3xl font-medium tabular-nums leading-none text-slate-900 dark:text-white">
+            {stat.value}
+          </p>
+          <DeltaBadge
+            delta={stat.change}
+            trend={stat.trend}
+            semantics={semantics}
+            unit={stat.unit}
+            className="mt-0.5 shrink-0"
+          />
         </div>
-      </div>
-      
-      <div className="flex-1 min-w-0 border-l border-slate-100 pl-4 dark:border-slate-800">
-        <p className="text-sm font-medium text-slate-900 dark:text-white">{stat.title}</p>
-        <p className="mt-1 text-xs leading-relaxed text-slate-500 line-clamp-2 dark:text-slate-400">
-          {stat.description}
-        </p>
+
+        {stat.changeLabel && (
+          <p className="text-xs text-slate-400">{stat.changeLabel}</p>
+        )}
+
+        <div className="border-t border-slate-100 pt-2 dark:border-slate-800">
+          <p className="text-sm font-medium text-slate-900 dark:text-white">{stat.title}</p>
+          <p className="mt-0.5 line-clamp-2 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+            {stat.description}
+          </p>
+        </div>
       </div>
     </div>
   )

@@ -23,11 +23,13 @@ export default async function HomePage() {
 
   return (
     <div className="animate-fade-in">
+
       {/* ── Hero ──────────────────────────────────────────────────────────── */}
       <section className="relative overflow-hidden bg-gradient-to-b from-brand-950 to-slate-950 px-4 py-20 text-white sm:py-28">
         {/* Subtle grid background */}
         <div
           className="pointer-events-none absolute inset-0 opacity-[0.04]"
+          aria-hidden="true"
           style={{
             backgroundImage:
               'linear-gradient(to right, white 1px, transparent 1px), linear-gradient(to bottom, white 1px, transparent 1px)',
@@ -35,12 +37,12 @@ export default async function HomePage() {
           }}
         />
         {/* Gold accent orb */}
-        <div className="pointer-events-none absolute right-1/4 top-0 h-72 w-72 -translate-y-1/2 rounded-full bg-gold-400 opacity-10 blur-3xl" />
+        <div className="pointer-events-none absolute right-1/4 top-0 h-72 w-72 -translate-y-1/2 rounded-full bg-gold-400 opacity-10 blur-3xl" aria-hidden="true" />
 
         <div className="container-page relative">
           <div className="mx-auto max-w-3xl text-center">
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs font-medium text-white/70 backdrop-blur-sm">
-              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-brand-400" />
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-brand-400" aria-hidden="true" />
               Updated regularly from official SA government sources
             </div>
 
@@ -66,7 +68,7 @@ export default async function HomePage() {
                 <Link
                   key={label}
                   href={`/dashboard?search=${encodeURIComponent(label)}`}
-                  className="rounded-full bg-white/5 px-3 py-1 text-white/60 hover:bg-white/10 hover:text-white/90 transition-colors"
+                  className="rounded-full bg-white/5 px-3 py-1 text-white/60 transition-colors hover:bg-white/10 hover:text-white/90"
                 >
                   {label}
                 </Link>
@@ -81,16 +83,19 @@ export default async function HomePage() {
         <div className="container-page">
           <div className="mb-8 flex items-end justify-between">
             <div>
-              <h2 className="heading-display text-2xl font-semibold">Key indicators</h2>
+              <p className="section-label mb-2">Key indicators</p>
+              <h2 className="heading-display text-2xl font-semibold">
+                Latest headline statistics
+              </h2>
               <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                Latest headline statistics from official sources
+                From Stats SA, SARB, and other official sources
               </p>
             </div>
             <Link
               href="/dashboard"
-              className="flex items-center gap-1.5 text-sm font-medium text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300"
+              className="flex items-center gap-1.5 text-sm font-medium text-brand-600 transition-colors hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300"
             >
-              View all <ArrowRight size={14} />
+              View all <ArrowRight size={14} aria-hidden="true" />
             </Link>
           </div>
 
@@ -109,13 +114,12 @@ export default async function HomePage() {
       {/* ── Category Grid ──────────────────────────────────────────────────── */}
       <section className="py-16">
         <div className="container-page">
-          <div className="mb-8 flex items-end justify-between">
-            <div>
-              <h2 className="heading-display text-2xl font-semibold">Browse by category</h2>
-              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                Dive deep into any area of South African public life
-              </p>
-            </div>
+          <div className="mb-8">
+            <p className="section-label mb-2">Explore</p>
+            <h2 className="heading-display text-2xl font-semibold">Browse by category</h2>
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+              Dive deep into any area of South African public life
+            </p>
           </div>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -127,37 +131,42 @@ export default async function HomePage() {
       </section>
 
       {/* ── Insights Promo ─────────────────────────────────────────────────── */}
-      <section className="border-y border-slate-200 dark:border-slate-800 bg-gradient-to-r from-brand-950 to-slate-900 py-14">
+      <section className="border-y border-slate-200 dark:border-slate-800 py-14">
         <div className="container-page">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
+          <div className="flex flex-col items-start gap-6 sm:flex-row sm:items-center sm:justify-between">
             <div className="max-w-lg">
-              <p className="text-xs font-semibold uppercase tracking-wider text-brand-400 mb-2">Data Stories</p>
-              <h2 className="text-2xl font-semibold text-white mb-2">Beyond the numbers</h2>
-              <p className="text-slate-400 text-sm leading-relaxed">
+              <p className="section-label mb-2">Data Stories</p>
+              <h2 className="text-2xl font-semibold text-slate-900 dark:text-white">
+                Beyond the numbers
+              </h2>
+              <p className="mt-2 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
                 Understand what the statistics actually mean. Data-driven narratives on unemployment, inflation,
                 youth employment, provincial inequality, and more.
               </p>
             </div>
             <Link
               href="/insights"
-              className="shrink-0 inline-flex items-center gap-2 rounded-xl bg-brand-600 px-5 py-3 text-sm font-medium text-white hover:bg-brand-500 transition-colors"
+              className="shrink-0 inline-flex items-center gap-2 rounded-xl bg-brand-600 px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-brand-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2"
             >
-              Read the stories <ArrowRight size={16} />
+              Read the stories <ArrowRight size={16} aria-hidden="true" />
             </Link>
           </div>
         </div>
       </section>
 
       {/* ── Mission ───────────────────────────────────────────────────────── */}
-      <section className="border-t border-slate-200 dark:border-slate-800 bg-slate-100/50 dark:bg-slate-900/50 py-16">
+      <section className="py-16">
         <div className="container-page">
           <div className="mx-auto max-w-3xl">
-            <h2 className="heading-display mb-4 text-center text-2xl font-semibold">Why SA Data Hub?</h2>
-            <p className="mb-10 text-center text-sm text-slate-500 dark:text-slate-400">
-              Government data should be accessible to every South African — not just researchers and policymakers.
-            </p>
+            <div className="mb-10 text-center">
+              <p className="section-label mb-2">Mission</p>
+              <h2 className="heading-display text-2xl font-semibold">Why SA Data Hub?</h2>
+              <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+                Government data should be accessible to every South African — not just researchers and policymakers.
+              </p>
+            </div>
 
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
+            <div className="grid grid-cols-1 gap-8 sm:grid-cols-3">
               {[
                 {
                   icon: Database,
@@ -176,10 +185,10 @@ export default async function HomePage() {
                 },
               ].map(({ icon: Icon, title, desc }) => (
                 <div key={title} className="text-center">
-                  <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-brand-100 dark:bg-brand-950/40">
-                    <Icon size={20} className="text-brand-600 dark:text-brand-400" />
+                  <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-50 dark:bg-brand-950/40" aria-hidden="true">
+                    <Icon size={22} className="text-brand-600 dark:text-brand-400" />
                   </div>
-                  <h3 className="mb-1.5 font-semibold text-slate-900 dark:text-white">{title}</h3>
+                  <h3 className="mb-2 font-semibold text-slate-900 dark:text-white">{title}</h3>
                   <p className="text-sm leading-relaxed text-slate-500 dark:text-slate-400">{desc}</p>
                 </div>
               ))}
@@ -187,6 +196,7 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
     </div>
   )
 }
