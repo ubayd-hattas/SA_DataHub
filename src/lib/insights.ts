@@ -9,6 +9,9 @@
 
 import { Statistic, Insight, InsightSentiment, DataPoint, CategoryId } from '@/types'
 import { GOOD_WHEN_DOWN } from '@/lib/utils'
+import { runDetectors, InsightFact } from './insights/detectors'
+import { formatInsightFact } from './explanations'
+
 
 // ─── Trend analysis helpers ───────────────────────────────────────────────────
 
@@ -192,3 +195,92 @@ export function generateCategoryInsight(stats: Statistic[]): string | null {
   }
   return `Indicators in this category are showing mixed trends.`
 }
+
+// ─── Enriched insight (Phase 1 Detector Engine) ───────────────────────────────
+
+// Insight types that carry a high-confidence, specific finding.
+const HIGH_SIGNAL_TYPES: Array<InsightFact['type']> = [
+  'record_high',
+  'record_low',
+  'trend_reversal',
+  'anomaly',
+]
+
+/**
+ * Generates an Insight by running the Phase 1 deterministic detector engine.
+ *
+ * Strategy:
+ * 1. Run all detectors to produce InsightFact[].
+ * 2. If at least one high-signal fact is found, build the Insight summary from
+ *    the first high-signal fact and list remaining facts as details.
+ * 3. If no high-signal facts fire, fall back to the existing generateInsight()
+ *    so all existing behaviour is preserved.
+ *
+ * The existing generateInsight() function is not modified and remains callable
+ * independently.
+ */
+export function generateEnrichedInsight(stat: Statistic): Insight {
+  const facts = runDetectors(stat)
+
+  const highSignal = facts.filter((f) => HIGH_SIGNAL_TYPES.includes(f.type))
+
+  if (highSignal.length === 0) {
+    // No structured high-signal facts — delegate to the existing engine
+    return generateInsight(stat)
+  }
+
+  const primary = highSignal[0]
+  const goodDown = GOOD_WHEN_DOWN.includes(stat.categoryId)
+
+  // ── Sentiment from primary fact ──────────────────────────────────────────────
+  let sentiment: InsightSentiment = 'neutral'
+  if (primary.type === 'record_high') {
+    sentiment = goodDown ? 'negative' : 'positive'
+  } else if (primary.type === 'record_low') {
+    sentiment = goodDown ? 'positive' : 'negative'
+  } else if (primary.type === 'anomaly') {
+    sentiment =
+      primary.zScore > 0
+        ? goodDown
+          ? 'negative'
+          : 'positive'
+        : goodDown
+        ? 'positive'
+        : 'negative'
+  } else if (primary.type === 'trend_reversal') {
+    sentiment =
+      primary.to === 'down'
+        ? goodDown
+          ? 'positive'
+          : 'negative'
+        : goodDown
+        ? 'negative'
+        : 'positive'
+  }
+
+  // ── InsightType from primary fact ────────────────────────────────────────────
+  const typeMap: Record<InsightFact['type'], Insight['type']> = {
+    record_high: 'trend',
+    record_low: 'trend',
+    yoy_comparison: 'comparison',
+    period_over_period: 'trend',
+    anomaly: 'warning',
+    trend_direction: 'trend',
+    trend_reversal: 'turning-point',
+  }
+
+  // Remaining facts (excluding the primary) become detail bullets, capped at 4
+  const details = facts
+    .filter((f) => f !== primary)
+    .slice(0, 4)
+    .map(formatInsightFact)
+
+  return {
+    summary: formatInsightFact(primary),
+    sentiment,
+    type: typeMap[primary.type],
+    ...(details.length > 0 ? { details } : {}),
+    generatedFrom: `${facts.length} statistical detector${facts.length !== 1 ? 's' : ''}`,
+  }
+}
+

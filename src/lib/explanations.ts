@@ -126,3 +126,86 @@ export function generateExplanation(stat: Statistic): DatasetExplanation {
 
   return { whatChanged, longTermTrend, whyItMatters, importantContext }
 }
+
+// ─── InsightFact → human-readable string ──────────────────────────────────────
+
+import type { InsightFact } from './insights/detectors'
+
+/**
+ * Converts a structured InsightFact to a deterministic, template-based sentence.
+ * All numbers are sourced from the fact's typed fields — no prose generation.
+ *
+ * Used by generateEnrichedInsight() in src/lib/insights.ts.
+ */
+export function formatInsightFact(fact: InsightFact): string {
+  switch (fact.type) {
+    case 'record_high':
+      return (
+        `The latest reading of ${fact.value.toFixed(1)} (${fact.period}) is the ` +
+        `highest in the available ${fact.seriesLength}-period series ` +
+        `(previous record: ${fact.previousRecord.toFixed(1)} in ${fact.previousRecordPeriod}).`
+      )
+
+    case 'record_low':
+      return (
+        `The latest reading of ${fact.value.toFixed(1)} (${fact.period}) is the ` +
+        `lowest in the available ${fact.seriesLength}-period series ` +
+        `(previous record: ${fact.previousRecord.toFixed(1)} in ${fact.previousRecordPeriod}).`
+      )
+
+    case 'yoy_comparison': {
+      const dir = fact.delta > 0 ? 'up' : fact.delta < 0 ? 'down' : 'unchanged'
+      const abs = Math.abs(fact.delta).toFixed(1)
+      const change =
+        dir === 'unchanged' ? 'unchanged' : `${dir} by ${abs}`
+      return (
+        `Year-on-year: ${fact.latestValue.toFixed(1)} in ${fact.latestPeriod} ` +
+        `vs ${fact.yearAgoValue.toFixed(1)} in ${fact.yearAgoPeriod} — ${change}.`
+      )
+    }
+
+    case 'period_over_period': {
+      const dir = fact.delta > 0 ? 'rose' : fact.delta < 0 ? 'fell' : 'was unchanged'
+      const abs = Math.abs(fact.delta).toFixed(1)
+      const change = fact.delta === 0 ? 'unchanged' : `${dir} by ${abs}`
+      return (
+        `From ${fact.prevPeriod} (${fact.prevValue.toFixed(1)}) to ` +
+        `${fact.latestPeriod} (${fact.latestValue.toFixed(1)}), the reading ${change}.`
+      )
+    }
+
+    case 'anomaly': {
+      const dir = fact.zScore > 0 ? 'above' : 'below'
+      return (
+        `The reading of ${fact.value.toFixed(1)} in ${fact.period} is an outlier — ` +
+        `${Math.abs(fact.zScore).toFixed(1)} standard deviations ${dir} ` +
+        `the series average of ${fact.seriesMean.toFixed(1)}.`
+      )
+    }
+
+    case 'trend_direction': {
+      const dirText =
+        fact.direction === 'up'
+          ? 'upward'
+          : fact.direction === 'down'
+          ? 'downward'
+          : 'broadly stable'
+      return (
+        `Over ${fact.seriesLength} periods (${fact.firstPeriod}–${fact.lastPeriod}), ` +
+        `the overall trend is ${dirText} ` +
+        `(${fact.firstValue.toFixed(1)} → ${fact.lastValue.toFixed(1)}).`
+      )
+    }
+
+    case 'trend_reversal': {
+      const fromText = fact.from === 'up' ? 'rising' : 'falling'
+      const toText = fact.to === 'up' ? 'rising' : 'falling'
+      return (
+        `The series shows a trend reversal around ${fact.reversalPeriod}: ` +
+        `${fromText} in the first half, then ${toText} in the second half ` +
+        `of the ${fact.seriesLength}-period range (${fact.firstPeriod}–${fact.lastPeriod}).`
+      )
+    }
+  }
+}
+
