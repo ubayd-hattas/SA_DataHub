@@ -7,6 +7,8 @@ import { StoryCard } from '@/components/ui/StoryCard'
 import { FreshnessIndicator } from '@/components/ui/FreshnessIndicator'
 import { getAppDataProvider } from '@/data/providers'
 import { getStoryBySlug, getRelatedStories, STORIES } from '@/data/stories'
+import { getScrollStoryBySlug, getScrollStoryStatIds } from '@/data/scroll-stories'
+import { StoryScrollPage } from '@/components/stories/StoryScrollPage'
 import { cn } from '@/lib/utils'
 import { buildPageMetadata, AUTHOR } from '@/lib/seo'
 import { Breadcrumbs } from '@/components/seo/Breadcrumbs'
@@ -62,15 +64,19 @@ export default async function StoryPage({ params }: StoryPageProps) {
   const story = getStoryBySlug(params.slug)
   if (!story) notFound()
 
+  const scrollStory = getScrollStoryBySlug(params.slug)
   const provider = await getAppDataProvider()
   const related = getRelatedStories(params.slug)
   const catColor = categoryColors[story.category] ?? categoryColors.policy
-  const storyStatIds = Array.from(
-    new Set([
-      ...story.relatedStatIds,
-      ...story.sections.flatMap((section) => section.statCallouts ?? []),
-    ])
-  )
+  
+  const storyStatIds = scrollStory
+    ? getScrollStoryStatIds(scrollStory)
+    : Array.from(
+        new Set([
+          ...story.relatedStatIds,
+          ...story.sections.flatMap((section) => section.statCallouts ?? []),
+        ])
+      )
   const relatedStats = await provider.getStatsByIds(storyStatIds)
   const relatedStatMap = new Map(relatedStats.map((stat) => [stat.id, stat]))
 
@@ -151,15 +157,22 @@ export default async function StoryPage({ params }: StoryPageProps) {
               </span>
             </div>
           </header>
+        </div>
 
-          {/* Table of contents */}
-          {story.sections.length > 2 && (
-            <nav className="mb-10 rounded-xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-800/50">
-              <div className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
-                <BookOpen size={12} />
-                Contents
-              </div>
-              <ol className="space-y-1.5">
+        {scrollStory ? (
+          <div className="mt-8">
+            <StoryScrollPage story={scrollStory} stats={relatedStats} />
+          </div>
+        ) : (
+          <div className="mx-auto max-w-3xl">
+            {/* Table of contents */}
+            {story.sections.length > 2 && (
+              <nav className="mb-10 rounded-xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-800/50">
+                <div className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
+                  <BookOpen size={12} />
+                  Contents
+                </div>
+                <ol className="space-y-1.5">
                 {story.sections.map((section, i) => (
                   <li key={section.id}>
                     <a
@@ -267,6 +280,7 @@ export default async function StoryPage({ params }: StoryPageProps) {
             </div>
           )}
         </div>
+        )}
 
         {/* Related stories */}
         {related.length > 0 && (
