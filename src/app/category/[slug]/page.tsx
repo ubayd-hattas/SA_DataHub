@@ -192,9 +192,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
         {/* Dataset Update Log */}
         {registryEntries.length > 0 && (
           <div className="mb-8">
-            <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-slate-400">
-              Dataset update log
-            </h2>
+            <h2 className="section-label mb-4">Dataset update log</h2>
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
               {registryEntries.map((entry) => {
                 const lastUpdated = getEntryLastUpdated(entry)
@@ -273,9 +271,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
         {/* Dataset Explanations */}
         {statsWithSeries.length > 0 && (
           <div className="mb-10">
-            <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-slate-400">
-              Understanding the data
-            </h2>
+            <h2 className="section-label mb-4">Understanding the data</h2>
             <div className="flex flex-col gap-3">
               {statsWithSeries.map((stat, i) => (
                 <DatasetExplanation
@@ -291,9 +287,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
         {/* Charts — stat prop passed to enable per-chart export */}
         {statsWithSeries.length > 0 && (
           <div className="mb-10">
-            <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-slate-400">
-              Trend visualisations
-            </h2>
+            <h2 className="section-label mb-4">Trend visualisations</h2>
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
               {statsWithSeries.map((stat, i) => {
                 const insight = generateInsight(stat)
@@ -322,9 +316,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
 
         {/* Sources */}
         <div>
-          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-slate-400">
-            Data sources
-          </h2>
+          <h2 className="section-label mb-4">Data sources</h2>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {allSources.map((source) => (
               <SourceBadge key={source.name} source={source} />
@@ -334,10 +326,8 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
 
         {/* Related stories */}
         {relatedStories.length > 0 && (
-          <div className="mt-10 border-t border-slate-200 pt-8 dark:border-slate-700">
-            <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-slate-400">
-              Related insights
-            </h2>
+          <div className="mt-10 border-t border-slate-200 pt-10 dark:border-slate-700">
+            <h2 className="section-label mb-5">Related insights</h2>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               {relatedStories.map((story) => (
                 <StoryCard key={story.slug} story={story} />

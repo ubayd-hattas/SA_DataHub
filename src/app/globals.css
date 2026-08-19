@@ -49,4 +49,46 @@
   .container-page {
     @apply mx-auto max-w-7xl px-4 sm:px-6 lg:px-8;
   }
+
+  /* Consistent uppercase section labels — replaces ad-hoc inline patterns */
+  .section-label {
+    @apply text-xs font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500;
+  }
+
+  /* ── Editorial prose — story body text ──────────────────────────────────── */
+  /* Applied to <article className="prose-story"> on story pages.             */
+  /* Intentionally avoids @tailwindcss/typography to keep the bundle lean.    */
+  .prose-story {
+    @apply text-slate-700 dark:text-slate-300;
+  }
+
+  .prose-story p {
+    @apply mb-5 text-[1.0625rem] leading-[1.8] text-slate-700 dark:text-slate-300;
+  }
+
+  .prose-story h2 {
+    @apply heading-display mb-4 mt-10 text-xl font-semibold leading-snug text-slate-900 dark:text-white sm:text-2xl;
+  }
+
+  .prose-story blockquote {
+    @apply my-7 border-l-4 border-brand-400 bg-brand-50/60 px-5 py-4 dark:bg-brand-950/20;
+  }
+
+  .prose-story blockquote p {
+    @apply mb-0 text-base font-medium italic leading-relaxed text-slate-700 dark:text-slate-200;
+  }
+
+  /* Focus ring — consistent across all interactive elements */
+  .focus-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 dark:focus-visible:ring-brand-400;
+  }
+}
+
+/* ── Reduced-motion overrides ─────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in,
+  .animate-slide-up {
+    animation: none !important;
+  }
+  /* Framer Motion will pick up on useReducedMotion() — these cover Tailwind animations */
 }
