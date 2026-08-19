@@ -9,6 +9,7 @@ import {
   Tooltip,
   ResponsiveContainer,
   Legend,
+  ReferenceLine,
 } from 'recharts'
 import { DataSeries, Statistic } from '@/types'
 import { ChartExportButton } from '@/components/ui/ExportButton'
@@ -20,6 +21,8 @@ interface LineChartCardProps {
   showLegend?: boolean
   /** Optional: pass the parent Statistic to enable per-chart CSV export */
   stat?: Statistic
+  /** Optional: exact label of a data point to highlight with a vertical line */
+  highlightPeriod?: string
 }
 
 const CHART_COLORS = ['#18a06d', '#e8ab10', '#3b82f6', '#ef4444', '#8b5cf6']
@@ -61,7 +64,7 @@ function CustomCursor({ points, height }: any) {
   )
 }
 
-export function LineChartCard({ title, series, height = 280, showLegend = false, stat }: LineChartCardProps) {
+export function LineChartCard({ title, series, height = 280, showLegend = false, stat, highlightPeriod }: LineChartCardProps) {
   const data = series[0]?.data.map((point, i) => {
     const row: Record<string, string | number> = { label: point.label }
     series.forEach((s) => {
@@ -69,6 +72,9 @@ export function LineChartCard({ title, series, height = 280, showLegend = false,
     })
     return row
   }) ?? []
+
+  // Find if highlight period exists in data to avoid rendering a useless line
+  const hasHighlight = highlightPeriod && data.some(d => d.label === highlightPeriod)
 
   return (
     <div className="card p-5">
@@ -99,6 +105,17 @@ export function LineChartCard({ title, series, height = 280, showLegend = false,
             axisLine={false}
           />
           <Tooltip content={<CustomTooltip />} cursor={<CustomCursor />} />
+          
+          {hasHighlight && (
+            <ReferenceLine 
+              x={highlightPeriod} 
+              stroke="#f9c231" 
+              strokeWidth={2}
+              strokeDasharray="3 3"
+              label={{ position: 'top', value: highlightPeriod, fill: '#c98a08', fontSize: 12, fontWeight: 600 }}
+            />
+          )}
+
           {showLegend && (
             <Legend
               wrapperStyle={{ fontSize: 12 }}
