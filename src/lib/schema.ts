@@ -130,18 +130,19 @@ export function articleSchema(story: Story) {
   }
 }
 
-export function placeSchema(m: MunicipalityRecord, path: string) {
+export function placeSchema(m: MunicipalityRecord, path: string, description: string) {
   return {
     '@context': 'https://schema.org',
     '@type': 'AdministrativeArea',
     name: m.name,
-    description: `Municipality in ${m.provinceName}, South Africa. Census 2022 demographic and housing profile.`,
+    description: description,
     url: absoluteUrl(path),
     containedInPlace: {
       '@type': 'AdministrativeArea',
       name: m.provinceName,
     },
     identifier: m.id,
+    population: m.population2022,
   }
 }
 
