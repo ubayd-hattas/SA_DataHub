@@ -1,3 +1,5 @@
+> **Historical planning document � see CURRENT_STATE.md for executed state**
+
 # Implementation Specification — GDP (P0441) Quarterly Growth Write Path
 
 **Prepared:** 2026-07-18
@@ -515,3 +517,4 @@ Explicitly, for this milestone:
 - [ ] No file outside §4's list has changed (verified by directory diff against the pre-implementation state, same method as the Phase 2 closeout).
 - [ ] No change to `automation/core/*.py`, `automation/runner.py`, `sarb.py`, `saps.py`, `worldbank.py`, or any `src/data/datasets/*.json` other than `gdp.json` (and `gdp.json` itself is only ever touched at runtime by staging/promote, never hand-edited).
 - [ ] The P0441 URL-naming convention and `_GDP_GROWTH_SPEC` label-match assumptions are explicitly disclosed as unverified against a real workbook, in the module docstring/code comments, in `CHANGELOG.md`, and in `CURRENT_STATE.md` — consistently worded, matching the existing QLFS-equivalent disclosure pattern.
+
