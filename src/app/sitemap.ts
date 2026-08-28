@@ -11,7 +11,6 @@ const PROVINCE_IDS = [
 /** Static routes with approximate change frequency for sitemap hints. */
 const STATIC_ROUTES: { path: string; priority: number; changeFrequency: MetadataRoute.Sitemap[0]['changeFrequency']; lastModified: Date }[] = [
   { path: '/',              priority: 1,   changeFrequency: 'weekly',  lastModified: new Date('2026-07-01') },
-  { path: '/dashboard',    priority: 0.9, changeFrequency: 'weekly',  lastModified: new Date('2026-07-01') },
   { path: '/municipalities', priority: 0.9, changeFrequency: 'monthly', lastModified: new Date('2026-05-01') },
   { path: '/provinces',    priority: 0.9, changeFrequency: 'monthly', lastModified: new Date('2026-05-01') },
   { path: '/insights',     priority: 0.8, changeFrequency: 'weekly',  lastModified: new Date('2026-07-01') },
