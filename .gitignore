@@ -3,10 +3,16 @@ node_modules/
 /.pnp
 .pnp.js
 
-# Testing
+# testing
 /coverage
 
-# Next.js Build Output
+# build artifacts
+*.pyc
+**/__pycache__/
+*.tsbuildinfo
+tsc_output.txt
+
+# next.js build output
 /.next/
 /out/
 
