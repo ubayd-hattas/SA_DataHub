@@ -723,7 +723,7 @@ export default function MunicipalityDetailPage({
   params: { code: string }
 }) {
   const m = getMunicipalityByCode(params.code)
-  if (!m) notFound()
+  if (!m) return notFound()
 
   const intro = generateMunicipalityIntro(m)
   const provinceSlug = getProvinceSlugFromCode(m.province)
@@ -739,7 +739,7 @@ export default function MunicipalityDetailPage({
       <JsonLd
         data={[
           breadcrumbSchema(breadcrumbs),
-          placeSchema(m, `/municipalities/${m.id}`),
+          placeSchema(m, `/municipalities/${m.id}`, intro),
         ]}
       />
       {/* Breadcrumb */}

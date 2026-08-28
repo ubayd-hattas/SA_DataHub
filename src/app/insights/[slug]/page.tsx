@@ -63,7 +63,7 @@ const categoryColors: Record<string, string> = {
 
 export default async function StoryPage({ params }: StoryPageProps) {
   const story = getStoryBySlug(params.slug)
-  if (!story) notFound()
+  if (!story) return notFound()
 
   const scrollStory = getScrollStoryBySlug(params.slug)
   const provider = await getAppDataProvider()
