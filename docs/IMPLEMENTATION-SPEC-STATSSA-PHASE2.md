@@ -1,3 +1,5 @@
+> **Historical planning document � see CURRENT_STATE.md for executed state**
+
 # Implementation Specification — Stats SA QLFS Phase 2
 
 **Prepared:** 2026-07-16
@@ -153,3 +155,4 @@ There is no PostgreSQL integration in this milestone. `DATA_SOURCE=db` vs `json`
 - `CURRENT_STATE.md` is updated to reflect that Stats SA QLFS now has a working, gated write path, in the same style as this document's own creation reflected the automation framework's completion.
 - No change has been made to `automation/core/*.py`, `automation/runner.py`'s CLI surface, or any adapter other than `StatsSAAdapter`, beyond what's explicitly listed in §3.
 - The one-time schema correction (§4 step 1) is committed separately from the parsing/transform code, with its own clear commit message, so it can be reviewed and reasoned about independently of the automation logic.
+

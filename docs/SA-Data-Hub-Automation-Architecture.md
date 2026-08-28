@@ -1,3 +1,5 @@
+> **Superseded by docs/CURRENT_STATE.md**
+
 # SA Data Hub — Long-Term Data Automation Architecture
 
 **Prepared:** 1 July 2026
@@ -414,3 +416,4 @@ GitHub Actions is the right home for orchestration because approval-via-PR is a 
 7. **Preserve the one-release-one-job principle for future consolidations.** If Stats SA or SAPS ever merge publications (as hinted by the SAPS–Stats SA MoU), collapse the corresponding extractors the same way the QLFS family was collapsed — don't let three near-duplicate pipelines regrow.
 8. **Revisit the `DATA_SOURCE=db` cutover only after this pipeline has a full cycle of real-world runs behind it** for the "Easy" and "Moderate" datasets — the equivalence-test history from those runs is the evidence base for trusting the flip to production database reads.
 9. **Version everything, even manual entries.** Because Track B writes through the same `dataset_versions`/staging path, the system should never lose the ability to answer "what did this figure say on date X and who approved it" — this is as much an accountability tool for a solo maintainer as it is an engineering safeguard.
+

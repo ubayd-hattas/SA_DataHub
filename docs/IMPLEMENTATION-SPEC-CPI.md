@@ -1,3 +1,5 @@
+> **Historical planning document � see CURRENT_STATE.md for executed state**
+
 # Implementation Specification — CPI (P0141) Stats SA Write Path
 
 **Prepared:** 2026-07-20
@@ -540,3 +542,4 @@ New tests to add to `automation/adapters/tests/test_statss.py`, following the ex
 - [ ] No change to `automation/core/*.py`, `automation/runner.py`, `sarb.py`, `saps.py`, `worldbank.py`, `interest-rates.json`, or any `src/data/datasets/*.json` other than `inflation.json` (and `inflation.json` itself is only ever touched at runtime by staging/promote, never hand-edited).
 - [ ] The `_CPI_METRIC_SPECS` label-match assumptions, the P0141 URL-naming convention, and the numeric thresholds in §11 items 1 and 4 are explicitly disclosed as unverified/judgement-call assumptions, in the module docstring/code comments, in `CHANGELOG.md`, and in `CURRENT_STATE.md` — consistently worded, matching the existing QLFS/GDP disclosure pattern.
 - [ ] §17's open questions (repo-rate de-dup scoping, annual-cpi-avg scoping, CPI revision cadence, next-milestone naming) are recorded in `CURRENT_STATE.md` as open items if not resolved by the stakeholder before implementation begins — they are not silently decided by the implementer mid-build.
+

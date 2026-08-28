@@ -1,3 +1,5 @@
+> **Historical planning document � see CURRENT_STATE.md for executed state**
+
 # IMPLEMENTATION-SPEC-POPULATION.md
 
 **Milestone:** Stats SA Population (MYPE, P0302) write path — Phase 4
@@ -486,3 +488,4 @@ Full suite (currently 83/83) must continue to pass unmodified alongside the new 
 - [ ] Sweep `src/lib/registry.ts`, `src/lib/citation.ts`, `src/lib/insights.ts` for any hardcoded assumption about `population-total`'s value or freshness that this correction might invalidate — same downstream-reference discipline already applied after the QLFS Phase 2 stat-ID changes (`CURRENT_STATE.md` §2 notes this sweep was previously blocked by those files being unavailable to the session; confirm availability before closing this item).
 - [ ] Flip `population.yaml`'s `automation_level` to `hybrid` (§12) and update `CURRENT_STATE.md`'s "Completed Milestones" / "Production Readiness" sections to add Population alongside SARB/QLFS/GDP/CPI, following the exact update pattern used when CPI Phase 3b closed out.
 - [ ] Log a follow-on backlog item for the historical-series audit (§14 risk 5) — do not silently drop it once this milestone closes.
+

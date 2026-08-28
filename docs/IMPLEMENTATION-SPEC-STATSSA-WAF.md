@@ -1,3 +1,5 @@
+> **Historical planning document — see CURRENT_STATE.md for executed state**
+
 # Implementation Spec: Stats SA Release-Hub WAF Access
 
 **Status:** Investigation complete â€” proposed for implementation
@@ -850,3 +852,4 @@ state for QLFS/GDP detection (a zero-code-change, already-correct fallback
 the adapter already implements today) while a Tier 2 decision is made
 deliberately, outside this document's engineering scope, rather than
 reactively.
+

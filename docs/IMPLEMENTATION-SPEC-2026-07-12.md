@@ -1,3 +1,5 @@
+> **Historical planning document � see CURRENT_STATE.md for executed state**
+
 # SA Data Hub — Automation Framework
 # Implementation Specification for Next Development Session
 
@@ -313,3 +315,4 @@ This is a low-severity information-leakage issue (a personal folder name, not a 
 7. **Remove the committed local filesystem path** (lowest severity; any time)
 
 Items 1–4 are the load-bearing sequence and should not be reordered. Items 5–7 are independent of that sequence and of each other, and may be scheduled around it as time permits.
+
