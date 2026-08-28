@@ -95,7 +95,7 @@ function StatBlock({ label, value, sub, icon: Icon, color }: {
 
 export default function ProvincePage({ params }: ProvincePageProps) {
   const province = getProvinceById(params.id)
-  if (!province) notFound()
+  if (!province) return notFound()
 
   const allProvinces = getProvinceData()
   const color = PROVINCE_COLORS[province.id] ?? '#64748b'

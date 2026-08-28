@@ -93,7 +93,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
     provider.getCategoryById(params.slug),
     provider.getStatsByCategory(params.slug),
   ])
-  if (!category) notFound()
+  if (!category) return notFound()
   const Icon = iconMap[category.icon] ?? BarChart3
   const statsWithSeries = stats.filter((s) => s.series && s.series.length > 0)
   const allSources = Array.from(new Map(stats.map((s) => [s.source.name, s.source])).values())
