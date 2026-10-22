@@ -13,9 +13,17 @@ NOTE on ZAR values:
   against Stats SA's own GDP release in ZAR:
   https://www.statssa.gov.za/?page_id=1854&PPN=P0441
 
+SAFETY (2026-10-19):
+  This script is now DRY-RUN ONLY by default.  It will NOT write to
+  src/data/datasets/gdp.json unless --allow-overwrite is passed.
+  Verified quarterly Stats SA data (Q2 2026 = -0.2%) is in place.
+  Additionally, Stats SA is rebasing national accounts to 2022 (expected
+  Oct 2026) — all GDP history will change; do not overwrite until then.
+
 HOW TO RUN:
-    python scripts/update_gdp.py
-    python scripts/update_gdp.py --dry-run
+    python scripts/update_gdp.py             # report-only (safe)
+    python scripts/update_gdp.py --dry-run   # same
+    python scripts/update_gdp.py --allow-overwrite  # DANGER: writes files
 """
 
 from __future__ import annotations
@@ -47,7 +55,15 @@ def _parse_wb(url: str, n: int = 10) -> list[dict]:
     return points[-n:]
 
 
-def run(dry_run: bool = False) -> None:
+def run(dry_run: bool = False, allow_overwrite: bool = False) -> None:
+    # Safety guard — refuse to write unless explicitly overridden.
+    if not allow_overwrite:
+        dry_run = True
+        print(
+            "  [PROTECTED] update_gdp is running in report-only mode.\n"
+            "  It will NOT write to gdp.json.\n"
+            "  Pass --allow-overwrite to enable writes (DANGER: overwrites verified Stats SA quarterly data).\n"
+        )
     existing  = load_dataset("gdp")
     old_stats = existing.get("statistics", [])
 
@@ -125,5 +141,11 @@ def run(dry_run: bool = False) -> None:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument(
+        "--allow-overwrite",
+        action="store_true",
+        dest="allow_overwrite",
+        help="DANGER: allow writes — will overwrite verified Stats SA quarterly GDP with World Bank annual data",
+    )
     args = parser.parse_args()
-    run(dry_run=args.dry_run)
+    run(dry_run=args.dry_run, allow_overwrite=args.allow_overwrite)

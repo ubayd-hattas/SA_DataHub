@@ -21,10 +21,13 @@ def run() -> CheckResult:
             result.add(Severity.FAIL, f"'{sid}' rawValue is not numeric: {raw!r}")
             continue
 
-        if unit == "%" and not (0 <= raw <= 100):
+        # Growth and change statistics can legitimately be negative (e.g. GDP contraction)
+        is_growth_or_change = "growth" in sid or sid in ("gdp-growth", "gdp-annual-growth")
+        min_val = -100 if is_growth_or_change else 0
+        if unit == "%" and not (min_val <= raw <= 100):
             result.add(
                 Severity.WARN,
-                f"'{sid}' percent value out of 0–100 range: {raw}",
+                f"'{sid}' percent value out of {min_val}–100 range: {raw}",
             )
 
         if isinstance(change, (int, float)) and trend in ("up", "down", "stable"):

@@ -11,6 +11,7 @@ from validation.checks import (
     check_registry_integrity,
     check_relationships,
     check_schema,
+    check_updater_safety,
 )
 
 ALL_CHECKS = [
@@ -24,4 +25,5 @@ ALL_CHECKS = [
     check_dataset_consistency,
     check_geography_integrity,
     check_relationships,
+    check_updater_safety,
 ]
