@@ -3,44 +3,78 @@
     "source": "Department of Basic Education — NSC Examinations; Stats SA Census 2022",
     "source_url": "https://www.education.gov.za/Informationfor/Examinationsresults.aspx",
     "update_frequency": "Annual (matric results: January; literacy: decennial census)",
-    "last_verified": "2025-05-01",
-    "notes": "Matric pass rates are published in January each year. Literacy rates come from Census (10-year cycle). Update matric results by running: python scripts/update_education.py"
+    "last_verified": "2026-10-19",
+    "notes": "Matric: 2025 NSC results announced by the Minister of Basic Education on 2026-01-12: national pass rate 88% (reported as 'about 0.7 pp' above 2024's 87.3%; the one-decimal value 88.0 is therefore inferred, not separately confirmed); bachelor passes 46% (48% in 2024); >656,000 passed; >900,000 full-time and part-time candidates wrote. Source used is the government news agency report of the DBE announcement — the DBE report itself was not retrieved; confirm the exact decimal, the pass-rate denominator, and the bachelor-pass base against the DBE NSC report. Provincial matric rates in provinces.json remain the 2024 values (only KZN 90.6% and Free State 89.33% were found for 2025, so a partial update was not made). Literacy is Census 2022 (unchanged). Higher-education enrolment (public universities, 2023) is unchanged: no newer DHET 'Statistics on Post-School Education and Training' edition was found, and the 2023 value was not re-verified. Do NOT run the World Bank updater script for this dataset (it overwrites verified values with annual modelled figures); update manually from the official Stats SA/SARB/DBE release — see antigravity-instructions.md."
   },
   "statistics": [
     {
       "id": "matric-pass-rate",
       "categoryId": "education",
       "title": "National Matric Pass Rate",
-      "value": "87.3%",
-      "rawValue": 87.3,
+      "value": "88.0%",
+      "rawValue": 88.0,
       "unit": "%",
-      "change": 4.4,
-      "changeLabel": "from 2023",
+      "change": 0.7,
+      "changeLabel": "from 2024 (87.3%)",
       "trend": "up",
-      "description": "The national senior certificate (matric) pass rate for the 2024 academic year, the highest on record. Bachelor's degree passes (qualifying for university entrance) were achieved by 47.8% of candidates. 1,044,415 candidates wrote the examinations.",
+      "description": "The national senior certificate (matric) pass rate for the 2025 academic year was 88%, the highest on record and about 0.7 percentage points above 2024 (87.3%). Over 656,000 candidates passed; more than 900,000 full-time and part-time candidates wrote, the largest cohort ever. Bachelor's passes (university entrance) were 46% of passes — down from 48% in 2024 — although a record 345,000+ candidates qualified for degree study. All nine provinces were above 80%; KwaZulu-Natal was highest at 90.6%.",
       "source": {
         "name": "Department of Basic Education",
         "shortName": "DBE",
-        "url": "https://www.education.gov.za/Informationfor/Examinationsresults.aspx",
-        "publicationName": "NSC Examination Results 2024",
-        "publicationDate": "2025-01-15"
+        "url": "https://www.sanews.gov.za/south-africa/class-2025-sets-new-national-record-historic-88-pass-rate",
+        "publicationName": "NSC Examination Results 2025",
+        "publicationDate": "2026-01-12"
       },
-      "lastUpdated": "2025-01-15",
+      "lastUpdated": "2026-01-12",
       "series": [
         {
           "name": "Matric Pass Rate (%)",
           "unit": "%",
           "data": [
-            { "label": "2015", "value": 70.7 },
-            { "label": "2016", "value": 72.5 },
-            { "label": "2017", "value": 75.1 },
-            { "label": "2018", "value": 78.2 },
-            { "label": "2019", "value": 81.3 },
-            { "label": "2020", "value": 76.2 },
-            { "label": "2021", "value": 77.6 },
-            { "label": "2022", "value": 80.1 },
-            { "label": "2023", "value": 82.9 },
-            { "label": "2024", "value": 87.3 }
+            {
+              "label": "2015",
+              "value": 70.7
+            },
+            {
+              "label": "2016",
+              "value": 72.5
+            },
+            {
+              "label": "2017",
+              "value": 75.1
+            },
+            {
+              "label": "2018",
+              "value": 78.2
+            },
+            {
+              "label": "2019",
+              "value": 81.3
+            },
+            {
+              "label": "2020",
+              "value": 76.2
+            },
+            {
+              "label": "2021",
+              "value": 77.6
+            },
+            {
+              "label": "2022",
+              "value": 80.1
+            },
+            {
+              "label": "2023",
+              "value": 82.9
+            },
+            {
+              "label": "2024",
+              "value": 87.3
+            },
+            {
+              "label": "2025",
+              "value": 88.0
+            }
           ]
         }
       ]
@@ -89,12 +123,30 @@
           "name": "Enrolments (millions)",
           "unit": "million",
           "data": [
-            { "label": "2018", "value": 0.975 },
-            { "label": "2019", "value": 1.004 },
-            { "label": "2020", "value": 1.038 },
-            { "label": "2021", "value": 1.063 },
-            { "label": "2022", "value": 1.037 },
-            { "label": "2023", "value": 1.070 }
+            {
+              "label": "2018",
+              "value": 0.975
+            },
+            {
+              "label": "2019",
+              "value": 1.004
+            },
+            {
+              "label": "2020",
+              "value": 1.038
+            },
+            {
+              "label": "2021",
+              "value": 1.063
+            },
+            {
+              "label": "2022",
+              "value": 1.037
+            },
+            {
+              "label": "2023",
+              "value": 1.07
+            }
           ]
         }
       ]

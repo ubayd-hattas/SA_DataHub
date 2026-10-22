@@ -3,46 +3,102 @@
     "source": "Statistics South Africa — Consumer Price Index (P0141); SARB Monetary Policy Committee",
     "source_url": "https://www.statssa.gov.za/?page_id=1854&PPN=P0141",
     "update_frequency": "Monthly — around the 22nd of each month for the prior month",
-    "last_verified": "2026-05-31",
-    "notes": "CPI figures are year-on-year % change. SARB inflation target was changed to 3% (±1pp) on 12 November 2025 from the previous 3–6% band. Repo rate decisions made at MPC meetings approx. 6× per year. Update by running: python scripts/update_inflation.py"
+    "last_verified": "2026-10-22",
+    "notes": "CPI figures are year-on-year % change (all urban areas, headline). Latest Stats SA CPI release: September 2026 (published 2026-10-21; added in an addendum on 2026-10-22, after the 2026-10-19 research cutoff). Headline 4.5% (Aug 4.4%, Jul 4.3%); food & NAB 1.2% (Aug 1.1%, Jul 0.9%) per Stats SA's release article https://www.statssa.gov.za/?p=20031 (the statistical release PDF was not retrieved). A third-party agricultural commentary quoted a different food figure (1.0%) and was disregarded in favour of Stats SA's own 1.2%. Next CPI (October 2026) is due 2026-11-18. SARB inflation target is 3% with a ±1 percentage point tolerance band (SARB MPC page, September 2026); the 12 Nov 2025 adoption date quoted in earlier notes was not re-verified. 2026 repo decisions verified: held 6.75% (29 Jan, 26 Mar); raised to 7.00% (28 May, effective 29 May, 4–2 vote); held 7.00% (23 Jul, 4–2); raised to 7.25% (23 Sep, effective 25 Sep, unanimous). Months May–Sep 2026 were added from Stats SA P0141 releases (May, Jun, Jul, Aug, Sep 2026). REVIEW: monthly points before Apr 2026 were not re-verified; the stored food series shows a rise Jan→Feb 2026 (3.5→3.7), which conflicts with Stats SA's statement of an eight-month downswing to July 2026; annual-cpi-avg (2025 = 3.2%) was not re-verified. Duplicate of repo-rate-sarb in interest-rates.json is retained (both 7.25%). Do NOT run the World Bank updater script for this dataset (it overwrites verified values with annual modelled figures); update manually from the official Stats SA/SARB/DBE release — see antigravity-instructions.md. REVIEW: repo-rate series points 'Jul 2025' (7.25%) and 'Jan 2025' (7.75%) look one meeting out of date versus media reports of a cut to 7.00% on 2025-07-31; retained unchanged pending SARB statement check. New points follow the convention 'rate in force after that month's MPC decision'."
   },
   "statistics": [
     {
       "id": "cpi-headline",
       "categoryId": "inflation",
       "title": "Headline Inflation (CPI)",
-      "value": "4.0%",
-      "rawValue": 4.0,
+      "value": "4.5%",
+      "rawValue": 4.5,
       "unit": "%",
-      "change": 0.9,
-      "changeLabel": "from March 2026 (3.1%)",
-      "trend": "up",
-      "description": "South Africa's headline CPI rose to 4.0% year-on-year in April 2026 — the steepest reading since August 2024. The main drivers were a sharp jump in fuel prices (+18% annually), higher electricity tariffs, and insurance costs. Food inflation eased to 2.9%. Core inflation (ex-food, fuel, energy) rose to 3.6%. This moves inflation above the SARB's new 3% target midpoint.",
+      "change": 0.1,
+      "changeLabel": "from August 2026 (4.4%)",
+      "trend": "stable",
+      "description": "South Africa's headline CPI was 4.5% year-on-year in September 2026, up from 4.4% in August and 4.3% in July; the index rose 0.4% between August and September. Inflation peaked at 5.0% in June, the highest since June 2024. Transport (10.8%, contributing 1.5 percentage points), housing and utilities (5.2%, 1.3 points) and insurance and financial services (5.4%, 0.6 points) were the main contributors. The SARB's inflation target is 3% with a tolerance band of ±1 percentage point.",
       "source": {
         "name": "Statistics South Africa",
         "shortName": "Stats SA",
-        "url": "https://www.statssa.gov.za/?page_id=1854&PPN=P0141",
-        "publicationName": "Consumer Price Index April 2026",
-        "publicationDate": "2026-05-21"
+        "url": "https://www.statssa.gov.za/?p=20031",
+        "publicationName": "Consumer Price Index September 2026",
+        "publicationDate": "2026-10-21"
       },
-      "lastUpdated": "2026-05-21",
+      "lastUpdated": "2026-10-21",
       "series": [
         {
           "name": "Headline CPI (%)",
           "unit": "%",
           "data": [
-            { "label": "May 2025", "value": 2.8 },
-            { "label": "Jun 2025", "value": 3.2 },
-            { "label": "Jul 2025", "value": 3.3 },
-            { "label": "Aug 2025", "value": 3.4 },
-            { "label": "Sep 2025", "value": 3.5 },
-            { "label": "Oct 2025", "value": 3.3 },
-            { "label": "Nov 2025", "value": 3.0 },
-            { "label": "Dec 2025", "value": 3.2 },
-            { "label": "Jan 2026", "value": 3.5 },
-            { "label": "Feb 2026", "value": 3.0 },
-            { "label": "Mar 2026", "value": 3.1 },
-            { "label": "Apr 2026", "value": 4.0 }
+            {
+              "label": "May 2025",
+              "value": 2.8
+            },
+            {
+              "label": "Jun 2025",
+              "value": 3.2
+            },
+            {
+              "label": "Jul 2025",
+              "value": 3.3
+            },
+            {
+              "label": "Aug 2025",
+              "value": 3.4
+            },
+            {
+              "label": "Sep 2025",
+              "value": 3.5
+            },
+            {
+              "label": "Oct 2025",
+              "value": 3.3
+            },
+            {
+              "label": "Nov 2025",
+              "value": 3.0
+            },
+            {
+              "label": "Dec 2025",
+              "value": 3.2
+            },
+            {
+              "label": "Jan 2026",
+              "value": 3.5
+            },
+            {
+              "label": "Feb 2026",
+              "value": 3.0
+            },
+            {
+              "label": "Mar 2026",
+              "value": 3.1
+            },
+            {
+              "label": "Apr 2026",
+              "value": 4.0
+            },
+            {
+              "label": "May 2026",
+              "value": 4.5
+            },
+            {
+              "label": "Jun 2026",
+              "value": 5.0
+            },
+            {
+              "label": "Jul 2026",
+              "value": 4.3
+            },
+            {
+              "label": "Aug 2026",
+              "value": 4.4
+            },
+            {
+              "label": "Sep 2026",
+              "value": 4.5
+            }
           ]
         }
       ]
@@ -51,38 +107,94 @@
       "id": "food-inflation",
       "categoryId": "inflation",
       "title": "Food & Non-Alcoholic Beverages CPI",
-      "value": "2.9%",
-      "rawValue": 2.9,
+      "value": "1.2%",
+      "rawValue": 1.2,
       "unit": "%",
-      "change": -0.7,
-      "changeLabel": "from March 2026 (3.6%)",
-      "trend": "down",
-      "description": "Food and non-alcoholic beverage inflation eased to 2.9% in April 2026, continuing its decline from 2023 highs above 14%. Strong farm output has moderated food prices. Meat prices remain elevated year-on-year despite recent monthly declines. Bread and cereals saw mixed trends.",
+      "change": 0.1,
+      "changeLabel": "from August 2026 (1.1%)",
+      "trend": "stable",
+      "description": "Food and non-alcoholic beverage (NAB) inflation was 1.2% in September 2026, up from 1.1% in August and 0.9% in July — a second consecutive monthly acceleration, but still very low. Meat inflation slowed to 0.7% (its lowest since March 2025) and cereal products recorded an eighth consecutive month of deflation (-1.9%).",
       "source": {
         "name": "Statistics South Africa",
         "shortName": "Stats SA",
-        "url": "https://www.statssa.gov.za/?page_id=1854&PPN=P0141",
-        "publicationName": "Consumer Price Index April 2026",
-        "publicationDate": "2026-05-21"
+        "url": "https://www.statssa.gov.za/?p=20031",
+        "publicationName": "Consumer Price Index September 2026",
+        "publicationDate": "2026-10-21"
       },
-      "lastUpdated": "2026-05-21",
+      "lastUpdated": "2026-10-21",
       "series": [
         {
           "name": "Food CPI (%)",
           "unit": "%",
           "data": [
-            { "label": "May 2025", "value": 2.2 },
-            { "label": "Jun 2025", "value": 2.9 },
-            { "label": "Jul 2025", "value": 3.0 },
-            { "label": "Aug 2025", "value": 3.1 },
-            { "label": "Sep 2025", "value": 3.3 },
-            { "label": "Oct 2025", "value": 3.2 },
-            { "label": "Nov 2025", "value": 3.0 },
-            { "label": "Dec 2025", "value": 3.1 },
-            { "label": "Jan 2026", "value": 3.5 },
-            { "label": "Feb 2026", "value": 3.7 },
-            { "label": "Mar 2026", "value": 3.6 },
-            { "label": "Apr 2026", "value": 2.9 }
+            {
+              "label": "May 2025",
+              "value": 2.2
+            },
+            {
+              "label": "Jun 2025",
+              "value": 2.9
+            },
+            {
+              "label": "Jul 2025",
+              "value": 3.0
+            },
+            {
+              "label": "Aug 2025",
+              "value": 3.1
+            },
+            {
+              "label": "Sep 2025",
+              "value": 3.3
+            },
+            {
+              "label": "Oct 2025",
+              "value": 3.2
+            },
+            {
+              "label": "Nov 2025",
+              "value": 3.0
+            },
+            {
+              "label": "Dec 2025",
+              "value": 3.1
+            },
+            {
+              "label": "Jan 2026",
+              "value": 3.5
+            },
+            {
+              "label": "Feb 2026",
+              "value": 3.7
+            },
+            {
+              "label": "Mar 2026",
+              "value": 3.6
+            },
+            {
+              "label": "Apr 2026",
+              "value": 2.9
+            },
+            {
+              "label": "May 2026",
+              "value": 1.9
+            },
+            {
+              "label": "Jun 2026",
+              "value": 1.6
+            },
+            {
+              "label": "Jul 2026",
+              "value": 0.9
+            },
+            {
+              "label": "Aug 2026",
+              "value": 1.1
+            },
+            {
+              "label": "Sep 2026",
+              "value": 1.2
+            }
           ]
         }
       ]
@@ -91,44 +203,110 @@
       "id": "repo-rate",
       "categoryId": "inflation",
       "title": "SARB Policy Rate (Repo Rate)",
-      "value": "6.75%",
-      "rawValue": 6.75,
+      "value": "7.25%",
+      "rawValue": 7.25,
       "unit": "%",
-      "change": 0.0,
-      "changeLabel": "held at March 2026 MPC",
-      "trend": "stable",
-      "description": "The SARB held the repo rate at 6.75% at the March 2026 MPC meeting — the second consecutive hold. The decision was unanimous. The MPC cited the Iran war-related oil price shock as creating upside inflation risk. The prime lending rate remains at 10.25%. The SARB's new inflation target is 3% (±1pp), adopted November 2025.",
+      "change": 0.25,
+      "changeLabel": "raised from 7.00% at September 2026 MPC",
+      "trend": "up",
+      "description": "The SARB raised the repo rate by 25 basis points to 7.25% at its 23 September 2026 MPC meeting (effective 25 September). The decision was unanimous, and was the second increase of 2026 after a hike to 7.00% in May; the committee held at 7.00% in July. The MPC cited a persistent global energy-price shock, elevated services inflation and upside inflation risks. The prime lending rate is now 10.75%. The SARB's inflation target is 3% with a tolerance band of ±1 percentage point.",
       "source": {
         "name": "South African Reserve Bank",
         "shortName": "SARB",
-        "url": "https://www.resbank.co.za/en/home/publications/publication-detail-pages/statements/monetary-policy-statements/2026/march",
-        "publicationName": "MPC Statement March 2026",
-        "publicationDate": "2026-03-26"
+        "url": "https://www.resbank.co.za/en/home/publications/publication-detail-pages/statements/monetary-policy-statements/2026/september",
+        "publicationName": "MPC Statement September 2026",
+        "publicationDate": "2026-09-23"
       },
-      "lastUpdated": "2026-03-26",
+      "lastUpdated": "2026-09-23",
       "series": [
         {
           "name": "Repo Rate (%)",
           "unit": "%",
           "data": [
-            { "label": "May 2023", "value": 8.25 },
-            { "label": "Jul 2023", "value": 8.25 },
-            { "label": "Sep 2023", "value": 8.25 },
-            { "label": "Nov 2023", "value": 8.25 },
-            { "label": "Jan 2024", "value": 8.25 },
-            { "label": "Mar 2024", "value": 8.25 },
-            { "label": "May 2024", "value": 8.25 },
-            { "label": "Jul 2024", "value": 8.25 },
-            { "label": "Sep 2024", "value": 8.00 },
-            { "label": "Nov 2024", "value": 7.75 },
-            { "label": "Jan 2025", "value": 7.75 },
-            { "label": "Mar 2025", "value": 7.50 },
-            { "label": "May 2025", "value": 7.25 },
-            { "label": "Jul 2025", "value": 7.25 },
-            { "label": "Sep 2025", "value": 7.00 },
-            { "label": "Nov 2025", "value": 6.75 },
-            { "label": "Jan 2026", "value": 6.75 },
-            { "label": "Mar 2026", "value": 6.75 }
+            {
+              "label": "May 2023",
+              "value": 8.25
+            },
+            {
+              "label": "Jul 2023",
+              "value": 8.25
+            },
+            {
+              "label": "Sep 2023",
+              "value": 8.25
+            },
+            {
+              "label": "Nov 2023",
+              "value": 8.25
+            },
+            {
+              "label": "Jan 2024",
+              "value": 8.25
+            },
+            {
+              "label": "Mar 2024",
+              "value": 8.25
+            },
+            {
+              "label": "May 2024",
+              "value": 8.25
+            },
+            {
+              "label": "Jul 2024",
+              "value": 8.25
+            },
+            {
+              "label": "Sep 2024",
+              "value": 8.0
+            },
+            {
+              "label": "Nov 2024",
+              "value": 7.75
+            },
+            {
+              "label": "Jan 2025",
+              "value": 7.75
+            },
+            {
+              "label": "Mar 2025",
+              "value": 7.5
+            },
+            {
+              "label": "May 2025",
+              "value": 7.25
+            },
+            {
+              "label": "Jul 2025",
+              "value": 7.25
+            },
+            {
+              "label": "Sep 2025",
+              "value": 7.0
+            },
+            {
+              "label": "Nov 2025",
+              "value": 6.75
+            },
+            {
+              "label": "Jan 2026",
+              "value": 6.75
+            },
+            {
+              "label": "Mar 2026",
+              "value": 6.75
+            },
+            {
+              "label": "May 2026",
+              "value": 7.0
+            },
+            {
+              "label": "Jul 2026",
+              "value": 7.0
+            },
+            {
+              "label": "Sep 2026",
+              "value": 7.25
+            }
           ]
         }
       ]
@@ -157,17 +335,50 @@
           "name": "Annual Average CPI (%)",
           "unit": "%",
           "data": [
-            { "label": "2015", "value": 4.6 },
-            { "label": "2016", "value": 6.4 },
-            { "label": "2017", "value": 5.3 },
-            { "label": "2018", "value": 4.6 },
-            { "label": "2019", "value": 4.1 },
-            { "label": "2020", "value": 3.3 },
-            { "label": "2021", "value": 4.5 },
-            { "label": "2022", "value": 6.9 },
-            { "label": "2023", "value": 6.0 },
-            { "label": "2024", "value": 4.4 },
-            { "label": "2025", "value": 3.2 }
+            {
+              "label": "2015",
+              "value": 4.6
+            },
+            {
+              "label": "2016",
+              "value": 6.4
+            },
+            {
+              "label": "2017",
+              "value": 5.3
+            },
+            {
+              "label": "2018",
+              "value": 4.6
+            },
+            {
+              "label": "2019",
+              "value": 4.1
+            },
+            {
+              "label": "2020",
+              "value": 3.3
+            },
+            {
+              "label": "2021",
+              "value": 4.5
+            },
+            {
+              "label": "2022",
+              "value": 6.9
+            },
+            {
+              "label": "2023",
+              "value": 6.0
+            },
+            {
+              "label": "2024",
+              "value": 4.4
+            },
+            {
+              "label": "2025",
+              "value": 3.2
+            }
           ]
         }
       ]

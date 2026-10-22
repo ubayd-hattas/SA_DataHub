@@ -3,29 +3,29 @@
     "source": "Statistics South Africa — Quarterly Labour Force Survey (P0211)",
     "source_url": "https://www.statssa.gov.za/?page_id=1854&PPN=P0211",
     "update_frequency": "Quarterly — February, May, August, November",
-    "last_verified": "2026-05-31",
-    "notes": "Official unemployment uses ILO strict definition. Expanded definition includes discouraged work-seekers. Q4 2025 data published Feb 2026 showing 31.4%. Provincial data from same QLFS release. Update by running: python scripts/update_unemployment.py"
+    "last_verified": "2026-10-19",
+    "notes": "Official unemployment uses the ILO strict definition (LU1), ages 15–64. Latest release: QLFS Q2 2026 (published 2026-08-11); next release Q3 2026 expected November 2026. All 18 observations Q1 2022–Q2 2026 were checked against original Stats SA releases (see series-verification-log.md). Corrections: Q2 2023 33.5→32.6, Q3 2023 33.7→31.9, Q4 2023 32.9→32.1, Q1 2025 33.5→32.9. From Q3 2025 Stats SA reports LU3 (unemployment + potential labour force) in place of the former expanded unemployment rate; LU3 is not definitionally identical to it and is not merged into any series here. Trend labels: 'stable' if the unrounded change is within ±0.1 pp. Do NOT run the World Bank updater script for this dataset (it overwrites verified values with annual modelled figures); update manually from the official Stats SA/SARB/DBE release — see antigravity-instructions.md."
   },
   "statistics": [
     {
       "id": "unemployment-national",
       "categoryId": "unemployment",
       "title": "National Unemployment Rate",
-      "value": "31.4%",
-      "rawValue": 31.4,
+      "value": "33.6%",
+      "rawValue": 33.6,
       "unit": "%",
-      "change": -0.5,
-      "changeLabel": "from Q3 2025 (31.9%)",
-      "trend": "down",
-      "description": "South Africa's official unemployment rate fell to 31.4% in Q4 2025 — the lowest since Q2 2022 — as 44,000 more people found work. The number of employed persons rose to 17.1 million. The expanded unemployment rate (including discouraged work-seekers) stands at 40.7%.",
+      "change": 0.9,
+      "changeLabel": "from Q1 2026 (32.7%)",
+      "trend": "up",
+      "description": "South Africa's official unemployment rate (strict definition, ages 15–64) rose 0.9 percentage points to 33.6% in Q2 2026. The number of unemployed persons increased by 345,000 to 8.5 million while employment fell by 16,000 to 16.7 million. Separately, the combined rate of unemployment and the potential labour force (LU3) was 43.8%. LU3 is a different measure from the former 'expanded unemployment rate', which Stats SA stopped reporting after Q2 2025, and the two should not be compared directly.",
       "source": {
         "name": "Statistics South Africa",
         "shortName": "Stats SA",
-        "url": "https://www.statssa.gov.za/?page_id=1854&PPN=P0211",
-        "publicationName": "Quarterly Labour Force Survey Q4 2025",
-        "publicationDate": "2026-02-17"
+        "url": "https://www.statssa.gov.za/publications/P0211/P02112ndQuarter2026.pdf",
+        "publicationName": "Quarterly Labour Force Survey Q2 2026",
+        "publicationDate": "2026-08-11"
       },
-      "lastUpdated": "2026-02-17",
+      "lastUpdated": "2026-08-11",
       "series": [
         {
           "name": "Unemployment Rate (%)",
@@ -53,15 +53,15 @@
             },
             {
               "label": "Q2 2023",
-              "value": 33.5
+              "value": 32.6
             },
             {
               "label": "Q3 2023",
-              "value": 33.7
+              "value": 31.9
             },
             {
               "label": "Q4 2023",
-              "value": 32.9
+              "value": 32.1
             },
             {
               "label": "Q1 2024",
@@ -81,7 +81,7 @@
             },
             {
               "label": "Q1 2025",
-              "value": 33.5
+              "value": 32.9
             },
             {
               "label": "Q2 2025",
@@ -94,6 +94,14 @@
             {
               "label": "Q4 2025",
               "value": 31.4
+            },
+            {
+              "label": "Q1 2026",
+              "value": 32.7
+            },
+            {
+              "label": "Q2 2026",
+              "value": 33.6
             }
           ]
         }
