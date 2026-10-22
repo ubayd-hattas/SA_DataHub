@@ -11,9 +11,16 @@ LIMITATION: World Bank publishes annual averages, not monthly.
   The headline monthly figure must be updated manually from:
   https://www.statssa.gov.za/?page_id=1854&PPN=P0141
 
+SAFETY (2026-10-19):
+  This script is now DRY-RUN ONLY by default.  It will NOT write to
+  src/data/datasets/inflation.json unless --allow-overwrite is passed.
+  Verified monthly CPI data (to Sep 2026) is in place; running the write
+  path would replace the monthly series with annual World Bank averages.
+
 HOW TO RUN:
-    python scripts/update_inflation.py
-    python scripts/update_inflation.py --dry-run
+    python scripts/update_inflation.py             # report-only (safe)
+    python scripts/update_inflation.py --dry-run   # same
+    python scripts/update_inflation.py --allow-overwrite  # DANGER: writes files
 """
 
 from __future__ import annotations
@@ -104,7 +111,15 @@ def build_updated_inflation(existing: dict, dry_run: bool) -> dict:
     return new_data
 
 
-def run(dry_run: bool = False) -> None:
+def run(dry_run: bool = False, allow_overwrite: bool = False) -> None:
+    # Safety guard — refuse to write unless explicitly overridden.
+    if not allow_overwrite:
+        dry_run = True
+        print(
+            "  [PROTECTED] update_inflation is running in report-only mode.\n"
+            "  It will NOT write to inflation.json.\n"
+            "  Pass --allow-overwrite to enable writes (DANGER: replaces monthly CPI with annual WB averages).\n"
+        )
     existing = load_dataset("inflation")
     updated  = build_updated_inflation(existing, dry_run)
     save_dataset("inflation", updated, dry_run=dry_run)
@@ -113,5 +128,11 @@ def run(dry_run: bool = False) -> None:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument(
+        "--allow-overwrite",
+        action="store_true",
+        dest="allow_overwrite",
+        help="DANGER: allow writes — will replace monthly CPI series with World Bank annual averages",
+    )
     args = parser.parse_args()
-    run(dry_run=args.dry_run)
+    run(dry_run=args.dry_run, allow_overwrite=args.allow_overwrite)

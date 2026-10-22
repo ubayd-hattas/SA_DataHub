@@ -7,9 +7,16 @@ PRIMARY SOURCE: World Bank Open Data API
   - SP.POP.GROW      = Population growth (annual %)
   No API key required.
 
+SAFETY (2026-10-19):
+  This script is now DRY-RUN ONLY by default.  It will NOT write to
+  src/data/datasets/population.json unless --allow-overwrite is passed.
+  MYPE 2026 (63,522,380) from Stats SA P0302 is in place; the World Bank
+  estimate differs (~65.5M, different methodology) and must not overwrite it.
+
 HOW TO RUN:
-    python scripts/update_population.py
-    python scripts/update_population.py --dry-run
+    python scripts/update_population.py             # report-only (safe)
+    python scripts/update_population.py --dry-run   # same
+    python scripts/update_population.py --allow-overwrite  # DANGER: writes files
 """
 
 from __future__ import annotations
@@ -36,7 +43,15 @@ def _parse_wb(url: str, n: int = 10) -> list[dict]:
     return points[-n:]
 
 
-def run(dry_run: bool = False) -> None:
+def run(dry_run: bool = False, allow_overwrite: bool = False) -> None:
+    # Safety guard — refuse to write unless explicitly overridden.
+    if not allow_overwrite:
+        dry_run = True
+        print(
+            "  [PROTECTED] update_population is running in report-only mode.\n"
+            "  It will NOT write to population.json.\n"
+            "  Pass --allow-overwrite to enable writes (DANGER: replaces MYPE 2026 with World Bank model).\n"
+        )
     existing  = load_dataset("population")
     old_stats = existing.get("statistics", [])
 
@@ -96,5 +111,11 @@ def run(dry_run: bool = False) -> None:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument(
+        "--allow-overwrite",
+        action="store_true",
+        dest="allow_overwrite",
+        help="DANGER: allow writes — will replace MYPE 2026 with World Bank modelled population",
+    )
     args = parser.parse_args()
-    run(dry_run=args.dry_run)
+    run(dry_run=args.dry_run, allow_overwrite=args.allow_overwrite)
