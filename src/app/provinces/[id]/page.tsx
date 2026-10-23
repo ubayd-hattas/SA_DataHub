@@ -9,6 +9,7 @@ import {
 import { getProvinceById, getProvinceData, getMunicipalitiesByProvince } from '@/data/mock'
 import { cn, getProvinceCodeFromSlug } from '@/lib/utils'
 import { buildPageMetadata } from '@/lib/seo'
+import { provinceDescription, provinceTitle } from '@/lib/page-seo'
 import { Breadcrumbs } from '@/components/seo/Breadcrumbs'
 import { JsonLd } from '@/components/seo/JsonLd'
 import { breadcrumbSchema, provincePlaceSchema } from '@/lib/schema'
@@ -51,11 +52,10 @@ export function generateStaticParams() {
 export function generateMetadata({ params }: ProvincePageProps): Metadata {
   const province = getProvinceById(params.id)
   if (!province) return {}
-  const description = PROVINCE_DESCRIPTIONS[province.id] ?? ''
   return buildPageMetadata({
-    title: `${province.name} Province Statistics`,
-    description: `${description.slice(0, 155)}… Unemployment, education, housing, and population data for ${province.name}.`,
-    path: `/provinces/${params.id}`,
+    title: provinceTitle(province),
+    description: provinceDescription(province),
+    path: `/provinces/${province.id}`,
   })
 }
 
@@ -123,9 +123,7 @@ export default function ProvincePage({ params }: ProvincePageProps) {
 
   const provinceCode = getProvinceCodeFromSlug(province.id)
   const municipalities = provinceCode
-    ? [...getMunicipalitiesByProvince(provinceCode)]
-        .sort((a, b) => b.population2022 - a.population2022)
-        .slice(0, 8)
+    ? [...getMunicipalitiesByProvince(provinceCode)].sort((a, b) => b.population2022 - a.population2022)
     : []
 
   const breadcrumbs = [

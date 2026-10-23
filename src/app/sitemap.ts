@@ -1,12 +1,8 @@
 import type { MetadataRoute } from 'next'
 import { SITE_URL } from '@/lib/seo'
-import { categories, getAllMunicipalities } from '@/data/mock'
+import { categories, getAllMunicipalities, getProvinceData, statistics } from '@/data/mock'
+import provincesData from '@/data/datasets/provinces.json'
 import { STORIES } from '@/data/stories'
-
-const PROVINCE_IDS = [
-  'western-cape', 'gauteng', 'kwazulu-natal', 'eastern-cape',
-  'limpopo', 'mpumalanga', 'north-west', 'free-state', 'northern-cape',
-] as const
 
 /** Static routes with approximate change frequency for sitemap hints. */
 const STATIC_ROUTES: { path: string; priority: number; changeFrequency: MetadataRoute.Sitemap[0]['changeFrequency']; lastModified: Date }[] = [
@@ -21,8 +17,22 @@ const STATIC_ROUTES: { path: string; priority: number; changeFrequency: Metadata
   { path: '/changelog',    priority: 0.5, changeFrequency: 'monthly', lastModified: new Date('2026-04-01') },
 ]
 
+/**
+ * lastModified must reflect real content changes, not the build time: stamping
+ * every URL with `new Date()` makes the whole sitemap look freshly modified on
+ * each deploy, which teaches crawlers to ignore the field.
+ */
+const FALLBACK_LAST_MODIFIED = new Date('2026-10-19')
+
+function latestDate(values: (string | undefined)[], fallback: Date): Date {
+  const times = values
+    .map((v) => (v ? new Date(v).getTime() : NaN))
+    .filter((t) => Number.isFinite(t))
+  return times.length ? new Date(Math.max(...times)) : fallback
+}
+
 export default function sitemap(): MetadataRoute.Sitemap {
-  const now = new Date()
+  const provinceLastModified = latestDate([provincesData._meta.last_verified], FALLBACK_LAST_MODIFIED)
 
   const staticEntries: MetadataRoute.Sitemap = STATIC_ROUTES.map(({ path, priority, changeFrequency, lastModified }) => ({
     url: `${SITE_URL}${path}`,
@@ -33,14 +43,17 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   const categoryEntries: MetadataRoute.Sitemap = categories.map((c) => ({
     url: `${SITE_URL}/category/${c.id}`,
-    lastModified: now,
+    lastModified: latestDate(
+      statistics.filter((st) => st.categoryId === c.id).map((st) => st.lastUpdated),
+      FALLBACK_LAST_MODIFIED
+    ),
     changeFrequency: 'weekly',
     priority: 0.85,
   }))
 
-  const provinceEntries: MetadataRoute.Sitemap = PROVINCE_IDS.map((id) => ({
+  const provinceEntries: MetadataRoute.Sitemap = getProvinceData().map(({ id }) => ({
     url: `${SITE_URL}/provinces/${id}`,
-    lastModified: now,
+    lastModified: provinceLastModified,
     changeFrequency: 'monthly',
     priority: 0.75,
   }))
@@ -54,7 +67,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   const municipalityEntries: MetadataRoute.Sitemap = getAllMunicipalities().map((m) => ({
     url: `${SITE_URL}/municipalities/${m.id}`,
-    lastModified: m.lastUpdated ? new Date(m.lastUpdated) : now,
+    lastModified: latestDate([m.lastUpdated], FALLBACK_LAST_MODIFIED),
     changeFrequency: 'yearly',
     priority: 0.6,
   }))
