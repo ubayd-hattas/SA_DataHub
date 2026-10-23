@@ -34,9 +34,10 @@ export async function generateStaticParams() {
 export async function generateMetadata({
   params,
 }: {
-  params: { code: string }
+  params: Promise<{ code: string }>
 }): Promise<Metadata> {
-  const m = getMunicipalityByCode(params.code)
+  const { code } = await params
+  const m = getMunicipalityByCode(code)
   if (!m) return {}
   return buildPageMetadata({
     title: municipalityTitle(m),
@@ -717,12 +718,13 @@ function CategoryBadge({ category }: { category: string }) {
 
 // ─── Page ───────────────────────────────────────────────────────────────────
 
-export default function MunicipalityDetailPage({
+export default async function MunicipalityDetailPage({
   params,
 }: {
-  params: { code: string }
+  params: Promise<{ code: string }>
 }) {
-  const m = getMunicipalityByCode(params.code)
+  const { code } = await params
+  const m = getMunicipalityByCode(code)
   if (!m) return notFound()
 
   const intro = generateMunicipalityIntro(m)

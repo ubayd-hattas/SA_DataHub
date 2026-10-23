@@ -15,7 +15,7 @@ import { JsonLd } from '@/components/seo/JsonLd'
 import { breadcrumbSchema, provincePlaceSchema } from '@/lib/schema'
 
 interface ProvincePageProps {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
 const PROVINCE_COLORS: Record<string, string> = {
@@ -49,8 +49,9 @@ export function generateStaticParams() {
   ].map((id) => ({ id }))
 }
 
-export function generateMetadata({ params }: ProvincePageProps): Metadata {
-  const province = getProvinceById(params.id)
+export async function generateMetadata({ params }: ProvincePageProps): Promise<Metadata> {
+  const { id } = await params
+  const province = getProvinceById(id)
   if (!province) return {}
   return buildPageMetadata({
     title: provinceTitle(province),
@@ -93,8 +94,9 @@ function StatBlock({ label, value, sub, icon: Icon, color }: {
   )
 }
 
-export default function ProvincePage({ params }: ProvincePageProps) {
-  const province = getProvinceById(params.id)
+export default async function ProvincePage({ params }: ProvincePageProps) {
+  const { id } = await params
+  const province = getProvinceById(id)
   if (!province) return notFound()
 
   const allProvinces = getProvinceData()

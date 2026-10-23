@@ -57,7 +57,7 @@ function statusMeta(status: DatasetStatus): { label: string; className: string }
 }
 
 interface CategoryPageProps {
-  params: { slug: string }
+  params: Promise<{ slug: string }>
 }
 
 export function generateStaticParams() {
@@ -77,21 +77,23 @@ const STORY_CATEGORY_MAP: Record<string, string> = {
   housing: 'housing',
 }
 
-export function generateMetadata({ params }: CategoryPageProps): Metadata {
-  const category = getCategoryById(params.slug)
+export async function generateMetadata({ params }: CategoryPageProps): Promise<Metadata> {
+  const { slug } = await params
+  const category = getCategoryById(slug)
   if (!category) return {}
   return buildPageMetadata({
     title: `${category.label} Statistics`,
     description: `${category.description} View charts, trends, citations, and CSV downloads from official South African sources.`,
-    path: `/category/${params.slug}`,
+    path: `/category/${slug}`,
   })
 }
 
 export default async function CategoryPage({ params }: CategoryPageProps) {
+  const { slug } = await params
   const provider = await getAppDataProvider()
   const [category, stats] = await Promise.all([
-    provider.getCategoryById(params.slug),
-    provider.getStatsByCategory(params.slug),
+    provider.getCategoryById(slug),
+    provider.getStatsByCategory(slug),
   ])
   if (!category) return notFound()
   const Icon = iconMap[category.icon] ?? BarChart3
@@ -114,17 +116,17 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
   const breadcrumbs = [
     { name: 'Home', path: '/' },
     { name: 'Dashboard', path: '/dashboard' },
-    { name: category.label, path: `/category/${params.slug}` },
+    { name: category.label, path: `/category/${slug}` },
   ]
 
   const relatedStories = STORIES.filter(
-    (s) => STORY_CATEGORY_MAP[s.category] === params.slug
+    (s) => STORY_CATEGORY_MAP[s.category] === slug
   ).slice(0, 2)
 
   const schemaBlocks = [
     breadcrumbSchema(breadcrumbs),
     ...(registryEntries[0]
-      ? [datasetSchema(registryEntries[0], `/category/${params.slug}`)]
+      ? [datasetSchema(registryEntries[0], `/category/${slug}`)]
       : []),
   ]
 
@@ -336,7 +338,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
           </div>
         )}
 
-        {params.slug === 'census' && (
+        {slug === 'census' && (
           <p className="mt-8 text-sm text-slate-500 dark:text-slate-400">
             Municipal-level Census 2022 profiles:{' '}
             <Link href="/municipalities" className="font-medium text-brand-600 hover:underline dark:text-brand-400">
