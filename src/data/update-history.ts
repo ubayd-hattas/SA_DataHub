@@ -43,7 +43,7 @@ export const UPDATE_HISTORY: UpdateHistoryEntry[] = [
     datasetId: 'labour-force',
     datasetLabel: 'Labour Force Participation',
     type: 'data-update',
-    summary: 'Refreshed to QLFS Q2 2026 (overall LFPR 59.6%, female 54.9%). Historical corrections across all ten female LFPR points and Q1 2024–Q4 2025 overall LFPR points. labour-force-participation (42.7%) record is unresolved — matches no official measure; owner decision pending (D1).',
+    summary: 'Refreshed to QLFS Q2 2026 (overall LFPR 59.6%, female 54.9%). Historical corrections across all ten female LFPR points and Q1 2024–Q4 2025 overall LFPR points. Unverified labour-force-participation (42.7%) record removed per owner decision D1.',
     source: 'https://www.statssa.gov.za/publications/P0211/P02112ndQuarter2026.pdf',
   },
   {
@@ -67,8 +67,16 @@ export const UPDATE_HISTORY: UpdateHistoryEntry[] = [
     datasetId: 'gdp',
     datasetLabel: 'GDP & Economic Growth',
     type: 'data-update',
-    summary: 'GDP growth updated to Q2 2026 (−0.2% q/q). Annual growth (1.1%), nominal GDP (R7.67T) and per-capita (R120,800) unchanged pending rebasing to 2022 base year (expected Oct 2026). Quarterly points before Q1 2026 not re-verified. Series name rename ("QoQ SAAR" → "QoQ, seasonally adjusted") pending owner decision (D2c).',
+    summary: 'GDP growth updated to Q2 2026 (−0.2% q/q). Annual growth (1.1%), nominal GDP (R7.67T) and per-capita (R120,800) unchanged pending rebasing to 2022 base year (expected Oct 2026). Quarterly points before Q1 2026 not re-verified. Series name renamed to "GDP Growth (%, QoQ, seasonally adjusted)" per D2c.',
     source: 'https://www.statssa.gov.za/?page_id=1854&PPN=P0441',
+  },
+  {
+    date: '2026-10-19',
+    datasetId: 'provinces',
+    datasetLabel: 'Provinces',
+    type: 'data-update',
+    summary: 'Refreshed provincial official unemployment (LU1) to QLFS Q2 2026. Added additive LU3 (unemployment + potential labour force) fields. Updated provincial populations to Stats SA Mid-Year Population Estimates 2026 (Appendix 1, summing to 63.5M). Legacy expanded rate preserved with Q3 2025 label.',
+    source: 'https://www.statssa.gov.za/?page_id=1854&PPN=P0211',
   },
   {
     date: '2026-10-19',

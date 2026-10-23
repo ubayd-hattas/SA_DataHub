@@ -167,7 +167,7 @@ export default function ProvincePage({ params }: ProvincePageProps) {
 
         {/* Unemployment spotlight */}
         <div className="card p-5 min-w-[180px]">
-          <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Unemployment Rate</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Official Unemployment Rate (LU1)</p>
           <div className="flex items-baseline gap-2">
             <span className="font-mono text-3xl font-bold text-slate-900 dark:text-white">{unem.rate}%</span>
             <span className={cn('flex items-center gap-0.5 text-sm font-medium', trendColor)}>
@@ -176,8 +176,14 @@ export default function ProvincePage({ params }: ProvincePageProps) {
             </span>
           </div>
           <p className="text-xs text-slate-400 mt-1">{unem.period} · Rank #{province.unemploymentRank} lowest</p>
-          <div className="mt-2 text-xs text-slate-500">
+          {unem.lu3 !== undefined && (
+            <div className="mt-2 text-xs text-slate-500">
+              Unemployment + potential labour force (LU3): <span className="font-medium text-slate-700 dark:text-slate-300">{unem.lu3}%</span>
+            </div>
+          )}
+          <div className="mt-1 text-xs text-slate-400">
             Expanded: <span className="font-medium text-slate-700 dark:text-slate-300">{unem.expanded}%</span>
+            <span className="text-[11px] block text-slate-400">Legacy measure (Q3 2025)</span>
           </div>
           <div className="mt-1 text-xs text-slate-400">
             National avg: {avgUnemployment.toFixed(1)}%
@@ -188,9 +194,9 @@ export default function ProvincePage({ params }: ProvincePageProps) {
       {/* Key stats grid */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         <StatBlock
-          label="Population"
+          label="Population (2026 est.)"
           value={(province.population / 1_000_000).toFixed(2) + 'M'}
-          sub={province.populationShare + '% of SA'}
+          sub={`${province.populationShare}% of SA (MYPE 2026)`}
           icon={Users}
           color="bg-blue-500"
         />
@@ -222,8 +228,19 @@ export default function ProvincePage({ params }: ProvincePageProps) {
         {/* Labour */}
         <div className="card p-5">
           <h3 className="font-semibold text-slate-900 dark:text-white mb-3">Labour Market</h3>
-          <StatRow label="Unemployment (narrow)" value={unem.rate + '%'} sub={unem.period} highlight={unem.rate > avgUnemployment ? 'bad' : 'good'} />
-          <StatRow label="Unemployment (expanded)" value={unem.expanded + '%'} sub={unem.period} />
+          <StatRow label="Unemployment (official LU1)" value={unem.rate + '%'} sub={unem.period} highlight={unem.rate > avgUnemployment ? 'bad' : 'good'} />
+          {unem.lu3 !== undefined && (
+            <StatRow
+              label="Unemployment + potential labour force (LU3)"
+              value={unem.lu3 + '%'}
+              sub={unem.period}
+            />
+          )}
+          <StatRow
+            label="Expanded unemployment (legacy)"
+            value={unem.expanded + '%'}
+            sub="Q3 2025 legacy"
+          />
           <StatRow label="National rank" value={'#' + province.unemploymentRank + ' lowest'} />
           <StatRow label="Change (qoq)" value={(unem.change > 0 ? '+' : '') + unem.change.toFixed(1) + 'pp'} highlight={unem.change < 0 ? 'good' : unem.change > 0 ? 'bad' : 'neutral'} />
         </div>
@@ -284,16 +301,19 @@ export default function ProvincePage({ params }: ProvincePageProps) {
               )
             })}
         </div>
-        <p className="text-xs text-slate-400 mt-3">Source: Stats SA QLFS Q3 2025</p>
+        <p className="text-xs text-slate-400 mt-3">Source: Stats SA QLFS Q2 2026</p>
       </div>
 
       {/* Municipalities in this province */}
       {municipalities.length > 0 && (
         <div className="card p-5">
           <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-            <h3 className="font-semibold text-slate-900 dark:text-white">
-              Municipalities in {province.name}
-            </h3>
+            <div>
+              <h3 className="font-semibold text-slate-900 dark:text-white">
+                Municipalities in {province.name}
+              </h3>
+              <p className="text-xs text-slate-400 mt-0.5">Population figures based on Census 2022 baseline</p>
+            </div>
             <Link
               href="/municipalities"
               className="text-xs font-medium text-brand-600 hover:text-brand-700 dark:text-brand-400"

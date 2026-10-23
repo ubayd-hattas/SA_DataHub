@@ -3,32 +3,35 @@
     "source": "Statistics South Africa — Quarterly Labour Force Survey (P0211)",
     "source_url": "https://www.statssa.gov.za/?page_id=1854&PPN=P0211",
     "update_frequency": "Quarterly — same release as national QLFS",
-    "last_verified": "2026-05-31",
-    "notes": "Provincial unemployment rates from QLFS Q3 2025 release. Q4 2025 provincial breakdown available Feb 2026. Western Cape consistently the lowest. North West and Eastern Cape consistently the highest. Population figures from Census 2022 and mid-year 2024 estimates."
+    "last_verified": "2026-10-19",
+    "notes": "Provincial official unemployment (LU1) is from QLFS Q2 2026 (published 2026-08-11), Table E — the same quarter as the national figure; all nine provinces share Q2 2026 and 'change' is the published quarter-on-quarter change in percentage points vs Q1 2026. 'trend' is 'stable' when |change| ≤ 0.1 pp. The legacy 'expanded' field is UNCHANGED (Q3 2025, legacy definition, not re-verified); LU3 (unemployment plus the potential labour force — a different measure) is supplied in the NEW optional fields 'lu3' and 'lu3Label' so it is never presented as the expanded rate. These additive fields need site-owner approval and a UI change (see antigravity-instructions.md). Population (Census 2022), education (matric 2024), literacy and housing fields were not refreshed in this file version and keep their own reference years. Rank 1 = lowest unemployment. Provincial population totals and shares were updated to Stats SA Mid-Year Population Estimates 2026 (P0302, published 2026-07-30; Appendix 1) so that the nine provinces sum to the national 63,522,380; the urban share (stats.population.urban) remains Census 2022. These are estimates for 2026 and are NOT comparable with the Census 2022 counts used for municipalities (which sum to 62.0M). Needs site-owner approval; to revert, restore population, populationShare and stats.population.total/source from the previous file."
   },
   "provinces": [
     {
       "id": "western-cape",
       "name": "Western Cape",
       "capital": "Cape Town",
-      "population": 7404470,
-      "populationShare": 11.8,
-      "unemploymentRate": 19.7,
+      "population": 7722158,
+      "populationShare": 12.2,
+      "unemploymentRate": 19.5,
       "unemploymentRank": 1,
       "gdpShare": 14.2,
       "matricPassRate": 89.1,
       "stats": {
         "unemployment": {
-          "rate": 19.7,
+          "rate": 19.5,
           "expanded": 25.7,
-          "period": "Q3 2025",
-          "trend": "down",
-          "change": -1.4
+          "period": "Q2 2026",
+          "trend": "stable",
+          "change": -0.1,
+          "expandedPeriod": "Q3 2025 (legacy measure; Stats SA stopped publishing it after Q2 2025; value not re-verified)",
+          "lu3": 26.1,
+          "lu3Label": "Unemployment plus potential labour force (LU3), Q2 2026"
         },
         "population": {
-          "total": 7404470,
+          "total": 7722158,
           "urban": 89.1,
-          "source": "Census 2022"
+          "source": "Stats SA Mid-Year Population Estimates 2026 (total); Census 2022 (urban share)"
         },
         "education": {
           "matricPassRate": 89.1,
@@ -46,24 +49,27 @@
       "id": "gauteng",
       "name": "Gauteng",
       "capital": "Johannesburg / Pretoria",
-      "population": 15810388,
-      "populationShare": 25.5,
-      "unemploymentRate": 33.0,
+      "population": 16295325,
+      "populationShare": 25.7,
+      "unemploymentRate": 34.6,
       "unemploymentRank": 5,
       "gdpShare": 33.8,
       "matricPassRate": 87.2,
       "stats": {
         "unemployment": {
-          "rate": 33.0,
+          "rate": 34.6,
           "expanded": 39.6,
-          "period": "Q3 2025",
-          "trend": "down",
-          "change": -0.8
+          "period": "Q2 2026",
+          "trend": "up",
+          "change": 0.5,
+          "expandedPeriod": "Q3 2025 (legacy measure; Stats SA stopped publishing it after Q2 2025; value not re-verified)",
+          "lu3": 40.5,
+          "lu3Label": "Unemployment plus potential labour force (LU3), Q2 2026"
         },
         "population": {
-          "total": 15810388,
+          "total": 16295325,
           "urban": 98.2,
-          "source": "Census 2022"
+          "source": "Stats SA Mid-Year Population Estimates 2026 (total); Census 2022 (urban share)"
         },
         "education": {
           "matricPassRate": 87.2,
@@ -81,24 +87,27 @@
       "id": "kwazulu-natal",
       "name": "KwaZulu-Natal",
       "capital": "Pietermaritzburg",
-      "population": 11422838,
-      "populationShare": 18.4,
-      "unemploymentRate": 31.7,
+      "population": 12282836,
+      "populationShare": 19.3,
+      "unemploymentRate": 32.5,
       "unemploymentRank": 4,
       "gdpShare": 15.9,
       "matricPassRate": 81.4,
       "stats": {
         "unemployment": {
-          "rate": 31.7,
+          "rate": 32.5,
           "expanded": 44.2,
-          "period": "Q3 2025",
-          "trend": "stable",
-          "change": 0.1
+          "period": "Q2 2026",
+          "trend": "up",
+          "change": 1.3,
+          "expandedPeriod": "Q3 2025 (legacy measure; Stats SA stopped publishing it after Q2 2025; value not re-verified)",
+          "lu3": 47.8,
+          "lu3Label": "Unemployment plus potential labour force (LU3), Q2 2026"
         },
         "population": {
-          "total": 11422838,
+          "total": 12282836,
           "urban": 52.4,
-          "source": "Census 2022"
+          "source": "Stats SA Mid-Year Population Estimates 2026 (total); Census 2022 (urban share)"
         },
         "education": {
           "matricPassRate": 81.4,
@@ -116,24 +125,27 @@
       "id": "eastern-cape",
       "name": "Eastern Cape",
       "capital": "Bhisho",
-      "population": 6734001,
-      "populationShare": 10.9,
-      "unemploymentRate": 43.7,
-      "unemploymentRank": 8,
+      "population": 7031109,
+      "populationShare": 11.1,
+      "unemploymentRate": 47.5,
+      "unemploymentRank": 9,
       "gdpShare": 7.4,
       "matricPassRate": 79.8,
       "stats": {
         "unemployment": {
-          "rate": 43.7,
+          "rate": 47.5,
           "expanded": 50.1,
-          "period": "Q3 2025",
+          "period": "Q2 2026",
           "trend": "up",
-          "change": 1.2
+          "change": 2.9,
+          "expandedPeriod": "Q3 2025 (legacy measure; Stats SA stopped publishing it after Q2 2025; value not re-verified)",
+          "lu3": 54.1,
+          "lu3Label": "Unemployment plus potential labour force (LU3), Q2 2026"
         },
         "population": {
-          "total": 6734001,
+          "total": 7031109,
           "urban": 38.9,
-          "source": "Census 2022"
+          "source": "Stats SA Mid-Year Population Estimates 2026 (total); Census 2022 (urban share)"
         },
         "education": {
           "matricPassRate": 79.8,
@@ -151,24 +163,27 @@
       "id": "limpopo",
       "name": "Limpopo",
       "capital": "Polokwane",
-      "population": 6270998,
-      "populationShare": 10.1,
-      "unemploymentRate": 29.8,
-      "unemploymentRank": 2,
+      "population": 6358667,
+      "populationShare": 10.0,
+      "unemploymentRate": 32.0,
+      "unemploymentRank": 3,
       "gdpShare": 6.6,
       "matricPassRate": 84.6,
       "stats": {
         "unemployment": {
-          "rate": 29.8,
+          "rate": 32.0,
           "expanded": 43.9,
-          "period": "Q3 2025",
-          "trend": "down",
-          "change": -0.6
+          "period": "Q2 2026",
+          "trend": "up",
+          "change": 0.3,
+          "expandedPeriod": "Q3 2025 (legacy measure; Stats SA stopped publishing it after Q2 2025; value not re-verified)",
+          "lu3": 46.7,
+          "lu3Label": "Unemployment plus potential labour force (LU3), Q2 2026"
         },
         "population": {
-          "total": 6270998,
+          "total": 6358667,
           "urban": 14.9,
-          "source": "Census 2022"
+          "source": "Stats SA Mid-Year Population Estimates 2026 (total); Census 2022 (urban share)"
         },
         "education": {
           "matricPassRate": 84.6,
@@ -186,24 +201,27 @@
       "id": "mpumalanga",
       "name": "Mpumalanga",
       "capital": "Mbombela",
-      "population": 4591066,
-      "populationShare": 7.4,
-      "unemploymentRate": 38.6,
-      "unemploymentRank": 7,
+      "population": 5161746,
+      "populationShare": 8.1,
+      "unemploymentRate": 36.6,
+      "unemploymentRank": 6,
       "gdpShare": 7.1,
       "matricPassRate": 82.1,
       "stats": {
         "unemployment": {
-          "rate": 38.6,
+          "rate": 36.6,
           "expanded": 48.4,
-          "period": "Q3 2025",
-          "trend": "stable",
-          "change": -0.2
+          "period": "Q2 2026",
+          "trend": "up",
+          "change": 0.3,
+          "expandedPeriod": "Q3 2025 (legacy measure; Stats SA stopped publishing it after Q2 2025; value not re-verified)",
+          "lu3": 48.3,
+          "lu3Label": "Unemployment plus potential labour force (LU3), Q2 2026"
         },
         "population": {
-          "total": 4591066,
+          "total": 5161746,
           "urban": 36.8,
-          "source": "Census 2022"
+          "source": "Stats SA Mid-Year Population Estimates 2026 (total); Census 2022 (urban share)"
         },
         "education": {
           "matricPassRate": 82.1,
@@ -221,24 +239,27 @@
       "id": "north-west",
       "name": "North West",
       "capital": "Mahikeng",
-      "population": 4099066,
-      "populationShare": 6.6,
-      "unemploymentRate": 41.2,
-      "unemploymentRank": 9,
+      "population": 4227795,
+      "populationShare": 6.7,
+      "unemploymentRate": 38.1,
+      "unemploymentRank": 8,
       "gdpShare": 5.8,
       "matricPassRate": 85.3,
       "stats": {
         "unemployment": {
-          "rate": 41.2,
+          "rate": 38.1,
           "expanded": 54.7,
-          "period": "Q3 2025",
-          "trend": "down",
-          "change": -1.8
+          "period": "Q2 2026",
+          "trend": "up",
+          "change": 2.8,
+          "expandedPeriod": "Q3 2025 (legacy measure; Stats SA stopped publishing it after Q2 2025; value not re-verified)",
+          "lu3": 56.0,
+          "lu3Label": "Unemployment plus potential labour force (LU3), Q2 2026"
         },
         "population": {
-          "total": 4099066,
+          "total": 4227795,
           "urban": 31.4,
-          "source": "Census 2022"
+          "source": "Stats SA Mid-Year Population Estimates 2026 (total); Census 2022 (urban share)"
         },
         "education": {
           "matricPassRate": 85.3,
@@ -256,24 +277,27 @@
       "id": "free-state",
       "name": "Free State",
       "capital": "Bloemfontein",
-      "population": 2924747,
-      "populationShare": 4.7,
-      "unemploymentRate": 35.7,
-      "unemploymentRank": 6,
+      "population": 3060972,
+      "populationShare": 4.8,
+      "unemploymentRate": 37.3,
+      "unemploymentRank": 7,
       "gdpShare": 5.3,
       "matricPassRate": 88.4,
       "stats": {
         "unemployment": {
-          "rate": 35.7,
+          "rate": 37.3,
           "expanded": 43.1,
-          "period": "Q3 2025",
-          "trend": "stable",
-          "change": 0.3
+          "period": "Q2 2026",
+          "trend": "down",
+          "change": -0.5,
+          "expandedPeriod": "Q3 2025 (legacy measure; Stats SA stopped publishing it after Q2 2025; value not re-verified)",
+          "lu3": 44.0,
+          "lu3Label": "Unemployment plus potential labour force (LU3), Q2 2026"
         },
         "population": {
-          "total": 2924747,
+          "total": 3060972,
           "urban": 73.2,
-          "source": "Census 2022"
+          "source": "Stats SA Mid-Year Population Estimates 2026 (total); Census 2022 (urban share)"
         },
         "education": {
           "matricPassRate": 88.4,
@@ -291,24 +315,27 @@
       "id": "northern-cape",
       "name": "Northern Cape",
       "capital": "Kimberley",
-      "population": 1259532,
-      "populationShare": 2.0,
-      "unemploymentRate": 31.2,
-      "unemploymentRank": 3,
+      "population": 1381772,
+      "populationShare": 2.2,
+      "unemploymentRate": 28.7,
+      "unemploymentRank": 2,
       "gdpShare": 2.5,
       "matricPassRate": 86.1,
       "stats": {
         "unemployment": {
-          "rate": 31.2,
+          "rate": 28.7,
           "expanded": 42.8,
-          "period": "Q3 2025",
+          "period": "Q2 2026",
           "trend": "down",
-          "change": -0.5
+          "change": -1.7,
+          "expandedPeriod": "Q3 2025 (legacy measure; Stats SA stopped publishing it after Q2 2025; value not re-verified)",
+          "lu3": 47.1,
+          "lu3Label": "Unemployment plus potential labour force (LU3), Q2 2026"
         },
         "population": {
-          "total": 1259532,
+          "total": 1381772,
           "urban": 72.8,
-          "source": "Census 2022"
+          "source": "Stats SA Mid-Year Population Estimates 2026 (total); Census 2022 (urban share)"
         },
         "education": {
           "matricPassRate": 86.1,

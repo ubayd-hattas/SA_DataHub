@@ -32,11 +32,11 @@ from datetime import datetime
 from utils import load_dataset, save_dataset, report_changes, today_iso
 
 # ── Manual override — update this after each MPC meeting ─────────────────────
-# Last updated: 2026-06-28
-# Source: SARB MPC statement — March 2026 (aligned with inflation.json repo-rate)
-LATEST_REPO_RATE = 6.75      # %
-LATEST_MPC_DATE  = "2026-03-26"
-LATEST_MPC_LABEL = "Mar 2026"
+# Last updated: 2026-10-23
+# Source: SARB MPC statement — September 2026 (aligned with inflation.json repo-rate)
+LATEST_REPO_RATE = 7.25      # %
+LATEST_MPC_DATE  = "2026-09-23"
+LATEST_MPC_LABEL = "Sep 2026"
 
 PRIME_MARGIN = 3.50          # Prime is always Repo + 3.5pp
 
