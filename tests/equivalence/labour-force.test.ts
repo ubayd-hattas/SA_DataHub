@@ -15,9 +15,8 @@ import postgres from 'postgres'
 
 const ROOT = process.cwd()
 const SLUG = 'labour-force'
-// labour-force.json has 3 stats: lfpr-overall, female-labour-participation,
-// and labour-force-participation (the known ~18pp discrepancy stat).
-const STAT_IDS = ['lfpr-overall', 'female-labour-participation', 'labour-force-participation']
+// labour-force.json has 2 stats: lfpr-overall, female-labour-participation
+const STAT_IDS = ['lfpr-overall', 'female-labour-participation']
 const GEOGRAPHY_CODE = 'ZA'
 const JSON_PATH = 'src/data/datasets/labour-force.json'
 
@@ -165,16 +164,14 @@ describe.skipIf(!hasDb)('labour-force: JSON ↔ PostgreSQL equivalence', () => {
 // ─── Offline baseline tests (no DB required) ─────────────────────────────────
 
 describe('labour-force JSON baseline (offline)', () => {
-  // labour-force.json contains 3 stats. The third (labour-force-participation
-  // at 42.7%) disagrees with lfpr-overall (60.6%) by ~18pp — a known data
-  // quality issue documented in the file's _meta.notes. Do not merge or drop.
-  it('has three statistics in labour-force.json', () => {
+  // labour-force.json contains 2 verified stats. The unverified labour-force-participation
+  // (42.7%) was removed per decision D1.
+  it('has two statistics in labour-force.json', () => {
     const data = loadJsonDataset()
     const ids = (data.statistics ?? []).map((s: { id: string }) => s.id)
     expect(ids).toContain('lfpr-overall')
     expect(ids).toContain('female-labour-participation')
-    expect(ids).toContain('labour-force-participation')
-    expect(ids).toHaveLength(3)
+    expect(ids).toHaveLength(2)
   })
 
   it('lfpr-overall has a non-empty series', () => {

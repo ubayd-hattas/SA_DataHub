@@ -34,7 +34,7 @@
       "lastUpdated": "2026-09-08",
       "series": [
         {
-          "name": "GDP Growth (%, QoQ SAAR)",
+          "name": "GDP Growth (%, QoQ, seasonally adjusted)",
           "unit": "%",
           "data": [
             {

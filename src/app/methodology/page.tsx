@@ -268,16 +268,16 @@ export default function MethodologyPage() {
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
               {[
-                { name: 'CPI Inflation', freq: 'Monthly', lag: '~25 days', auto: 'Python script (update_inflation.py)' },
-                { name: 'GDP Growth', freq: 'Quarterly', lag: '~60 days', auto: 'Python script (update_gdp.py)' },
-                { name: 'Unemployment (QLFS)', freq: 'Quarterly', lag: '~6 weeks', auto: 'Python script (update_unemployment.py)' },
-                { name: 'Provincial Unemployment', freq: 'Quarterly', lag: '~6 weeks', auto: 'Bundled in update_unemployment.py' },
-                { name: 'Matric Pass Rates', freq: 'Annual', lag: '~2 weeks (Jan)', auto: 'Python script (update_education.py)' },
-                { name: 'Crime Statistics', freq: 'Annual', lag: 'September', auto: 'Python script (update_crime.py)' },
-                { name: 'Population Estimates', freq: 'Annual', lag: 'Mid-year', auto: 'Python script (update_population.py)' },
-                { name: 'Housing / GHS', freq: 'Annual', lag: '~12 months', auto: 'Python script (update_housing.py)' },
-                { name: 'Census Data', freq: 'Decennial', lag: '~2 years', auto: 'Manual — next census ~2032' },
-                { name: 'Interest Rates (Repo)', freq: 'MPC meetings (~bi-monthly)', lag: 'Same day', auto: 'Planned' },
+                { name: 'CPI Inflation', freq: 'Monthly', lag: '~25 days', auto: 'Semi-manual (Stats SA P0141 transcription)' },
+                { name: 'GDP Growth', freq: 'Quarterly', lag: '~60 days', auto: 'Semi-manual (Stats SA P0441 transcription)' },
+                { name: 'Unemployment (QLFS)', freq: 'Quarterly', lag: '~6 weeks', auto: 'Semi-manual (Stats SA P0211 transcription)' },
+                { name: 'Provincial Unemployment', freq: 'Quarterly', lag: '~6 weeks', auto: 'Semi-manual (Stats SA QLFS Table E)' },
+                { name: 'Matric Pass Rates', freq: 'Annual', lag: '~2 weeks (Jan)', auto: 'Manual (DBE release announcement)' },
+                { name: 'Crime Statistics', freq: 'Annual', lag: 'September', auto: 'Manual (SAPS annual workbooks)' },
+                { name: 'Population Estimates', freq: 'Annual', lag: 'Mid-year', auto: 'Semi-manual (Stats SA MYPE P0302)' },
+                { name: 'Housing / GHS', freq: 'Annual', lag: '~12 months', auto: 'Decennial Census / GHS tables' },
+                { name: 'Census Data', freq: 'Decennial', lag: '~2 years', auto: 'Static — next census ~2032' },
+                { name: 'Interest Rates (Repo)', freq: 'MPC meetings (~bi-monthly)', lag: 'Same day', auto: 'Semi-manual (SARB MPC statement)' },
               ].map((row) => (
                 <tr key={row.name} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
                   <td className="px-4 py-3 font-medium text-slate-900 dark:text-white">{row.name}</td>
@@ -354,10 +354,10 @@ export default function MethodologyPage() {
         </div>
         <div className="card p-5 space-y-4 text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
           <p>
-            All data is sourced directly from official statistical publications and cross-referenced with the original press releases before publication. Automated scripts fetch figures from Stats SA&apos;s official download pages; the raw values are validated against the previous period and flagged for manual review if they deviate by more than 3 standard deviations from the historical series.
+            All data is sourced directly from official statistical publications and cross-referenced with the original press releases before publication. Rather than relying on unverified third-party automated aggregators, headline figures and series are curated from official primary releases (Stats SA, SARB, DBE, SAPS) and validated against historical trends and official statistical tables.
           </p>
           <p>
-            For datasets without structured APIs (most Stats SA releases are PDF or Excel files), data is manually transcribed from the official statistical release tables. Transcribed values are verified against the headline figure in the press release and, where possible, against secondary coverage in <em>Business Day</em> or Bloomberg SA.
+            For datasets without structured APIs (most Stats SA releases are PDF or Excel files), data is transcribed from the official statistical release tables. Transcribed values are verified against the headline figure in the press release and, where possible, against secondary coverage in <em>Business Day</em> or Bloomberg SA.
           </p>
           <p>
             Historical revisions issued by Stats SA are incorporated in the next scheduled update cycle. We do not backdate individual data points between cycles unless the revision is material (defined as a change exceeding 1 percentage point for rates, or 0.5% for index levels).
@@ -379,7 +379,7 @@ export default function MethodologyPage() {
             <strong>Data may be provisional.</strong> Stats SA frequently issues preliminary estimates ahead of final figures. We label provisional data where known, but users should verify the status of individual data points on Stats SA&apos;s website.
           </p>
           <p>
-            <strong>Automation limitations.</strong> Automated update scripts rely on the structure of official publication pages remaining consistent. Structural changes to Stats SA&apos;s website may cause scripts to fail silently. All automation output is reviewed before deployment.
+            <strong>Automation limitations.</strong> Third-party APIs and automated pipelines (such as World Bank modelled indicators) are strictly gated or kept manual to prevent overwriting official national survey observations. All data updates undergo automated regression and consistency checks prior to release.
           </p>
           <p>
             <strong>No commercial affiliation.</strong> SA Data Hub has no commercial relationship with any of the data sources listed on this page and does not receive compensation for referencing them.

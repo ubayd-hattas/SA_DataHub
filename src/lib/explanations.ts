@@ -26,9 +26,9 @@ export interface DatasetExplanation {
 
 const CATEGORY_CONTEXT: Record<CategoryId, string> = {
   unemployment:
-    'South Africa has one of the highest unemployment rates globally among major economies. The official rate excludes "discouraged workers" — people who have given up searching — so the expanded rate typically runs 8–10 percentage points higher. The quarterly QLFS is the definitive source but is released with a 6–8 week lag.',
+    'South Africa has one of the highest unemployment rates globally among major economies. The official rate (LU1) excludes discouraged work-seekers, while the broader measure combining unemployment and the potential labour force (LU3) runs significantly higher (43.8% in Q2 2026). The quarterly QLFS is the definitive source but is released with a 6–8 week lag.',
   inflation:
-    'The SARB targets CPI within a 3–6% band. Readings persistently above 6% typically trigger interest rate hikes. Food and transport make up over 30% of the basket and disproportionately affect lower-income households, whose effective inflation rate often differs from the headline figure.',
+    'The SARB targets CPI inflation at 3% (with a ±1 percentage point tolerance band of 2%–4%, historically 3–6%). Readings persistently above target influence interest rate decisions. Food and transport make up over 30% of the basket and disproportionately affect lower-income households, whose effective inflation rate often differs from the headline figure.',
   crime:
     'Crime statistics are released annually by SAPS for April–March financial years. Under-reporting is a significant factor, particularly for sexual offences and domestic violence. Murder rate is considered the most reliable indicator as it is hardest to misclassify. South Africa\'s rates remain far above global averages.',
   education:
@@ -47,7 +47,7 @@ const CATEGORY_MATTERS: Record<CategoryId, (stat: Statistic) => string> = {
   unemployment: (stat) =>
     `High unemployment in South Africa drives inequality, poverty, and social instability. At ${stat.value}, roughly ${Math.round(stat.rawValue * 0.275)}% of the working-age population is excluded from formal economic participation. Youth unemployment is especially critical as prolonged joblessness early in a career has lasting effects on lifetime earnings and social mobility.`,
   inflation: (stat) =>
-    `Inflation at ${stat.value} directly affects the purchasing power of every South African. The SARB targets 3–6%; readings outside that band influence interest rate decisions, which in turn affect mortgage repayments, business investment, and the rand. Food inflation is the component most felt by low-income households.`,
+    `Inflation at ${stat.value} directly affects the purchasing power of every South African. The SARB targets 3% (±1 pp band); readings outside that target influence interest rate decisions, which in turn affect mortgage repayments, business investment, and the rand. Food inflation is the component most felt by low-income households.`,
   crime: (stat) =>
     `Crime has significant economic and social costs in South Africa — it deters foreign investment, suppresses tourism, and forces households and businesses to spend heavily on private security. ${stat.title} at ${stat.value} reflects one of the most visible quality-of-life indicators in the country.`,
   education: (stat) =>

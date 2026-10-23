@@ -142,6 +142,9 @@ export interface ProvinceStats {
     period: string
     trend: 'up' | 'down' | 'stable'
     change: number
+    lu3?: number
+    lu3Label?: string
+    expandedPeriod?: string
   }
   population: {
     total: number

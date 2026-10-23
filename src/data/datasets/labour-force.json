@@ -4,7 +4,7 @@
     "source_url": "https://www.statssa.gov.za/?page_id=1854&PPN=P0211",
     "update_frequency": "Quarterly",
     "last_verified": "2026-10-19",
-    "notes": "Labour force participation rate (LFPR) measures the share of the working-age population (15–64) that is either employed or actively looking for work. South Africa's LFPR is low by international standards, partly reflecting high rates of discouragement. NOTE (2026-10-19, data refresh): lfpr-overall and female-labour-participation were verified against QLFS P0211 tables (Q1 2025 and Q2 2026 releases) for Q1 2024–Q2 2026; the previously stored values for that window (e.g. 60.6% for Q4 2025 vs official 59.3%) did not match and were corrected. Points before Q1 2024 (lfpr-overall from Q1 2020; female from Q1 2022) were NOT re-verified. The record labour-force-participation (42.7%) is UNCHANGED and UNRESOLVED: same title and definition as the LFPR, but its value matches no national measure in the Q2 2026 release (LFPR 59.6%; absorption 39.6%; inactivity 40.4%). It needs a human decision (correct, repoint, or remove)."
+    "notes": "Labour force participation rate (LFPR) measures the share of the working-age population (15–64) that is either employed or actively looking for work. South Africa's LFPR is low by international standards, partly reflecting high rates of discouragement. NOTE (2026-10-19, data refresh): lfpr-overall and female-labour-participation were verified against QLFS P0211 tables (Q1 2025 and Q2 2026 releases) for Q1 2024–Q2 2026; the previously stored values for that window (e.g. 60.6% for Q4 2025 vs official 59.3%) did not match and were corrected. Points before Q1 2024 (lfpr-overall from Q1 2020; female from Q1 2022) were NOT re-verified. Per owner decision D1 (2026-10-23), the unverified 'labour-force-participation' (42.7%) record was removed from display and from this dataset."
   },
   "statistics": [
     {
@@ -234,82 +234,6 @@
             {
               "label": "Q2 2026",
               "value": 54.9
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "labour-force-participation",
-      "categoryId": "unemployment",
-      "title": "Labour Force Participation Rate",
-      "value": "42.7%",
-      "rawValue": 42.7,
-      "unit": "%",
-      "change": -0.1,
-      "changeLabel": "from Q3 2025",
-      "trend": "stable",
-      "description": "42.7% of working-age South Africans (ages 15–64) were either employed or actively seeking work in Q4 2025. This participation rate remains among the lowest globally, partly reflecting large numbers of discouraged work-seekers who have given up looking for jobs.",
-      "source": {
-        "name": "Statistics South Africa",
-        "shortName": "Stats SA",
-        "url": "https://www.statssa.gov.za/?page_id=1854&PPN=P0211",
-        "publicationName": "Quarterly Labour Force Survey Q4 2025",
-        "publicationDate": "2026-02-17"
-      },
-      "lastUpdated": "2026-02-17",
-      "series": [
-        {
-          "name": "Participation Rate (%)",
-          "unit": "%",
-          "data": [
-            {
-              "label": "Q1 2023",
-              "value": 42.8
-            },
-            {
-              "label": "Q2 2023",
-              "value": 42.5
-            },
-            {
-              "label": "Q3 2023",
-              "value": 43.1
-            },
-            {
-              "label": "Q4 2023",
-              "value": 43.2
-            },
-            {
-              "label": "Q1 2024",
-              "value": 42.9
-            },
-            {
-              "label": "Q2 2024",
-              "value": 43.0
-            },
-            {
-              "label": "Q3 2024",
-              "value": 43.3
-            },
-            {
-              "label": "Q4 2024",
-              "value": 42.9
-            },
-            {
-              "label": "Q1 2025",
-              "value": 42.5
-            },
-            {
-              "label": "Q2 2025",
-              "value": 42.9
-            },
-            {
-              "label": "Q3 2025",
-              "value": 42.8
-            },
-            {
-              "label": "Q4 2025",
-              "value": 42.7
             }
           ]
         }

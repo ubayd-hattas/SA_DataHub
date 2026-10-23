@@ -132,7 +132,7 @@ describe.skipIf(!DB_AVAILABLE)('app data provider in database mode', () => {
     process.env.DATA_SOURCE = 'database'
     const provider = await getAppDataProvider()
 
-    for (const statId of ['lfpr-overall', 'female-labour-participation', 'labour-force-participation']) {
+    for (const statId of ['lfpr-overall', 'female-labour-participation']) {
       const stat = await provider.getStatById(statId)
       assertStatStructure(stat as Parameters<typeof assertStatStructure>[0], statId)
     }

@@ -27,17 +27,17 @@ export const STORIES: Story[] = [
     lastUpdated: '2026-03-01',
     featured: true,
     coverEmoji: '📉',
-    summary: 'South Africa has one of the world\'s highest unemployment rates. At 31.4%, more than 7.8 million people are jobless. This story examines the scale of the crisis, its causes, and what progress looks like.',
-    relatedStatIds: ['unemployment-national', 'youth-unemployment-narrow', 'labour-force-participation'],
+    summary: 'South Africa has one of the world\'s highest unemployment rates. At 33.6%, more than 8.5 million people are jobless. This story examines the scale of the crisis, its causes, and what progress looks like.',
+    relatedStatIds: ['unemployment-national', 'youth-unemployment-narrow', 'lfpr-overall'],
     relatedSlugs: ['inflation-what-it-means', 'gdp-growth-slowdown'],
     tags: ['unemployment', 'labour market', 'youth', 'QLFS'],
     sections: [
       {
         id: 'scale',
         heading: 'The scale of the problem',
-        body: 'South Africa\'s unemployment rate stood at 31.4% in Q4 2025 — meaning roughly one in three South Africans who want a job cannot find one. That is approximately 7.8 million people.\n\nBut the official figure understates the full picture. The "expanded" unemployment rate, which includes discouraged work-seekers who have given up looking, stood at 40.7% in the same period. Roughly 3.7 million South Africans have stopped searching for employment altogether.\n\nBy any international measure, this is a crisis. South Africa consistently ranks among the highest unemployment rates in the world for a major economy.',
+        body: 'South Africa\'s unemployment rate stood at 33.6% in Q2 2026 — meaning roughly one in three South Africans who want a job cannot find one. That is approximately 8.5 million people.\n\nSeparately, the combined rate of unemployment and the potential labour force (LU3), which includes discouraged work-seekers who have given up looking, stood at 43.8% in the same period. Stats SA stopped reporting the former "expanded unemployment rate" after Q2 2025 in favour of LU3.\n\nBy any international measure, this is a crisis. South Africa consistently ranks among the highest unemployment rates in the world for a major economy.',
         statCallouts: ['unemployment-national'],
-        highlight: 'More than 3.7 million South Africans have given up looking for work entirely.',
+        highlight: 'The combined unemployment and potential labour force rate (LU3) reached 43.8% in Q2 2026.',
       },
       {
         id: 'youth',
@@ -54,8 +54,8 @@ export const STORIES: Story[] = [
       {
         id: 'progress',
         heading: 'Signs of improvement — and their limits',
-        body: 'The Q4 2025 figure of 31.4% represents a meaningful improvement from the post-pandemic peaks of 34.5% in Q1 2022. The number of employed South Africans rose to 17.1 million by end-2025 — a record.\n\nThe end of widespread load-shedding has helped. The formal sector added 320,000 jobs in Q4 2025 alone. Community and social services, construction, and finance were the largest contributors.\n\nHowever, the pace of job creation must be assessed in context. South Africa\'s working-age population grows by roughly 500,000 people per year. Even with 320,000 formal jobs added in a quarter, the labour market is not absorbing new entrants fast enough to reduce structural unemployment meaningfully.\n\nThe SARB, in its March 2026 MPC statement, projected growth of around 2% over the medium term — not the 5–6% economists say is needed to make a dent in structural unemployment.',
-        statCallouts: ['labour-force-participation'],
+        body: 'While the Q4 2025 reading of 31.4% had represented an improvement from post-pandemic peaks, unemployment rose again in 2026 to reach 33.6% by Q2 2026. The number of employed South Africans stood at 16.7 million, with 8.5 million unemployed.\n\nThe formal sector continues to face headwinds. Even with occasional quarterly job gains in services and finance, the labour market is not absorbing new entrants fast enough to reduce structural unemployment meaningfully — South Africa\'s working-age population grows by roughly 500,000 people per year.\n\nThe SARB has maintained tight policy to safeguard price stability, hiking the repo rate to 7.25% in September 2026, while medium-term growth projections remain well below the 5–6% economists say is required to make a dent in structural unemployment.',
+        statCallouts: ['lfpr-overall'],
       },
       {
         id: 'outlook',
@@ -91,20 +91,20 @@ export const STORIES: Story[] = [
       {
         id: '2025-story',
         heading: 'Why 2025 was a low-inflation year',
-        body: 'South Africa\'s annual average CPI fell to 3.2% in 2025 — the lowest full-year average since 2004. Several factors converged.\n\nGlobal commodity prices, which had spiked after Russia\'s invasion of Ukraine in 2022, normalised significantly. Fuel prices fell as oil prices moderated. Food inflation, which had been running above 14% in early 2023, eased dramatically as global grain prices retreated and the rand stabilised.\n\nThe SARB\'s aggressive rate hiking cycle — which took the repo rate from 3.5% in late 2021 to 8.25% by mid-2023 — had its intended effect: demand-pull inflation was squeezed out of the economy. The cost, however, was significant: higher borrowing costs weighed on economic growth and on mortgage-holders.\n\nThe good news is that the SARB has been cutting rates since late 2024, with the repo rate reaching 6.75% by early 2026.',
+        body: 'South Africa\'s annual average CPI fell to 3.2% in 2025 — the lowest full-year average since 2004. Several factors converged.\n\nGlobal commodity prices, which had spiked after Russia\'s invasion of Ukraine in 2022, normalised significantly. Fuel prices fell as oil prices moderated. Food inflation, which had been running above 14% in early 2023, eased dramatically as global grain prices retreated and the rand stabilised.\n\nThe SARB\'s aggressive rate hiking cycle — which took the repo rate from 3.5% in late 2021 to 8.25% by mid-2023 — had its intended effect: demand-pull inflation was squeezed out of the economy. The cost, however, was significant: higher borrowing costs weighed on economic growth and on mortgage-holders.\n\nThe good news is that the SARB had been easing rates until early 2026, though upside inflation pressures subsequently prompted hikes to 7.00% in May and 7.25% in September 2026.',
         statCallouts: ['annual-cpi-avg', 'repo-rate'],
       },
       {
         id: 'food-prices',
         heading: 'Food inflation: the numbers households feel most',
-        body: 'Food prices are the inflation measure most South Africans feel most viscerally. When meat, bread, and cooking oil become more expensive, the impact is immediate and unavoidable — especially for the 40% of households who spend more than 40% of income on food.\n\nFood CPI peaked at 14% in early 2023. By April 2026 it had fallen to 2.9% — one of the lowest readings in years. The improvement reflects lower global grain prices, a stronger rand, and strong domestic agricultural output in 2024 and 2025.\n\nHowever, absolute prices have not fallen — they have simply stopped rising as fast. The cumulative price increase since 2021 means the food basket still costs significantly more in rand terms than it did before the inflation surge.',
+        body: 'Food prices are the inflation measure most South Africans feel most viscerally. When meat, bread, and cooking oil become more expensive, the impact is immediate and unavoidable — especially for the 40% of households who spend more than 40% of income on food.\n\nFood CPI peaked at 14% in early 2023. By September 2026 it had eased to 1.2% — one of the lowest readings in years. The improvement reflects lower global grain prices, a stronger rand, and strong domestic agricultural output.\n\nHowever, absolute prices have not fallen — they have simply stopped rising as fast. The cumulative price increase since 2021 means the food basket still costs significantly more in rand terms than it did before the inflation surge.',
         statCallouts: ['food-inflation'],
         highlight: 'Lower inflation means prices are rising more slowly — not that prices have fallen.',
       },
       {
-        id: 'april-2026-spike',
-        heading: 'The April 2026 surprise: inflation jumps to 4%',
-        body: 'After a long period of easing, April 2026 brought a sharp reversal. Headline CPI jumped from 3.1% in March to 4.0% — the steepest reading since August 2024.\n\nThe primary culprits were fuel prices and electricity tariffs. The Iran conflict caused global oil prices to spike above $100 per barrel by late March 2026. This fed directly into South Africa\'s petrol price, which increased sharply on 1 April. Transport CPI swung from -1.6% in March to +4.9% in April.\n\nElectricity tariff increases — part of Eskom\'s annual tariff adjustment — also took effect in April, pushing the housing and utilities component higher.\n\nThe SARB, which had been expected to cut rates again in May 2026, is now widely expected to hold at 6.75% given the upside inflation shock.',
+        id: 'mid-2026-rebound',
+        heading: 'The mid-2026 rebound: inflation rises toward 5%',
+        body: 'After a period of easing, inflation accelerated in mid-2026. Headline CPI rose to 4.0% in April and peaked at 5.0% in June before moderating to 4.5% in September 2026.\n\nThe primary culprits were fuel prices, electricity tariffs, and municipal service adjustments. Transport CPI swung into positive territory as global oil and domestic petrol prices climbed, while Eskom\'s annual tariff adjustment pushed housing and utility costs higher.\n\nIn response to persistent upside risks, the SARB raised the repo rate to 7.00% in May 2026 and further to 7.25% in September 2026, maintaining a vigilant stance on its 3% target.',
         statCallouts: ['cpi-headline'],
       },
     ],
@@ -128,16 +128,16 @@ export const STORIES: Story[] = [
     tags: ['GDP', 'economic growth', 'Stats SA', 'load shedding'],
     sections: [
       {
-        id: 'q4-result',
-        heading: 'The Q4 2025 result',
-        body: 'South Africa\'s economy grew 0.4% quarter-on-quarter in Q4 2025 — seasonally adjusted and annualised — marking five consecutive quarters of expansion. Finance was the star performer, rising 1.4%. Manufacturing disappointed again, falling 0.6%.\n\nFor the full year 2025, GDP rose 1.1%. That is the highest annual growth rate since 2022, and better than the dismal 0.5% recorded in 2024 and the 0.7% in 2023.',
+        id: 'recent-gdp',
+        heading: 'Recent GDP trajectory',
+        body: 'After six consecutive quarters of expansion through Q1 2026 (+0.4%), real GDP contracted by 0.2% quarter-on-quarter in Q2 2026 (seasonally adjusted, constant 2015 prices). Mining (-3.0%), trade (-1.9%), and manufacturing (-1.8%) were the main drags, while finance (+0.3%) and personal services (+0.6%) showed modest growth.\n\nFor the full year 2025, GDP rose 1.1%. That was the highest annual growth rate since 2022, but the Q2 2026 contraction highlights the ongoing fragility of the recovery ahead of Stats SA\'s planned national accounts rebasing.',
         statCallouts: ['gdp-growth', 'gdp-annual-growth'],
-        highlight: 'Five consecutive quarters of positive growth — but "positive" masks how fragile that growth is.',
+        highlight: 'A 0.2% contraction in Q2 2026 ended six quarters of expansion, underscoring how fragile growth remains.',
       },
       {
         id: 'not-enough',
         heading: 'Why 1.1% is not enough',
-        body: 'South Africa\'s population grows by roughly 1% per year. That means GDP must grow by at least 1% just to keep GDP per capita flat. At 1.1%, 2025 growth barely kept the country\'s head above water on a per-capita basis.\n\nMost development economists argue South Africa needs sustained GDP growth of 5% or more to meaningfully reduce the 31% unemployment rate. The World Bank and IMF have similar benchmarks for the level of growth needed to reduce structural poverty.\n\nSouth Africa has not grown above 3% since 2011 — more than a decade of sustained underperformance. Over that period, the economy grew at an average of around 1% per year in real terms.',
+        body: 'South Africa\'s population grows by roughly 1% per year. That means GDP must grow by at least 1% just to keep GDP per capita flat. At 1.1%, 2025 growth barely kept the country\'s head above water on a per-capita basis.\n\nMost development economists argue South Africa needs sustained GDP growth of 5% or more to meaningfully reduce the 33.6% unemployment rate. The World Bank and IMF have similar benchmarks for the level of growth needed to reduce structural poverty.\n\nSouth Africa has not grown above 3% since 2011 — more than a decade of sustained underperformance. Over that period, the economy grew at an average of around 1% per year in real terms.',
       },
       {
         id: 'what-held-back',
