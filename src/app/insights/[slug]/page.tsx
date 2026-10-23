@@ -17,15 +17,16 @@ import { JsonLd } from '@/components/seo/JsonLd'
 import { articleSchema, breadcrumbSchema } from '@/lib/schema'
 
 interface StoryPageProps {
-  params: { slug: string }
+  params: Promise<{ slug: string }>
 }
 
 export function generateStaticParams() {
   return STORIES.map((s) => ({ slug: s.slug }))
 }
 
-export function generateMetadata({ params }: StoryPageProps): Metadata {
-  const story = getStoryBySlug(params.slug)
+export async function generateMetadata({ params }: StoryPageProps): Promise<Metadata> {
+  const { slug } = await params
+  const story = getStoryBySlug(slug)
   if (!story) return {}
   return buildPageMetadata({
     title: story.title,
@@ -62,12 +63,13 @@ const categoryColors: Record<string, string> = {
 }
 
 export default async function StoryPage({ params }: StoryPageProps) {
-  const story = getStoryBySlug(params.slug)
+  const { slug } = await params
+  const story = getStoryBySlug(slug)
   if (!story) return notFound()
 
-  const scrollStory = getScrollStoryBySlug(params.slug)
+  const scrollStory = getScrollStoryBySlug(slug)
   const provider = await getAppDataProvider()
-  const related = getRelatedStories(params.slug)
+  const related = getRelatedStories(slug)
   const catColor = categoryColors[story.category] ?? categoryColors.policy
 
   const storyStatIds = scrollStory
