@@ -35,9 +35,9 @@ const unemploymentCrisisStory: ScrollStory = {
     {
       id: 'scale',
       heading: 'One in three cannot find work',
-      body: `South Africa's official unemployment rate stood at 31.4% in Q4 2025 — roughly one in three South Africans who want a job cannot find one. In absolute terms, that is approximately 7.8 million people.
+      body: `South Africa's official unemployment rate stood at 33.6% in Q2 2026 — roughly one in three South Africans who want a job cannot find one. In absolute terms, that is approximately 8.5 million people.
 
-The Quarterly Labour Force Survey (QLFS), published by Statistics South Africa, is the primary source for this data. It uses the narrow definition: people who are unemployed, have actively looked for work in the past four weeks, and are available to start work immediately.
+The Quarterly Labour Force Survey (QLFS), published by Statistics South Africa, is the primary source for this data. It uses the narrow definition (LU1): people who are unemployed, have actively looked for work in the past four weeks, and are available to start work immediately.
 
 By any global benchmark, this is a crisis. South Africa's unemployment rate is among the highest for any major economy in the world — and has been for decades.`,
       statCalloutId: 'unemployment-national',
@@ -45,7 +45,7 @@ By any global benchmark, this is a crisis. South Africa's unemployment rate is a
         type: 'line',
         statId: 'unemployment-national',
         height: 300,
-        note: 'Narrow unemployment rate — Q1 2022 to Q4 2025 (QLFS)',
+        note: 'Narrow unemployment rate — Q1 2022 to Q2 2026 (QLFS)',
       },
       citationStatIds: ['unemployment-national'],
     },
@@ -53,13 +53,13 @@ By any global benchmark, this is a crisis. South Africa's unemployment rate is a
     // ── Chapter 2: The expanded picture ───────────────────────────────────────
     {
       id: 'expanded',
-      heading: 'The number the headline misses',
-      body: `The 31.4% official rate captures people who have actively looked for work. But South Africa also has a vast population of "discouraged work-seekers" — people who want work but have given up searching entirely.
+      heading: 'Beyond the headline: potential labour force',
+      body: `The 33.6% official rate captures people who have actively looked for work. But South Africa also has a vast population of "discouraged work-seekers" and persons with an unmet need for employment.
 
-When discouraged workers are included, the "expanded" unemployment rate rises to 40.7% in Q4 2025. That means roughly two in five working-age South Africans are effectively excluded from the labour market.
+When these jobseekers are included, the combined rate of unemployment and the potential labour force (LU3) reached 43.8% in Q2 2026. Stats SA stopped reporting the former "expanded unemployment rate" after Q2 2025 in favour of the international LU3 standard.
 
-The gap between the narrow and expanded rates — close to 10 percentage points — is itself a measure of despair. It reflects a labour market so difficult that millions of people have stopped trying.`,
-      highlight: 'Roughly 3.7 million South Africans have given up looking for work entirely.',
+The gap between the official rate and LU3 — over 10 percentage points — reflects the severe structural challenge of the labour market, where millions of potential workers are outside the active search pool.`,
+      highlight: 'The combined unemployment and potential labour force rate (LU3) stood at 43.8% in Q2 2026.',
       visualization: {
         type: 'line',
         statId: 'unemployment-national',
@@ -123,7 +123,7 @@ When the LFPR rises, it often temporarily pushes the unemployment rate up — no
         type: 'line',
         statId: 'lfpr-overall',
         height: 300,
-        note: 'Labour force participation rate — Q1 2020 to Q4 2025',
+        note: 'Labour force participation rate — Q1 2020 to Q2 2026',
       },
       citationStatIds: ['lfpr-overall'],
     },
@@ -132,19 +132,19 @@ When the LFPR rises, it often temporarily pushes the unemployment rate up — no
     {
       id: 'today',
       heading: 'Where things stand today',
-      body: `Q4 2025's reading of 31.4% is the lowest official unemployment rate in the 16-quarter series tracked here — down from the post-pandemic peak of 34.5% in Q1 2022. The number of employed South Africans reached a record 17.1 million by end-2025.
+      body: `While Q4 2025 (31.4%) was the lowest rate in the recent series, unemployment rose again in 2026 to reach 33.6% in Q2 2026. The number of employed persons stood at 16.7 million, with 8.5 million unemployed.
 
-The end of widespread load-shedding has helped. The formal sector added meaningful jobs in 2025, with community services, construction, and finance among the largest contributors.
+The economy continues to struggle to generate formal-sector jobs at the scale required. South Africa's working-age population grows by roughly 500,000 people annually, outpacing job absorption.
 
-But the pace of job creation must be assessed in context. South Africa's working-age population grows by roughly 500,000 people annually. The SARB, in its March 2026 MPC statement, projected growth of around 2% over the medium term — economists say 5–6% sustained growth is needed to make a real dent in structural unemployment. The improvement is real. The gap remains enormous.`,
+The SARB has kept interest rates elevated (repo 7.25%) to maintain price stability, while medium-term growth projections remain well below the 5–6% economists say is needed to make a dent in structural unemployment. The gap remains enormous.`,
       statCalloutId: 'unemployment-national',
-      highlight: '31.4% — a record low in the recent series, but still among the highest in the world for a major economy.',
+      highlight: 'At 33.6% in Q2 2026, South Africa\'s unemployment remains among the highest in the world.',
       visualization: {
         type: 'line',
         statId: 'unemployment-national',
-        highlightPeriod: 'Q4 2025',
+        highlightPeriod: 'Q2 2026',
         height: 300,
-        note: 'Q4 2025 = record low in the series at 31.4%',
+        note: 'Q2 2026 standing at 33.6%',
       },
       citationStatIds: ['unemployment-national', 'lfpr-overall'],
     },

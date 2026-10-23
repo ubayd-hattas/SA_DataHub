@@ -11,9 +11,17 @@ LIMITATION: World Bank publishes annual modelled estimates — not the
   https://www.statssa.gov.za/?page_id=1854&PPN=P0211
   (published Feb, May, Aug, Nov each year)
 
+SAFETY (2026-10-19):
+  This script is now DRY-RUN ONLY by default.  It will NOT write to
+  src/data/datasets/unemployment.json unless --allow-overwrite is passed
+  explicitly on the command line.  Verified quarterly QLFS data is in place;
+  running the write path would replace it with annual World Bank modelled
+  figures under the Stats SA source label.
+
 HOW TO RUN:
-    python scripts/update_unemployment.py
-    python scripts/update_unemployment.py --dry-run
+    python scripts/update_unemployment.py              # report-only (safe)
+    python scripts/update_unemployment.py --dry-run    # same
+    python scripts/update_unemployment.py --allow-overwrite  # DANGER: writes files
 """
 
 from __future__ import annotations
@@ -41,7 +49,15 @@ def _parse_wb(url: str, n: int = 10) -> list[dict]:
     return points[-n:]
 
 
-def run(dry_run: bool = False) -> None:
+def run(dry_run: bool = False, allow_overwrite: bool = False) -> None:
+    # Safety guard — refuse to write unless explicitly overridden.
+    if not allow_overwrite:
+        dry_run = True
+        print(
+            "  [PROTECTED] update_unemployment is running in report-only mode.\n"
+            "  It will NOT write to unemployment.json.\n"
+            "  Pass --allow-overwrite to enable writes (DANGER: overwrites verified QLFS data).\n"
+        )
     existing  = load_dataset("unemployment")
     old_stats = existing.get("statistics", [])
 
@@ -116,5 +132,11 @@ def run(dry_run: bool = False) -> None:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument(
+        "--allow-overwrite",
+        action="store_true",
+        dest="allow_overwrite",
+        help="DANGER: allow writes — will overwrite verified QLFS values with World Bank annual data",
+    )
     args = parser.parse_args()
-    run(dry_run=args.dry_run)
+    run(dry_run=args.dry_run, allow_overwrite=args.allow_overwrite)

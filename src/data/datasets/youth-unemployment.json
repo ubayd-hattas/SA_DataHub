@@ -3,49 +3,105 @@
     "source": "Statistics South Africa — Quarterly Labour Force Survey (P0211)",
     "source_url": "https://www.statssa.gov.za/?page_id=1854&PPN=P0211",
     "update_frequency": "Quarterly",
-    "last_verified": "2026-05-31",
-    "notes": "Youth unemployment (ages 15–34) from QLFS Q4 2025. SA has one of the highest youth unemployment rates globally. The expanded rate includes discouraged work-seekers and is particularly high among 15–24 year olds."
+    "last_verified": "2026-10-19",
+    "notes": "Youth unemployment (ages 15–34 and 15–24) from QLFS Q2 2026 (published 2026-08-11). 15–24 values are published in Table 2.2. 15–34 Q2 2026 (47.4%) and Q1 2026 (45.9%, implied by the official +1.5 pp change) are stated by Stats SA; 15–34 for Q2–Q4 2025 are DERIVED from Table 2.2 counts (unemployed 15–24 + 25–34 over labour force 15–24 + 25–34), rounded to 0.1. REVIEW REQUIRED: (1) youth-unemployment-expanded is unchanged — Stats SA stopped reporting the expanded rate after Q2 2025, so its Q3–Q4 2025 values cannot be traced to an official release; (2) youth-neet-rate is unchanged and annual, whereas Stats SA publishes a quarterly NEET rate for 15–24 (36.4% in Q2 2026, +1.2 pp year on year); (3) series points before Q2 2025 were not re-verified."
   },
   "statistics": [
     {
       "id": "youth-unemployment-narrow",
       "categoryId": "unemployment",
       "title": "Youth Unemployment Rate (15–34)",
-      "value": "45.5%",
-      "rawValue": 45.5,
+      "value": "47.4%",
+      "rawValue": 47.4,
       "unit": "%",
-      "change": -0.8,
-      "changeLabel": "from Q3 2025",
-      "trend": "down",
-      "description": "Narrow youth unemployment rate for those aged 15–34 who are without work, available for work, and actively seeking employment.",
+      "change": 1.5,
+      "changeLabel": "from Q1 2026 (45.9%)",
+      "trend": "up",
+      "description": "Narrow (strict) unemployment rate for those aged 15–34 who are without work, available for work and actively seeking employment. Stats SA reports the rate rose 1.5 percentage points to 47.4% in Q2 2026; the number of unemployed youth rose by 264,000 to 5.0 million.",
       "source": {
         "name": "Statistics South Africa",
         "shortName": "Stats SA",
-        "url": "https://www.statssa.gov.za/?page_id=1854&PPN=P0211",
-        "release": "QLFS Q4 2025"
+        "url": "https://www.statssa.gov.za/publications/P0211/P02112ndQuarter2026.pdf",
+        "release": "QLFS Q2 2026 (P0211), published 2026-08-11"
       },
-      "lastUpdated": "2026-02-18",
+      "lastUpdated": "2026-08-11",
       "series": [
         {
           "name": "Youth Unemployment (15–34)",
           "unit": "%",
           "data": [
-            { "label": "Q1 2022", "value": 46.2 },
-            { "label": "Q2 2022", "value": 47.8 },
-            { "label": "Q3 2022", "value": 46.5 },
-            { "label": "Q4 2022", "value": 45.9 },
-            { "label": "Q1 2023", "value": 47.1 },
-            { "label": "Q2 2023", "value": 47.4 },
-            { "label": "Q3 2023", "value": 46.9 },
-            { "label": "Q4 2023", "value": 46.2 },
-            { "label": "Q1 2024", "value": 45.8 },
-            { "label": "Q2 2024", "value": 46.3 },
-            { "label": "Q3 2024", "value": 46.1 },
-            { "label": "Q4 2024", "value": 45.7 },
-            { "label": "Q1 2025", "value": 46.8 },
-            { "label": "Q2 2025", "value": 46.4 },
-            { "label": "Q3 2025", "value": 46.3 },
-            { "label": "Q4 2025", "value": 45.5 }
+            {
+              "label": "Q1 2022",
+              "value": 46.2
+            },
+            {
+              "label": "Q2 2022",
+              "value": 47.8
+            },
+            {
+              "label": "Q3 2022",
+              "value": 46.5
+            },
+            {
+              "label": "Q4 2022",
+              "value": 45.9
+            },
+            {
+              "label": "Q1 2023",
+              "value": 47.1
+            },
+            {
+              "label": "Q2 2023",
+              "value": 47.4
+            },
+            {
+              "label": "Q3 2023",
+              "value": 46.9
+            },
+            {
+              "label": "Q4 2023",
+              "value": 46.2
+            },
+            {
+              "label": "Q1 2024",
+              "value": 45.8
+            },
+            {
+              "label": "Q2 2024",
+              "value": 46.3
+            },
+            {
+              "label": "Q3 2024",
+              "value": 46.1
+            },
+            {
+              "label": "Q4 2024",
+              "value": 45.7
+            },
+            {
+              "label": "Q1 2025",
+              "value": 46.8
+            },
+            {
+              "label": "Q2 2025",
+              "value": 46.1
+            },
+            {
+              "label": "Q3 2025",
+              "value": 43.7
+            },
+            {
+              "label": "Q4 2025",
+              "value": 43.8
+            },
+            {
+              "label": "Q1 2026",
+              "value": 45.9
+            },
+            {
+              "label": "Q2 2026",
+              "value": 47.4
+            }
           ]
         }
       ]
@@ -54,41 +110,97 @@
       "id": "youth-unemployment-1524",
       "categoryId": "unemployment",
       "title": "Youth Unemployment Rate (15–24)",
-      "value": "61.2%",
-      "rawValue": 61.2,
+      "value": "62.8%",
+      "rawValue": 62.8,
       "unit": "%",
-      "change": -0.6,
-      "changeLabel": "from Q3 2025",
-      "trend": "down",
-      "description": "Unemployment rate among 15–24 year olds — among the highest in the world. This cohort faces structural barriers including lack of experience, skills mismatch, and geographic concentration of youth outside economic centres.",
+      "change": 1.9,
+      "changeLabel": "from Q1 2026 (60.9%)",
+      "trend": "up",
+      "description": "Unemployment rate (LU1) among 15–24 year olds, one of the highest youth rates in the world. It rose 1.9 percentage points to 62.8% in Q2 2026. This cohort faces structural barriers including lack of experience, skills mismatch, and geographic concentration of youth outside economic centres.",
       "source": {
         "name": "Statistics South Africa",
         "shortName": "Stats SA",
-        "url": "https://www.statssa.gov.za/?page_id=1854&PPN=P0211",
-        "release": "QLFS Q4 2025"
+        "url": "https://www.statssa.gov.za/publications/P0211/P02112ndQuarter2026.pdf",
+        "release": "QLFS Q2 2026 (P0211), published 2026-08-11"
       },
-      "lastUpdated": "2026-02-18",
+      "lastUpdated": "2026-08-11",
       "series": [
         {
           "name": "Youth Unemployment (15–24)",
           "unit": "%",
           "data": [
-            { "label": "Q1 2022", "value": 63.9 },
-            { "label": "Q2 2022", "value": 64.8 },
-            { "label": "Q3 2022", "value": 63.2 },
-            { "label": "Q4 2022", "value": 62.7 },
-            { "label": "Q1 2023", "value": 63.5 },
-            { "label": "Q2 2023", "value": 63.9 },
-            { "label": "Q3 2023", "value": 62.8 },
-            { "label": "Q4 2023", "value": 62.1 },
-            { "label": "Q1 2024", "value": 61.8 },
-            { "label": "Q2 2024", "value": 62.4 },
-            { "label": "Q3 2024", "value": 62.0 },
-            { "label": "Q4 2024", "value": 61.5 },
-            { "label": "Q1 2025", "value": 62.3 },
-            { "label": "Q2 2025", "value": 62.0 },
-            { "label": "Q3 2025", "value": 61.8 },
-            { "label": "Q4 2025", "value": 61.2 }
+            {
+              "label": "Q1 2022",
+              "value": 63.9
+            },
+            {
+              "label": "Q2 2022",
+              "value": 64.8
+            },
+            {
+              "label": "Q3 2022",
+              "value": 63.2
+            },
+            {
+              "label": "Q4 2022",
+              "value": 62.7
+            },
+            {
+              "label": "Q1 2023",
+              "value": 63.5
+            },
+            {
+              "label": "Q2 2023",
+              "value": 63.9
+            },
+            {
+              "label": "Q3 2023",
+              "value": 62.8
+            },
+            {
+              "label": "Q4 2023",
+              "value": 62.1
+            },
+            {
+              "label": "Q1 2024",
+              "value": 61.8
+            },
+            {
+              "label": "Q2 2024",
+              "value": 62.4
+            },
+            {
+              "label": "Q3 2024",
+              "value": 62.0
+            },
+            {
+              "label": "Q4 2024",
+              "value": 61.5
+            },
+            {
+              "label": "Q1 2025",
+              "value": 62.3
+            },
+            {
+              "label": "Q2 2025",
+              "value": 62.2
+            },
+            {
+              "label": "Q3 2025",
+              "value": 58.5
+            },
+            {
+              "label": "Q4 2025",
+              "value": 57.0
+            },
+            {
+              "label": "Q1 2026",
+              "value": 60.9
+            },
+            {
+              "label": "Q2 2026",
+              "value": 62.8
+            }
           ]
         }
       ]
@@ -116,22 +228,70 @@
           "name": "Expanded Youth Unemployment (15–34)",
           "unit": "%",
           "data": [
-            { "label": "Q1 2022", "value": 63.2 },
-            { "label": "Q2 2022", "value": 64.4 },
-            { "label": "Q3 2022", "value": 63.1 },
-            { "label": "Q4 2022", "value": 62.5 },
-            { "label": "Q1 2023", "value": 63.0 },
-            { "label": "Q2 2023", "value": 63.8 },
-            { "label": "Q3 2023", "value": 62.9 },
-            { "label": "Q4 2023", "value": 62.4 },
-            { "label": "Q1 2024", "value": 62.1 },
-            { "label": "Q2 2024", "value": 62.7 },
-            { "label": "Q3 2024", "value": 62.4 },
-            { "label": "Q4 2024", "value": 61.8 },
-            { "label": "Q1 2025", "value": 62.5 },
-            { "label": "Q2 2025", "value": 62.2 },
-            { "label": "Q3 2025", "value": 61.9 },
-            { "label": "Q4 2025", "value": 60.8 }
+            {
+              "label": "Q1 2022",
+              "value": 63.2
+            },
+            {
+              "label": "Q2 2022",
+              "value": 64.4
+            },
+            {
+              "label": "Q3 2022",
+              "value": 63.1
+            },
+            {
+              "label": "Q4 2022",
+              "value": 62.5
+            },
+            {
+              "label": "Q1 2023",
+              "value": 63.0
+            },
+            {
+              "label": "Q2 2023",
+              "value": 63.8
+            },
+            {
+              "label": "Q3 2023",
+              "value": 62.9
+            },
+            {
+              "label": "Q4 2023",
+              "value": 62.4
+            },
+            {
+              "label": "Q1 2024",
+              "value": 62.1
+            },
+            {
+              "label": "Q2 2024",
+              "value": 62.7
+            },
+            {
+              "label": "Q3 2024",
+              "value": 62.4
+            },
+            {
+              "label": "Q4 2024",
+              "value": 61.8
+            },
+            {
+              "label": "Q1 2025",
+              "value": 62.5
+            },
+            {
+              "label": "Q2 2025",
+              "value": 62.2
+            },
+            {
+              "label": "Q3 2025",
+              "value": 61.9
+            },
+            {
+              "label": "Q4 2025",
+              "value": 60.8
+            }
           ]
         }
       ]
@@ -159,13 +319,34 @@
           "name": "NEET Rate (15–24)",
           "unit": "%",
           "data": [
-            { "label": "2019", "value": 34.5 },
-            { "label": "2020", "value": 41.2 },
-            { "label": "2021", "value": 40.1 },
-            { "label": "2022", "value": 39.3 },
-            { "label": "2023", "value": 38.7 },
-            { "label": "2024", "value": 37.6 },
-            { "label": "2025", "value": 37.2 }
+            {
+              "label": "2019",
+              "value": 34.5
+            },
+            {
+              "label": "2020",
+              "value": 41.2
+            },
+            {
+              "label": "2021",
+              "value": 40.1
+            },
+            {
+              "label": "2022",
+              "value": 39.3
+            },
+            {
+              "label": "2023",
+              "value": 38.7
+            },
+            {
+              "label": "2024",
+              "value": 37.6
+            },
+            {
+              "label": "2025",
+              "value": 37.2
+            }
           ]
         }
       ]

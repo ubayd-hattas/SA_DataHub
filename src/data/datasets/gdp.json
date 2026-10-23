@@ -9,50 +9,106 @@
       "Q3": "Early December",
       "Q4": "Early March"
     },
-    "last_verified": "2026-05-31",
-    "notes": "Growth rates are quarter-on-quarter, seasonally adjusted and annualised (SAAR), at constant 2015 prices. Nominal GDP is at current prices in ZAR billions. Source: Stats SA P0441 releases and SARB Quarterly Bulletin June 2025. Update by running: python scripts/update_gdp.py"
+    "last_verified": "2026-10-19",
+    "notes": "GDP growth is quarter-on-quarter, seasonally adjusted, in real terms (constant 2015 prices) — NOT annualised (Stats SA P0441 footnote; the earlier 'SAAR' label was incorrect). Latest release: P0441 Q2 2026 (published 2026-09-08): -0.2% after +0.4% in Q1 2026; next release Q3 2026 on 2026-12-01. Annual real growth (1.1% for 2025), nominal GDP (R7.67T) and GDP per capita (R120,800) are UNCHANGED from the Q4 2025 release (2026-03-10): Stats SA did not publish revised annual estimates in June 2026 or September 2026 because of the rebasing and benchmarking (new base year 2022), expected October 2026 and not included here. Those three records, and the derived GDP-per-capita (not a Stats SA published series), should be re-checked once the rebased series is published; all historical GDP values will change. REVIEW: quarterly points before Q1 2026 (vintage Q4 2025 release) and the three annual/nominal/per-capita values were not re-verified in this pass. Do NOT run the World Bank updater script for this dataset (it overwrites verified values with annual modelled figures); update manually from the official Stats SA/SARB/DBE release — see antigravity-instructions.md."
   },
   "statistics": [
     {
       "id": "gdp-growth",
       "categoryId": "gdp",
       "title": "GDP Growth Rate (Quarter-on-Quarter)",
-      "value": "0.4%",
-      "rawValue": 0.4,
+      "value": "-0.2%",
+      "rawValue": -0.2,
       "unit": "%",
-      "change": 0.1,
-      "changeLabel": "from Q3 2025",
-      "trend": "up",
-      "description": "South Africa's real GDP grew 0.4% quarter-on-quarter in Q4 2025, seasonally adjusted and annualised, above expectations of 0.3%. This marked the fifth consecutive quarter of expansion. Finance led growth (+1.4%), while manufacturing was the largest drag (-0.6%). For the full year 2025, GDP rose 1.1% — the strongest annual growth since 2022.",
+      "change": -0.6,
+      "changeLabel": "from Q1 2026 (0.4%)",
+      "trend": "down",
+      "description": "South Africa's real GDP contracted 0.2% quarter-on-quarter in Q2 2026 (seasonally adjusted, constant 2015 prices), after growth of 0.4% in Q1 — ending six consecutive quarters of expansion. Mining (-3.0%), trade (-1.9%) and manufacturing (-1.8%) were the main drags; finance (+0.3%) and personal services (+0.6%) grew. On the expenditure side, household consumption rose 0.4%, fixed investment fell 0.2% and net exports subtracted 1.1 percentage points. The estimate is preliminary: Stats SA's rebased (base year 2022) and benchmarked national accounts, expected in October 2026, may revise it.",
       "source": {
         "name": "Statistics South Africa",
         "shortName": "Stats SA",
-        "url": "https://www.statssa.gov.za/?page_id=1854&PPN=P0441",
-        "publicationName": "Gross Domestic Product Q4 2025",
-        "publicationDate": "2026-03-10"
+        "url": "https://www.statssa.gov.za/publications/P0441/Press%20release%20-%20Q2%202026.pdf",
+        "publicationName": "Gross Domestic Product Q2 2026",
+        "publicationDate": "2026-09-08"
       },
-      "lastUpdated": "2026-03-10",
+      "lastUpdated": "2026-09-08",
       "series": [
         {
-          "name": "GDP Growth (%, QoQ SAAR)",
+          "name": "GDP Growth (%, QoQ, seasonally adjusted)",
           "unit": "%",
           "data": [
-            { "label": "Q1 2022", "value": 1.7 },
-            { "label": "Q2 2022", "value": 0.2 },
-            { "label": "Q3 2022", "value": 1.6 },
-            { "label": "Q4 2022", "value": 1.2 },
-            { "label": "Q1 2023", "value": -0.7 },
-            { "label": "Q2 2023", "value": 1.7 },
-            { "label": "Q3 2023", "value": 0.9 },
-            { "label": "Q4 2023", "value": 0.6 },
-            { "label": "Q1 2024", "value": -0.1 },
-            { "label": "Q2 2024", "value": 0.4 },
-            { "label": "Q3 2024", "value": 0.6 },
-            { "label": "Q4 2024", "value": 1.0 },
-            { "label": "Q1 2025", "value": 0.1 },
-            { "label": "Q2 2025", "value": 0.8 },
-            { "label": "Q3 2025", "value": 0.3 },
-            { "label": "Q4 2025", "value": 0.4 }
+            {
+              "label": "Q1 2022",
+              "value": 1.7
+            },
+            {
+              "label": "Q2 2022",
+              "value": 0.2
+            },
+            {
+              "label": "Q3 2022",
+              "value": 1.6
+            },
+            {
+              "label": "Q4 2022",
+              "value": 1.2
+            },
+            {
+              "label": "Q1 2023",
+              "value": -0.7
+            },
+            {
+              "label": "Q2 2023",
+              "value": 1.7
+            },
+            {
+              "label": "Q3 2023",
+              "value": 0.9
+            },
+            {
+              "label": "Q4 2023",
+              "value": 0.6
+            },
+            {
+              "label": "Q1 2024",
+              "value": -0.1
+            },
+            {
+              "label": "Q2 2024",
+              "value": 0.4
+            },
+            {
+              "label": "Q3 2024",
+              "value": 0.6
+            },
+            {
+              "label": "Q4 2024",
+              "value": 1.0
+            },
+            {
+              "label": "Q1 2025",
+              "value": 0.1
+            },
+            {
+              "label": "Q2 2025",
+              "value": 0.8
+            },
+            {
+              "label": "Q3 2025",
+              "value": 0.3
+            },
+            {
+              "label": "Q4 2025",
+              "value": 0.4
+            },
+            {
+              "label": "Q1 2026",
+              "value": 0.4
+            },
+            {
+              "label": "Q2 2026",
+              "value": -0.2
+            }
           ]
         }
       ]
@@ -81,17 +137,50 @@
           "name": "Annual GDP Growth (%)",
           "unit": "%",
           "data": [
-            { "label": "2015", "value": 1.3 },
-            { "label": "2016", "value": 0.7 },
-            { "label": "2017", "value": 1.2 },
-            { "label": "2018", "value": 1.6 },
-            { "label": "2019", "value": 0.3 },
-            { "label": "2020", "value": -6.2 },
-            { "label": "2021", "value": 4.9 },
-            { "label": "2022", "value": 1.9 },
-            { "label": "2023", "value": 0.7 },
-            { "label": "2024", "value": 0.5 },
-            { "label": "2025", "value": 1.1 }
+            {
+              "label": "2015",
+              "value": 1.3
+            },
+            {
+              "label": "2016",
+              "value": 0.7
+            },
+            {
+              "label": "2017",
+              "value": 1.2
+            },
+            {
+              "label": "2018",
+              "value": 1.6
+            },
+            {
+              "label": "2019",
+              "value": 0.3
+            },
+            {
+              "label": "2020",
+              "value": -6.2
+            },
+            {
+              "label": "2021",
+              "value": 4.9
+            },
+            {
+              "label": "2022",
+              "value": 1.9
+            },
+            {
+              "label": "2023",
+              "value": 0.7
+            },
+            {
+              "label": "2024",
+              "value": 0.5
+            },
+            {
+              "label": "2025",
+              "value": 1.1
+            }
           ]
         }
       ]
@@ -120,14 +209,38 @@
           "name": "Nominal GDP (ZAR billion)",
           "unit": "ZAR billion",
           "data": [
-            { "label": "2018", "value": 4924 },
-            { "label": "2019", "value": 5083 },
-            { "label": "2020", "value": 4694 },
-            { "label": "2021", "value": 5502 },
-            { "label": "2022", "value": 6503 },
-            { "label": "2023", "value": 6840 },
-            { "label": "2024", "value": 7352 },
-            { "label": "2025", "value": 7670 }
+            {
+              "label": "2018",
+              "value": 4924
+            },
+            {
+              "label": "2019",
+              "value": 5083
+            },
+            {
+              "label": "2020",
+              "value": 4694
+            },
+            {
+              "label": "2021",
+              "value": 5502
+            },
+            {
+              "label": "2022",
+              "value": 6503
+            },
+            {
+              "label": "2023",
+              "value": 6840
+            },
+            {
+              "label": "2024",
+              "value": 7352
+            },
+            {
+              "label": "2025",
+              "value": 7670
+            }
           ]
         }
       ]
@@ -156,14 +269,38 @@
           "name": "GDP Per Capita (ZAR)",
           "unit": "ZAR",
           "data": [
-            { "label": "2018", "value": 87240 },
-            { "label": "2019", "value": 88820 },
-            { "label": "2020", "value": 79540 },
-            { "label": "2021", "value": 91800 },
-            { "label": "2022", "value": 106500 },
-            { "label": "2023", "value": 109450 },
-            { "label": "2024", "value": 114869 },
-            { "label": "2025", "value": 120800 }
+            {
+              "label": "2018",
+              "value": 87240
+            },
+            {
+              "label": "2019",
+              "value": 88820
+            },
+            {
+              "label": "2020",
+              "value": 79540
+            },
+            {
+              "label": "2021",
+              "value": 91800
+            },
+            {
+              "label": "2022",
+              "value": 106500
+            },
+            {
+              "label": "2023",
+              "value": 109450
+            },
+            {
+              "label": "2024",
+              "value": 114869
+            },
+            {
+              "label": "2025",
+              "value": 120800
+            }
           ]
         }
       ]

@@ -3,25 +3,25 @@
     "source": "Statistics South Africa — Census 2022",
     "source_url": "https://www.statssa.gov.za/census/census_2022/census_2022_products/Census_2022_Statistical_release.pdf",
     "update_frequency": "Decennial (next census ~2032)",
-    "last_verified": "2025-05-01",
-    "notes": "Census 2022 data is static until the next census. No automation needed. These figures are definitive."
+    "last_verified": "2026-10-19",
+    "notes": "Census 2022 (P0301.4, released 2023-10-10): 17,828,778 households, average size 3.5, 79% of households with internet access (35% in 2011). Previously stored values (17.3M households, size 3.0, internet 64.0%) did not match the release and were corrected. UNRESOLVED: census-no-income (30.4%) was NOT verified — Stats SA withheld/excluded the income, employment, fertility and mortality themes from Census 2022 outputs over quality concerns (see municipalities.json notes); the 30.4% figure and its 2011 comparison should be traced to a published table or the record removed. internet-access 2016 (48.0) is a Community Survey point and household 2001 (10.9) was not re-verified. Stats SA has said Census 2022 results will not be revised; no errata were found."
   },
   "statistics": [
     {
       "id": "census-households",
       "categoryId": "census",
       "title": "Total Households",
-      "value": "17.3M",
-      "rawValue": 17285000,
+      "value": "17.8M",
+      "rawValue": 17828778,
       "unit": "households",
-      "change": 33.7,
+      "change": 23.4,
       "changeLabel": "since Census 2011",
       "trend": "up",
-      "description": "Total private households counted in Census 2022. Average household size has declined from 3.4 persons in 2011 to 3.0 in 2022, reflecting changing family structures and increasing urbanisation.",
+      "description": "Total private households counted in Census 2022: 17,828,778, up from 14.4 million in 2011 (+23.4%). Average household size declined from 3.6 persons in 2011 to 3.5 in 2022, reflecting changing family structures and increasing urbanisation.",
       "source": {
         "name": "Statistics South Africa",
         "shortName": "Stats SA",
-        "url": "https://www.statssa.gov.za/census/census_2022/census_2022_products/Census_2022_Statistical_release.pdf",
+        "url": "https://census.statssa.gov.za/assets/documents/2022/P03014_Census_2022_Statistical_Release.pdf",
         "publicationName": "Census 2022 Statistical Release",
         "publicationDate": "2023-10-10"
       },
@@ -31,9 +31,22 @@
           "name": "Households (millions)",
           "unit": "million",
           "data": [
-            { "label": "2001", "value": 10.9 },
-            { "label": "2011", "value": 14.5 },
-            { "label": "2022", "value": 17.3 }
+            {
+              "label": "1996",
+              "value": 9.1
+            },
+            {
+              "label": "2001",
+              "value": 10.9
+            },
+            {
+              "label": "2011",
+              "value": 14.4
+            },
+            {
+              "label": "2022",
+              "value": 17.8
+            }
           ]
         }
       ]
@@ -42,17 +55,17 @@
       "id": "census-internet-access",
       "categoryId": "census",
       "title": "Households with Internet Access",
-      "value": "64.0%",
-      "rawValue": 64.0,
+      "value": "79.0%",
+      "rawValue": 79.0,
       "unit": "%",
-      "change": 33.0,
+      "change": 44.0,
       "changeLabel": "since Census 2011",
       "trend": "up",
-      "description": "Percentage of households with internet access (including mobile data) per Census 2022. In 2011 only 31% had access. The rapid expansion of mobile internet (4G/LTE) is the primary driver.",
+      "description": "Percentage of households with access to the internet (by any means, including mobile) in Census 2022, up from 35% in 2011. The rapid expansion of mobile internet is the primary driver.",
       "source": {
         "name": "Statistics South Africa",
         "shortName": "Stats SA",
-        "url": "https://www.statssa.gov.za/census/census_2022/census_2022_products/Census_2022_Statistical_release.pdf",
+        "url": "https://census.statssa.gov.za/assets/documents/2022/P03014_Census_2022_Statistical_Release.pdf",
         "publicationName": "Census 2022 Statistical Release",
         "publicationDate": "2023-10-10"
       },
@@ -62,9 +75,18 @@
           "name": "Internet Access (%)",
           "unit": "%",
           "data": [
-            { "label": "2011", "value": 31.0 },
-            { "label": "2016", "value": 48.0 },
-            { "label": "2022", "value": 64.0 }
+            {
+              "label": "2011",
+              "value": 35.0
+            },
+            {
+              "label": "2016",
+              "value": 48.0
+            },
+            {
+              "label": "2022",
+              "value": 79.0
+            }
           ]
         }
       ]
