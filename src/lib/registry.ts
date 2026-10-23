@@ -101,7 +101,7 @@ const datasetRegistryBase: DatasetRegistryEntry[] = [
     id: 'unemployment',
     label: 'Unemployment',
     description: 'Official quarterly unemployment rate (ILO strict definition) from the Stats SA QLFS.',
-    statIds: ['unemployment-national', 'youth-unemployment', 'labour-force-participation'],
+    statIds: ['unemployment-national'],
     categoryId: 'unemployment',
     sourceName: 'Statistics South Africa',
     sourceShortName: 'Stats SA',

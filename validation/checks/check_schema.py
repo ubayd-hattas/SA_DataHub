@@ -6,6 +6,16 @@ from validation.loaders import all_statistics, load_json_datasets
 from validation.models import CheckResult, Severity
 
 
+# Statistics that can legitimately be negative (GDP contraction). Explicit IDs only:
+# a substring match on "growth" would also relax the floor for unrelated series.
+NEGATIVE_ALLOWED_STAT_IDS = frozenset({"gdp-growth", "gdp-annual-growth"})
+
+
+def min_allowed_percent(stat_id: str) -> int:
+    """Lower bound for a percent-unit statistic."""
+    return -100 if stat_id in NEGATIVE_ALLOWED_STAT_IDS else 0
+
+
 def run() -> CheckResult:
     result = CheckResult(name="check_schema")
     datasets = load_json_datasets()
@@ -21,10 +31,11 @@ def run() -> CheckResult:
             result.add(Severity.FAIL, f"'{sid}' rawValue is not numeric: {raw!r}")
             continue
 
-        if unit == "%" and not (0 <= raw <= 100):
+        min_val = min_allowed_percent(sid)
+        if unit == "%" and not (min_val <= raw <= 100):
             result.add(
                 Severity.WARN,
-                f"'{sid}' percent value out of 0–100 range: {raw}",
+                f"'{sid}' percent value out of {min_val}–100 range: {raw}",
             )
 
         if isinstance(change, (int, float)) and trend in ("up", "down", "stable"):

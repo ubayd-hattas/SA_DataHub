@@ -30,14 +30,22 @@ from pathlib import Path
 
 # ─── Updater registry ────────────────────────────────────────────────────────
 # Each entry: (module_name, dataset_id, automation_level)
-# automation_level: "auto" = fully automated, "manual" = prints instructions
+# automation_level: "auto" = fully automated, "manual" = prints instructions only
+#
+# SAFETY NOTE (2026-10-19):
+#   update_inflation, update_unemployment, update_gdp, update_population have been
+#   moved to "manual" because they pull ANNUAL MODELLED World Bank figures and
+#   overwrite headline value/rawValue/source/series on records that are maintained
+#   from official quarterly/monthly Stats SA/SARB releases.  Running them would
+#   silently corrupt verified data.  Each script now requires --allow-overwrite to
+#   actually write files.  See scripts/update_<name>.py for details.
 
 UPDATERS = [
-    ("update_inflation",       "inflation",       "auto"),
-    ("update_unemployment",    "unemployment",    "auto"),
-    ("update_gdp",             "gdp",             "auto"),
-    ("update_interest_rates",  "interest-rates",  "manual"),  # update LATEST_REPO_RATE after MPC
-    ("update_population",      "population",      "auto"),
+    ("update_inflation",       "inflation",       "manual"),  # WB annual; verified monthly CPI in place — see SAFETY NOTE
+    ("update_unemployment",    "unemployment",    "manual"),  # WB annual; verified quarterly QLFS in place — see SAFETY NOTE
+    ("update_gdp",             "gdp",             "manual"),  # WB annual; verified quarterly Stats SA in place — see SAFETY NOTE
+    ("update_interest_rates",  "interest-rates",  "manual"),  # update LATEST_REPO_RATE after MPC (LATEST_REPO_RATE must be 7.25%)
+    ("update_population",      "population",      "manual"),  # WB model; verified MYPE 2026 in place — see SAFETY NOTE
     ("update_crime",           "crime",           "manual"),    # SAPS has no API
     ("update_education",       "education",       "manual"),    # DBE releases annually
     ("update_housing",         "housing",         "manual"),    # Census / GHS
@@ -45,7 +53,12 @@ UPDATERS = [
 ]
 
 
-def run_updater(module_name: str, dry_run: bool) -> dict:
+# Updaters that pull World Bank annual modelled figures — must not write
+# without an explicit override because they can corrupt verified Stats SA data.
+_PROTECTED_UPDATERS = {"update_inflation", "update_unemployment", "update_gdp", "update_population"}
+
+
+def run_updater(module_name: str, dry_run: bool, allow_overwrite: bool = False) -> dict:
     """Import and run a single updater module, return a result dict."""
     scripts_dir = Path(__file__).parent
     sys.path.insert(0, str(scripts_dir))
@@ -57,12 +70,30 @@ def run_updater(module_name: str, dry_run: bool) -> dict:
         "updated_at": datetime.now().isoformat(),
     }
 
+    # Safety guard: protected WB updaters require explicit --allow-overwrite.
+    effective_dry_run = dry_run
+    if module_name in _PROTECTED_UPDATERS and not allow_overwrite:
+        effective_dry_run = True  # force dry-run regardless of caller flag
+        result["message"] = (
+            "PROTECTED — running report-only (no files written). "
+            "Pass --allow-overwrite to enable writes (WARNING: this may corrupt verified data)."
+        )
+
     try:
         mod = importlib.import_module(module_name)
         if hasattr(mod, "run"):
-            mod.run(dry_run=dry_run)
-            result["status"] = "ok"
-            result["message"] = "Completed successfully"
+            # Pass allow_overwrite through if the module accepts it
+            import inspect
+            sig = inspect.signature(mod.run)
+            kwargs: dict = {"dry_run": effective_dry_run}
+            if "allow_overwrite" in sig.parameters:
+                kwargs["allow_overwrite"] = allow_overwrite and not dry_run
+            mod.run(**kwargs)
+            if result["message"] == "":
+                result["status"] = "ok"
+                result["message"] = "Completed successfully"
+            else:
+                result["status"] = "ok"  # protected-mode run still succeeded
         else:
             result["status"] = "skip"
             result["message"] = "No run() function found"
@@ -94,6 +125,16 @@ def main():
     parser = argparse.ArgumentParser(description="SA Data Hub — update all datasets")
     parser.add_argument("--only", metavar="DATASET", help="Run only this updater (e.g. inflation)")
     parser.add_argument("--dry-run", action="store_true", help="Fetch data but don't write files")
+    parser.add_argument(
+        "--allow-overwrite",
+        action="store_true",
+        dest="allow_overwrite",
+        help=(
+            "DANGER: allow the four World Bank updaters (inflation, unemployment, gdp, "
+            "population) to write files. This WILL overwrite verified Stats SA values with "
+            "annual modelled World Bank figures. Only use if you know what you are doing."
+        ),
+    )
     args = parser.parse_args()
 
     targets = UPDATERS
@@ -106,12 +147,31 @@ def main():
     if args.dry_run:
         print("\n[DRY RUN] — data will be fetched but files will not be written.\n")
 
+    if args.allow_overwrite and not args.dry_run:
+        protected_targets = [d for m, d, _ in targets if m in _PROTECTED_UPDATERS]
+        if protected_targets:
+            print("\n" + "!" * 60)
+            print("  WARNING: --allow-overwrite is set.")
+            print("  The following updaters will WRITE files using World Bank")
+            print("  annual modelled data, overwriting verified Stats SA values:")
+            for t in protected_targets:
+                print(f"    • {t}")
+            print("!" * 60)
+            confirm = input("  Type 'yes' to continue: ").strip().lower()
+            if confirm != "yes":
+                print("  Aborted.")
+                sys.exit(1)
+
     results = []
     for module_name, dataset_id, automation in targets:
         print(f"\n{'─'*60}")
         print(f"  Updating: {dataset_id} [{automation}]")
         print(f"{'─'*60}")
-        result = run_updater(module_name, dry_run=args.dry_run)
+        result = run_updater(
+            module_name,
+            dry_run=args.dry_run,
+            allow_overwrite=getattr(args, "allow_overwrite", False),
+        )
         results.append(result)
         time.sleep(1)   # polite delay between requests
 

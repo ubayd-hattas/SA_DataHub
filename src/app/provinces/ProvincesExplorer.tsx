@@ -79,8 +79,16 @@ export default function ProvincesExplorer() {
   const pB = provinces.find(p => p.id === compareB)
 
   const compareMetrics = pA && pB ? [
-    { label: 'Unemployment Rate', a: pA.unemploymentRate + '%', b: pB.unemploymentRate + '%', aNum: pA.unemploymentRate, bNum: pB.unemploymentRate, lowerBetter: true },
-    { label: 'Expanded Unemployment', a: pA.stats.unemployment.expanded + '%', b: pB.stats.unemployment.expanded + '%', aNum: pA.stats.unemployment.expanded, bNum: pB.stats.unemployment.expanded, lowerBetter: true },
+    { label: 'Unemployment Rate (official LU1)', a: pA.unemploymentRate + '%', b: pB.unemploymentRate + '%', aNum: pA.unemploymentRate, bNum: pB.unemploymentRate, lowerBetter: true },
+    ...(pA.stats.unemployment.lu3 !== undefined && pB.stats.unemployment.lu3 !== undefined ? [{
+      label: 'Unemployment + potential labour force (LU3)',
+      a: pA.stats.unemployment.lu3 + '%',
+      b: pB.stats.unemployment.lu3 + '%',
+      aNum: pA.stats.unemployment.lu3,
+      bNum: pB.stats.unemployment.lu3,
+      lowerBetter: true,
+    }] : []),
+    { label: 'Expanded Unemployment (Q3 2025 legacy)', a: pA.stats.unemployment.expanded + '%', b: pB.stats.unemployment.expanded + '%', aNum: pA.stats.unemployment.expanded, bNum: pB.stats.unemployment.expanded, lowerBetter: true },
     { label: 'Matric Pass Rate', a: pA.matricPassRate + '%', b: pB.matricPassRate + '%', aNum: pA.matricPassRate, bNum: pB.matricPassRate, lowerBetter: false },
     { label: 'GDP Share', a: pA.gdpShare + '%', b: pB.gdpShare + '%', aNum: pA.gdpShare, bNum: pB.gdpShare, lowerBetter: false },
     { label: 'Electricity Access', a: pA.stats.housing.electricityAccess + '%', b: pB.stats.housing.electricityAccess + '%', aNum: pA.stats.housing.electricityAccess, bNum: pB.stats.housing.electricityAccess, lowerBetter: false },
@@ -117,9 +125,9 @@ export default function ProvincesExplorer() {
 
       {/* Summary stats */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <SummaryCard label="Total Population" value={(totalPop / 1_000_000).toFixed(1) + 'M'} sub="Census 2022" />
-        <SummaryCard label="Avg Unemployment" value={avgUnemployment + '%'} sub="Q3 2025" />
-        <SummaryCard label="Lowest Unemployment" value={lowestUnemployment.name} sub={lowestUnemployment.unemploymentRate + '% — Q3 2025'} />
+        <SummaryCard label="Total Population" value={(totalPop / 1_000_000).toFixed(1) + 'M'} sub="2026 estimate (MYPE)" />
+        <SummaryCard label="Avg Unemployment" value={avgUnemployment + '%'} sub="Q2 2026 (LU1)" />
+        <SummaryCard label="Lowest Unemployment" value={lowestUnemployment.name} sub={`${lowestUnemployment.unemploymentRate}% — Q2 2026`} />
         <SummaryCard label="Largest GDP Share" value={highestGDP.name} sub={highestGDP.gdpShare + '% of national GDP'} />
       </div>
 
@@ -246,7 +254,7 @@ export default function ProvincesExplorer() {
                         </span>
                       </span>
                     </div>
-                    <p className="text-xs text-slate-400">{unem.period}</p>
+                    <p className="text-xs text-slate-400">{unem.period}{unem.lu3 !== undefined ? ` · LU3: ${unem.lu3}%` : ''}</p>
                   </div>
                   <div>
                     <p className="text-xs text-slate-500 dark:text-slate-400">Matric Pass</p>
