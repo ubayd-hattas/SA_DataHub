@@ -263,16 +263,17 @@ describe('generateEnrichedInsight — unemployment-national', () => {
     expect(['trend', 'turning-point', 'context', 'comparison', 'warning']).toContain(insight.type)
   })
 
-  it('identifies Q4 2025 as a record low (sentiment positive for "good when down" category)', () => {
+  it('reports a fall in unemployment as positive (sentiment positive for "good when down" category)', () => {
     const insight = generateEnrichedInsight(unemploymentNational)
-    // Q4 2025 at 31.4 is the lowest in the 16-period series
-    expect(insight.summary.toLowerCase()).toMatch(/record low|lowest/)
+    // After the Oct 2026 refresh (Q2 2026) no high-signal detector fires on this
+    // series, so the engine falls back to a first-vs-latest comparison.
+    expect(insight.summary.toLowerCase()).toMatch(/decreased|record low|lowest/)
     expect(insight.sentiment).toBe('positive') // lower unemployment = positive
   })
 
-  it('populates generatedFrom with detector count', () => {
+  it('populates generatedFrom with detector count or historical-comparison fallback', () => {
     const insight = generateEnrichedInsight(unemploymentNational)
-    expect(insight.generatedFrom).toMatch(/detector/)
+    expect(insight.generatedFrom).toMatch(/detector|period historical comparison/)
   })
 })
 
