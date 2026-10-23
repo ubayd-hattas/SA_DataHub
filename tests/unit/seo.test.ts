@@ -1,0 +1,121 @@
+/**
+ * SEO consistency tests: canonical generation, sitemap ↔ route consistency,
+ * metadata uniqueness and URL case normalisation.
+ */
+import { describe, it, expect } from 'vitest'
+import sitemap from '@/app/sitemap'
+import { buildPageMetadata, SITE_URL } from '@/lib/seo'
+import {
+  municipalityDescription,
+  municipalityTitle,
+  provinceDescription,
+  provinceTitle,
+} from '@/lib/page-seo'
+import { canonicalEntityPath } from '@/lib/entity-path'
+import { getAllMunicipalities, getProvinceData } from '@/data/mock'
+
+const municipalities = getAllMunicipalities()
+const provinces = getProvinceData()
+
+describe('buildPageMetadata', () => {
+  it('emits an absolute self-referencing canonical on the apex host', () => {
+    const md = buildPageMetadata({ title: 't', description: 'd', path: '/municipalities/KZN213' })
+    expect(md.alternates?.canonical).toBe(`${SITE_URL}/municipalities/KZN213`)
+    expect(md.openGraph?.url).toBe(`${SITE_URL}/municipalities/KZN213`)
+  })
+
+  it('emits no canonical for noindex pages (e.g. the 404)', () => {
+    const md = buildPageMetadata({ title: 't', description: 'd', path: '/404', noIndex: true })
+    expect(md.alternates).toBeUndefined()
+    expect(md.robots).toMatchObject({ index: false })
+  })
+})
+
+describe('sitemap', () => {
+  const entries = sitemap()
+  const urls = entries.map((e) => e.url)
+
+  it('has unique, absolute, slash-free URLs on the canonical host', () => {
+    expect(new Set(urls).size).toBe(urls.length)
+    for (const u of urls) {
+      expect(u.startsWith(`${SITE_URL}/`) || u === SITE_URL).toBe(true)
+      if (u !== `${SITE_URL}/`) expect(u).not.toMatch(/\/$/)
+      expect(u).not.toMatch(/[?#]/)
+    }
+  })
+
+  it('lists every municipality and province exactly once, in canonical spelling', () => {
+    const muniUrls = urls.filter((u) => u.includes('/municipalities/'))
+    expect(municipalities).toHaveLength(213)
+    expect(muniUrls.sort()).toEqual(municipalities.map((m) => `${SITE_URL}/municipalities/${m.id}`).sort())
+    const provUrls = urls.filter((u) => u.includes('/provinces/'))
+    expect(provinces).toHaveLength(9)
+    expect(provUrls.sort()).toEqual(provinces.map((p) => `${SITE_URL}/provinces/${p.id}`).sort())
+  })
+
+  it('does not stamp build time as lastModified', () => {
+    const dayAgo = Date.now() - 24 * 3600 * 1000
+    for (const e of entries) {
+      expect(new Date(e.lastModified as Date).getTime()).toBeLessThan(dayAgo)
+    }
+  })
+
+  it('does not list non-indexable routes', () => {
+    expect(urls.some((u) => u.endsWith('/dashboard') || u.endsWith('/404'))).toBe(false)
+  })
+})
+
+describe('municipality metadata', () => {
+  it('has a unique title for each of the 213 municipalities', () => {
+    const titles = municipalities.map(municipalityTitle)
+    expect(new Set(titles).size).toBe(municipalities.length)
+  })
+
+  it('disambiguates the two Emalahleni municipalities', () => {
+    const titles = municipalities.filter((m) => m.name === 'Emalahleni').map(municipalityTitle)
+    expect(titles).toHaveLength(2)
+    expect(new Set(titles).size).toBe(2)
+  })
+
+  it('has unique descriptions, <=160 chars, ending on a complete sentence', () => {
+    const descs = municipalities.map(municipalityDescription)
+    expect(new Set(descs).size).toBe(municipalities.length)
+    for (const d of descs) {
+      expect(d.length).toBeLessThanOrEqual(160)
+      expect(d.endsWith('.')).toBe(true)
+      expect(d).not.toContain('…')
+      expect(d).not.toMatch(/NaN|undefined|null/)
+    }
+  })
+})
+
+describe('province metadata', () => {
+  it('has unique titles and descriptions built from live figures', () => {
+    expect(new Set(provinces.map(provinceTitle)).size).toBe(9)
+    const descs = provinces.map(provinceDescription)
+    expect(new Set(descs).size).toBe(9)
+    descs.forEach((d, i) => {
+      expect(d.length).toBeLessThanOrEqual(160)
+      expect(d.endsWith('.')).toBe(true)
+      expect(d).toContain(`${provinces[i].stats.unemployment.rate}%`)
+    })
+  })
+})
+
+describe('canonicalEntityPath', () => {
+  it('maps case variants to the canonical URL', () => {
+    expect(canonicalEntityPath('/municipalities/kzn213')).toBe('/municipalities/KZN213')
+    expect(canonicalEntityPath('/municipalities/Wc015')).toBe('/municipalities/WC015')
+    expect(canonicalEntityPath('/provinces/Western-Cape')).toBe('/provinces/western-cape')
+  })
+  it('leaves canonical and unrelated paths alone', () => {
+    expect(canonicalEntityPath('/municipalities/KZN213')).toBeNull()
+    expect(canonicalEntityPath('/provinces/gauteng')).toBeNull()
+    expect(canonicalEntityPath('/municipalities')).toBeNull()
+    expect(canonicalEntityPath('/category/Unemployment')).toBeNull()
+  })
+  it('is a no-op for every real municipality code and province slug', () => {
+    for (const m of municipalities) expect(canonicalEntityPath(`/municipalities/${m.id}`)).toBeNull()
+    for (const p of provinces) expect(canonicalEntityPath(`/provinces/${p.id}`)).toBeNull()
+  })
+})

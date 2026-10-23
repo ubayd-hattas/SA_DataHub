@@ -25,7 +25,7 @@ export interface PageMetadataOptions {
   title: string
   description: string
   path: string
-  /** Set true for dashboard with query params — canonical always points to clean path */
+  /** Set true for pages that must not be indexed (e.g. 404); no canonical is emitted */
   noIndex?: boolean
   ogType?: 'website' | 'article'
   publishedTime?: string
@@ -54,8 +54,8 @@ export function buildPageMetadata({
   return {
     title,
     description,
-    alternates: { canonical },
-    ...(noIndex ? { robots: { index: false, follow: true } } : {}),
+    // A noindex page (e.g. the 404) has no canonical URL to declare.
+    ...(noIndex ? { robots: { index: false, follow: true } } : { alternates: { canonical } }),
     openGraph: {
       title,
       description,

@@ -17,6 +17,7 @@ import { BasicServicesChart } from '@/components/charts/BasicServicesChart'
 import type { Metadata } from 'next'
 import { buildPageMetadata } from '@/lib/seo'
 import { generateMunicipalityIntro } from '@/lib/municipality-copy'
+import { municipalityDescription, municipalityTitle } from '@/lib/page-seo'
 import { Breadcrumbs } from '@/components/seo/Breadcrumbs'
 import { JsonLd } from '@/components/seo/JsonLd'
 import { breadcrumbSchema, placeSchema } from '@/lib/schema'
@@ -37,10 +38,9 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const m = getMunicipalityByCode(params.code)
   if (!m) return {}
-  const intro = generateMunicipalityIntro(m)
   return buildPageMetadata({
-    title: `${m.name} Municipality — Census 2022 Profile`,
-    description: intro.length > 160 ? `${intro.slice(0, 157)}…` : intro,
+    title: municipalityTitle(m),
+    description: municipalityDescription(m),
     path: `/municipalities/${m.id}`,
   })
 }
