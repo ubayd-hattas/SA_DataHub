@@ -3,7 +3,7 @@ from unittest import mock
 
 import pytest
 
-from automation.adapters.sarb import _validate_prime_spread, _transform_interest_rates
+from automation.adapters.sarb import _validate_prime_spread, _transform_interest_rates, _infer_effective_date
 
 def test_validate_prime_spread_exact_match():
     errors = _validate_prime_spread(7.00, 10.50)
@@ -135,3 +135,12 @@ def test_transform_interest_rates_append_new_series_point(mock_date):
     assert len(series_data) == 2
     assert series_data[0] == {"label": "May 2026", "value": 7.00}
     assert series_data[1] == {"label": "Jul 2026", "value": 6.75}
+
+
+def test_infer_effective_date_uses_september_2026_decision():
+    # Inputs seen in the 2026-10-25 run: repo 7.25%, API refresh date 2026-10-23.
+    # Before the 23 September entry existed this fell back to the API date with
+    # a stale-table warning.
+    effective, warnings = _infer_effective_date(7.25, "2026-10-23")
+    assert effective == "2026-09-23"
+    assert warnings == []
