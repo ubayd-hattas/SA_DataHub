@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { Clock } from 'lucide-react'
 import { Statistic } from '@/types'
-import { cn, formatDate, isGoodWhenDown } from '@/lib/utils'
+import { cn, formatDate, getGoodDirection } from '@/lib/utils'
 import { DeltaBadge, getDeltaSemantics } from '@/components/ui/DeltaBadge'
 
 interface StatCardProps {
@@ -11,8 +11,7 @@ interface StatCardProps {
 }
 
 export function StatCard({ stat, compact = false, href }: StatCardProps) {
-  const goodDown = isGoodWhenDown(stat.categoryId)
-  const semantics = getDeltaSemantics(stat.trend, goodDown)
+  const semantics = getDeltaSemantics(stat.trend, getGoodDirection(stat))
 
   const content = (
     <div

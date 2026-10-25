@@ -8,7 +8,7 @@
  */
 
 import { Statistic } from '@/types'
-import { cn, isGoodWhenDown } from '@/lib/utils'
+import { cn, getGoodDirection } from '@/lib/utils'
 import { DeltaBadge, getDeltaSemantics } from '@/components/ui/DeltaBadge'
 
 interface StoryStatCalloutProps {
@@ -17,8 +17,7 @@ interface StoryStatCalloutProps {
 }
 
 export function StoryStatCallout({ stat, className }: StoryStatCalloutProps) {
-  const goodDown = isGoodWhenDown(stat.categoryId)
-  const semantics = getDeltaSemantics(stat.trend, goodDown)
+  const semantics = getDeltaSemantics(stat.trend, getGoodDirection(stat))
 
   return (
     <div
