@@ -10,7 +10,7 @@ import { getAppDataProvider } from '@/data/providers'
 import { getStoryBySlug, getRelatedStories, STORIES } from '@/data/stories'
 import { getScrollStoryBySlug, getScrollStoryStatIds } from '@/data/scroll-stories'
 import { StoryScrollPage } from '@/components/stories/StoryScrollPage'
-import { cn, isGoodWhenDown } from '@/lib/utils'
+import { cn, getGoodDirection } from '@/lib/utils'
 import { buildPageMetadata, AUTHOR } from '@/lib/seo'
 import { Breadcrumbs } from '@/components/seo/Breadcrumbs'
 import { JsonLd } from '@/components/seo/JsonLd'
@@ -213,7 +213,7 @@ export default async function StoryPage({ params }: StoryPageProps) {
                         <DeltaBadge
                           delta={stat.change}
                           trend={stat.trend}
-                          semantics={getDeltaSemantics(stat.trend, isGoodWhenDown(stat.categoryId))}
+                          semantics={getDeltaSemantics(stat.trend, getGoodDirection(stat))}
                           unit={stat.unit}
                           className="shrink-0"
                         />

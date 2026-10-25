@@ -1,5 +1,5 @@
 import { Statistic } from '@/types'
-import { cn, isGoodWhenDown, formatDate } from '@/lib/utils'
+import { cn, getGoodDirection, formatDate } from '@/lib/utils'
 import { DeltaBadge, getDeltaSemantics } from '@/components/ui/DeltaBadge'
 
 interface StatCalloutProps {
@@ -8,8 +8,7 @@ interface StatCalloutProps {
 }
 
 export function StatCallout({ stat, className }: StatCalloutProps) {
-  const goodDown = isGoodWhenDown(stat.categoryId)
-  const semantics = getDeltaSemantics(stat.trend, goodDown)
+  const semantics = getDeltaSemantics(stat.trend, getGoodDirection(stat))
 
   return (
     <div
