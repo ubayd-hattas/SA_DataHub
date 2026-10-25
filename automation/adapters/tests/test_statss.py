@@ -1570,13 +1570,8 @@ def test_download_publication_headers(monkeypatch):
 
     headers = captured_kwargs.get("extra_headers", {})
     
-    # Assert _STATSSA_BROWSER_HEADERS are present
-    for k, v in statss_mod._STATSSA_BROWSER_HEADERS.items():
-        if k != "Accept":
-            assert headers.get(k) == v
-        
-    # Assert Accept is also present and correct
-    assert headers.get("Accept") == "application/vnd.ms-excel,application/pdf,*/*"
+    # Only an Accept header is added; the User-Agent stays the honest default.
+    assert headers == {"Accept": "application/vnd.ms-excel,application/pdf,*/*"}
 
 
 # ---------------------------------------------------------------------------
@@ -1732,22 +1727,16 @@ def test_check_gdp_no_waf_fallback_probe_not_invoked(tmp_path, monkeypatch):
     assert probe_calls == []
 
 
-def test_build_http_client_sends_tier1_browser_headers():
-    """IMPLEMENTATION-SPEC-STATSSA-WAF.md §8 item 4 — a direct assertion on
-    the constructed client's headers, not a live-network test."""
+def test_build_http_client_uses_honest_user_agent():
+    """Stats SA requests identify as the SA Data Hub bot and do not copy
+    browser headers (browser-header copy reverted 2026-10-25)."""
     source_config = SourceConfig(source_id="statssa", display_name="Statistics South Africa")
     client = statss_mod._build_http_client(source_config)
 
-    headers = client.extra_headers
-    assert headers["User-Agent"] == statss_mod._STATSSA_BROWSER_HEADERS["User-Agent"]
-    assert "data-automation-bot" not in headers["User-Agent"]
-    assert headers["Accept-Language"] == "en-ZA,en;q=0.9"
-    assert headers["Sec-Fetch-Mode"] == "navigate"
-    # Accept-Encoding is deliberately "identity", not "gzip, deflate, br" —
-    # core/http_client.py never decompresses a response body (out of scope
-    # to change here), so advertising compression support would corrupt
-    # the raw body text this adapter WAF-scans and parses.
-    assert headers["Accept-Encoding"] == "identity"
+    assert "data-automation-bot" in client.user_agent
+    assert "User-Agent" not in client.extra_headers
+    assert "Accept-Language" not in client.extra_headers
+    assert not any(k.startswith("Sec-Fetch") for k in client.extra_headers)
 
 
 # ---------------------------------------------------------------------------

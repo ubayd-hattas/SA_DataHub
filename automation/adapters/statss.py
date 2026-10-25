@@ -570,58 +570,24 @@ _POPULATION_SOURCE_GUARD_DOMAIN = "statssa.gov.za"
 # HTTP client helpers
 # ---------------------------------------------------------------------------
 
-# Tier 1 header hardening (IMPLEMENTATION-SPEC-STATSSA-WAF.md §6.1 step 1,
-# approach B). Applied only to Stats SA requests via _build_http_client()
-# below — no other adapter's HTTP client is affected.
-#
-# Accept-Encoding is pinned to "identity", NOT a real browser's default
-# "gzip, deflate, br": core/http_client.py (out of scope to change here)
-# never decompresses a response body, so advertising compression support
-# without the ability to decompress would silently corrupt every hub-page
-# fetch this adapter relies on for both WAF-marker detection and release-
-# period parsing.
-_STATSSA_BROWSER_HEADERS: dict[str, str] = {
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-    "Accept-Language": "en-ZA,en;q=0.9",
-    "Accept-Encoding": "identity",
-    "Sec-Fetch-Dest": "document",
-    "Sec-Fetch-Mode": "navigate",
-    "Sec-Fetch-Site": "none",
-    "Sec-Fetch-User": "?1",
-    "Upgrade-Insecure-Requests": "1",
-    "User-Agent": (
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-        "(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
-    ),
-}
+# Stats SA requests identify themselves with the shared default User-Agent
+# from core/http_client.py ("SA-Data-Hub-Automation/0.1
+# (https://sadatahub.tech; data-automation-bot)"). An earlier change copied
+# a browser's headers to get past Stats SA's Incapsula bot protection; that
+# was reverted on 2026-10-25 at the owner's request, because Stats SA's
+# robots.txt sits behind the same block and cannot be checked. A WAF
+# challenge is still detected downstream and reported as WAF_BLOCKED.
 
 
 def _build_http_client(source_config: SourceConfig) -> HTTPClient:
     """Create an HTTPClient configured from source_config.
 
-    Tier 1 header hardening (IMPLEMENTATION-SPEC-STATSSA-WAF.md §6.1 step 1)
-    ------------------------------------------------------------------------
-    Uses an ordinary-browser-equivalent header set — ``Accept-Language``,
-    ``Sec-Fetch-*``, and a non-"bot"-labelled ``User-Agent`` — in place of
-    the previous, self-identifying
-    ``SA-Data-Hub-Automation/0.1 (...; data-automation-bot)`` User-Agent, to
-    test whether Incapsula's block is header/UA-driven rather than purely a
-    JS/cookie challenge. This changes only the outbound request headers for
-    Stats SA calls; the WAF-marker detection logic downstream (§2.2 of the
-    spec) is unchanged — if a challenge page is still served, it is still
-    detected and still raised as ``WAF_BLOCKED``, never silently accepted
-    as a real page.
-
-    ``Accept-Encoding`` is deliberately pinned to ``"identity"`` rather than
-    a real browser's ``"gzip, deflate, br"``: ``core/http_client.py`` has no
-    response-decompression support and is out of scope to change here
-    (spec §7) — advertising compression support without being able to
-    decompress the response would corrupt the raw body text this adapter
-    both WAF-scans and (via ``_extract_release_period()``) parses.
+    Uses the default, self-identifying User-Agent. Do not add browser-like
+    headers to get past Stats SA's bot protection.
     """
     return HTTPClient(
         timeout_seconds=source_config.timeout_seconds,
-        extra_headers=dict(_STATSSA_BROWSER_HEADERS),
+        extra_headers={"Accept": "text/html,application/xhtml+xml,*/*"},
     )
 
 
@@ -981,10 +947,7 @@ def _download_publication(client: HTTPClient, url: str) -> bytes:
     """
     dl_client = HTTPClient(
         timeout_seconds=120,  # Files can be large
-        extra_headers={
-            **dict(_STATSSA_BROWSER_HEADERS),
-            "Accept": "application/vnd.ms-excel,application/pdf,*/*",
-        },
+        extra_headers={"Accept": "application/vnd.ms-excel,application/pdf,*/*"},
     )
     response = dl_client.get(url)
     if len(response.body) < 1024:
@@ -5654,10 +5617,9 @@ class StatsSAAdapter(BaseAdapter):
                 "QLFS's/GDP's/CPI's Excel layouts."
             ),
             "waf_access_status": (
-                "IMPLEMENTATION-SPEC-STATSSA-WAF.md Tier 1 implemented: "
-                "_build_http_client() now sends an ordinary-browser-"
-                "equivalent header set (non-bot User-Agent, Accept-Language, "
-                "Sec-Fetch-*) for Stats SA requests; _check_qlfs()/"
+                "Stats SA requests use the default, self-identifying "
+                "User-Agent (the IMPLEMENTATION-SPEC-STATSSA-WAF.md Tier 1 "
+                "browser-header copy was reverted on 2026-10-25); _check_qlfs()/"
                 "_check_gdp() now fall through to the existing direct-"
                 "publication-URL probe on a WAF_BLOCKED hub response, "
                 "returning status='unknown' (probe-based signal) if a "
