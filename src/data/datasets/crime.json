@@ -4,7 +4,8 @@
     "source_url": "https://www.saps.gov.za/services/crimestats.php",
     "update_frequency": "Annual (September each year, for Apr–Mar financial year)",
     "last_verified": "2025-05-01",
-    "notes": "SAPS publishes crime stats once per year in September. No public API. Data must be manually extracted from the published Excel workbooks. Latest available: 2023/24. Update by running: python scripts/update_crime.py (manual step required — see script comments)"
+    "notes": "SAPS publishes crime stats once per year in September. No public API. Data must be manually extracted from the published Excel workbooks. Latest available: 2023/24. Update by running: python scripts/update_crime.py (manual step required — see script comments)",
+    "public_notes": "Annual figures for the 2023/24 financial year (April to March), from the South African Police Service. SAPS also publishes quarterly crime statistics, and releases newer than 2023/24 have not yet been added here."
   },
   "statistics": [
     {
