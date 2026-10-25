@@ -7,8 +7,8 @@
  * Every insight is calculated from the series data so it stays accurate as data updates.
  */
 
-import { Statistic, Insight, InsightSentiment, DataPoint, CategoryId } from '@/types'
-import { GOOD_WHEN_DOWN } from '@/lib/utils'
+import { Statistic, Insight, InsightSentiment, DataPoint } from '@/types'
+import { getGoodDirection, judgeMove } from '@/lib/utils'
 import { runDetectors, InsightFact } from './insights/detectors'
 import { formatInsightFact } from './explanations'
 
@@ -58,29 +58,17 @@ function rangeDescription(points: DataPoint[]): { min: DataPoint; max: DataPoint
   }
 }
 
-// ─── Sentiment helper ────────────────────────────────────────────────────────
-
-function valueSentiment(
-  trend: 'up' | 'down' | 'stable',
-  categoryId: CategoryId
-): InsightSentiment {
-  const goodDown = GOOD_WHEN_DOWN.includes(categoryId)
-  if (trend === 'stable') return 'neutral'
-  if (goodDown) return trend === 'down' ? 'positive' : 'negative'
-  return trend === 'up' ? 'positive' : 'negative'
-}
-
 // ─── Main insight generator ──────────────────────────────────────────────────
 
 export function generateInsight(stat: Statistic): Insight {
   const series = stat.series?.[0]
-  const goodDown = GOOD_WHEN_DOWN.includes(stat.categoryId)
+  const good = getGoodDirection(stat)
 
   // No series data — fall back to simple trend insight
   if (!series || series.data.length < 2) {
     return {
       summary: stat.description.split('.')[0] + '.',
-      sentiment: valueSentiment(stat.trend, stat.categoryId),
+      sentiment: judgeMove(stat, stat.trend),
       type: 'context',
     }
   }
@@ -99,13 +87,11 @@ export function generateInsight(stat: Statistic): Insight {
   // ── Turning point ─────────────────────────────────────────────
   if (turning) {
     const wasGoodOrBad = turning.direction === 'up'
-      ? (goodDown ? 'rising after a period of decline' : 'recovering after a period of weakness')
-      : (goodDown ? 'easing after elevated levels' : 'slowing after a period of growth')
+      ? (good === 'up' ? 'recovering after a period of weakness' : 'rising after a period of decline')
+      : (good === 'up' ? 'slowing after a period of growth' : 'easing after elevated levels')
     return {
       summary: `${stat.title} is ${wasGoodOrBad}. The ${oldest.label}–${latest.label} trend shows a clear turning point around ${points[turning.index].label}.`,
-      sentiment: goodDown
-        ? (turning.direction === 'down' ? 'positive' : 'negative')
-        : (turning.direction === 'up' ? 'positive' : 'negative'),
+      sentiment: judgeMove(stat, turning.direction),
       type: 'turning-point',
       details: [
         `Current level: ${latest.value}${stat.unit === '%' ? '%' : ''} (${latest.label})`,
@@ -121,14 +107,11 @@ export function generateInsight(stat: Statistic): Insight {
   const absLong = Math.abs(longChange)
   if (absLong > 2 || (absLong > 0.5 && points.length >= 8)) {
     const direction = longChange > 0 ? 'increased' : 'decreased'
-    const goodOrBad = goodDown
-      ? (longChange < 0 ? 'a positive development' : 'a concern')
-      : (longChange > 0 ? 'a positive development' : 'a concern')
+    const sentiment = judgeMove(stat, longChange > 0 ? 'up' : 'down')
+    const verdict = sentiment === 'positive' ? ', a positive development' : sentiment === 'negative' ? ', a concern' : ''
     return {
-      summary: `${stat.title} has ${direction} by ${absLong.toFixed(1)}${unit} from ${oldest.label} to ${latest.label} — ${goodOrBad}.`,
-      sentiment: goodDown
-        ? (longChange < 0 ? 'positive' : 'negative')
-        : (longChange > 0 ? 'positive' : 'negative'),
+      summary: `${stat.title} has ${direction} by ${absLong.toFixed(1)}${unit} from ${oldest.label} to ${latest.label}${verdict}.`,
+      sentiment,
       type: 'trend',
       details: [
         `${oldest.label}: ${oldest.value}${stat.unit === '%' ? '%' : ''}`,
@@ -146,12 +129,14 @@ export function generateInsight(stat: Statistic): Insight {
   const absChange = Math.abs(change)
   if (absChange > 0.1) {
     const dir = change > 0 ? 'rose' : 'fell'
-    const desc = goodDown
-      ? (change < 0 ? 'a welcome improvement' : 'a setback')
-      : (change > 0 ? 'continued growth' : 'a slowdown')
+    const desc = good === 'down'
+      ? (change < 0 ? ', a welcome improvement' : ', a setback')
+      : good === 'up'
+      ? (change > 0 ? ', continued growth' : ', a slowdown')
+      : ''
     return {
-      summary: `${stat.title} ${dir} by ${absChange.toFixed(1)}${unit} from ${prev.label} to ${latest.label}, ${desc}.`,
-      sentiment: valueSentiment(stat.trend, stat.categoryId),
+      summary: `${stat.title} ${dir} by ${absChange.toFixed(1)}${unit} from ${prev.label} to ${latest.label}${desc}.`,
+      sentiment: judgeMove(stat, stat.trend),
       type: 'trend',
       details: [
         `${prev.label}: ${prev.value}${stat.unit === '%' ? '%' : ''}`,
@@ -178,14 +163,8 @@ export function generateInsight(stat: Statistic): Insight {
 
 export function generateCategoryInsight(stats: Statistic[]): string | null {
   if (stats.length === 0) return null
-  const improving = stats.filter(
-    (s) => (GOOD_WHEN_DOWN.includes(s.categoryId) && s.trend === 'down') ||
-           (!GOOD_WHEN_DOWN.includes(s.categoryId) && s.trend === 'up')
-  ).length
-  const deteriorating = stats.filter(
-    (s) => (GOOD_WHEN_DOWN.includes(s.categoryId) && s.trend === 'up') ||
-           (!GOOD_WHEN_DOWN.includes(s.categoryId) && s.trend === 'down')
-  ).length
+  const improving = stats.filter((s) => judgeMove(s, s.trend) === 'positive').length
+  const deteriorating = stats.filter((s) => judgeMove(s, s.trend) === 'negative').length
 
   if (improving > deteriorating && improving > stats.length / 2) {
     return `Most indicators in this category are trending in a positive direction.`
@@ -230,32 +209,17 @@ export function generateEnrichedInsight(stat: Statistic): Insight {
   }
 
   const primary = highSignal[0]
-  const goodDown = GOOD_WHEN_DOWN.includes(stat.categoryId)
 
   // ── Sentiment from primary fact ──────────────────────────────────────────────
   let sentiment: InsightSentiment = 'neutral'
   if (primary.type === 'record_high') {
-    sentiment = goodDown ? 'negative' : 'positive'
+    sentiment = judgeMove(stat, 'up')
   } else if (primary.type === 'record_low') {
-    sentiment = goodDown ? 'positive' : 'negative'
+    sentiment = judgeMove(stat, 'down')
   } else if (primary.type === 'anomaly') {
-    sentiment =
-      primary.zScore > 0
-        ? goodDown
-          ? 'negative'
-          : 'positive'
-        : goodDown
-        ? 'positive'
-        : 'negative'
+    sentiment = judgeMove(stat, primary.zScore > 0 ? 'up' : 'down')
   } else if (primary.type === 'trend_reversal') {
-    sentiment =
-      primary.to === 'down'
-        ? goodDown
-          ? 'positive'
-          : 'negative'
-        : goodDown
-        ? 'negative'
-        : 'positive'
+    sentiment = judgeMove(stat, primary.to)
   }
 
   // ── InsightType from primary fact ────────────────────────────────────────────
