@@ -131,7 +131,13 @@ _MPC_MEETINGS_2026: list[dict[str, str]] = [
     {"date": "2026-03-26", "decision": "hold (historical)"},
     {"date": "2026-05-28", "decision": "hike to 7.00% (historical)"},
     {"date": "2026-07-23", "decision": "pending"},
-    {"date": "2026-09-17", "decision": "pending"},
+    # SARB, "Statement of the Monetary Policy Committee September 2026":
+    # "raise the policy rate by 25 basis points, to 7.25%, effective from
+    # 25 September"; "The decision was unanimous." Meeting date 23 September
+    # 2026 per SARB's MPC announcement webcasts page. Checked 2026-10-25.
+    # https://www.resbank.co.za/en/home/publications/publication-detail-pages/statements/monetary-policy-statements/2026/september
+    # https://www.resbank.co.za/en/home/what-we-do/monetary-policy/MPC-announcement-webcasts
+    {"date": "2026-09-23", "decision": "hike to 7.25% (historical)"},
     {"date": "2026-11-19", "decision": "pending"},
 ]
 
