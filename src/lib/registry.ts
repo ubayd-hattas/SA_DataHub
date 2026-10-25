@@ -30,7 +30,7 @@ import { statistics, getStatById } from '@/data/mock'
 import { getFreshness, FreshnessStatus } from '@/lib/utils'
 import { UPDATE_HISTORY, UpdateHistoryEntry } from '@/data/update-history'
 
-// Dataset JSON imports for propagating `_meta.notes` into the registry.
+// Dataset JSON imports for propagating `_meta.public_notes` into the registry.
 import unemploymentData from '@/data/datasets/unemployment.json'
 import youthUnemploymentData from '@/data/datasets/youth-unemployment.json'
 import labourForceData from '@/data/datasets/labour-force.json'
@@ -85,8 +85,13 @@ export interface DatasetRegistryEntry {
   fileSize?: string
   /** Total exported row count in CSV (data points). */
   dataPointCount?: number
-  /** Methodology notes/caveats from the dataset `_meta.notes` block. */
-  notes?: string
+  /**
+   * Reader-facing caveats from the dataset `_meta.public_notes` block.
+   * Maintainer notes in `_meta.notes` are deliberately never copied into the
+   * registry, because entries are passed to client components and serialised
+   * into the page HTML.
+   */
+  publicNotes?: string
   /** National vs provincial vs municipal coverage. */
   geographicLevel?: 'national' | 'provincial' | 'municipal'
   /** Latest data point label across all series. */
@@ -381,19 +386,19 @@ function computeEntrySeriesEnd(entry: DatasetRegistryEntry): string {
   return candidates[0].label
 }
 
-const NOTES_BY_ID: Record<string, string> = {
-  unemployment: (unemploymentData as any)._meta?.notes ?? '',
-  'youth-unemployment': (youthUnemploymentData as any)._meta?.notes ?? '',
-  'labour-force': (labourForceData as any)._meta?.notes ?? '',
-  inflation: (inflationData as any)._meta?.notes ?? '',
-  gdp: (gdpData as any)._meta?.notes ?? '',
-  'interest-rates': (interestRatesData as any)._meta?.notes ?? '',
-  crime: (crimeData as any)._meta?.notes ?? '',
-  education: (educationData as any)._meta?.notes ?? '',
-  population: (populationData as any)._meta?.notes ?? '',
-  housing: (housingData as any)._meta?.notes ?? '',
-  census: (censusData as any)._meta?.notes ?? '',
-  provinces: (provincesData as any)._meta?.notes ?? '',
+const PUBLIC_NOTES_BY_ID: Record<string, string> = {
+  unemployment: (unemploymentData as any)._meta?.public_notes ?? '',
+  'youth-unemployment': (youthUnemploymentData as any)._meta?.public_notes ?? '',
+  'labour-force': (labourForceData as any)._meta?.public_notes ?? '',
+  inflation: (inflationData as any)._meta?.public_notes ?? '',
+  gdp: (gdpData as any)._meta?.public_notes ?? '',
+  'interest-rates': (interestRatesData as any)._meta?.public_notes ?? '',
+  crime: (crimeData as any)._meta?.public_notes ?? '',
+  education: (educationData as any)._meta?.public_notes ?? '',
+  population: (populationData as any)._meta?.public_notes ?? '',
+  housing: (housingData as any)._meta?.public_notes ?? '',
+  census: (censusData as any)._meta?.public_notes ?? '',
+  provinces: (provincesData as any)._meta?.public_notes ?? '',
 }
 
 export const datasetRegistry: DatasetRegistryEntry[] = datasetRegistryBase.map((entry) => {
@@ -401,7 +406,7 @@ export const datasetRegistry: DatasetRegistryEntry[] = datasetRegistryBase.map((
   return {
     ...entry,
     fileSize: entry.fileSize ?? FILE_SIZE_BY_ID[entry.id],
-    notes: entry.notes ?? NOTES_BY_ID[entry.id],
+    publicNotes: entry.publicNotes ?? PUBLIC_NOTES_BY_ID[entry.id],
     geographicLevel: entry.geographicLevel ?? geographicLevel,
     dataPointCount: entry.dataPointCount ?? computeEntryDataPointCount(entry),
     seriesEnd: entry.seriesEnd ?? computeEntrySeriesEnd(entry),
@@ -478,7 +483,7 @@ export interface UpdateLogEntry {
   freshnessStatus: FreshnessStatus
   status: DatasetStatus
   releaseIdentifier?: string
-  notes?: string
+  publicNotes?: string
   geographicLevel?: DatasetRegistryEntry['geographicLevel']
   updateHistory: UpdateHistoryEntry[]
 }
@@ -501,7 +506,7 @@ export function getUpdateLog(): UpdateLogEntry[] {
       freshnessStatus: getEntryFreshness(entry),
       status: getDatasetStatus(entry),
       releaseIdentifier: getReleaseIdentifier(entry),
-      notes: entry.notes,
+      publicNotes: entry.publicNotes,
       geographicLevel: entry.geographicLevel,
       updateHistory: getEntryUpdateHistory(entry.id),
     }))

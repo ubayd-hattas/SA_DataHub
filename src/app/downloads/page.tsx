@@ -27,20 +27,6 @@ export const metadata: Metadata = buildPageMetadata({
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-
-/**
- * Dataset `_meta.notes` mix reader-facing caveats with maintainer notes
- * (update commands, dated refresh changelogs). Only the caveats belong on
- * the public downloads page, so drop the maintainer parts here.
- */
-function publicNotes(notes?: string): string {
-  if (!notes) return ''
-  return notes
-    .split(/\s*NOTE \(\d{4}-\d{2}-\d{2}/)[0]
-    .replace(/\s*Update by running:[^\n]*$/i, '')
-    .trim()
-}
-
 function automationBadge(level: AutomationLevel) {
   const map: Record<AutomationLevel, { label: string; className: string }> = {
     auto:       { label: 'Auto-updated',  className: 'bg-brand-50 text-brand-700 dark:bg-brand-950/30 dark:text-brand-300' },
@@ -158,9 +144,9 @@ function DatasetDownloadCard({ entry }: { entry: DatasetRegistryEntry }) {
         )}
       </div>
 
-      {publicNotes(entry.notes) && (
+      {entry.publicNotes && (
         <p className="text-xs leading-relaxed text-slate-400 dark:text-slate-500">
-          Notes: {publicNotes(entry.notes)}
+          Notes: {entry.publicNotes}
         </p>
       )}
 
