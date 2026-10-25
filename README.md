@@ -2,7 +2,7 @@
 
 **South Africa's public data, made clear.**
 
-[![Next.js](https://img.shields.io/badge/Next.js-14-black?logo=next.js)](https://nextjs.org)
+[![Next.js](https://img.shields.io/badge/Next.js-15-black?logo=next.js)](https://nextjs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?logo=typescript)](https://typescriptlang.org)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-3-38bdf8?logo=tailwind-css)](https://tailwindcss.com)
 [![Vercel](https://img.shields.io/badge/Deployed-Vercel-black?logo=vercel)](https://sadatahub.tech)
@@ -79,7 +79,7 @@ Browser
         ├── Client Islands (dashboard search, province comparator, municipality explorer, theme toggle)
         │     └── React state + useMemo for filtering / sorting / pagination
         ├── Data Layer
-        │     ├── src/data/mock.ts          — in-memory statistics, categories, provinces, municipalities
+        │     ├── src/data/mock.ts          — loads the JSON datasets (src/data/datasets/) and exposes statistics, categories, provinces, municipalities
         │     ├── src/data/stories.ts       — data story content
         │     ├── src/data/update-history.ts — dataset update log
         │     ├── src/lib/registry.ts       — dataset registry & freshness logic
@@ -92,7 +92,7 @@ Browser
               └── src/components/layout/    — Navbar (sticky, dark-mode, mobile), Footer, ThemeProvider
 ```
 
-**Deployment:** Vercel (automatic deployments from `main`). All pages are statically generated at build time; no runtime database or API calls.
+**Deployment:** Vercel (automatic deployments from `main`). By default the app reads the JSON datasets in `src/data/datasets/`. Setting `DATA_SOURCE=database` with a `DATABASE_URL` switches it to PostgreSQL on Neon; the migration is in progress (see `db/` and `docs/migration-plan.md`).
 
 ---
 
@@ -100,7 +100,7 @@ Browser
 
 | Layer | Technology |
 |-------|-----------|
-| Framework | Next.js 14 (App Router) |
+| Framework | Next.js 15 (App Router) |
 | Language | TypeScript 5 |
 | Styling | Tailwind CSS 3 |
 | Charts | Recharts |
@@ -204,7 +204,7 @@ npm run build
 npm start
 ```
 
-No environment variables are required for the default data layer — all statistics are stored in `src/data/mock.ts`.
+No environment variables are required for the default data layer, which reads the JSON datasets in `src/data/datasets/` through `src/data/mock.ts`. To use PostgreSQL instead, set `DATA_SOURCE=database` and `DATABASE_URL` (see `db/README.md`).
 
 ### Updating a dataset
 
