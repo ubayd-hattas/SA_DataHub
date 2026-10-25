@@ -49,8 +49,37 @@ export function getTrendBadgeClass(trend: 'up' | 'down' | 'stable', isGoodWhenDo
 // ─── Category helpers ─────────────────────────────────────────────────────────
 export const GOOD_WHEN_DOWN: CategoryId[] = ['unemployment', 'crime', 'inflation']
 
-export function isGoodWhenDown(categoryId: CategoryId): boolean {
-  return GOOD_WHEN_DOWN.includes(categoryId)
+/** Which direction of movement is good news for a statistic. */
+export type GoodDirection = 'up' | 'down' | 'neutral'
+
+/**
+ * Per-statistic overrides for stats whose category default gives the wrong
+ * verdict. Keyed by Statistic.id; every other stat falls back to its category.
+ */
+export const GOOD_DIRECTION_BY_STAT: Record<string, GoodDirection> = {
+  // Higher participation means more people working or looking for work.
+  'lfpr-overall': 'up',
+  'female-labour-participation': 'up',
+  // A falling share of people with no income is an improvement.
+  'census-no-income': 'down',
+  // Policy and lending rates are not good or bad in themselves.
+  'repo-rate': 'neutral',
+  'repo-rate-sarb': 'neutral',
+  'prime-lending-rate': 'neutral',
+}
+
+export function getGoodDirection(stat: { id: string; categoryId: CategoryId }): GoodDirection {
+  return GOOD_DIRECTION_BY_STAT[stat.id] ?? (GOOD_WHEN_DOWN.includes(stat.categoryId) ? 'down' : 'up')
+}
+
+/** Whether a movement in direction `move` is good, bad or neither for this stat. */
+export function judgeMove(
+  stat: { id: string; categoryId: CategoryId },
+  move: 'up' | 'down' | 'stable'
+): 'positive' | 'negative' | 'neutral' {
+  const good = getGoodDirection(stat)
+  if (move === 'stable' || good === 'neutral') return 'neutral'
+  return move === good ? 'positive' : 'negative'
 }
 
 // ─── Province labels ──────────────────────────────────────────────────────────

@@ -1,5 +1,5 @@
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { cn, type GoodDirection } from '@/lib/utils'
 
 /**
  * DeltaBadge — reusable trend delta indicator.
@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils'
  *   - GDP growth up     → positive
  *   - inflation up      → negative
  *
- * Pass `semantics` as the computed result of isGoodWhenDown() logic.
+ * Pass `semantics` as the computed result of getDeltaSemantics().
  */
 
 export type DeltaSemantics = 'positive' | 'negative' | 'neutral' | 'informational'
@@ -77,15 +77,14 @@ export function DeltaBadge({
 }
 
 /**
- * Derive DeltaSemantics from a Statistic's trend + categoryId.
- * Use this helper alongside isGoodWhenDown() so that callers don't
+ * Derive DeltaSemantics from a Statistic's trend and its good direction.
+ * Use this helper alongside getGoodDirection() so that callers don't
  * have to repeat the logic.
  */
 export function getDeltaSemantics(
   trend: 'up' | 'down' | 'stable',
-  isGoodWhenDown: boolean
+  goodDirection: GoodDirection
 ): DeltaSemantics {
-  if (trend === 'stable') return 'neutral'
-  const isPositive = isGoodWhenDown ? trend === 'down' : trend === 'up'
-  return isPositive ? 'positive' : 'negative'
+  if (trend === 'stable' || goodDirection === 'neutral') return 'neutral'
+  return trend === goodDirection ? 'positive' : 'negative'
 }
