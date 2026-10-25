@@ -2,6 +2,9 @@ import { defineConfig } from 'vitest/config'
 import path from 'node:path'
 
 export default defineConfig({
+  // Next compiles JSX itself (tsconfig `jsx: preserve`); tests that render
+  // components need the automatic runtime here.
+  esbuild: { jsx: 'automatic' },
   test: {
     environment: 'node',
     include: ['tests/**/*.test.ts'],
