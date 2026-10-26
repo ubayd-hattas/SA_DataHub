@@ -54,9 +54,13 @@ describe('sitemap', () => {
   })
 
   it('does not stamp build time as lastModified', () => {
-    const dayAgo = Date.now() - 24 * 3600 * 1000
-    for (const e of entries) {
-      expect(new Date(e.lastModified as Date).getTime()).toBeLessThan(dayAgo)
+    // Content dates are whole days (midnight UTC), so a real date from today
+    // is still earlier than the moment the sitemap was built.
+    const builtAt = Date.now()
+    for (const e of sitemap()) {
+      const t = new Date(e.lastModified as Date).getTime()
+      expect(t, e.url).toBeLessThan(builtAt - 1000)
+      expect(t % (24 * 3600 * 1000), e.url).toBe(0)
     }
   })
 

@@ -3,6 +3,7 @@ import { SITE_URL } from '@/lib/seo'
 import { categories, getAllMunicipalities, getProvinceData, statistics } from '@/data/mock'
 import provincesData from '@/data/datasets/provinces.json'
 import { STORIES } from '@/data/stories'
+import { EXPLAINERS } from '@/data/explainers'
 
 /** Static routes with approximate change frequency for sitemap hints. */
 const STATIC_ROUTES: { path: string; priority: number; changeFrequency: MetadataRoute.Sitemap[0]['changeFrequency']; lastModified: Date }[] = [
@@ -65,6 +66,21 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.7,
   }))
 
+  const explainerEntries: MetadataRoute.Sitemap = [
+    {
+      url: `${SITE_URL}/explainers`,
+      lastModified: latestDate(EXPLAINERS.map((e) => e.publishedOn), FALLBACK_LAST_MODIFIED),
+      changeFrequency: 'monthly',
+      priority: 0.8,
+    },
+    ...EXPLAINERS.map((e) => ({
+      url: `${SITE_URL}/explainers/${e.slug}`,
+      lastModified: new Date(e.publishedOn),
+      changeFrequency: 'yearly' as const,
+      priority: 0.75,
+    })),
+  ]
+
   const municipalityEntries: MetadataRoute.Sitemap = getAllMunicipalities().map((m) => ({
     url: `${SITE_URL}/municipalities/${m.id}`,
     lastModified: latestDate([m.lastUpdated], FALLBACK_LAST_MODIFIED),
@@ -76,6 +92,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...staticEntries,
     ...categoryEntries,
     ...provinceEntries,
+    ...explainerEntries,
     ...storyEntries,
     ...municipalityEntries,
   ]

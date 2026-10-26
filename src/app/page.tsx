@@ -4,6 +4,8 @@ import type { Metadata } from 'next'
 import { SearchBar } from '@/components/ui/SearchBar'
 import { StatCard } from '@/components/ui/StatCard'
 import { CategoryCard } from '@/components/ui/CategoryCard'
+import { ExplainerCard } from '@/components/explainers/ExplainerCard'
+import { EXPLAINERS } from '@/data/explainers'
 import { getAppDataProvider } from '@/data/providers'
 import { buildPageMetadata } from '@/lib/seo'
 
@@ -20,6 +22,9 @@ export default async function HomePage() {
     provider.getFeaturedStats(),
     provider.getCategories(),
   ])
+  // Explainers checked in the most recent month with one.
+  const latestMonth = EXPLAINERS.map((e) => e.publishedOn.slice(0, 7)).sort().at(-1)
+  const latestExplainers = EXPLAINERS.filter((e) => e.publishedOn.startsWith(latestMonth ?? ''))
 
   return (
     <div className="animate-fade-in">
@@ -74,6 +79,31 @@ export default async function HomePage() {
                 </Link>
               ))}
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── What changed this month ───────────────────────────────────────── */}
+      <section className="border-b border-slate-200 py-16 dark:border-slate-800" aria-labelledby="what-changed">
+        <div className="container-page">
+          <div className="mb-8 flex items-end justify-between">
+            <div>
+              <p className="section-label mb-2">Latest releases</p>
+              <h2 id="what-changed" className="heading-display text-2xl font-semibold">
+                What changed this month
+              </h2>
+            </div>
+            <Link
+              href="/explainers"
+              className="flex items-center gap-1.5 text-sm font-medium text-brand-600 transition-colors hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300"
+            >
+              All explainers <ArrowRight size={14} aria-hidden="true" />
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+            {latestExplainers.map((e) => (
+              <ExplainerCard key={e.slug} explainer={e} />
+            ))}
           </div>
         </div>
       </section>

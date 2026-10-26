@@ -51,6 +51,7 @@ export function Footer() {
             <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400">Platform</h3>
             <ul className="space-y-2 text-sm mb-6">
               {[
+                { label: 'Release Explainers', href: '/explainers' },
                 { label: 'Data Stories', href: '/insights' },
                 { label: 'Data Downloads', href: '/downloads' },
                 { label: 'Dataset Updates', href: '/updates' },
