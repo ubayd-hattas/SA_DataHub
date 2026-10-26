@@ -47,7 +47,7 @@ This is the **first line of defense** — catches duplicate IDs, broken registry
 
 ```bash
 npm test                  # all tests
-npm run test:equivalence  # JSON vs DB per dataset
+DATA_SOURCE=database npm run test:equivalence  # JSON vs DB per dataset (skipped without DATA_SOURCE=database)
 ```
 
 ### Priority modules
