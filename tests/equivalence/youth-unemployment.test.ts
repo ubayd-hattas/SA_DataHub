@@ -4,7 +4,7 @@
  * Requires DATABASE_URL to be set and the youth-unemployment pipeline to have
  * been run with --load.
  *
- * Run: npm run test:equivalence
+ * Run: DATA_SOURCE=database npm run test:equivalence
  */
 
 import { readFileSync } from 'node:fs'
@@ -23,7 +23,8 @@ const STAT_IDS = [
 const GEOGRAPHY_CODE = 'ZA'
 const JSON_PATH = 'src/data/datasets/youth-unemployment.json'
 
-const hasDb = Boolean(process.env.DATABASE_URL)
+// Database checks run only with DATA_SOURCE=database, so a default `npm test` stays offline.
+const hasDb = process.env.DATA_SOURCE === 'database' && Boolean(process.env.DATABASE_URL)
 
 function loadJsonDataset() {
   const raw = readFileSync(join(ROOT, JSON_PATH), 'utf8')
