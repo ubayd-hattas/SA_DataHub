@@ -1,8 +1,8 @@
 /**
  * tests/unit/stat-direction.test.ts
  *
- * Whether a rise or fall is good news is decided per statistic, with the
- * category as the fallback. Uses real statistics from the JSON datasets.
+ * Whether a rise or fall is good news is declared for every statistic, with
+ * no category fallback. Uses real statistics from the JSON datasets.
  */
 
 import { describe, it, expect } from 'vitest'
@@ -11,7 +11,7 @@ import { getGoodDirection, judgeMove, GOOD_DIRECTION_BY_STAT } from '@/lib/utils
 import { getDeltaSemantics } from '@/components/ui/DeltaBadge'
 import { generateInsight, generateEnrichedInsight } from '@/lib/insights'
 import { generateExplanation } from '@/lib/explanations'
-import { getStatById } from '@/data/mock'
+import { getStatById, statistics } from '@/data/mock'
 
 function stat(id: string): Statistic {
   const s = getStatById(id)
@@ -20,7 +20,15 @@ function stat(id: string): Statistic {
 }
 
 describe('getGoodDirection', () => {
-  it('every override refers to a statistic that exists', () => {
+  it('every statistic declares up, down or neutral', () => {
+    const missing = statistics.filter((s) => !(s.id in GOOD_DIRECTION_BY_STAT)).map((s) => s.id)
+    expect(missing).toEqual([])
+    for (const s of statistics) {
+      expect(['up', 'down', 'neutral'], s.id).toContain(GOOD_DIRECTION_BY_STAT[s.id])
+    }
+  })
+
+  it('every entry refers to a statistic that exists', () => {
     for (const id of Object.keys(GOOD_DIRECTION_BY_STAT)) {
       expect(getStatById(id), id).toBeDefined()
     }
@@ -43,7 +51,16 @@ describe('getGoodDirection', () => {
     }
   })
 
-  it('keeps the category default for other statistics', () => {
+  it('treats population statistics and nominal GDP as neutral', () => {
+    const ids = [...statistics.filter((s) => s.categoryId === 'population').map((s) => s.id), 'gdp-nominal']
+    expect(ids.length).toBeGreaterThan(1)
+    for (const id of ids) {
+      expect(getGoodDirection(stat(id)), id).toBe('neutral')
+      expect(judgeMove(stat(id), 'up'), id).toBe('neutral')
+    }
+  })
+
+  it('judges other statistics by their declared direction', () => {
     expect(judgeMove(stat('unemployment-national'), 'up')).toBe('negative')
     expect(judgeMove(stat('youth-neet-rate'), 'down')).toBe('positive')
     expect(judgeMove(stat('matric-pass-rate'), 'up')).toBe('positive')
