@@ -1,6 +1,6 @@
 import { clsx, type ClassValue } from 'clsx'
 import { twMerge } from 'tailwind-merge'
-import { CategoryId, ProvinceCode } from '@/types'
+import { ProvinceCode } from '@/types'
 
 // ─── Class merging ────────────────────────────────────────────────────────────
 export function cn(...inputs: ClassValue[]) {
@@ -47,34 +47,69 @@ export function getTrendBadgeClass(trend: 'up' | 'down' | 'stable', isGoodWhenDo
 }
 
 // ─── Category helpers ─────────────────────────────────────────────────────────
-export const GOOD_WHEN_DOWN: CategoryId[] = ['unemployment', 'crime', 'inflation']
-
 /** Which direction of movement is good news for a statistic. */
 export type GoodDirection = 'up' | 'down' | 'neutral'
 
 /**
- * Per-statistic overrides for stats whose category default gives the wrong
- * verdict. Keyed by Statistic.id; every other stat falls back to its category.
+ * The good direction of every statistic, keyed by Statistic.id. There is no
+ * category fallback: tests/unit/stat-direction.test.ts fails if a statistic
+ * is missing from this list.
  */
 export const GOOD_DIRECTION_BY_STAT: Record<string, GoodDirection> = {
+  // Unemployment and labour
+  'unemployment-national': 'down',
+  'youth-unemployment-narrow': 'down',
+  'youth-unemployment-1524': 'down',
+  'youth-unemployment-expanded': 'down',
+  'youth-neet-rate': 'down',
   // Higher participation means more people working or looking for work.
   'lfpr-overall': 'up',
   'female-labour-participation': 'up',
-  // A falling share of people with no income is an improvement.
-  'census-no-income': 'down',
+  // Inflation
+  'cpi-headline': 'down',
+  'food-inflation': 'down',
+  'annual-cpi-avg': 'down',
+  // GDP
+  'gdp-growth': 'up',
+  'gdp-annual-growth': 'up',
+  // Nominal GDP rises with prices as well as output.
+  'gdp-nominal': 'neutral',
+  'gdp-per-capita': 'up',
   // Policy and lending rates are not good or bad in themselves.
   'repo-rate': 'neutral',
   'repo-rate-sarb': 'neutral',
   'prime-lending-rate': 'neutral',
+  // Crime
+  'murder-rate': 'down',
+  'crime-contact': 'down',
+  'crime-robbery': 'down',
+  // Education
+  'matric-pass-rate': 'up',
+  'education-literacy': 'up',
+  'higher-education-enrolment': 'up',
+  // Population counts and shares are not good or bad in themselves.
+  'population-total': 'neutral',
+  'population-urban': 'neutral',
+  'population-median-age': 'neutral',
+  // Housing and services
+  'housing-access-piped-water': 'up',
+  'housing-electricity': 'up',
+  'housing-formal-dwellings': 'up',
+  // Census
+  'census-households': 'up',
+  'census-internet-access': 'up',
+  // A falling share of people with no income is an improvement.
+  'census-no-income': 'down',
 }
 
-export function getGoodDirection(stat: { id: string; categoryId: CategoryId }): GoodDirection {
-  return GOOD_DIRECTION_BY_STAT[stat.id] ?? (GOOD_WHEN_DOWN.includes(stat.categoryId) ? 'down' : 'up')
+/** A statistic missing from GOOD_DIRECTION_BY_STAT gets no verdict. */
+export function getGoodDirection(stat: { id: string }): GoodDirection {
+  return GOOD_DIRECTION_BY_STAT[stat.id] ?? 'neutral'
 }
 
 /** Whether a movement in direction `move` is good, bad or neither for this stat. */
 export function judgeMove(
-  stat: { id: string; categoryId: CategoryId },
+  stat: { id: string },
   move: 'up' | 'down' | 'stable'
 ): 'positive' | 'negative' | 'neutral' {
   const good = getGoodDirection(stat)
