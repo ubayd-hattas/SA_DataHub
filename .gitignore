@@ -44,5 +44,8 @@ next-env.d.ts
 # Tooling Output (From your sidebar)
 repomix-output.xml
 
+# Release PDFs supplied by the maintainer (figures are checked against these)
+sources/releases/
+
 # ETL raw snapshots (immutable archives)
 etl/raw-snapshots/
