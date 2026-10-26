@@ -9,7 +9,8 @@ import {
 
 const GEOGRAPHY_CODE = 'ZA'
 
-describe.skipIf(!process.env.DATABASE_URL)(
+// Database checks run only with DATA_SOURCE=database, so a default `npm test` stays offline.
+describe.skipIf(!(process.env.DATA_SOURCE === 'database' && Boolean(process.env.DATABASE_URL)))(
   'unemployment JSON ↔ PostgreSQL equivalence',
   () => {
   beforeAll(() => {
