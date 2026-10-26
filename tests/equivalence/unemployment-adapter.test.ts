@@ -20,7 +20,8 @@ import { afterEach, describe, expect, it } from 'vitest'
 import { getAppDataProvider } from '@/data/providers'
 import { getStatById } from '@/data/mock'
 
-const DB_AVAILABLE = Boolean(process.env.DATABASE_URL)
+// Database checks run only with DATA_SOURCE=database, so a default `npm test` stays offline.
+const DB_AVAILABLE = process.env.DATA_SOURCE === 'database' && Boolean(process.env.DATABASE_URL)
 const ORIGINAL_DATA_SOURCE = process.env.DATA_SOURCE
 
 function restoreDataSource() {
