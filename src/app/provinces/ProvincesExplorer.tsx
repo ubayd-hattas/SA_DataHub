@@ -287,7 +287,8 @@ export default function ProvincesExplorer() {
       </div>
 
       {/* Compare two provinces */}
-      <div className="card p-6">
+      {/* id="compare" is the target of "Compare provinces" in the main navigation. */}
+      <div id="compare" className="card scroll-mt-20 p-6">
         <h2 className="font-semibold text-slate-900 dark:text-white mb-4">Compare Provinces</h2>
         <div className="flex flex-wrap gap-4 mb-6">
           <div className="flex-1 min-w-[160px]">
