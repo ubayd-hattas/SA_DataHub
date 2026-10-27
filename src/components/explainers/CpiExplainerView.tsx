@@ -5,7 +5,7 @@ import { Change, NumberBlock, type Tone } from '@/components/editorial/NumberBlo
 import { Column, PageHeader, Prose, Section, linkClass } from '@/components/editorial/Section'
 import { FigureValue, SourceCitations, SourceNote } from '@/components/explainers/FigureValue'
 import { CpiHistoryChart } from '@/components/explainers/CpiHistoryChart'
-import { ValueCalculator } from '@/components/explainers/ValueCalculator'
+import { MONEY_VALUE_PATH, moneyValueHref } from '@/lib/money-value'
 import { formatLongDate, formatRand, getSource, type Explainer } from '@/lib/explainers'
 import { CPI_HISTORY_META } from '@/lib/cpi-history'
 import { breadcrumbSchema } from '@/lib/schema'
@@ -229,14 +229,22 @@ export function CpiExplainerView({ explainer }: { explainer: Explainer }) {
 
       {/* What money was worth */}
       <Section id="money-worth" title="What money was worth">
-        <Prose className="mb-8">
+        <Prose>
           <p>
-            Pick a year from 1980 and an amount to see what it would buy at today&apos;s prices. The index starts in 1980,
-            so earlier years are not available.
+            The money value calculator uses the same index to show what an amount from any year since 1980 would buy at
+            today&apos;s prices, with the working shown.
+          </p>
+          <p>
+            <Link href={MONEY_VALUE_PATH} className={linkClass}>
+              Use the money value calculator
+            </Link>
+            , or see{' '}
+            <Link href={moneyValueHref(1994, 100)} className={linkClass}>
+              what R100 in 1994 is worth now
+            </Link>
+            .
           </p>
         </Prose>
-        <ValueCalculator />
-        <SourceNote source={history} location="Table B1, page 1" className="mt-6" />
       </Section>
 
       {/* Links */}
@@ -266,8 +274,8 @@ export function CpiExplainerView({ explainer }: { explainer: Explainer }) {
         <SourceNote source={release} location={explainer.nextRelease.location} className="mt-2" />
         <SourceCitations sources={explainer.sources} checkedOn={checkedOn} className="mt-8" />
         <p className="mt-4 text-caption text-muted">
-          Source of the basic data: Stats SA. The rand examples, the calculator and the highest and lowest points on
-          the chart are SA Data Hub&apos;s own calculations from that data.
+          Source of the basic data: Stats SA. The rand examples and the highest and lowest points on the chart are SA
+          Data Hub&apos;s own calculations from that data.
         </p>
       </Section>
     </Column>

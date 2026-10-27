@@ -170,6 +170,15 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
           )}
         </div>
 
+        {slug === 'inflation' && (
+          <p className="mb-6 text-small text-ink">
+            What was money worth?{' '}
+            <Link href="/tools/money-value" className="text-accent underline decoration-accent/40 underline-offset-4 hover:decoration-accent">
+              Use the money value calculator
+            </Link>
+          </p>
+        )}
+
         {/* Data Freshness */}
         {primaryStat && latestUpdate && (
           <div className="mb-4">
