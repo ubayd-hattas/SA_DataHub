@@ -1,16 +1,14 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
-import { Change, NumberBlock } from '@/components/editorial/NumberBlock'
 import { Section, linkClass } from '@/components/editorial/Section'
-import { SourceLine } from '@/components/editorial/SourceLine'
 import { ExplainerCard } from '@/components/explainers/ExplainerCard'
 import { SourceDates } from '@/components/explainers/FigureValue'
 import { ValueCalculator } from '@/components/explainers/ValueCalculator'
 import { FindMunicipality, type MunicipalityOption } from '@/components/home/FindMunicipality'
 import { EXPLAINERS } from '@/data/explainers'
-import { categories, getAllMunicipalities, statistics } from '@/data/mock'
+import { getAllMunicipalities } from '@/data/mock'
 import { formatLongDate, getSource } from '@/lib/explainers'
-import { formatStatistic, getHeadlineNumbers } from '@/lib/headline-numbers'
+import { getHeadlineNumbers, getTopicRows } from '@/lib/headline-numbers'
 import { MONEY_VALUE_PATH } from '@/lib/money-value'
 import { buildPageMetadata } from '@/lib/seo'
 
@@ -41,44 +39,37 @@ export default function HomePage() {
   const cpi = EXPLAINERS.find((e) => e.kind === 'cpi')
   const cpiHistory = cpi ? getSource(cpi, cpi.history.sourceId) : null
 
-  // Each topic's main number: the first statistic in the category, as on its topic page.
-  const topics = categories.map((c) => ({ category: c, stat: statistics.find((s) => s.categoryId === c.id) }))
+  const topics = getTopicRows()
 
   return (
     <div className="mx-auto max-w-5xl px-4 pb-16 sm:px-6">
       {/* 1. The country's current numbers */}
       <section aria-labelledby="latest-numbers" className="pb-10 pt-8 sm:pt-12">
-        <h1 id="latest-numbers" className="font-display text-[2rem] font-semibold leading-tight text-ink sm:text-h1">
+        <h1 id="latest-numbers" className="font-display text-[1.75rem] font-semibold leading-tight text-ink sm:text-h1">
           South Africa&apos;s latest official numbers
         </h1>
-        <div className="mt-8 grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
+        {/* Compact on purpose: full citations and definitions are on the linked pages. */}
+        <ul className="mt-5 grid grid-cols-2 gap-px border border-rule bg-rule sm:mt-8 lg:grid-cols-4">
           {headline.map((n) => (
-            <NumberBlock
-              key={n.statId}
-              label={n.label}
-              value={n.value}
-              meaning={
-                <>
-                  {n.meaning}
-                  {n.change && (
-                    <>
-                      {' '}
-                      <Change tone={n.change.tone}>{n.change.text}</Change>
-                    </>
-                  )}
-                </>
-              }
-              source={
-                <>
-                  <SourceLine publisher={n.publisher} title={n.publication} releasedOn={n.releasedOn} checkedOn={n.checkedOn} />
-                  <Link href={n.href} className={`mt-2 inline-block text-small ${linkClass}`}>
-                    {n.linkLabel}
-                  </Link>
-                </>
-              }
-            />
+            <li key={n.statId} className="relative bg-paper p-4 hover:bg-subtle">
+              <p className="font-display text-[2.25rem] font-semibold leading-none tabular-nums text-ink sm:text-[3rem]">{n.value}</p>
+              <p className="mt-2 text-small font-medium text-ink">
+                <Link
+                  href={n.href}
+                  title={n.linkLabel}
+                  className="after:absolute after:inset-0 focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-accent"
+                >
+                  {n.label}
+                  <span className="sr-only">. {n.linkLabel}</span>
+                </Link>
+              </p>
+              <p className="text-caption text-muted">{n.period}</p>
+              <p className="mt-1 text-caption text-muted">
+                <time dateTime={n.releasedOn}>{n.sourceShort}</time>
+              </p>
+            </li>
           ))}
-        </div>
+        </ul>
       </section>
 
       {/* 2. Your area */}
@@ -99,7 +90,7 @@ export default function HomePage() {
       <Section id="what-changed" title="What changed this month">
         <div className="grid gap-4 lg:grid-cols-2">
           {latestExplainers.map((e) => (
-            <ExplainerCard key={e.slug} explainer={e} />
+            <ExplainerCard key={e.slug} explainer={e} compact />
           ))}
         </div>
         <p className="mt-4 text-small">
@@ -127,31 +118,20 @@ export default function HomePage() {
       {/* 5. The eight topics, each with its latest number */}
       <Section id="topics" title="Topics">
         <ul className="border-t border-ink">
-          {topics.map(({ category, stat }) => (
-            <li key={category.id} className="relative border-b border-rule hover:bg-subtle">
+          {topics.map((t) => (
+            <li key={t.categoryId} className="relative border-b border-rule hover:bg-subtle">
               <div className="grid grid-cols-[1fr_auto] items-baseline gap-x-4 gap-y-1 px-1 py-4 sm:grid-cols-[12rem_1fr_auto]">
                 <Link
-                  href={`/category/${category.id}`}
+                  href={`/category/${t.categoryId}`}
                   className="font-medium text-ink after:absolute after:inset-0 focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-accent"
                 >
-                  {category.label}
+                  {t.label}
                 </Link>
-                {stat ? (
-                  <>
-                    <span className="text-right font-display text-h3 font-semibold tabular-nums text-ink sm:order-last">
-                      {formatStatistic(stat)}
-                    </span>
-                    <span className="col-span-2 text-small text-muted sm:col-span-1">
-                      {stat.title}, {stat.series?.[0]?.data.at(-1)?.label}. Released{' '}
-                      <time dateTime={stat.source.publicationDate ?? stat.lastUpdated}>
-                        {formatLongDate(stat.source.publicationDate ?? stat.lastUpdated)}
-                      </time>
-                      .
-                    </span>
-                  </>
-                ) : (
-                  <span className="text-small text-muted">No figure yet</span>
-                )}
+                <span className="text-right font-display text-h3 font-semibold tabular-nums text-ink sm:order-last">{t.value}</span>
+                <span className="col-span-2 text-small text-muted sm:col-span-1">
+                  {t.statLabel}, {t.period}. Released{' '}
+                  <time dateTime={t.releasedOn}>{formatLongDate(t.releasedOn)}</time>.
+                </span>
               </div>
             </li>
           ))}

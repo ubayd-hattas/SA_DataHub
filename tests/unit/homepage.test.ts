@@ -1,8 +1,14 @@
 import { describe, it, expect } from 'vitest'
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
+import { createElement } from 'react'
+import { renderToStaticMarkup } from 'react-dom/server'
 import { metadata } from '@/app/page'
+import { ExplainerCard } from '@/components/explainers/ExplainerCard'
 import { matchMunicipalities } from '@/components/home/FindMunicipality'
+import { EXPLAINERS } from '@/data/explainers'
 import { getAllMunicipalities, getStatById } from '@/data/mock'
-import { formatStatistic, getHeadlineNumbers } from '@/lib/headline-numbers'
+import { formatStatistic, getHeadlineNumbers, getTopicRows } from '@/lib/headline-numbers'
 
 const NBSP = ' '
 const ISO = /^\d{4}-\d{2}-\d{2}$/
@@ -11,26 +17,59 @@ describe('headline numbers', () => {
   const numbers = getHeadlineNumbers()
 
   it('are inflation, unemployment, GDP growth and the repo rate, in that order', () => {
-    expect(numbers.map((n) => n.statId)).toEqual(['cpi-headline', 'unemployment-national', 'gdp-growth', 'repo-rate-sarb'])
+    expect(numbers.map((n) => n.statId)).toEqual(['cpi-headline', 'unemployment-national', 'gdp-growth', 'repo-rate'])
   })
 
-  it.each(getHeadlineNumbers())('$label comes from its dataset, with both dates', (n) => {
+  it.each(getHeadlineNumbers())('$label comes from its dataset', (n) => {
     const stat = getStatById(n.statId)!
     expect(n.value).toBe(formatStatistic(stat))
-    expect(n.releasedOn).toBe(stat.source.publicationDate)
+    expect(n.period).toBe(stat.series![0].data.at(-1)!.label)
     expect(n.releasedOn).toMatch(ISO)
     expect(n.checkedOn).toMatch(ISO)
-    expect(n.period).toBe(stat.series![0].data.at(-1)!.label)
+    expect(n.sourceShort).toMatch(/^[\w ]+, \d{1,2} [A-Z][a-z]{2} \d{4}$/)
   })
 
-  it('links inflation to its explainer and the others to their topic pages', () => {
-    expect(numbers.map((n) => n.href)).toEqual(['/explainers/cpi-2026-09', '/category/unemployment', '/category/gdp', '/category/gdp'])
+  it('takes inflation dates from the explainer, so the homepage and explainer agree', () => {
+    const cpi = EXPLAINERS[0]
+    expect(numbers[0].checkedOn).toBe(cpi.headline.annual.checkedOn)
+    expect(numbers[0].sourceShort).toBe('Stats SA, 21 Oct 2026')
+    expect(numbers[0].href).toBe(`/explainers/${cpi.slug}`)
   })
 
-  it('keeps the repo rate to two decimals and judges inflation rising as bad', () => {
-    expect(numbers[3].value).toBe('7.25%')
-    expect(numbers[0].change).toEqual({ text: 'Up from 4.4% in Aug 2026.', tone: 'bad' })
-    expect(numbers[3].change?.tone).toBe('neutral')
+  it('links the repo rate to its chart on the inflation page, the same record it reads', () => {
+    expect(numbers[3]).toMatchObject({ value: '7.25%', href: '/category/inflation#repo-rate' })
+    expect(getStatById('repo-rate')!.categoryId).toBe('inflation')
+    expect(readFileSync(join(process.cwd(), 'src/app/category/[slug]/page.tsx'), 'utf8')).toContain('id={stat.id}')
+  })
+
+  it('links the others to their topic pages', () => {
+    expect(numbers.slice(1, 3).map((n) => n.href)).toEqual(['/category/unemployment', '/category/gdp'])
+  })
+})
+
+describe('topic rows', () => {
+  it('cover the eight topics with sentence-case labels', () => {
+    const rows = getTopicRows()
+    expect(rows).toHaveLength(8)
+    for (const r of rows) {
+      // Sentence case: no capital after the first word, except names and acronyms.
+      for (const label of [r.label, r.statLabel]) {
+        for (const word of label.split(' ').slice(1)) {
+          if (/^[A-Z][a-z]/.test(word)) expect(['Census'], label).toContain(word)
+        }
+      }
+    }
+    expect(rows.find((r) => r.categoryId === 'housing')).toMatchObject({ statLabel: 'Homes with piped water inside', value: '59.7%' })
+  })
+})
+
+describe('What changed this month card', () => {
+  const html = renderToStaticMarkup(createElement(ExplainerCard, { explainer: EXPLAINERS[0], compact: true }))
+
+  it('shows the headline sentence but not the big figure again', () => {
+    expect(html).toContain(EXPLAINERS[0].summary)
+    expect(html).not.toContain('data-figure')
+    expect(html).toContain('Checked on SA Data Hub')
   })
 })
 
