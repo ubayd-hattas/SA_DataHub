@@ -23,11 +23,25 @@ Tailwind names map to CSS variables, so a class such as `text-muted` follows the
 | `ink` | `#1b1b19` | `#eceae3` | Text and headings |
 | `muted` | `#595853` | `#a6a59d` | Labels, source lines |
 | `rule` | `#e3e1da` | `#2c2d2a` | Thin dividers and gridlines |
-| `accent` | `#1f4e8c` | `#8eb4ee` | Links, chart line, selected tab |
-| `good` | `#1e6b3c` | `#6fc48b` | A change in the good direction |
+| `accent` | `#0f6e56` | `#4fc8a2` | Links, chart line, selected tab |
+| `good` | `#1d5fa8` | `#8ab4f0` | A change in the good direction |
 | `bad` | `#b42318` | `#f08a80` | A change in the bad direction |
 
+The accent is the logo's green. The logo itself uses `#198e70` (`--brand-green`), which is only 3.9:1 on `paper`, so text and lines use a darker shade of the same hue in light mode and a lighter one in dark mode. "Good" is blue rather than green so a good change does not look like a link.
+
 Text tokens (`ink`, `muted`, `accent`, `good`, `bad`) meet WCAG AA (4.5:1) on `paper` and on `subtle` in both themes. `tests/unit/design-system.test.ts` reads the values from `globals.css` and fails if any pair drops below 4.5:1. `rule` is a divider and is not used for text.
+
+| Token | Light on `paper` | Dark on `paper` |
+| --- | --- | --- |
+| `ink` | 16.4:1 | 15.4:1 |
+| `muted` | 6.8:1 | 7.5:1 |
+| `accent` | 5.9:1 | 8.9:1 |
+| `good` | 6.1:1 | 8.7:1 |
+| `bad` | 6.2:1 | 7.6:1 |
+
+## Logo
+
+`public/brand/logo-mark.svg` is the mark in the navbar, the footer and the browser tab. `BrandMark` crops its viewBox to the tile. PNG fallbacks in `public/brand/`: `icon-32.png` (favicon), `icon-192.png` and `icon-512.png` (manifest), `apple-touch-icon.png` (180 px, on a `paper` background because iOS fills transparency with black).
 
 Whether a move is good or bad comes from `judgeMove()` in `src/lib/utils.ts`, which uses the per-statistic direction table. A statistic with no direction gets no colour.
 
