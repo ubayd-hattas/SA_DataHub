@@ -6,7 +6,6 @@ import {
   getMunicipalityNationalAverages,
   getMunicipalityProvincialAverages,
   getLargestMunicipalityInProvince,
-  getRelatedMunicipalities,
   generateMunicipalityInsights,
   getSortedMunicipalityList,
 } from '@/data/mock'
@@ -16,7 +15,18 @@ import { HousingCompositionChart } from '@/components/charts/HousingCompositionC
 import { BasicServicesChart } from '@/components/charts/BasicServicesChart'
 import type { Metadata } from 'next'
 import { buildPageMetadata } from '@/lib/seo'
-import { generateMunicipalityIntro } from '@/lib/municipality-copy'
+import {
+  CENSUS_2011_SOURCE,
+  SIMILAR_COUNT,
+  census2011vs2022,
+  fmtCount,
+  municipalitySummary,
+  percentChange,
+  signed,
+  similarMunicipalities,
+  type CensusRow,
+} from '@/lib/municipality-profile'
+import { BOUNDARY_SOURCE, has2011Comparison } from '@/data/municipal-boundaries'
 import { municipalityDescription, municipalityTitle } from '@/lib/page-seo'
 import { Breadcrumbs } from '@/components/seo/Breadcrumbs'
 import { JsonLd } from '@/components/seo/JsonLd'
@@ -134,16 +144,16 @@ function DemographicsSection({ m }: { m: MunicipalityRecord }) {
           value={fmt(m.population2022)}
           sub="Census 2022"
         />
-        <StatCard
-          label="Population (2011)"
-          value={fmt(m.population2011)}
-          sub="Boundary-aligned"
-        />
-        <StatCard
-          label="Population Growth"
-          value={fmtPct(m.populationGrowthRate)}
-          sub="2011–2022"
-        />
+        {has2011Comparison(m.id) && (
+          <>
+            <StatCard label="Population (2011)" value={fmt(m.population2011)} sub="Census 2011" />
+            <StatCard
+              label="Change since 2011"
+              value={`${signed(percentChange(m.population2011, m.population2022))}%`}
+              sub="Census 2011 to 2022"
+            />
+          </>
+        )}
         <StatCard
           label="Male Population"
           value={fmt(m.populationDetail.malePop2022)}
@@ -326,11 +336,9 @@ function EducationSection({ m }: { m: MunicipalityRecord }) {
           value={fmt(pd?.schoolAttendance2022)}
           sub="Persons attending school, 2022"
         />
-        <StatCard
-          label="School Attendance (2011)"
-          value={fmt(pd?.schoolAttendance2011)}
-          sub="Boundary-aligned"
-        />
+        {has2011Comparison(m.id) && (
+          <StatCard label="School Attendance (2011)" value={fmt(pd?.schoolAttendance2011)} sub="Census 2011" />
+        )}
       </div>
     </section>
   )
@@ -548,32 +556,94 @@ function InsightsSection({ m }: { m: MunicipalityRecord }) {
   )
 }
 
-// ─── Related Municipalities ─────────────────────────────────────────────────
+// ─── Census 2011 vs 2022 ────────────────────────────────────────────────────
 
-const CATEGORY_COLORS: Record<string, string> = {
-  A: 'bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300',
-  B: 'bg-brand-100 text-brand-700 dark:bg-brand-900/40 dark:text-brand-300',
-  C: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
+function formatCensusValue(v: number, kind: CensusRow['kind']): string {
+  if (kind === 'count') return fmtCount(v)
+  if (kind === 'percent') return `${v.toFixed(1)}%`
+  return v.toFixed(1)
 }
 
-function RelatedMunicipalitiesSection({ m }: { m: MunicipalityRecord }) {
-  const related = getRelatedMunicipalities(m, 3)
-  if (related.length === 0) return null
+function formatCensusChange(r: CensusRow): string {
+  if (r.kind === 'count') return `${signed(r.change)}%`
+  if (r.kind === 'percent') return `${signed(r.change)} pts`
+  return signed(r.change)
+}
 
+function CensusComparisonSection({ m }: { m: MunicipalityRecord }) {
+  const rows = census2011vs2022(m)
   return (
-    <section>
-      <SectionHeading>Related Municipalities</SectionHeading>
+    <section aria-labelledby="census-compare">
+      <h2 id="census-compare" className="font-display text-lg font-semibold text-slate-800 dark:text-slate-100 mb-4 pb-2 border-b border-slate-200 dark:border-slate-700">
+        Census 2011 and Census 2022
+      </h2>
+      {rows.length === 0 ? (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-relaxed text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200">
+          <p className="font-medium">The boundaries of {m.name} changed after Census 2011, so the comparison is withheld.</p>
+          <p className="mt-1">
+            The Municipal Demarcation Board changed this municipality&apos;s boundaries before the 2016 local government
+            elections, so its 2011 and 2022 figures may not cover the same area. Source: {BOUNDARY_SOURCE.publisher},{' '}
+            <a href={BOUNDARY_SOURCE.url} className="underline hover:no-underline" rel="noopener noreferrer" target="_blank">
+              {BOUNDARY_SOURCE.title}
+            </a>{' '}
+            ({BOUNDARY_SOURCE.year}), pages {BOUNDARY_SOURCE.pages}.
+          </p>
+        </div>
+      ) : (
+        <>
+          <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700">
+            <table className="w-full text-left text-xs sm:text-sm">
+              <thead className="bg-slate-50 text-xs text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                <tr>
+                  <th scope="col" className="px-2 py-2 font-medium sm:px-4">Measure</th>
+                  <th scope="col" className="px-2 py-2 text-right font-medium sm:px-4"><span className="hidden sm:inline">Census </span>2011</th>
+                  <th scope="col" className="px-2 py-2 text-right font-medium sm:px-4"><span className="hidden sm:inline">Census </span>2022</th>
+                  <th scope="col" className="px-2 py-2 text-right font-medium sm:px-4">Change</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((r) => (
+                  <tr key={r.label} className="border-t border-slate-100 dark:border-slate-800">
+                    <th scope="row" className="px-2 py-2 font-normal text-slate-700 dark:text-slate-200 sm:px-4">{r.label}</th>
+                    <td className="whitespace-nowrap px-2 py-2 text-right tabular-nums text-slate-500 dark:text-slate-400 sm:px-4">{formatCensusValue(r.value2011, r.kind)}</td>
+                    <td className="whitespace-nowrap px-2 py-2 text-right tabular-nums text-slate-900 dark:text-white sm:px-4">{formatCensusValue(r.value2022, r.kind)}</td>
+                    <td className="whitespace-nowrap px-2 py-2 text-right tabular-nums text-slate-700 dark:text-slate-200 sm:px-4">{formatCensusChange(r)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="mt-2 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+            Changes are SA Data Hub&apos;s own calculations from the two figures: a percentage change for counts, and the
+            difference in percentage points (pts) for shares.
+          </p>
+        </>
+      )}
+    </section>
+  )
+}
+
+// ─── Similar municipalities ─────────────────────────────────────────────────
+
+function SimilarMunicipalitiesSection({ m }: { m: MunicipalityRecord }) {
+  const similar = similarMunicipalities(m)
+  if (similar.length === 0) return null
+  return (
+    <section aria-labelledby="similar">
+      <h2 id="similar" className="font-display text-lg font-semibold text-slate-800 dark:text-slate-100 mb-4 pb-2 border-b border-slate-200 dark:border-slate-700">
+        Similar municipalities
+      </h2>
       <p className="text-sm text-slate-500 dark:text-slate-400 mb-4 -mt-2">
-        Other municipalities in {m.provinceName} with similar population size.
+        The {SIMILAR_COUNT} other municipalities in {m.provinceName} whose Census 2022 population is closest to{' '}
+        {m.name}&apos;s ({fmtCount(m.population2022)}). Where two are equally close, the lower municipal code comes first.
       </p>
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {related.map((r) => (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {similar.map((r) => (
           <Link
             key={r.id}
             href={`/municipalities/${r.id}`}
             className="group bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-5 flex flex-col gap-3 hover:border-brand-400 dark:hover:border-brand-600 hover:shadow-md transition-all duration-200"
           >
-            {/* Name + badge */}
             <div className="flex items-start justify-between gap-2">
               <span className="font-semibold text-slate-900 dark:text-white group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors leading-tight">
                 {r.name}
@@ -586,43 +656,24 @@ function RelatedMunicipalitiesSection({ m }: { m: MunicipalityRecord }) {
                 Cat {r.category}
               </span>
             </div>
-
-            {/* Key stats */}
             <div className="grid grid-cols-2 gap-2 text-sm">
               <div>
-                <div className="text-xs text-slate-400 dark:text-slate-500 mb-0.5">Population</div>
-                <div className="font-semibold text-slate-700 dark:text-slate-200">
-                  {r.population2022.toLocaleString('en-ZA')}
-                </div>
+                <div className="text-xs text-slate-400 dark:text-slate-500 mb-0.5">Population, 2022</div>
+                <div className="font-semibold tabular-nums text-slate-700 dark:text-slate-200">{fmtCount(r.population2022)}</div>
               </div>
               <div>
-                <div className="text-xs text-slate-400 dark:text-slate-500 mb-0.5">Households</div>
-                <div className="font-semibold text-slate-700 dark:text-slate-200">
-                  {r.households2022.toLocaleString('en-ZA')}
-                </div>
+                <div className="text-xs text-slate-400 dark:text-slate-500 mb-0.5">Households, 2022</div>
+                <div className="font-semibold tabular-nums text-slate-700 dark:text-slate-200">{fmtCount(r.households2022)}</div>
               </div>
               <div>
-                <div className="text-xs text-slate-400 dark:text-slate-500 mb-0.5">Formal housing</div>
-                <div className="font-semibold text-slate-700 dark:text-slate-200">
-                  {r.pctFormalDwelling2022 != null ? `${r.pctFormalDwelling2022.toFixed(1)}%` : '—'}
-                </div>
+                <div className="text-xs text-slate-400 dark:text-slate-500 mb-0.5">Formal dwelling</div>
+                <div className="font-semibold tabular-nums text-slate-700 dark:text-slate-200">{r.pctFormalDwelling2022.toFixed(1)}%</div>
               </div>
               <div>
-                <div className="text-xs text-slate-400 dark:text-slate-500 mb-0.5">Growth 2011–22</div>
-                <div
-                  className={`font-semibold ${
-                    r.populationGrowthRate >= 0
-                      ? 'text-emerald-600 dark:text-emerald-400'
-                      : 'text-red-500 dark:text-red-400'
-                  }`}
-                >
-                  {r.populationGrowthRate >= 0 ? '+' : ''}
-                  {r.populationGrowthRate.toFixed(1)}%
-                </div>
+                <div className="text-xs text-slate-400 dark:text-slate-500 mb-0.5">Flush toilet</div>
+                <div className="font-semibold tabular-nums text-slate-700 dark:text-slate-200">{r.pctFlushToilet2022.toFixed(1)}%</div>
               </div>
             </div>
-
-            {/* Arrow hint */}
             <div className="text-xs text-brand-600 dark:text-brand-400 font-medium group-hover:translate-x-1 transition-transform duration-200 flex items-center gap-1">
               View profile →
             </div>
@@ -631,6 +682,14 @@ function RelatedMunicipalitiesSection({ m }: { m: MunicipalityRecord }) {
       </div>
     </section>
   )
+}
+
+// ─── Category colours ───────────────────────────────────────────────────────
+
+const CATEGORY_COLORS: Record<string, string> = {
+  A: 'bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300',
+  B: 'bg-brand-100 text-brand-700 dark:bg-brand-900/40 dark:text-brand-300',
+  C: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
 }
 
 // ─── Prev / Next navigation ─────────────────────────────────────────────────
@@ -727,7 +786,7 @@ export default async function MunicipalityDetailPage({
   const m = getMunicipalityByCode(code)
   if (!m) return notFound()
 
-  const intro = generateMunicipalityIntro(m)
+  const summary = municipalitySummary(m)
   const provinceSlug = getProvinceSlugFromCode(m.province)
 
   const breadcrumbs = [
@@ -741,7 +800,7 @@ export default async function MunicipalityDetailPage({
       <JsonLd
         data={[
           breadcrumbSchema(breadcrumbs),
-          placeSchema(m, `/municipalities/${m.id}`, intro),
+          placeSchema(m, `/municipalities/${m.id}`, summary),
         ]}
       />
       {/* Breadcrumb */}
@@ -766,12 +825,13 @@ export default async function MunicipalityDetailPage({
           {' · '}
           <span className="font-mono text-xs">{m.id}</span>
         </p>
-        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed max-w-3xl">
-          {intro}
+        <p className="text-base text-slate-700 dark:text-slate-300 leading-relaxed max-w-3xl">
+          {summary}
         </p>
       </div>
 
       {/* Data sections */}
+      <CensusComparisonSection m={m} />
       <DemographicsSection m={m} />
       <AgeStructureSection m={m} />
       <HousingSection m={m} />
@@ -781,13 +841,27 @@ export default async function MunicipalityDetailPage({
 
       {/* V5 additions */}
       <InsightsSection m={m} />
-      <RelatedMunicipalitiesSection m={m} />
+      <SimilarMunicipalitiesSection m={m} />
 
       {/* Source note */}
-      <p className="text-xs text-slate-400 dark:text-slate-500">
-        All data from Stats SA Census 2022 Municipal Fact Sheets (revised August 2025).
-        Last updated {m.lastUpdated}.
-      </p>
+      <div className="space-y-1 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+        <p>
+          Census 2022 figures: Stats SA, Census 2022 Municipal Fact Sheets (revised August 2025). Last updated{' '}
+          {m.lastUpdated}.
+        </p>
+        <p>
+          Census 2011 figures: {CENSUS_2011_SOURCE.publisher}, {CENSUS_2011_SOURCE.publication}, released 10 October
+          2023, which gives 2011 figures alongside the 2022 ones. They reached this site through the{' '}
+          <a href={CENSUS_2011_SOURCE.extractUrl} className="underline hover:no-underline" rel="noopener noreferrer" target="_blank">
+            {CENSUS_2011_SOURCE.extract}
+          </a>{' '}
+          extract on GitHub. Checked against the extract on 27 October 2026.
+        </p>
+        <p>
+          Source of the basic data: Stats SA. The summary, changes and similar municipalities are SA Data Hub&apos;s
+          own calculations from that data.
+        </p>
+      </div>
 
       {/* Prev / Next navigation */}
       <MunicipalityNavigation currentId={m.id} />
