@@ -1,5 +1,7 @@
 import type { ExplainerSource, SourcedFigure } from '@/lib/explainers'
 import { formatFigure, formatLongDate } from '@/lib/explainers'
+import { SourceLine } from '@/components/editorial/SourceLine'
+import { formatDecimal } from '@/lib/format'
 import { cn } from '@/lib/utils'
 
 /**
@@ -29,7 +31,7 @@ export function FigureValue({
       title={`${where}. Source released ${formatLongDate(source.releasedOn)}. Checked on SA Data Hub ${formatLongDate(figure.checkedOn)}.`}
       className={cn('tabular-nums', className)}
     >
-      {plain ? figure.value.toFixed(1) : formatFigure(figure)}
+      {plain ? formatDecimal(figure.value) : formatFigure(figure)}
     </span>
   )
 }
@@ -48,20 +50,18 @@ export function SourceCitations({
   className?: string
 }) {
   return (
-    <div className={cn('rounded-xl border border-slate-200 p-4 text-xs leading-relaxed text-slate-500 dark:border-slate-800 dark:text-slate-400', className)}>
-      <p className="mb-2 font-semibold text-slate-700 dark:text-slate-200">Sources</p>
+    <div className={cn('border-t border-rule pt-3 text-caption text-muted', className)}>
+      <p className="mb-1 font-medium text-ink">Sources</p>
       <ul className="space-y-2">
         {sources.map((s) => (
           <li key={s.id}>
             {s.publisher}, <cite className="not-italic">{s.title}</cite>
             {s.code ? ` (${s.code})` : ''}.{' '}
             <span className="whitespace-nowrap">
-              <span className="font-medium text-slate-600 dark:text-slate-300">Source released</span>{' '}
-              <time dateTime={s.releasedOn}>{formatLongDate(s.releasedOn)}</time>.
+              Source released <time dateTime={s.releasedOn}>{formatLongDate(s.releasedOn)}</time>.
             </span>{' '}
             <span className="whitespace-nowrap">
-              <span className="font-medium text-slate-600 dark:text-slate-300">Checked on SA Data Hub</span>{' '}
-              <time dateTime={checkedOn}>{formatLongDate(checkedOn)}</time>.
+              Checked on SA Data Hub <time dateTime={checkedOn}>{formatLongDate(checkedOn)}</time>.
             </span>
             {s.releasedOnNote ? <span className="block">{s.releasedOnNote}</span> : null}
             {s.provenance ? <span className="block">{s.provenance}</span> : null}
@@ -74,14 +74,10 @@ export function SourceCitations({
 
 /** Short pointer to the table and page a section's figures come from. */
 export function SourceNote({ source, location, className }: { source: ExplainerSource; location: string; className?: string }) {
-  return (
-    <p className={cn('text-xs text-slate-500 dark:text-slate-400', className)}>
-      From {source.shortName}, {location}.
-    </p>
-  )
+  return <p className={cn('text-caption text-muted', className)}>From {source.shortName}, {location}.</p>
 }
 
-/** The two dates shown with every figure or group of figures. */
+/** The full source line with both dates, for a figure shown away from its explainer. */
 export function SourceDates({
   source,
   checkedOn,
@@ -94,19 +90,14 @@ export function SourceDates({
   className?: string
 }) {
   return (
-    <p className={cn('text-xs leading-relaxed text-slate-500 dark:text-slate-400', className)}>
-      <span className="font-medium text-slate-600 dark:text-slate-300">Source:</span> {source.publisher},{' '}
-      {source.title}
-      {source.code ? ` (${source.code})` : ''}
-      {location ? `, ${location}` : ''}.{' '}
-      <span className="whitespace-nowrap">
-        <span className="font-medium text-slate-600 dark:text-slate-300">Source released</span>{' '}
-        <time dateTime={source.releasedOn}>{formatLongDate(source.releasedOn)}</time>.
-      </span>{' '}
-      <span className="whitespace-nowrap">
-        <span className="font-medium text-slate-600 dark:text-slate-300">Checked on SA Data Hub</span>{' '}
-        <time dateTime={checkedOn}>{formatLongDate(checkedOn)}</time>.
-      </span>
-    </p>
+    <SourceLine
+      publisher={source.publisher}
+      title={source.title}
+      code={source.code}
+      location={location}
+      releasedOn={source.releasedOn}
+      checkedOn={checkedOn}
+      className={className}
+    />
   )
 }

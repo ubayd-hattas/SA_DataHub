@@ -1,9 +1,14 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
-  <title>SA Data Hub logo mark</title>
-  <desc>Rounded square with a white bar chart on a green background.</desc>
-  <rect width="512" height="512" rx="112" fill="#16a34a"/>
-  <rect x="108" y="280" width="54" height="124" rx="16" fill="#ffffff"/>
-  <rect x="192" y="220" width="54" height="184" rx="16" fill="#ffffff"/>
-  <rect x="276" y="164" width="54" height="240" rx="16" fill="#ffffff"/>
-  <rect x="360" y="108" width="54" height="296" rx="16" fill="#ffffff"/>
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="iconGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#209574"/>
+      <stop offset="48%" stop-color="#198e70"/>
+      <stop offset="100%" stop-color="#219b78"/>
+    </linearGradient>
+    <filter id="softShadow" x="-15%" y="-15%" width="130%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="7" flood-color="#078f65" flood-opacity="0.28"/>
+    </filter>
+  </defs>
+  <path d="M 235,208 209,236 194,260 184,284 176,321 176,676 181,704 191,733 203,755 218,775 242,797 268,813 295,823 324,828 698,828 728,823 751,815 773,803 796,785 814,765 831,737 842,708 848,676 848,326 844,299 835,271 825,251 806,225 790,209 763,190 747,182 728,175 694,169 329,169 307,172 279,181 257,192 Z M 353,340 360,334 367,333 376,337 381,346 381,602 660,602 666,605 672,613 673,619 670,627 661,634 363,634 357,631 352,624 351,618 351,345 Z M 516,363 520,363 527,366 531,370 534,377 534,561 532,568 522,576 513,576 509,574 504,569 502,564 502,376 504,371 510,365 Z M 586,416 595,416 599,418 604,423 606,428 606,565 604,569 595,576 587,576 582,574 575,564 575,429 578,422 Z M 439,495 446,495 451,497 456,502 459,512 458,565 456,569 448,576 438,576 434,574 427,565 427,506 433,498 Z" fill="url(#iconGradient)" fill-rule="evenodd" filter="url(#softShadow)"/>
 </svg>

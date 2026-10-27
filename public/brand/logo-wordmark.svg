@@ -1,19 +1,39 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
-  <title>SA Data Hub logo</title>
-  <desc>Green rounded-square bar chart icon with the words SA Data Hub.</desc>
-  <rect width="512" height="512" fill="#ffffff"/>
-  <rect x="32" y="96" width="160" height="160" rx="32" fill="#16a34a"/>
-  <rect x="62" y="176" width="18" height="52" rx="6" fill="#ffffff"/>
-  <rect x="92" y="150" width="18" height="78" rx="6" fill="#ffffff"/>
-  <rect x="122" y="126" width="18" height="102" rx="6" fill="#ffffff"/>
-  <rect x="152" y="102" width="18" height="126" rx="6" fill="#ffffff"/>
-  <text x="224" y="180" fill="#0f172a" font-size="72" font-family="Arial, Helvetica, sans-serif" font-weight="700">
-    SA
-  </text>
-  <text x="224" y="256" fill="#16a34a" font-size="72" font-family="Arial, Helvetica, sans-serif" font-weight="700">
-    Data
-  </text>
-  <text x="224" y="332" fill="#0f172a" font-size="72" font-family="Arial, Helvetica, sans-serif" font-weight="700">
-    Hub
-  </text>
+<svg xmlns="http://www.w3.org/2000/svg" width="1672" height="941" viewBox="0 0 1672 941">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="49%" r="75%">
+      <stop offset="0" stop-color="#176b58"/>
+      <stop offset="0.48" stop-color="#0c3e34"/>
+      <stop offset="1" stop-color="#062a24"/>
+    </radialGradient>
+    <radialGradient id="halo" cx="50%" cy="48%" r="50%">
+      <stop offset="0" stop-color="#48e6bd" stop-opacity=".42"/>
+      <stop offset=".52" stop-color="#3bd9b0" stop-opacity=".2"/>
+      <stop offset="1" stop-color="#39d9ad" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="tile" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#168568"/>
+      <stop offset=".48" stop-color="#108764"/>
+      <stop offset="1" stop-color="#13805f"/>
+    </linearGradient>
+    <filter id="tileGlow" x="-35%" y="-35%" width="170%" height="170%">
+      <feGaussianBlur stdDeviation="33"/>
+    </filter>
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="150%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="12" result="blur"/>
+      <feOffset dy="12" result="offset"/>
+      <feComponentTransfer><feFuncA type="linear" slope=".35"/></feComponentTransfer>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect width="1672" height="941" fill="url(#bg)"/>
+  <ellipse cx="824" cy="462" rx="510" ry="405" fill="url(#halo)"/>
+  <rect x="474" y="123" width="700" height="682" rx="145" fill="#28c99c" opacity=".35" filter="url(#tileGlow)"/>
+  <rect x="503" y="153" width="643" height="620" rx="133" fill="url(#tile)" stroke="#37b995" stroke-opacity=".65" stroke-width="1.4" filter="url(#softShadow)"/>
+  <g fill="#fff">
+    <rect x="673" y="314" width="29" height="239" rx="14.5"/>
+    <rect x="748" y="474" width="28" height="79" rx="14"/>
+    <rect x="823" y="345" width="28" height="208" rx="14"/>
+    <rect x="898" y="396" width="28" height="157" rx="14"/>
+    <path d="M688 580 H975 A14.5 14.5 0 0 1 975 609 H688 A15 15 0 0 1 673 594 V329 A14.5 14.5 0 0 1 702 329 V580 Z"/>
+  </g>
 </svg>

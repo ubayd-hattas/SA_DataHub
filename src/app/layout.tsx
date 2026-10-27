@@ -1,23 +1,23 @@
 import type { Metadata } from 'next'
-import { DM_Sans, DM_Serif_Display, DM_Mono } from 'next/font/google'
+import { Inter, Source_Serif_4, DM_Mono } from 'next/font/google'
 import { ThemeProvider } from '@/components/layout/ThemeProvider'
 import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
+import { LogoComparison } from '@/components/layout/LogoComparison'
 import { Analytics } from '@vercel/analytics/react'
 import { JsonLd } from '@/components/seo/JsonLd'
 import { organizationSchema, personSchema, websiteSchema } from '@/lib/schema'
 import { SITE_URL, SITE_NAME, SITE_DESCRIPTION, SITE_LOGO_MARK_PATH } from '@/lib/seo'
 import './globals.css'
 
-const dmSans = DM_Sans({
+const inter = Inter({
   subsets: ['latin'],
   variable: '--font-body',
   display: 'swap',
 })
 
-const dmSerif = DM_Serif_Display({
+const sourceSerif = Source_Serif_4({
   subsets: ['latin'],
-  weight: '400',
   variable: '--font-display',
   display: 'swap',
 })
@@ -39,11 +39,14 @@ export const metadata: Metadata = {
   applicationName: SITE_NAME,
   manifest: '/manifest.webmanifest',
   icons: {
+    // SVG first; browsers that cannot use an SVG icon take the PNGs.
     icon: [
       { url: SITE_LOGO_MARK_PATH, type: 'image/svg+xml' },
+      { url: '/brand/icon-32.png', type: 'image/png', sizes: '32x32' },
+      { url: '/brand/icon-192.png', type: 'image/png', sizes: '192x192' },
     ],
-    shortcut: [SITE_LOGO_MARK_PATH],
-    apple: [SITE_LOGO_MARK_PATH],
+    shortcut: ['/brand/icon-32.png'],
+    apple: [{ url: '/brand/apple-touch-icon.png', sizes: '180x180' }],
   },
   openGraph: {
     siteName: SITE_NAME,
@@ -74,7 +77,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en-ZA" suppressHydrationWarning>
-      <body className={`${dmSans.variable} ${dmSerif.variable} ${dmMono.variable} font-sans antialiased`}>
+      <body className={`${inter.variable} ${sourceSerif.variable} ${dmMono.variable} font-sans antialiased`}>
         <JsonLd data={[websiteSchema(), organizationSchema(), personSchema()]} />
         <a
           href="#main-content"
@@ -82,12 +85,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         >
           Skip to main content
         </a>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <div className="flex min-h-screen flex-col bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-50">
+        <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
+          <div className="flex min-h-screen flex-col bg-paper text-ink">
             <Navbar />
             <main id="main-content" className="flex-1">
               {children}
             </main>
+            <LogoComparison />
             <Footer />
           </div>
         </ThemeProvider>
