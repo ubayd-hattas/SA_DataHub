@@ -93,7 +93,9 @@ One format everywhere, from `src/lib/format.ts`:
 - One decimal place: `4.5%`, `1.5 points`, `118.3`.
 - A non-breaking space between thousands: `1 234 567`.
 - Counts of people and things have no decimals: `formatCount`.
-- Exception: rand amounts keep cents (`R1 045.45`) because they are prices.
+- Headline rand results are whole rands (`R1 045`). Cents appear only inside a worked calculation (`R1 045.45`).
+- Policy rates set in quarter points (the repo rate, prime) keep the source's two decimals: `7.25%`, not `7.3%`.
+- Large counts read as millions with one decimal: `63.5 million people`.
 
 ## Not yet moved to this system
 

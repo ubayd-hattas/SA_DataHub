@@ -41,6 +41,14 @@ export function formatSigned(value: number, decimals = 1): string {
   return value > 0 && Number(value.toFixed(decimals)) !== 0 ? `+${text}` : text
 }
 
+const SHORT_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+/** "11 Aug 2026" from "2026-08-11", for compact source lines. */
+export function formatShortDate(iso: string): string {
+  const [y, m, d] = iso.split('-').map(Number)
+  return `${d} ${SHORT_MONTHS[m - 1]} ${y}`
+}
+
 /**
  * "R1 045.45". Rand amounts keep cents because they are prices; every
  * other number on the site uses one decimal.
