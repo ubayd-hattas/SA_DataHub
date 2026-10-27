@@ -65,7 +65,7 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
   const category = getCategoryById(slug)
   if (!category) return {}
   return buildPageMetadata({
-    title: `${category.label} Statistics`,
+    title: `${category.label} statistics`,
     description: `${category.description} View charts, trends, citations, and CSV downloads from official South African sources.`,
     path: `/category/${slug}`,
   })
