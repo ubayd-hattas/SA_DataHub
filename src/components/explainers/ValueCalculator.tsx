@@ -58,10 +58,11 @@ export function ValueCalculator() {
         {result ? (
           <>
             <p className="text-body text-ink">
-              {formatRand(result.amount)} in {result.year} had about the same buying power as
+              {formatRand(result.amount, Number.isInteger(result.amount) ? 0 : 2)} in {result.year} had about the same buying power as
             </p>
+            {/* Whole rands in the answer; the working below keeps cents. */}
             <p className="mt-1 font-display text-[3rem] font-semibold leading-none tabular-nums text-ink sm:text-figure">
-              {formatRand(result.equivalent)}
+              {formatRand(result.equivalent, 0)}
             </p>
             <p className="mt-2 text-body text-ink">in {result.nowLabel}.</p>
 

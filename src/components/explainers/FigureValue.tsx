@@ -36,7 +36,48 @@ export function FigureValue({
   )
 }
 
-/** The source line shown with every figure or group of figures. */
+/**
+ * The full citation for every source on a page, with both dates. Shown once
+ * at the top and once at the bottom of an explainer.
+ */
+export function SourceCitations({
+  sources,
+  checkedOn,
+  className,
+}: {
+  sources: ExplainerSource[]
+  checkedOn: string
+  className?: string
+}) {
+  return (
+    <div className={cn('border-t border-rule pt-3 text-caption text-muted', className)}>
+      <p className="mb-1 font-medium text-ink">Sources</p>
+      <ul className="space-y-2">
+        {sources.map((s) => (
+          <li key={s.id}>
+            {s.publisher}, <cite className="not-italic">{s.title}</cite>
+            {s.code ? ` (${s.code})` : ''}.{' '}
+            <span className="whitespace-nowrap">
+              Source released <time dateTime={s.releasedOn}>{formatLongDate(s.releasedOn)}</time>.
+            </span>{' '}
+            <span className="whitespace-nowrap">
+              Checked on SA Data Hub <time dateTime={checkedOn}>{formatLongDate(checkedOn)}</time>.
+            </span>
+            {s.releasedOnNote ? <span className="block">{s.releasedOnNote}</span> : null}
+            {s.provenance ? <span className="block">{s.provenance}</span> : null}
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
+/** Short pointer to the table and page a section's figures come from. */
+export function SourceNote({ source, location, className }: { source: ExplainerSource; location: string; className?: string }) {
+  return <p className={cn('text-caption text-muted', className)}>From {source.shortName}, {location}.</p>
+}
+
+/** The full source line with both dates, for a figure shown away from its explainer. */
 export function SourceDates({
   source,
   checkedOn,
