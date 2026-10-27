@@ -3,6 +3,7 @@ import { Inter, Source_Serif_4, DM_Mono } from 'next/font/google'
 import { ThemeProvider } from '@/components/layout/ThemeProvider'
 import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
+import { LogoComparison } from '@/components/layout/LogoComparison'
 import { Analytics } from '@vercel/analytics/react'
 import { JsonLd } from '@/components/seo/JsonLd'
 import { organizationSchema, personSchema, websiteSchema } from '@/lib/schema'
@@ -38,11 +39,14 @@ export const metadata: Metadata = {
   applicationName: SITE_NAME,
   manifest: '/manifest.webmanifest',
   icons: {
+    // SVG first; browsers that cannot use an SVG icon take the PNGs.
     icon: [
       { url: SITE_LOGO_MARK_PATH, type: 'image/svg+xml' },
+      { url: '/brand/icon-32.png', type: 'image/png', sizes: '32x32' },
+      { url: '/brand/icon-192.png', type: 'image/png', sizes: '192x192' },
     ],
-    shortcut: [SITE_LOGO_MARK_PATH],
-    apple: [SITE_LOGO_MARK_PATH],
+    shortcut: ['/brand/icon-32.png'],
+    apple: [{ url: '/brand/apple-touch-icon.png', sizes: '180x180' }],
   },
   openGraph: {
     siteName: SITE_NAME,
@@ -87,6 +91,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <main id="main-content" className="flex-1">
               {children}
             </main>
+            <LogoComparison />
             <Footer />
           </div>
         </ThemeProvider>
