@@ -47,6 +47,14 @@ describe.each(EXPLAINERS.map((e) => [e.slug, e] as const))('explainer %s', (_slu
     expect(html).not.toContain('—')
   })
 
+  it('gives the full citation once at the top and once at the bottom', () => {
+    const html = renderToStaticMarkup(createElement(CpiExplainerView, { explainer }))
+    expect(html.split('>Sources</p>').length - 1).toBe(2)
+    for (const s of explainer.sources) {
+      expect(html.split(s.title).length - 1, s.id).toBeGreaterThanOrEqual(2)
+    }
+  })
+
   it('shows the dates on the homepage card too', () => {
     const html = renderToStaticMarkup(createElement(ExplainerCard, { explainer }))
     expect(figureAttributes(html).length).toBeGreaterThan(0)
@@ -101,6 +109,19 @@ describe('September 2026 CPI figures (Stats SA P0141 September 2026)', () => {
       const implied = (ex.indexNow.value / ex.indexThen.value - 1) * 100
       expect(Math.abs(implied - ex.rate.value), ex.label).toBeLessThan(0.15)
     }
+  })
+})
+
+describe('September 2026 page wording', () => {
+  const html = renderToStaticMarkup(createElement(CpiExplainerView, { explainer: EXPLAINERS[0] }))
+
+  it('names the monthly card by both months', () => {
+    expect(html).toContain('Monthly change in prices, August to September 2026')
+  })
+
+  it('says only what the release says about groups missing from Table C', () => {
+    expect(html).not.toContain('Groups not listed here')
+    expect(html).toContain('The release does not say why they are left out of Table C.')
   })
 })
 

@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { Breadcrumbs } from '@/components/seo/Breadcrumbs'
 import { JsonLd } from '@/components/seo/JsonLd'
-import { FigureValue, SourceDates } from '@/components/explainers/FigureValue'
+import { FigureValue, SourceCitations, SourceNote } from '@/components/explainers/FigureValue'
 import { CpiHistoryChart } from '@/components/explainers/CpiHistoryChart'
 import { ValueCalculator } from '@/components/explainers/ValueCalculator'
 import { formatLongDate, formatRand, getSource, type Explainer } from '@/lib/explainers'
@@ -22,6 +22,12 @@ function Section({ id, title, children }: { id: string; title: string; children:
       {children}
     </section>
   )
+}
+
+/** "August to September 2026", or "December 2025 to January 2026" across a year end. */
+function monthSpan(from: string, to: string): string {
+  const [fromMonth, fromYear] = from.split(' ')
+  return fromYear === to.split(' ')[1] ? `${fromMonth} to ${to}` : `${from} to ${to}`
 }
 
 export function CpiExplainerView({ explainer }: { explainer: Explainer }) {
@@ -46,7 +52,7 @@ export function CpiExplainerView({ explainer }: { explainer: Explainer }) {
       <p className="section-label mb-2">CPI explainer</p>
       <h1 className="heading-display mb-4 text-3xl font-semibold sm:text-4xl">{explainer.title}</h1>
       <p className="mb-3 text-lg leading-relaxed text-slate-600 dark:text-slate-300">{explainer.summary}</p>
-      <SourceDates source={release} checkedOn={checkedOn} className="mb-10" />
+      <SourceCitations sources={explainer.sources} checkedOn={checkedOn} className="mb-10" />
 
       {/* ── The number ─────────────────────────────────────────────────── */}
       <Section id="the-number" title="The number">
@@ -62,7 +68,7 @@ export function CpiExplainerView({ explainer }: { explainer: Explainer }) {
             </p>
           </div>
           <div className="card p-5">
-            <p className="text-sm text-slate-500 dark:text-slate-400">Change from {explainer.previousPeriod}</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">Monthly change in prices, {monthSpan(explainer.previousPeriod, explainer.period)}</p>
             <p className="stat-value mt-1">
               <FigureValue figure={monthly} source={release} />
             </p>
@@ -74,7 +80,7 @@ export function CpiExplainerView({ explainer }: { explainer: Explainer }) {
         <p className="mt-4 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
           Annual inflation compares prices in {explainer.period} with prices in the same month a year earlier.
         </p>
-        <SourceDates source={release} checkedOn={checkedOn} location={annual.location} className="mt-3" />
+        <SourceNote source={release} location={annual.location} className="mt-3" />
       </Section>
 
       {/* ── What moved it ──────────────────────────────────────────────── */}
@@ -129,9 +135,11 @@ export function CpiExplainerView({ explainer }: { explainer: Explainer }) {
           </table>
           <div className="px-5 pb-4 pt-2">
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              The residual is the part Stats SA does not assign to a group. Groups not listed here do not appear in the table.
+              The release lists a residual row but does not explain it. Table C does not list clothing and footwear,
+              or furnishings, household equipment and routine maintenance, although both are in the CPI (Table E, page 6).
+              The release does not say why they are left out of Table C.
             </p>
-            <SourceDates source={release} checkedOn={checkedOn} location={first.current.location} className="mt-2" />
+            <SourceNote source={release} location={first.current.location} className="mt-2" />
           </div>
         </div>
 
@@ -150,7 +158,7 @@ export function CpiExplainerView({ explainer }: { explainer: Explainer }) {
         <blockquote className="border-l-4 border-brand-400 bg-brand-50/60 px-5 py-4 dark:bg-brand-950/20">
           <p className="text-lg leading-relaxed text-slate-800 dark:text-slate-100">&ldquo;{explainer.quote.text}&rdquo;</p>
         </blockquote>
-        <SourceDates source={release} checkedOn={explainer.quote.checkedOn} location={explainer.quote.location} className="mt-3" />
+        <SourceNote source={release} location={explainer.quote.location} className="mt-3" />
       </Section>
 
       {/* ── What it means in rands ─────────────────────────────────────── */}
@@ -177,7 +185,7 @@ export function CpiExplainerView({ explainer }: { explainer: Explainer }) {
             )
           })}
         </div>
-        <SourceDates source={release} checkedOn={checkedOn} className="mt-3" />
+        <SourceNote source={release} location="Table A, page 3 and Table E, page 7" className="mt-3" />
       </Section>
 
       {/* ── What it covers ─────────────────────────────────────────────── */}
@@ -199,7 +207,7 @@ export function CpiExplainerView({ explainer }: { explainer: Explainer }) {
             </li>
           ))}
         </ul>
-        <SourceDates source={release} checkedOn={checkedOn} className="mt-4" />
+        <SourceNote source={release} location="Key findings, page 2; Table A, page 3; Table F, page 8; Glossary, page 9" className="mt-4" />
       </Section>
 
       {/* ── History ────────────────────────────────────────────────────── */}
@@ -209,7 +217,7 @@ export function CpiExplainerView({ explainer }: { explainer: Explainer }) {
           source says the coverage or the method changes, the chart marks the join.
         </p>
         <CpiHistoryChart />
-        <SourceDates source={history} checkedOn={explainer.history.checkedOn} location={explainer.history.location} className="mt-3" />
+        <SourceNote source={history} location={explainer.history.location} className="mt-3" />
         <details className="mt-3 text-xs text-slate-500 dark:text-slate-400">
           <summary className="cursor-pointer font-medium text-slate-600 dark:text-slate-300">About this series</summary>
           <ul className="mt-2 list-disc space-y-1 pl-5">
@@ -229,7 +237,7 @@ export function CpiExplainerView({ explainer }: { explainer: Explainer }) {
           so earlier years are not available.
         </p>
         <ValueCalculator />
-        <SourceDates source={history} checkedOn={explainer.history.checkedOn} location="Table B1, page 1" className="mt-3" />
+        <SourceNote source={history} location="Table B1, page 1" className="mt-3" />
       </Section>
 
       {/* ── Links ──────────────────────────────────────────────────────── */}
@@ -256,8 +264,9 @@ export function CpiExplainerView({ explainer }: { explainer: Explainer }) {
           Stats SA expects to publish the {explainer.nextRelease.period} figures on{' '}
           <time dateTime={explainer.nextRelease.date}>{formatLongDate(explainer.nextRelease.date)}</time>.
         </p>
-        <SourceDates source={release} checkedOn={checkedOn} location={explainer.nextRelease.location} className="mt-2" />
-        <p className="mt-6 border-t border-slate-200 pt-4 text-xs leading-relaxed text-slate-500 dark:border-slate-800 dark:text-slate-400">
+        <SourceNote source={release} location={explainer.nextRelease.location} className="mt-2" />
+        <SourceCitations sources={explainer.sources} checkedOn={checkedOn} className="mt-6" />
+        <p className="mt-4 text-xs leading-relaxed text-slate-500 dark:border-slate-800 dark:text-slate-400">
           Source of the basic data: Stats SA. The rand examples, the calculator and the highest and lowest points on
           the chart are SA Data Hub&apos;s own calculations from that data.
         </p>
