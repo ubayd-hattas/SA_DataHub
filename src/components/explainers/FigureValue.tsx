@@ -1,5 +1,7 @@
 import type { ExplainerSource, SourcedFigure } from '@/lib/explainers'
 import { formatFigure, formatLongDate } from '@/lib/explainers'
+import { SourceLine } from '@/components/editorial/SourceLine'
+import { formatDecimal } from '@/lib/format'
 import { cn } from '@/lib/utils'
 
 /**
@@ -29,12 +31,12 @@ export function FigureValue({
       title={`${where}. Source released ${formatLongDate(source.releasedOn)}. Checked on SA Data Hub ${formatLongDate(figure.checkedOn)}.`}
       className={cn('tabular-nums', className)}
     >
-      {plain ? figure.value.toFixed(1) : formatFigure(figure)}
+      {plain ? formatDecimal(figure.value) : formatFigure(figure)}
     </span>
   )
 }
 
-/** The two dates shown with every figure or group of figures. */
+/** The source line shown with every figure or group of figures. */
 export function SourceDates({
   source,
   checkedOn,
@@ -47,19 +49,14 @@ export function SourceDates({
   className?: string
 }) {
   return (
-    <p className={cn('text-xs leading-relaxed text-slate-500 dark:text-slate-400', className)}>
-      <span className="font-medium text-slate-600 dark:text-slate-300">Source:</span> {source.publisher},{' '}
-      {source.title}
-      {source.code ? ` (${source.code})` : ''}
-      {location ? `, ${location}` : ''}.{' '}
-      <span className="whitespace-nowrap">
-        <span className="font-medium text-slate-600 dark:text-slate-300">Source released</span>{' '}
-        <time dateTime={source.releasedOn}>{formatLongDate(source.releasedOn)}</time>.
-      </span>{' '}
-      <span className="whitespace-nowrap">
-        <span className="font-medium text-slate-600 dark:text-slate-300">Checked on SA Data Hub</span>{' '}
-        <time dateTime={checkedOn}>{formatLongDate(checkedOn)}</time>.
-      </span>
-    </p>
+    <SourceLine
+      publisher={source.publisher}
+      title={source.title}
+      code={source.code}
+      location={location}
+      releasedOn={source.releasedOn}
+      checkedOn={checkedOn}
+      className={className}
+    />
   )
 }

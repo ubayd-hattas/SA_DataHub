@@ -10,18 +10,19 @@ import {
   Tooltip,
   ResponsiveContainer,
   ReferenceLine,
-  ReferenceDot,
 } from 'recharts'
+import { ChartFigure } from '@/components/editorial/ChartFigure'
 import { ERAS, eraPoints, joinsInRange, peakAndTrough, type ChartPoint, type EraId } from '@/lib/cpi-history'
+import { formatPercent } from '@/lib/format'
 import { cn } from '@/lib/utils'
 
 function HistoryTooltip({ active, payload }: any) {
   if (!active || !payload?.length) return null
   const point: ChartPoint = payload[0].payload
   return (
-    <div className="rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-lg dark:border-slate-700 dark:bg-slate-900">
-      <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">{point.label}</p>
-      <p className="font-mono text-sm font-medium tabular-nums text-slate-900 dark:text-white">{point.value.toFixed(1)}%</p>
+    <div className="rounded border border-rule bg-paper px-3 py-2">
+      <p className="text-caption text-muted">{point.label}</p>
+      <p className="text-small font-medium tabular-nums text-ink">{formatPercent(point.value)}</p>
     </div>
   )
 }
@@ -39,7 +40,37 @@ function yearTicks(points: ChartPoint[]): string[] {
   return ticks
 }
 
-export function CpiHistoryChart() {
+/**
+ * Draws a dot and a direct label at the highest and lowest points only.
+ * Every other point on the line gets no dot.
+ */
+function extremeDot(peakKey: string | undefined, troughKey: string | undefined) {
+  function ExtremeDot({ cx, cy, payload }: { cx?: number; cy?: number; payload?: ChartPoint }) {
+    if (cx == null || cy == null || !payload) return <g />
+    const isPeak = payload.key === peakKey
+    if (!isPeak && payload.key !== troughKey) return <g />
+    return (
+      <g>
+        <circle cx={cx} cy={cy} r={4} fill="currentColor" stroke="var(--paper)" strokeWidth={2} />
+        {/* The peak label sits left of its dot, clear of the join labels along the top. */}
+        <text
+          x={isPeak ? cx - 8 : cx + 8}
+          y={isPeak ? cy + 4 : cy + 16}
+          textAnchor={isPeak ? 'end' : 'start'}
+          fill="var(--ink)"
+          fontSize={12}
+          fontWeight={600}
+          style={{ fontVariantNumeric: 'tabular-nums' }}
+        >
+          {formatPercent(payload.value)}
+        </text>
+      </g>
+    )
+  }
+  return ExtremeDot
+}
+
+export function CpiHistoryChart({ source }: { source: React.ReactNode }) {
   const [eraId, setEraId] = useState<EraId>('all')
   const [showTable, setShowTable] = useState(false)
   const era = ERAS.find((e) => e.id === eraId) ?? ERAS[0]
@@ -51,133 +82,131 @@ export function CpiHistoryChart() {
 
   const what = era.resolution === 'annual' ? 'annual average inflation rate' : 'year-on-year inflation rate, by month'
   const hasNegative = points.some((p) => p.value < 0)
+  const title = extremes
+    ? `Inflation was highest at ${formatPercent(extremes.peak.value)} in ${extremes.peak.label} and lowest at ${formatPercent(extremes.trough.value)} in ${extremes.trough.label}`
+    : `Headline CPI, ${what}`
 
   return (
-    <div className="card p-5">
-      <div className="mb-4 flex flex-wrap gap-2" role="group" aria-label="Choose a period">
-        {ERAS.map((e) => (
+    <ChartFigure
+      title={title}
+      controls={
+        <div className="flex flex-wrap gap-x-5 gap-y-1" role="group" aria-label="Choose a period">
+          {ERAS.map((e) => (
+            <button
+              key={e.id}
+              type="button"
+              onClick={() => setEraId(e.id)}
+              aria-pressed={e.id === eraId}
+              className={cn(
+                'border-b-2 py-1.5 text-small focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
+                e.id === eraId ? 'border-accent font-medium text-ink' : 'border-transparent text-muted hover:text-ink',
+              )}
+            >
+              {e.label}
+            </button>
+          ))}
+        </div>
+      }
+      notes={
+        <>
+          <p>
+            Headline CPI, {what} ({era.label.toLowerCase()}). Highest and lowest points are worked out from the data shown.
+          </p>
+          {joins.map(({ join }) => (
+            <p key={join.year}>
+              <span className="font-medium text-ink">{join.year}, {join.label.toLowerCase()}:</span> {join.detail}
+            </p>
+          ))}
+        </>
+      }
+      source={
+        <>
+          {source}
           <button
-            key={e.id}
             type="button"
-            onClick={() => setEraId(e.id)}
-            aria-pressed={e.id === eraId}
-            className={cn(
-              'rounded-full border px-3 py-1.5 text-xs font-medium transition-colors',
-              e.id === eraId
-                ? 'border-brand-600 bg-brand-600 text-white dark:border-brand-500 dark:bg-brand-500 dark:text-slate-950'
-                : 'border-slate-200 text-slate-600 hover:border-slate-300 hover:text-slate-900 dark:border-slate-700 dark:text-slate-300 dark:hover:text-white',
-            )}
+            onClick={() => setShowTable((v) => !v)}
+            aria-expanded={showTable}
+            className="mt-3 text-small text-accent underline decoration-accent/40 underline-offset-4 hover:decoration-accent"
           >
-            {e.label}
+            {showTable ? 'Hide the numbers' : 'Show the numbers as a table'}
           </button>
-        ))}
-      </div>
-
-      <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200">
-        Headline CPI, {what} ({era.label.toLowerCase()})
-      </h3>
-      {extremes && (
-        <p className="mb-3 mt-1 text-xs text-slate-500 dark:text-slate-400">
-          Highest in this range: <span className="font-medium tabular-nums text-slate-700 dark:text-slate-200">{extremes.peak.value.toFixed(1)}%</span>{' '}
-          ({extremes.peak.label}). Lowest: <span className="font-medium tabular-nums text-slate-700 dark:text-slate-200">{extremes.trough.value.toFixed(1)}%</span>{' '}
-          ({extremes.trough.label}). Worked out from the data shown.
-        </p>
-      )}
-
+          {showTable && (
+            <div className="mt-3 max-h-80 overflow-y-auto border-y border-rule">
+              <table className="w-full text-left text-caption">
+                <thead className="sticky top-0 bg-paper">
+                  <tr>
+                    <th scope="col" className="py-2 pr-3 font-semibold">{era.resolution === 'annual' ? 'Year' : 'Month'}</th>
+                    <th scope="col" className="px-3 py-2 text-right font-semibold">Inflation rate</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {points.map((p) => (
+                    <tr key={p.key} className="border-t border-rule">
+                      <td className="py-1.5 pr-3">{p.label}</td>
+                      <td className="px-3 py-1.5 text-right tabular-nums">{formatPercent(p.value)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </>
+      }
+    >
       <div
         role="img"
-        aria-label={`Line chart of the ${what}, ${era.label}.${extremes ? ` Highest ${extremes.peak.value.toFixed(1)}% in ${extremes.peak.label}, lowest ${extremes.trough.value.toFixed(1)}% in ${extremes.trough.label}.` : ''}`}
-        className="text-brand-600 dark:text-brand-400"
+        aria-label={`Line chart of the ${what}, ${era.label}. ${title}.`}
+        className="text-accent"
       >
         <ResponsiveContainer width="100%" height={320}>
-          <LineChart data={points} margin={{ top: 28, right: 12, left: -16, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="currentColor" className="text-slate-100 dark:text-slate-800" vertical={false} />
+          <LineChart data={points} margin={{ top: 28, right: 28, left: -16, bottom: 0 }}>
+            <CartesianGrid stroke="currentColor" className="text-rule" vertical={false} />
             <XAxis
               dataKey="key"
               ticks={ticks}
               tickFormatter={(key: string) => key.slice(0, 4)}
-              tick={{ fontSize: 11, fill: 'currentColor' }}
-              className="text-slate-400"
+              tick={{ fontSize: 12, fill: 'currentColor' }}
+              className="text-muted"
               tickLine={false}
               axisLine={false}
               minTickGap={16}
             />
             <YAxis
-              tick={{ fontSize: 11, fill: 'currentColor' }}
-              className="text-slate-400"
+              tick={{ fontSize: 12, fill: 'currentColor' }}
+              className="text-muted"
               tickLine={false}
               axisLine={false}
               tickFormatter={(v: number) => `${v}%`}
             />
             <Tooltip content={<HistoryTooltip />} />
-            {hasNegative && <ReferenceLine y={0} stroke="#94a3b8" strokeWidth={1} />}
-            {joins.map(({ join, key }) => (
-              <ReferenceLine
-                key={join.year}
-                x={key}
-                stroke="#94a3b8"
-                strokeDasharray="4 3"
-                label={{ value: join.label, position: 'insideTopLeft', fill: '#64748b', fontSize: 10, offset: 6 }}
-              />
-            ))}
+            {hasNegative && <ReferenceLine y={0} stroke="var(--muted)" strokeWidth={1} />}
+            {joins.map(({ join, key }) => {
+              // Labels in the right half sit to the left of the line so they are not cut off.
+              const rightHalf = points.findIndex((p) => p.key === key) > points.length / 2
+              return (
+                <ReferenceLine
+                  key={join.year}
+                  x={key}
+                  stroke="var(--muted)"
+                  strokeDasharray="4 3"
+                  // Only the year fits on a phone; the notes under the chart say what changed.
+                  label={{ value: String(join.year), position: rightHalf ? 'insideTopRight' : 'insideTopLeft', fill: 'var(--muted)', fontSize: 11, offset: 6 }}
+                />
+              )
+            })}
             <Line
               type="linear"
               dataKey="value"
               name="Inflation"
               stroke="currentColor"
               strokeWidth={2}
-              dot={false}
+              dot={extremeDot(extremes?.peak.key, extremes?.trough.key)}
               activeDot={{ r: 4 }}
               isAnimationActive={false}
             />
-            {extremes && (
-              <>
-                <ReferenceDot x={extremes.peak.key} y={extremes.peak.value} r={4} fill="currentColor" strokeWidth={2} className="stroke-white dark:stroke-slate-900" />
-                <ReferenceDot x={extremes.trough.key} y={extremes.trough.value} r={4} fill="currentColor" strokeWidth={2} className="stroke-white dark:stroke-slate-900" />
-              </>
-            )}
           </LineChart>
         </ResponsiveContainer>
       </div>
-
-      {joins.length > 0 && (
-        <ul className="mt-3 space-y-1 text-xs text-slate-500 dark:text-slate-400">
-          {joins.map(({ join }) => (
-            <li key={join.year}>
-              <span className="font-medium text-slate-600 dark:text-slate-300">{join.year}, {join.label.toLowerCase()}:</span> {join.detail}
-            </li>
-          ))}
-        </ul>
-      )}
-
-      <button
-        type="button"
-        onClick={() => setShowTable((v) => !v)}
-        aria-expanded={showTable}
-        className="mt-4 text-xs font-medium text-brand-600 hover:text-brand-700 dark:text-brand-400"
-      >
-        {showTable ? 'Hide the numbers' : 'Show the numbers as a table'}
-      </button>
-      {showTable && (
-        <div className="mt-3 max-h-80 overflow-y-auto rounded-lg border border-slate-200 dark:border-slate-800">
-          <table className="w-full text-left text-xs">
-            <thead className="sticky top-0 bg-slate-50 dark:bg-slate-800">
-              <tr>
-                <th scope="col" className="px-3 py-2 font-semibold">{era.resolution === 'annual' ? 'Year' : 'Month'}</th>
-                <th scope="col" className="px-3 py-2 text-right font-semibold">Inflation rate</th>
-              </tr>
-            </thead>
-            <tbody>
-              {points.map((p) => (
-                <tr key={p.key} className="border-t border-slate-100 dark:border-slate-800">
-                  <td className="px-3 py-1.5">{p.label}</td>
-                  <td className="px-3 py-1.5 text-right tabular-nums">{p.value.toFixed(1)}%</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </div>
+    </ChartFigure>
   )
 }
