@@ -11,7 +11,7 @@
     {
       "id": "youth-unemployment-narrow",
       "categoryId": "unemployment",
-      "title": "Youth Unemployment Rate (15–34)",
+      "title": "Youth unemployment rate, ages 15 to 34",
       "value": "47.4%",
       "rawValue": 47.4,
       "unit": "%",
@@ -110,7 +110,7 @@
     {
       "id": "youth-unemployment-1524",
       "categoryId": "unemployment",
-      "title": "Youth Unemployment Rate (15–24)",
+      "title": "Youth unemployment rate, ages 15 to 24",
       "value": "62.8%",
       "rawValue": 62.8,
       "unit": "%",
@@ -209,7 +209,7 @@
     {
       "id": "youth-unemployment-expanded",
       "categoryId": "unemployment",
-      "title": "Youth Unemployment — Expanded (15–34)",
+      "title": "Expanded youth unemployment rate, ages 15 to 34",
       "value": "60.8%",
       "rawValue": 60.8,
       "unit": "%",
@@ -300,7 +300,7 @@
     {
       "id": "youth-neet-rate",
       "categoryId": "unemployment",
-      "title": "NEET Rate (15–24)",
+      "title": "Not in employment, education or training, ages 15 to 24",
       "value": "37.2%",
       "rawValue": 37.2,
       "unit": "%",

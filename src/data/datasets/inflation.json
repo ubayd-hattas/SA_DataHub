@@ -13,7 +13,7 @@
     {
       "id": "cpi-headline",
       "categoryId": "inflation",
-      "title": "Headline Inflation (CPI)",
+      "title": "Headline inflation",
       "value": "4.5%",
       "rawValue": 4.5,
       "unit": "%",
@@ -109,7 +109,7 @@
     {
       "id": "food-inflation",
       "categoryId": "inflation",
-      "title": "Food & Non-Alcoholic Beverages CPI",
+      "title": "Food and non-alcoholic beverages inflation",
       "value": "1.2%",
       "rawValue": 1.2,
       "unit": "%",
@@ -205,7 +205,7 @@
     {
       "id": "annual-cpi-avg",
       "categoryId": "inflation",
-      "title": "Annual Average CPI (Full Year)",
+      "title": "Annual average inflation",
       "value": "3.2%",
       "rawValue": 3.2,
       "unit": "%",

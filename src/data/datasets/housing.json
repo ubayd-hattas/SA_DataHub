@@ -11,7 +11,7 @@
     {
       "id": "housing-access-piped-water",
       "categoryId": "housing",
-      "title": "Access to Piped Water (In-dwelling)",
+      "title": "Homes with piped water inside",
       "value": "59.7%",
       "rawValue": 59.7,
       "unit": "%",
@@ -51,7 +51,7 @@
     {
       "id": "housing-electricity",
       "categoryId": "housing",
-      "title": "Households with Electricity (for Lighting)",
+      "title": "Homes using electricity for lighting",
       "value": "94.7%",
       "rawValue": 94.7,
       "unit": "%",
@@ -99,7 +99,7 @@
     {
       "id": "housing-formal-dwellings",
       "categoryId": "housing",
-      "title": "Households in Formal Dwellings",
+      "title": "Households in formal dwellings",
       "value": "88.5%",
       "rawValue": 88.5,
       "unit": "%",

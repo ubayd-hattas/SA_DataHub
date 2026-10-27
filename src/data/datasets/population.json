@@ -12,7 +12,7 @@
     {
       "id": "population-total",
       "categoryId": "population",
-      "title": "Total Population",
+      "title": "Population, mid-year estimate",
       "value": "63.5M",
       "rawValue": 63522380,
       "unit": "people",
@@ -88,7 +88,7 @@
     {
       "id": "population-urban",
       "categoryId": "population",
-      "title": "Urban Population Share",
+      "title": "Share of people living in urban areas",
       "value": "63.7%",
       "rawValue": 63.7,
       "unit": "%",
@@ -108,7 +108,7 @@
     {
       "id": "population-median-age",
       "categoryId": "population",
-      "title": "Median Age",
+      "title": "Median age",
       "value": "28.0",
       "rawValue": 28.0,
       "unit": "years",
