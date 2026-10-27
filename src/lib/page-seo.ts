@@ -1,6 +1,8 @@
 import type { MunicipalityRecord, ProvinceData } from '@/types'
 import { getMunicipalitiesByProvince } from '@/data/mock'
 import { getProvinceCodeFromSlug } from '@/lib/utils'
+import { has2011Comparison } from '@/data/municipal-boundaries'
+import { percentChange } from '@/lib/municipality-profile'
 
 const MAX_DESCRIPTION = 160
 
@@ -13,10 +15,13 @@ function trimToSentence(text: string, max = MAX_DESCRIPTION): string {
 
 /**
  * Municipality title. The province is included because municipality names are
- * not unique (e.g. two "Emalahleni" municipalities: EC136 and MP312).
+ * not unique (e.g. two "Emalahleni" municipalities: EC136 and MP312). Both
+ * censuses are named where the profile compares them.
  */
-export function municipalityTitle(m: Pick<MunicipalityRecord, 'name' | 'provinceName'>): string {
-  return `${m.name} Municipality, ${m.provinceName} — Census 2022 Profile`
+export function municipalityTitle(m: Pick<MunicipalityRecord, 'id' | 'name' | 'provinceName'>): string {
+  return has2011Comparison(m.id)
+    ? `${m.name} Municipality, ${m.provinceName}: Census 2011 and 2022`
+    : `${m.name} Municipality, ${m.provinceName}: Census 2022 Profile`
 }
 
 /**
@@ -24,19 +29,15 @@ export function municipalityTitle(m: Pick<MunicipalityRecord, 'name' | 'province
  * Always ends on a complete sentence and stays within 160 characters.
  */
 export function municipalityDescription(m: MunicipalityRecord): string {
-  const facts: string[] = []
-  if (m.population2022 > 0) facts.push(`population ${m.population2022.toLocaleString('en-ZA')}`)
-  if (m.populationGrowthRate != null && isFinite(m.populationGrowthRate)) {
-    facts.push(`${m.populationGrowthRate >= 0 ? '+' : ''}${m.populationGrowthRate.toFixed(1)}% since 2011`)
+  const pop2022 = m.population2022.toLocaleString('en-ZA')
+  const lead = `${m.name} (${m.id}), ${m.provinceName}: Census 2022 counted ${pop2022} people`
+  const services = `${m.pctFormalDwelling2022.toFixed(1)}% of households in formal dwellings.`
+  if (has2011Comparison(m.id) && m.population2011 > 0) {
+    const change = percentChange(m.population2011, m.population2022)
+    const vs2011 = `${change >= 0 ? 'up' : 'down'} ${Math.abs(change).toFixed(1)}% from ${m.population2011.toLocaleString('en-ZA')} in Census 2011`
+    return trimToSentence(`${lead}, ${vs2011}. ${services}`)
   }
-  if (m.pctFormalDwelling2022 != null && isFinite(m.pctFormalDwelling2022)) {
-    facts.push(`${m.pctFormalDwelling2022.toFixed(1)}% formal housing`)
-  }
-  if (m.pctFlushToilet2022 != null && isFinite(m.pctFlushToilet2022)) {
-    facts.push(`${m.pctFlushToilet2022.toFixed(1)}% flush toilet access`)
-  }
-  const lead = `${m.name} (${m.id}), ${m.provinceName}: Census 2022`
-  return trimToSentence(facts.length ? `${lead} ${facts.join(', ')}.` : `${lead} municipal profile.`)
+  return trimToSentence(`${lead} in ${m.households2022.toLocaleString('en-ZA')} households. ${services}`)
 }
 
 /** Province title. */

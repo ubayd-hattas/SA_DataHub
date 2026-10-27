@@ -285,8 +285,8 @@ export interface MunicipalityRecord {
 
   // ── Population (P1–P5) ────────────────────────────────────────────────────
   population2022: number      // P1: Total population 2022
-  population2011: number      // P1 boundary-aligned: Total population 2011
-  populationGrowthRate: number  // P4: % change 2011–2022
+  population2011: number      // P1: Total population 2011, from Census 2022 Provinces at a glance
+  populationGrowthRate: number  // P4: average yearly growth rate 2011 to 2022 (not the total change)
   areaKm2: number             // Geographic area km²
   populationDensity2022: number // P5: persons/km²
 
