@@ -46,24 +46,34 @@ export function StatChart({
   const labelled = new Set([points[0].label, points.at(-1)!.label, max.label])
 
   // Whole-number axis ticks from a rounded range: 3%, 4%, 5% rather than 3.25%, 4.55%.
+  // When a point sits close to the edge of that range, add a step so its label has room.
   const values = points.map((p) => p.value)
-  const domain: [number, number] = [Math.floor(Math.min(...values)), Math.ceil(Math.max(...values))]
+  const lo = Math.min(...values)
+  const hi = Math.max(...values)
+  const step = Math.max(1, Math.ceil((hi - lo) / 4))
+  const domain: [number, number] = [
+    Math.floor(lo) - (lo - Math.floor(lo) < 0.15 * (hi - lo || 1) ? step : 0),
+    Math.ceil(hi) + (Math.ceil(hi) - hi < 0.15 * (hi - lo || 1) ? step : 0),
+  ]
   const axisFmt = (v: number) => (unit === '%' ? `${v}%` : fmt(v))
 
   function PointLabel({ cx, cy, payload, index }: any) {
     if (cx == null || cy == null || !labelled.has(payload.label)) return <g key={index} />
+    const isFirst = index === 0
     const isLast = index === points.length - 1
-    // Put the label on the side away from the line: below where the line climbs past this point.
+    // The label goes on the side away from the line, clear of the marker:
+    // the peak sits centred above; an end point sits below if the line climbs away from it, above if it falls.
     const neighbour = points[isLast ? index - 1 : index + 1]
-    // The lowest point sits on the axis, so its label always goes above.
-    const below = neighbour && neighbour.value > payload.value && payload.value !== Math.min(...values)
+    const below = !isFirst && !isLast ? false : neighbour.value > payload.value
+    const x = isFirst ? cx + 8 : isLast ? cx - 8 : cx
+    const anchor = isFirst ? 'start' : isLast ? 'end' : 'middle'
     return (
       <g key={index}>
         <circle cx={cx} cy={cy} r={3.5} fill="currentColor" stroke="var(--paper)" strokeWidth={2} />
         <text
-          x={isLast ? cx - 6 : cx + 6}
-          y={below ? cy + 18 : cy - 9}
-          textAnchor={isLast ? 'end' : 'start'}
+          x={x}
+          y={below ? cy + 20 : cy - 10}
+          textAnchor={anchor}
           fill="var(--ink)"
           fontSize={12}
           fontWeight={600}
@@ -72,6 +82,16 @@ export function StatChart({
           {fmt(payload.value)}
         </text>
       </g>
+    )
+  }
+
+  // The first and last x-axis labels are anchored inward, so they stay inside the chart on a phone.
+  function XTick({ x, y, payload, index, visibleTicksCount }: any) {
+    const anchor = index === 0 ? 'start' : index === visibleTicksCount - 1 ? 'end' : 'middle'
+    return (
+      <text x={x} y={y + 12} textAnchor={anchor} fontSize={12} fill="currentColor">
+        {payload.value}
+      </text>
     )
   }
 
@@ -109,7 +129,7 @@ export function StatChart({
           {asLine ? (
             <LineChart data={points} margin={{ top: 24, right: 16, left: 0, bottom: 0 }}>
               <CartesianGrid stroke="currentColor" className="text-rule" vertical={false} />
-              <XAxis dataKey="label" tick={{ fontSize: 12, fill: 'currentColor' }} className="text-muted" tickLine={false} axisLine={false} interval="preserveStartEnd" minTickGap={24} />
+              <XAxis dataKey="label" tick={<XTick />} className="text-muted" tickLine={false} axisLine={false} interval="preserveStartEnd" minTickGap={24} />
               <YAxis tick={{ fontSize: 12, fill: 'currentColor' }} className="text-muted" tickLine={false} axisLine={false} width={64} tickFormatter={axisFmt} domain={domain} allowDecimals={false} />
               <Tooltip content={<ChartTooltip unit={unit} />} />
               <Line type="linear" dataKey="value" stroke="currentColor" strokeWidth={2} dot={<PointLabel />} activeDot={{ r: 4 }} isAnimationActive={false} />
