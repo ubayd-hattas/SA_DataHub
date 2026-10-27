@@ -11,7 +11,7 @@
     {
       "id": "lfpr-overall",
       "categoryId": "unemployment",
-      "title": "Labour Force Participation Rate",
+      "title": "Labour force participation rate",
       "value": "59.6%",
       "rawValue": 59.6,
       "unit": "%",
@@ -143,7 +143,7 @@
     {
       "id": "female-labour-participation",
       "categoryId": "unemployment",
-      "title": "Female Labour Force Participation Rate",
+      "title": "Labour force participation rate for women",
       "value": "54.9%",
       "rawValue": 54.9,
       "unit": "%",

@@ -22,7 +22,7 @@
     {
       "id": "repo-rate-sarb",
       "categoryId": "inflation",
-      "title": "Repo Rate",
+      "title": "Repo rate",
       "value": "7.25%",
       "rawValue": 7.25,
       "unit": "%",
@@ -166,7 +166,7 @@
     {
       "id": "prime-lending-rate",
       "categoryId": "gdp",
-      "title": "Prime Lending Rate",
+      "title": "Prime lending rate",
       "value": "10.75%",
       "rawValue": 10.75,
       "unit": "%",

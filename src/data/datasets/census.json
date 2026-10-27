@@ -11,7 +11,7 @@
     {
       "id": "census-households",
       "categoryId": "census",
-      "title": "Total Households",
+      "title": "Households counted",
       "value": "17.8M",
       "rawValue": 17828778,
       "unit": "households",
@@ -55,7 +55,7 @@
     {
       "id": "census-internet-access",
       "categoryId": "census",
-      "title": "Households with Internet Access",
+      "title": "Households with internet access",
       "value": "79.0%",
       "rawValue": 79.0,
       "unit": "%",
@@ -95,7 +95,7 @@
     {
       "id": "census-no-income",
       "categoryId": "census",
-      "title": "Individuals with No Income",
+      "title": "People aged 15 and older with no income",
       "value": "30.4%",
       "rawValue": 30.4,
       "unit": "%",
