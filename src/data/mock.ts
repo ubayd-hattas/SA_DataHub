@@ -51,7 +51,7 @@ export const categories: Category[] = [
   {
     id: 'unemployment',
     label: 'Unemployment',
-    description: 'Labour force participation, jobless rates and employment trends across provinces.',
+    description: 'The official unemployment rate, youth unemployment, young people not in employment, education or training, and labour force participation, for South Africa as a whole.',
     icon: 'Briefcase',
     color: 'text-orange-600 dark:text-orange-400',
     bgColor: 'bg-orange-50 dark:bg-orange-950/30',
@@ -59,8 +59,8 @@ export const categories: Category[] = [
   },
   {
     id: 'gdp',
-    label: 'GDP & Economy',
-    description: 'Gross domestic product, economic growth, interest rates and sectoral output data.',
+    label: 'GDP and economy',
+    description: 'Quarterly and annual GDP growth, the size of the economy, GDP per person, and the repo and prime lending rates.',
     icon: 'TrendingUp',
     color: 'text-brand-600 dark:text-brand-400',
     bgColor: 'bg-brand-50 dark:bg-brand-950/30',
@@ -68,8 +68,8 @@ export const categories: Category[] = [
   },
   {
     id: 'inflation',
-    label: 'Inflation & Prices',
-    description: 'Consumer price index, producer prices and purchasing power trends.',
+    label: 'Inflation and prices',
+    description: "Headline and food inflation, the annual average inflation rate, and the Reserve Bank's repo rate.",
     icon: 'ShoppingCart',
     color: 'text-red-600 dark:text-red-400',
     bgColor: 'bg-red-50 dark:bg-red-950/30',
@@ -78,7 +78,7 @@ export const categories: Category[] = [
   {
     id: 'crime',
     label: 'Crime',
-    description: 'Crime statistics by category, province and reporting period.',
+    description: 'Murders, contact crimes and robbery with aggravating circumstances reported to the police, by financial year.',
     icon: 'Shield',
     color: 'text-slate-600 dark:text-slate-400',
     bgColor: 'bg-slate-50 dark:bg-slate-950/30',
@@ -87,7 +87,7 @@ export const categories: Category[] = [
   {
     id: 'education',
     label: 'Education',
-    description: 'Matric pass rates, enrolment figures, literacy rates and tertiary education data.',
+    description: 'The matric pass rate, adult literacy and enrolment at public universities.',
     icon: 'GraduationCap',
     color: 'text-blue-600 dark:text-blue-400',
     bgColor: 'bg-blue-50 dark:bg-blue-950/30',
@@ -96,7 +96,7 @@ export const categories: Category[] = [
   {
     id: 'population',
     label: 'Population',
-    description: 'Demographics, age distribution, migration and household composition.',
+    description: 'The mid-year population estimate, the share of people living in urban areas, and the median age.',
     icon: 'Users',
     color: 'text-violet-600 dark:text-violet-400',
     bgColor: 'bg-violet-50 dark:bg-violet-950/30',
@@ -105,7 +105,7 @@ export const categories: Category[] = [
   {
     id: 'housing',
     label: 'Housing',
-    description: 'Home ownership, informal settlements, housing delivery and access to services.',
+    description: 'Households with piped water inside, electricity for lighting, and formal dwellings, from the census.',
     icon: 'Home',
     color: 'text-amber-600 dark:text-amber-400',
     bgColor: 'bg-amber-50 dark:bg-amber-950/30',
@@ -114,7 +114,7 @@ export const categories: Category[] = [
   {
     id: 'census',
     label: 'Census 2022',
-    description: 'Results from the South Africa Census 2022 conducted by Stats SA.',
+    description: 'Households, internet access and people with no income, from Census 2022 and earlier censuses.',
     icon: 'BarChart3',
     color: 'text-teal-600 dark:text-teal-400',
     bgColor: 'bg-teal-50 dark:bg-teal-950/30',

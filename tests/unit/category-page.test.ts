@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { getStatById, statistics } from '@/data/mock'
+import { categories, getStatById, statistics } from '@/data/mock'
 import { chartTakeaway, describeChange, latestPeriod, statDates } from '@/lib/stat-summary'
 import { formatSeriesValue } from '@/lib/format'
 
@@ -26,6 +26,20 @@ describe('topic page order', () => {
   })
 })
 
+describe('statistic titles and topic descriptions', () => {
+  it.each(statistics.map((s) => [s.id, s.title] as const))('%s has a sentence-case title: %s', (_id, title) => {
+    // Only the first word, acronyms (GDP) and numbers may start with a capital.
+    for (const word of title.split(' ').slice(1)) expect(word, title).not.toMatch(/^[A-Z][a-z]/)
+    expect(title).not.toMatch(/[—&]/)
+  })
+
+  it.each(categories.map((c) => [c.id, c] as const))('%s describes only what the page shows', (id, category) => {
+    // Topics the old descriptions promised but no statistic covers.
+    expect(category.description).not.toMatch(/producer|province|migration|informal|ownership|sectoral|delivery|age distribution/i)
+    expect(statistics.some((s) => s.categoryId === id)).toBe(true)
+  })
+})
+
 describe('every statistic can be summarised', () => {
   it.each(statistics.map((s) => [s.id, s] as const))('%s', (_id, stat) => {
     // Throws if a series does not end at its headline value.
@@ -37,7 +51,7 @@ describe('every statistic can be summarised', () => {
 describe('chart takeaways', () => {
   it('state the change and the peak, worked out from the series', () => {
     expect(chartTakeaway(getStatById('cpi-headline')!)).toBe(
-      'Headline Inflation (CPI) rose from 2.8% in May 2025 to 4.5% in Sep 2026, after peaking at 5.0% in Jun 2026',
+      'Headline inflation rose from 2.8% in May 2025 to 4.5% in Sep 2026, after peaking at 5.0% in Jun 2026',
     )
   })
 
