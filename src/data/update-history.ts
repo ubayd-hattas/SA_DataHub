@@ -43,7 +43,7 @@ export const UPDATE_HISTORY: UpdateHistoryEntry[] = [
     datasetId: 'youth-unemployment',
     datasetLabel: 'Youth Unemployment',
     type: 'data-update',
-    summary: 'Refreshed to QLFS Q2 2026 (15–34: 47.4%; 15–24: 62.8%). Eight Q1 2024–Q4 2025 points for 15–24 corrected. Q1 2026 (15–34) is a derived value, not published directly. youth-unemployment-expanded headline (60.8%) is flagged unsupported — owner decision pending.',
+    summary: 'Refreshed to QLFS Q2 2026 (15–34: 47.4%; 15–24: 62.8%). Eight Q1 2024–Q4 2025 points for 15–24 corrected. Q1 2026 (15–34) is a derived value, not published directly. youth-unemployment-expanded headline (60.8%) is flagged unsupported; owner decision pending.',
     source: 'https://www.statssa.gov.za/publications/P0211/P02112ndQuarter2026.pdf',
   },
   {
@@ -59,7 +59,7 @@ export const UPDATE_HISTORY: UpdateHistoryEntry[] = [
     datasetId: 'inflation',
     datasetLabel: 'Inflation & CPI',
     type: 'data-update',
-    summary: 'CPI updated to September 2026 (headline 4.5%, food 1.2%; published 2026-10-21). Repo rate corrected from 6.75% to 7.25% (SARB MPC 2026-09-23). Correction: July 2026 MPC was a hold, not a hike — hike was 28 May 2026. Pre-April 2026 monthly CPI points not re-verified.',
+    summary: 'CPI updated to September 2026 (headline 4.5%, food 1.2%; published 2026-10-21). Repo rate corrected from 6.75% to 7.25% (SARB MPC 2026-09-23). Correction: July 2026 MPC was a hold, not a hike. The hike was on 28 May 2026. Pre-April 2026 monthly CPI points not re-verified.',
     source: 'https://www.statssa.gov.za/?page_id=1854&PPN=P0141',
   },
   {
@@ -67,7 +67,7 @@ export const UPDATE_HISTORY: UpdateHistoryEntry[] = [
     datasetId: 'interest-rates',
     datasetLabel: 'Interest Rates',
     type: 'correction',
-    summary: 'Corrected repo rate from 7.00% to 7.25% and prime from 10.50% to 10.75% (SARB MPC 2026-09-23). Corrected a prior entry that recorded a July 2026 hike — July was a hold; hike was 28 May 2026 (effective 29 May). May and July 2026 SARB statements not yet verified from primary source.',
+    summary: 'Corrected repo rate from 7.00% to 7.25% and prime from 10.50% to 10.75% (SARB MPC 2026-09-23). Corrected a prior entry that recorded a July 2026 hike: July was a hold, and the hike was on 28 May 2026 (effective 29 May). May and July 2026 SARB statements not yet verified from primary source.',
     source: 'https://www.resbank.co.za/en/home/what-we-do/monetary-policy/monetary-policy-decisions',
   },
   {
@@ -115,7 +115,7 @@ export const UPDATE_HISTORY: UpdateHistoryEntry[] = [
     datasetId: 'census',
     datasetLabel: 'Census 2022',
     type: 'correction',
-    summary: 'Corrected to verified Census 2022 values (households, internet access). census-no-income (30.4%) is unverified — Stats SA withheld the income theme from Census 2022; value should be sourced or removed (D6a).',
+    summary: 'Corrected to verified Census 2022 values (households, internet access). census-no-income (30.4%) is unverified: Stats SA withheld the income theme from Census 2022; value should be sourced or removed (D6a).',
     source: 'https://www.statssa.gov.za/census/census_2022/',
   },
 

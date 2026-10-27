@@ -61,7 +61,7 @@ describe('chart takeaways', () => {
 
   it('describe the latest change in the series unit', () => {
     // The repo-rate series has 7.25, so every value in it gets two decimals.
-    expect(describeChange(getStatById('repo-rate')!)).toEqual({ text: 'Up from 7.00% in Jul 2026.', tone: 'neutral' })
+    expect(describeChange(getStatById('repo-rate-sarb')!)).toEqual({ text: 'Up from 7.00% in Jul 2026.', tone: 'neutral' })
   })
 })
 

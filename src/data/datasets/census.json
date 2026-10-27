@@ -18,7 +18,7 @@
       "change": 23.4,
       "changeLabel": "since Census 2011",
       "trend": "up",
-      "description": "Total private households counted in Census 2022: 17,828,778, up from 14.4 million in 2011 (+23.4%). Average household size declined from 3.6 persons in 2011 to 3.5 in 2022, reflecting changing family structures and increasing urbanisation.",
+      "description": "Total private households counted in Census 2022: 17,828,778, up from 14.4 million in 2011 (+23.4%). Average household size declined from 3.6 persons in 2011 to 3.5 in 2022.",
       "source": {
         "name": "Statistics South Africa",
         "shortName": "Stats SA",
@@ -102,7 +102,7 @@
       "change": -5.1,
       "changeLabel": "since Census 2011",
       "trend": "down",
-      "description": "Percentage of individuals 15 years and older who reported no income in Census 2022. This includes the unemployed, students, and those who are economically inactive. The decline reflects expanding social grants and labour market changes.",
+      "description": "Percentage of individuals 15 years and older who reported no income in Census 2022. This includes the unemployed, students, and those who are economically inactive.",
       "source": {
         "name": "Statistics South Africa",
         "shortName": "Stats SA",

@@ -24,7 +24,7 @@
       "change": -0.6,
       "changeLabel": "from Q1 2026 (0.4%)",
       "trend": "down",
-      "description": "South Africa's real GDP contracted 0.2% quarter-on-quarter in Q2 2026 (seasonally adjusted, constant 2015 prices), after growth of 0.4% in Q1 — ending six consecutive quarters of expansion. Mining (-3.0%), trade (-1.9%) and manufacturing (-1.8%) were the main drags; finance (+0.3%) and personal services (+0.6%) grew. On the expenditure side, household consumption rose 0.4%, fixed investment fell 0.2% and net exports subtracted 1.1 percentage points. The estimate is preliminary: Stats SA's rebased (base year 2022) and benchmarked national accounts, expected in October 2026, may revise it.",
+      "description": "South Africa's real GDP contracted 0.2% quarter-on-quarter in Q2 2026 (seasonally adjusted, constant 2015 prices), after growth of 0.4% in Q1, ending six consecutive quarters of expansion. Mining (-3.0%), trade (-1.9%) and manufacturing (-1.8%) were the main drags; finance (+0.3%) and personal services (+0.6%) grew. On the expenditure side, household consumption rose 0.4%, fixed investment fell 0.2% and net exports subtracted 1.1 percentage points. The estimate is preliminary: Stats SA's rebased (base year 2022) and benchmarked national accounts, expected in October 2026, may revise it.",
       "source": {
         "name": "Statistics South Africa",
         "shortName": "Stats SA",
@@ -196,7 +196,7 @@
       "change": 4.3,
       "changeLabel": "from 2024",
       "trend": "up",
-      "description": "South Africa's nominal GDP for 2025 at current prices. Nominal growth reflects both real output and price-level changes. The economy remains the second largest in Africa by nominal GDP, behind Nigeria.",
+      "description": "South Africa's nominal GDP for 2025 at current prices. Nominal GDP changes with both real output and prices. The economy remains the second largest in Africa by nominal GDP, behind Nigeria.",
       "source": {
         "name": "Statistics South Africa",
         "shortName": "Stats SA",
