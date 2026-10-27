@@ -8,7 +8,7 @@
  */
 
 import { Statistic, Insight, InsightSentiment, DataPoint } from '@/types'
-import { getGoodDirection, judgeMove } from '@/lib/utils'
+import { formatChange, getGoodDirection, judgeMove } from '@/lib/utils'
 import { runDetectors, InsightFact } from './insights/detectors'
 import { formatInsightFact } from './explanations'
 
@@ -79,7 +79,6 @@ export function generateInsight(stat: Statistic): Insight {
   const oldest = points[0]
   const change = latest.value - prev.value
   const longChange = latest.value - oldest.value
-  const unit = stat.unit === '%' ? 'pp' : stat.unit
   const turning = detectTurningPoint(points)
   const momentum = recentMomentum(points)
   const range = rangeDescription(points)
@@ -97,7 +96,7 @@ export function generateInsight(stat: Statistic): Insight {
         `Current level: ${latest.value}${stat.unit === '%' ? '%' : ''} (${latest.label})`,
         `Period high: ${range.max.value}${stat.unit === '%' ? '%' : ''} (${range.max.label})`,
         `Period low: ${range.min.value}${stat.unit === '%' ? '%' : ''} (${range.min.label})`,
-        `Total change since ${oldest.label}: ${longChange > 0 ? '+' : ''}${longChange.toFixed(1)}${unit}`,
+        `Total change since ${oldest.label}: ${longChange > 0 ? '+' : ''}${formatChange(stat, longChange)}`,
       ],
       generatedFrom: `${points.length}-period trend analysis`,
     }
@@ -110,13 +109,13 @@ export function generateInsight(stat: Statistic): Insight {
     const sentiment = judgeMove(stat, longChange > 0 ? 'up' : 'down')
     const verdict = sentiment === 'positive' ? ', a positive development' : sentiment === 'negative' ? ', a concern' : ''
     return {
-      summary: `${stat.title} has ${direction} by ${absLong.toFixed(1)}${unit} from ${oldest.label} to ${latest.label}${verdict}.`,
+      summary: `${stat.title} has ${direction} by ${formatChange(stat, absLong)} from ${oldest.label} to ${latest.label}${verdict}.`,
       sentiment,
       type: 'trend',
       details: [
         `${oldest.label}: ${oldest.value}${stat.unit === '%' ? '%' : ''}`,
         `${latest.label}: ${latest.value}${stat.unit === '%' ? '%' : ''}`,
-        `Change: ${longChange > 0 ? '+' : ''}${longChange.toFixed(1)}${unit} over ${points.length} periods`,
+        `Change: ${longChange > 0 ? '+' : ''}${formatChange(stat, longChange)} over ${points.length} periods`,
         momentum !== 'stable'
           ? `Recent momentum: ${momentum === 'accelerating-up' ? 'accelerating upward' : 'accelerating downward'}`
           : 'Recent trend: broadly stable',
@@ -135,7 +134,7 @@ export function generateInsight(stat: Statistic): Insight {
       ? (change > 0 ? ', continued growth' : ', a slowdown')
       : ''
     return {
-      summary: `${stat.title} ${dir} by ${absChange.toFixed(1)}${unit} from ${prev.label} to ${latest.label}${desc}.`,
+      summary: `${stat.title} ${dir} by ${formatChange(stat, absChange)} from ${prev.label} to ${latest.label}${desc}.`,
       sentiment: judgeMove(stat, stat.trend),
       type: 'trend',
       details: [
