@@ -151,7 +151,7 @@ const datasetRegistryBase: DatasetRegistryEntry[] = [
     id: 'inflation',
     label: 'Inflation & CPI',
     description: 'Monthly headline CPI, food inflation, and annual average inflation from Stats SA.',
-    statIds: ['cpi-headline', 'food-inflation', 'repo-rate', 'annual-cpi-avg'],
+    statIds: ['cpi-headline', 'food-inflation', 'annual-cpi-avg'],
     categoryId: 'inflation',
     sourceName: 'Statistics South Africa',
     sourceShortName: 'Stats SA',

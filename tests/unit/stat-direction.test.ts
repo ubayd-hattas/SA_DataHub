@@ -8,7 +8,6 @@
 import { describe, it, expect } from 'vitest'
 import type { Statistic } from '@/types'
 import { formatChange, getGoodDirection, judgeMove, GOOD_DIRECTION_BY_STAT } from '@/lib/utils'
-import { getDeltaSemantics } from '@/components/ui/DeltaBadge'
 import { generateInsight, generateEnrichedInsight } from '@/lib/insights'
 import { generateExplanation } from '@/lib/explanations'
 import { getStatById, statistics } from '@/data/mock'
@@ -45,7 +44,7 @@ describe('getGoodDirection', () => {
   })
 
   it('gives policy and lending rates no good or bad verdict', () => {
-    for (const id of ['repo-rate', 'repo-rate-sarb', 'prime-lending-rate']) {
+    for (const id of ['repo-rate-sarb', 'prime-lending-rate']) {
       expect(judgeMove(stat(id), 'up'), id).toBe('neutral')
       expect(judgeMove(stat(id), 'down'), id).toBe('neutral')
     }
@@ -73,12 +72,8 @@ describe('getGoodDirection', () => {
 })
 
 describe('badges and insight text follow the per-statistic direction', () => {
-  it('shows the two copies of the SARB repo rate the same way', () => {
-    const a = stat('repo-rate')
-    const b = stat('repo-rate-sarb')
-    expect(getDeltaSemantics(a.trend, getGoodDirection(a))).toBe(
-      getDeltaSemantics(b.trend, getGoodDirection(b)),
-    )
+  it('keeps a single repo-rate record', () => {
+    expect(statistics.filter((s) => /repo/i.test(s.id)).map((s) => s.id)).toEqual(['repo-rate-sarb'])
   })
 
   it('does not call a rise in female labour force participation a concern', () => {

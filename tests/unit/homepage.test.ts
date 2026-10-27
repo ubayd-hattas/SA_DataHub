@@ -17,7 +17,7 @@ describe('headline numbers', () => {
   const numbers = getHeadlineNumbers()
 
   it('are inflation, unemployment, GDP growth and the repo rate, in that order', () => {
-    expect(numbers.map((n) => n.statId)).toEqual(['cpi-headline', 'unemployment-national', 'gdp-growth', 'repo-rate'])
+    expect(numbers.map((n) => n.statId)).toEqual(['cpi-headline', 'unemployment-national', 'gdp-growth', 'repo-rate-sarb'])
   })
 
   it.each(getHeadlineNumbers())('$label comes from its dataset', (n) => {
@@ -37,8 +37,10 @@ describe('headline numbers', () => {
   })
 
   it('links the repo rate to its chart on the inflation page, the same record it reads', () => {
-    expect(numbers[3]).toMatchObject({ value: '7.25%', href: '/category/inflation#repo-rate' })
-    expect(getStatById('repo-rate')!.categoryId).toBe('inflation')
+    expect(numbers[3]).toMatchObject({ value: '7.25%', href: '/category/inflation#repo-rate-sarb' })
+    expect(getStatById('repo-rate-sarb')!.categoryId).toBe('inflation')
+    // The duplicate from the inflation dataset is gone.
+    expect(getStatById('repo-rate')).toBeUndefined()
     expect(readFileSync(join(process.cwd(), 'src/app/category/[slug]/page.tsx'), 'utf8')).toContain('id={stat.id}')
   })
 

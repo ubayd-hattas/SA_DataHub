@@ -181,7 +181,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
         <p className="border-t border-rule py-10 text-body text-ink">There are no statistics in this topic yet.</p>
       )}
 
-      {/* 2. The other statistics in this topic. Each id is a link target, e.g. /category/inflation#repo-rate. */}
+      {/* 2. The other statistics in this topic. Each id is a link target, e.g. /category/inflation#repo-rate-sarb. */}
       {rest.map((stat) => (
         <section key={stat.id} id={stat.id} aria-labelledby={`${stat.id}-title`} className="scroll-mt-20 border-t border-rule py-10">
           <h2 id={`${stat.id}-title`} className="font-display text-[1.5rem] font-semibold leading-snug text-ink sm:text-h2">
