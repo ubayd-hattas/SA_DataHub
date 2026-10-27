@@ -17,7 +17,7 @@
     {
       "id": "gdp-growth",
       "categoryId": "gdp",
-      "title": "GDP Growth Rate (Quarter-on-Quarter)",
+      "title": "GDP growth on the previous quarter",
       "value": "-0.2%",
       "rawValue": -0.2,
       "unit": "%",
@@ -117,7 +117,7 @@
     {
       "id": "gdp-annual-growth",
       "categoryId": "gdp",
-      "title": "GDP Annual Growth Rate",
+      "title": "Annual GDP growth",
       "value": "1.1%",
       "rawValue": 1.1,
       "unit": "%",
@@ -249,7 +249,7 @@
     {
       "id": "gdp-per-capita",
       "categoryId": "gdp",
-      "title": "GDP Per Capita",
+      "title": "GDP per person",
       "value": "R120,800",
       "rawValue": 120800,
       "unit": "ZAR",

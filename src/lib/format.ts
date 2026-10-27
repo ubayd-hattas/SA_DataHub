@@ -41,6 +41,30 @@ export function formatSigned(value: number, decimals = 1): string {
   return value > 0 && Number(value.toFixed(decimals)) !== 0 ? `+${text}` : text
 }
 
+/** Two decimals if any value needs them (a policy rate series: 7.00%, 7.25%), otherwise one. */
+export function percentDecimals(values: number[]): number {
+  return values.some((v) => Math.round(v * 100) % 10 !== 0) ? 2 : 1
+}
+
+/**
+ * One value in a series' own unit: "4.5%", "7.25%", "26 232", "63.5 million",
+ * "R7 071 billion". Pass `decimals` from percentDecimals so a whole series uses one precision.
+ */
+export function formatSeriesValue(value: number, unit: string, decimals = percentDecimals([value])): string {
+  switch (unit) {
+    case '%':
+      return formatPercent(value, decimals)
+    case 'million':
+      return `${formatDecimal(value)} million`
+    case 'ZAR billion':
+      return `R${formatCount(value)} billion`
+    case 'ZAR':
+      return formatRand(value, 0)
+    default:
+      return formatCount(value)
+  }
+}
+
 const SHORT_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
 /** "11 Aug 2026" from "2026-08-11", for compact source lines. */

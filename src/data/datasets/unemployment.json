@@ -11,7 +11,7 @@
     {
       "id": "unemployment-national",
       "categoryId": "unemployment",
-      "title": "National Unemployment Rate",
+      "title": "Unemployment rate (official definition)",
       "value": "33.6%",
       "rawValue": 33.6,
       "unit": "%",

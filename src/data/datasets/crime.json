@@ -11,7 +11,7 @@
     {
       "id": "murder-rate",
       "categoryId": "crime",
-      "title": "Murder Cases",
+      "title": "Murders reported to the police",
       "value": "26,232",
       "rawValue": 26232,
       "unit": "cases",
@@ -46,7 +46,7 @@
     {
       "id": "crime-contact",
       "categoryId": "crime",
-      "title": "Contact Crimes (Total)",
+      "title": "Contact crimes reported to the police",
       "value": "561,947",
       "rawValue": 561947,
       "unit": "cases",
@@ -79,7 +79,7 @@
     {
       "id": "crime-robbery",
       "categoryId": "crime",
-      "title": "Robbery with Aggravating Circumstances",
+      "title": "Robbery with aggravating circumstances",
       "value": "162,618",
       "rawValue": 162618,
       "unit": "cases",

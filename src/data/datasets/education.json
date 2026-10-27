@@ -11,7 +11,7 @@
     {
       "id": "matric-pass-rate",
       "categoryId": "education",
-      "title": "National Matric Pass Rate",
+      "title": "Matric pass rate",
       "value": "88.0%",
       "rawValue": 88.0,
       "unit": "%",
@@ -83,7 +83,7 @@
     {
       "id": "education-literacy",
       "categoryId": "education",
-      "title": "Adult Literacy Rate (20+)",
+      "title": "Adult literacy rate, ages 20 and older",
       "value": "87.0%",
       "rawValue": 87.0,
       "unit": "%",
@@ -103,7 +103,7 @@
     {
       "id": "higher-education-enrolment",
       "categoryId": "education",
-      "title": "Higher Education Enrolment",
+      "title": "Enrolment at public universities",
       "value": "1.07M",
       "rawValue": 1070000,
       "unit": "students",
