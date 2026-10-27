@@ -21,7 +21,7 @@
   "statistics": [
     {
       "id": "repo-rate-sarb",
-      "categoryId": "gdp",
+      "categoryId": "inflation",
       "title": "Repo Rate",
       "value": "7.25%",
       "rawValue": 7.25,

@@ -78,7 +78,7 @@ export const STORIES: Story[] = [
     featured: true,
     coverEmoji: '🛒',
     summary: 'South Africa\'s annual average inflation hit 3.2% in 2025 — the lowest in 21 years. The headline number suggests relief, but food prices, electricity tariffs, and interest rates still squeeze millions of households.',
-    relatedStatIds: ['cpi-headline', 'food-inflation', 'repo-rate', 'annual-cpi-avg'],
+    relatedStatIds: ['cpi-headline', 'food-inflation', 'repo-rate-sarb', 'annual-cpi-avg'],
     relatedSlugs: ['south-africa-unemployment-crisis', 'gdp-growth-slowdown'],
     tags: ['inflation', 'CPI', 'SARB', 'interest rates', 'food prices'],
     sections: [
@@ -92,7 +92,7 @@ export const STORIES: Story[] = [
         id: '2025-story',
         heading: 'Why 2025 was a low-inflation year',
         body: 'South Africa\'s annual average CPI fell to 3.2% in 2025 — the lowest full-year average since 2004. Several factors converged.\n\nGlobal commodity prices, which had spiked after Russia\'s invasion of Ukraine in 2022, normalised significantly. Fuel prices fell as oil prices moderated. Food inflation, which had been running above 14% in early 2023, eased dramatically as global grain prices retreated and the rand stabilised.\n\nThe SARB\'s aggressive rate hiking cycle — which took the repo rate from 3.5% in late 2021 to 8.25% by mid-2023 — had its intended effect: demand-pull inflation was squeezed out of the economy. The cost, however, was significant: higher borrowing costs weighed on economic growth and on mortgage-holders.\n\nThe good news is that the SARB had been easing rates until early 2026, though upside inflation pressures subsequently prompted hikes to 7.00% in May and 7.25% in September 2026.',
-        statCallouts: ['annual-cpi-avg', 'repo-rate'],
+        statCallouts: ['annual-cpi-avg', 'repo-rate-sarb'],
       },
       {
         id: 'food-prices',
