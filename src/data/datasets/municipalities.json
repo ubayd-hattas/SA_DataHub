@@ -8,7 +8,9 @@
     ],
     "census_year": 2022,
     "boundary_reference": "2021 local government election boundaries",
-    "boundary_note": "2011 figures are boundary-aligned to 2022 boundaries per Stats SA official publications. Direct 2011–2022 comparison is valid.",
+    "boundary_note": "The 2011 figures are listed against current municipal codes. The boundaries of 20 municipalities changed before the 2016 local elections (Municipal Demarcation Board, Reflections on 20 years of Demarcation, 2019, pages 37 to 40), so their 2011 and 2022 figures are not compared on the site; see src/data/municipal-boundaries.ts. The earlier claim that every comparison is valid was not sourced.",
+  "census_2011_source": "Stats SA, Census 2022 Provinces at a glance (released 10 October 2023), which gives 2011 figures alongside the 2022 ones; taken from the afrith/census-2022-muni-stats extract (https://github.com/afrith/census-2022-muni-stats). All 213 records' 2011 and 2022 population, households, household size, sex ratio, area and growth rate match the extract (checked 2026-10-27).",
+  "growth_rate_note": "populationGrowthRate is an average yearly rate, not the total change: 203 of 213 values equal ln(population2022 / population2011) / 10.33 rounded to one decimal. The site shows the total change worked out from the two counts instead.",
     "quality_caveat": "Census 2022 Post-Enumeration Survey estimated ~30% undercount. Statistics South Africa considers the data fit for general use.",
     "excluded_themes": [
       "employment",
