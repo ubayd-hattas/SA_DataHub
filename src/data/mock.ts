@@ -60,7 +60,7 @@ export const categories: Category[] = [
   {
     id: 'gdp',
     label: 'GDP and economy',
-    description: 'Quarterly and annual GDP growth, the size of the economy, GDP per person, and the repo and prime lending rates.',
+    description: 'Quarterly and annual GDP growth, the size of the economy, GDP per person, and interest rates.',
     icon: 'TrendingUp',
     color: 'text-brand-600 dark:text-brand-400',
     bgColor: 'bg-brand-50 dark:bg-brand-950/30',
