@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import Link from 'next/link'
 import { Search, Filter, Building2, Users, Home, MapPin, ChevronDown, ArrowRight } from 'lucide-react'
 import { MunicipalityRecord, ProvinceCode } from '@/types'
@@ -128,6 +128,12 @@ export default function MunicipalityExplorer({ municipalities }: Props) {
   const [sortKey, setSortKey] = useState<'name' | 'population2022' | 'households2022'>('name')
   const [page, setPage] = useState(1)
   const PAGE_SIZE = 30
+
+  // ?search= from the homepage place search (also used when JavaScript is off there).
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search).get('search')
+    if (q) setQuery(q)
+  }, [])
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()

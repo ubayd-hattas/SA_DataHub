@@ -430,6 +430,32 @@ export function getEntryLastUpdated(entry: DatasetRegistryEntry): string {
   return dates.sort().reverse()[0]
 }
 
+/** The date the maintainer last checked each dataset file against its source (`_meta.last_verified`). */
+const LAST_VERIFIED_BY_ID: Record<string, string> = {
+  unemployment: (unemploymentData as any)._meta?.last_verified ?? '',
+  'youth-unemployment': (youthUnemploymentData as any)._meta?.last_verified ?? '',
+  'labour-force': (labourForceData as any)._meta?.last_verified ?? '',
+  inflation: (inflationData as any)._meta?.last_verified ?? '',
+  gdp: (gdpData as any)._meta?.last_verified ?? '',
+  'interest-rates': (interestRatesData as any)._meta?.last_verified ?? '',
+  crime: (crimeData as any)._meta?.last_verified ?? '',
+  education: (educationData as any)._meta?.last_verified ?? '',
+  population: (populationData as any)._meta?.last_verified ?? '',
+  housing: (housingData as any)._meta?.last_verified ?? '',
+  census: (censusData as any)._meta?.last_verified ?? '',
+  provinces: (provincesData as any)._meta?.last_verified ?? '',
+}
+
+/** ISO date SA Data Hub last checked the entry's file, or '' if not recorded. */
+export function getEntryLastVerified(entry: DatasetRegistryEntry): string {
+  return LAST_VERIFIED_BY_ID[entry.id] ?? ''
+}
+
+/** The registry entry (dataset file) a statistic comes from. */
+export function getEntryForStat(statId: string): DatasetRegistryEntry | undefined {
+  return datasetRegistry.find((e) => e.statIds.includes(statId))
+}
+
 /**
  * Returns the count of statistics that exist in the live data for an entry.
  * Guards against stale statIds — only counts IDs that resolve to a real stat.
