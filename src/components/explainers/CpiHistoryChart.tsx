@@ -117,7 +117,14 @@ export function CpiHistoryChart() {
                 x={key}
                 stroke="#94a3b8"
                 strokeDasharray="4 3"
-                label={{ value: join.label, position: 'insideTopLeft', fill: '#64748b', fontSize: 10, offset: 6 }}
+                // Put the label on the side with more room, so it is not cut off on a phone.
+                label={{
+                  value: join.label,
+                  position: points.findIndex((p) => p.key === key) > points.length / 2 ? 'insideTopRight' : 'insideTopLeft',
+                  fill: '#64748b',
+                  fontSize: 10,
+                  offset: 6,
+                }}
               />
             ))}
             <Line
