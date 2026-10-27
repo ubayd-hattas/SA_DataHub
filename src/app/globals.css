@@ -6,6 +6,27 @@
   :root {
     --brand: 142 76% 36%;
     --gold: 43 96% 56%;
+
+    /* Editorial tokens (docs/DESIGN.md). Light is the default theme. */
+    --paper: #faf9f6;
+    --subtle: #f2f0ea;
+    --ink: #1b1b19;
+    --muted: #595853;
+    --rule: #e3e1da;
+    --accent: #1f4e8c;
+    --good: #1e6b3c;
+    --bad: #b42318;
+  }
+
+  .dark {
+    --paper: #131412;
+    --subtle: #1c1d1a;
+    --ink: #eceae3;
+    --muted: #a6a59d;
+    --rule: #2c2d2a;
+    --accent: #8eb4ee;
+    --good: #6fc48b;
+    --bad: #f08a80;
   }
 
   * {
