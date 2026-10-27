@@ -49,3 +49,6 @@ sources/releases/
 
 # ETL raw snapshots (immutable archives)
 etl/raw-snapshots/
+
+# Search Console exports (never commit)
+sources/search-console/
