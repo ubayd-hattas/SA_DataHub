@@ -4,7 +4,8 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState, useEffect, useRef } from 'react'
 import { useTheme } from 'next-themes'
-import { BarChart3, Sun, Moon, Monitor, Menu, X, ChevronDown } from 'lucide-react'
+import { Sun, Moon, Monitor, Menu, X, ChevronDown } from 'lucide-react'
+import { BrandMark } from '@/components/layout/BrandMark'
 import { cn } from '@/lib/utils'
 
 const navLinks = [
@@ -114,9 +115,7 @@ export function Navbar() {
       <div className="container-page flex h-16 items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5 font-display text-lg font-semibold">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600 text-white" aria-hidden="true">
-            <BarChart3 size={16} />
-          </div>
+          <BrandMark />
           <span className="text-slate-900 dark:text-white">
             SA <span className="text-brand-600">Data</span> Hub
           </span>

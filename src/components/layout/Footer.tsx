@@ -1,6 +1,7 @@
 
 import Link from 'next/link'
-import { BarChart3, ExternalLink } from 'lucide-react'
+import { ExternalLink } from 'lucide-react'
+import { BrandMark } from '@/components/layout/BrandMark'
 import { categories } from '@/data/mock'
 import { AUTHOR } from '@/lib/seo'
 
@@ -12,9 +13,7 @@ export function Footer() {
           {/* Brand */}
           <div className="md:col-span-2">
             <div className="mb-4 flex items-center gap-2.5 font-display text-lg font-semibold">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600 text-white">
-                <BarChart3 size={16} />
-              </div>
+              <BrandMark />
               <span className="text-slate-900 dark:text-white">
                 SA <span className="text-brand-600">Data</span> Hub
               </span>
