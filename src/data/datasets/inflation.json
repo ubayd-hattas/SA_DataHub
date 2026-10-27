@@ -116,7 +116,7 @@
       "change": 0.1,
       "changeLabel": "from August 2026 (1.1%)",
       "trend": "stable",
-      "description": "Food and non-alcoholic beverage (NAB) inflation was 1.2% in September 2026, up from 1.1% in August and 0.9% in July — a second consecutive monthly acceleration, but still very low. Meat inflation slowed to 0.7% (its lowest since March 2025) and cereal products recorded an eighth consecutive month of deflation (-1.9%).",
+      "description": "Food and non-alcoholic beverage (NAB) inflation was 1.2% in September 2026, up from 1.1% in August and 0.9% in July, a second consecutive monthly increase. Meat inflation slowed to 0.7% (its lowest since March 2025) and cereal products recorded an eighth consecutive month of deflation (-1.9%).",
       "source": {
         "name": "Statistics South Africa",
         "shortName": "Stats SA",
@@ -324,7 +324,7 @@
       "change": -1.2,
       "changeLabel": "from 2024 average (4.4%)",
       "trend": "down",
-      "description": "South Africa's full-year average headline CPI for 2025 was 3.2% — the lowest annual average in 21 years, confirmed by Stats SA in January 2026. This represents a dramatic improvement from 2022's peak of 6.9% and reflects the impact of aggressive SARB rate hikes and falling global commodity prices.",
+      "description": "South Africa's full-year average headline CPI for 2025 was 3.2%, the lowest annual average in 21 years, confirmed by Stats SA in January 2026. The annual average was 6.9% in 2022.",
       "source": {
         "name": "Statistics South Africa",
         "shortName": "Stats SA",

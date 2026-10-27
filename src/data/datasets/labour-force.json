@@ -18,7 +18,7 @@
       "change": 0.6,
       "changeLabel": "from Q1 2026 (59.0%)",
       "trend": "up",
-      "description": "The labour force participation rate (LFPR) is the percentage of the working-age population (15–64) that is either employed or unemployed. It rose 0.6 percentage points to 59.6% in Q2 2026, but is 0.6 points lower than a year earlier. South Africa's LFPR remains low relative to comparable middle-income countries, partly reflecting large numbers of discouraged work-seekers.",
+      "description": "The labour force participation rate (LFPR) is the percentage of the working-age population (15–64) that is either employed or unemployed. It rose 0.6 percentage points to 59.6% in Q2 2026, but is 0.6 points lower than a year earlier.",
       "source": {
         "name": "Statistics South Africa",
         "shortName": "Stats SA",
@@ -150,7 +150,7 @@
       "change": 1.1,
       "changeLabel": "from Q1 2026 (53.8%)",
       "trend": "up",
-      "description": "Labour force participation rate for women aged 15–64 (share of working-age women who are employed or unemployed). It rose 1.1 percentage points to 54.9% in Q2 2026, against 64.4% for men — a gap of about 9.5 percentage points reflecting structural barriers including care responsibilities, transport access, and sectoral concentration.",
+      "description": "Labour force participation rate for women aged 15–64 (share of working-age women who are employed or unemployed). It rose 1.1 percentage points to 54.9% in Q2 2026, against 64.4% for men, a gap of about 9.5 percentage points.",
       "source": {
         "name": "Statistics South Africa",
         "shortName": "Stats SA",

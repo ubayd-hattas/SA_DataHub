@@ -216,7 +216,7 @@
       "change": -1.1,
       "changeLabel": "from Q3 2025",
       "trend": "down",
-      "description": "The expanded youth unemployment rate includes discouraged work-seekers — those who have given up actively looking for work. This is a more comprehensive measure of labour market distress among youth.",
+      "description": "The expanded youth unemployment rate also counts discouraged work-seekers: people who want work but have stopped actively looking for it.",
       "source": {
         "name": "Statistics South Africa",
         "shortName": "Stats SA",
@@ -307,7 +307,7 @@
       "change": -0.4,
       "changeLabel": "from 2024",
       "trend": "down",
-      "description": "Percentage of youth aged 15–24 who are Not in Employment, Education, or Training (NEET). This captures both unemployment and disengagement from the education system — a key indicator of social exclusion risk.",
+      "description": "Percentage of youth aged 15–24 who are Not in Employment, Education, or Training (NEET). It counts young people who are neither working nor studying or training.",
       "source": {
         "name": "Statistics South Africa",
         "shortName": "Stats SA",
