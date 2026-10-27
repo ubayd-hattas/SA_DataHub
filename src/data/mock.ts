@@ -27,6 +27,7 @@
 import { Category, Statistic, ProvinceData, MunicipalityRecord, MunicipalitiesDataset, ProvinceCode } from '@/types'
 import { intelligentSearch } from '@/lib/search'
 import type { DatasetRegistryEntry } from '@/lib/registry'
+import { has2011Comparison } from './municipal-boundaries'
 import { SearchResult } from '@/types'
 
 // ─── Dataset imports ──────────────────────────────────────────────────────────
@@ -340,14 +341,13 @@ export function generateMunicipalityInsights(
 ): MunicipalityInsight[] {
   const insights: MunicipalityInsight[] = []
 
-  // ── 1. Population growth ─────────────────────────────────────────────────
-  if (m.populationGrowthRate != null && isFinite(m.populationGrowthRate)) {
-    const pct = m.populationGrowthRate
-    const direction = pct >= 0 ? 'grew' : 'declined'
-    const sign = pct >= 0 ? '+' : ''
+  // ── 1. Population change since Census 2011 (only where boundaries match) ──
+  if (has2011Comparison(m.id) && m.population2011 > 0) {
+    const pct = ((m.population2022 - m.population2011) / m.population2011) * 100
+    const direction = pct >= 0 ? 'grew' : 'fell'
     insights.push({
-      text: `Population ${direction} by ${sign}${pct.toFixed(1)}% between 2011 and 2022.`,
-      sentiment: pct >= 5 ? 'positive' : pct < -5 ? 'negative' : 'neutral',
+      text: `Population ${direction} by ${Math.abs(pct).toFixed(1)}% between Census 2011 and Census 2022.`,
+      sentiment: 'neutral',
     })
   }
 
