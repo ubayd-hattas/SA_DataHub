@@ -2,247 +2,233 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useState, useEffect, useRef } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import { useTheme } from 'next-themes'
-import { Sun, Moon, Monitor, Menu, X, ChevronDown } from 'lucide-react'
+import { Menu, Moon, Search, Sun, X } from 'lucide-react'
 import { BrandMark } from '@/components/layout/BrandMark'
+import { NAV_SECTIONS, isCurrentSection, type NavSection } from '@/components/layout/nav-items'
 import { cn } from '@/lib/utils'
 
-const navLinks = [
-  { href: '/', label: 'Home' },
-  { href: '/dashboard', label: 'Dashboard' },
-  { href: '/explainers', label: 'Explainers' },
-  { href: '/insights', label: 'Insights' },
-  { href: '/downloads', label: 'Downloads' },
-  { href: '/provinces', label: 'Provinces' },
-  { href: '/municipalities', label: 'Municipalities' },
-  {
-    label: 'Categories',
-    children: [
-      { href: '/category/unemployment', label: 'Unemployment' },
-      { href: '/category/gdp', label: 'GDP & Economy' },
-      { href: '/category/inflation', label: 'Inflation' },
-      { href: '/category/crime', label: 'Crime' },
-      { href: '/category/education', label: 'Education' },
-      { href: '/category/population', label: 'Population' },
-      { href: '/category/housing', label: 'Housing' },
-      { href: '/category/census', label: 'Census 2022' },
-    ],
-  },
-  { href: '/methodology', label: 'Methodology' },
-]
+const FOCUS = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent'
 
+/** One button that switches between the light and dark themes. */
 function ThemeToggle() {
-  const { theme, setTheme } = useTheme()
-  const themes = [
-    { value: 'light', icon: Sun,     label: 'Light mode' },
-    { value: 'dark',  icon: Moon,    label: 'Dark mode'  },
-    { value: 'system', icon: Monitor, label: 'System mode' },
-  ] as const
+  const { resolvedTheme, setTheme } = useTheme()
+  // The theme is only known in the browser; render a neutral button until then.
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
+  const isDark = mounted && resolvedTheme === 'dark'
+  const label = isDark ? 'Switch to light theme' : 'Switch to dark theme'
 
   return (
-    <div className="flex items-center gap-0.5 rounded-lg bg-slate-100 p-1 dark:bg-slate-800" role="group" aria-label="Theme">
-      {themes.map(({ value, icon: Icon, label }) => (
-        <button
-          key={value}
-          onClick={() => setTheme(value)}
-          className={cn(
-            'rounded-md p-1.5 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500',
-            theme === value
-              ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white'
-              : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
-          )}
-          aria-label={label}
-          aria-pressed={theme === value}
-        >
-          <Icon size={14} aria-hidden="true" />
-        </button>
-      ))}
-    </div>
+    <button
+      type="button"
+      onClick={() => setTheme(isDark ? 'light' : 'dark')}
+      aria-label={label}
+      title={label}
+      className={cn('rounded p-2 text-muted hover:text-ink', FOCUS)}
+    >
+      {isDark ? <Sun size={18} aria-hidden="true" /> : <Moon size={18} aria-hidden="true" />}
+    </button>
+  )
+}
+
+/** Always visible. Submits to the existing search on /dashboard, and works without JavaScript. */
+function NavSearch({ className }: { className?: string }) {
+  const id = useId()
+  return (
+    <form action="/dashboard" method="get" role="search" className={cn('relative', className)}>
+      <label htmlFor={id} className="sr-only">
+        Search statistics and places
+      </label>
+      <input
+        id={id}
+        name="search"
+        type="search"
+        placeholder="Search"
+        className="h-10 w-full rounded border border-rule bg-paper pl-3 pr-10 text-small text-ink placeholder:text-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+      />
+      <button type="submit" aria-label="Search" className={cn('absolute inset-y-0 right-0 flex w-10 items-center justify-center text-muted hover:text-ink', FOCUS)}>
+        <Search size={16} aria-hidden="true" />
+      </button>
+    </form>
+  )
+}
+
+function DesktopSection({
+  section,
+  current,
+  open,
+  onToggle,
+  onClose,
+}: {
+  section: NavSection
+  current: boolean
+  open: boolean
+  onToggle: () => void
+  onClose: () => void
+}) {
+  const panelId = useId()
+  const itemClass = cn(
+    'inline-flex h-16 items-center border-b-2 px-3 text-small',
+    current ? 'border-accent font-medium text-ink' : 'border-transparent text-muted hover:text-ink',
+    FOCUS,
+  )
+
+  if (section.href) {
+    return (
+      <li>
+        <Link href={section.href} className={itemClass} aria-current={current ? 'page' : undefined}>
+          {section.label}
+        </Link>
+      </li>
+    )
+  }
+
+  return (
+    <li className="relative">
+      <button type="button" className={itemClass} aria-expanded={open} aria-controls={panelId} onClick={onToggle}>
+        {section.label}
+      </button>
+      {open && (
+        <ul id={panelId} className="absolute left-0 top-full z-50 min-w-56 border border-rule bg-paper py-2">
+          {section.links!.map((link) => (
+            <li key={link.href}>
+              <Link href={link.href} onClick={onClose} className={cn('block px-4 py-2 text-small text-ink hover:bg-subtle', FOCUS)}>
+                {link.label}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
+    </li>
   )
 }
 
 export function Navbar() {
-  const pathname = usePathname()
+  const pathname = usePathname() ?? '/'
+  const [openId, setOpenId] = useState<string | null>(null)
   const [mobileOpen, setMobileOpen] = useState(false)
-  const [categoryOpen, setCategoryOpen] = useState(false)
-  const dropdownRef = useRef<HTMLDivElement>(null)
+  const navRef = useRef<HTMLElement>(null)
 
-  // ── Body scroll lock when mobile menu is open ────────────────────────────
+  // Close everything when the page changes.
   useEffect(() => {
-    if (mobileOpen) {
-      document.body.style.overflow = 'hidden'
-    } else {
-      document.body.style.overflow = ''
+    setOpenId(null)
+    setMobileOpen(false)
+  }, [pathname])
+
+  // Escape closes, and focus goes back to the button that opened the panel.
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key !== 'Escape') return
+      if (openId) {
+        navRef.current?.querySelector<HTMLButtonElement>('button[aria-expanded="true"]')?.focus()
+        setOpenId(null)
+      }
+      setMobileOpen(false)
     }
+    document.addEventListener('keydown', onKeyDown)
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [openId])
+
+  // A click outside the desktop nav closes its open panel.
+  useEffect(() => {
+    if (!openId) return
+    function onMouseDown(e: MouseEvent) {
+      if (navRef.current && !navRef.current.contains(e.target as Node)) setOpenId(null)
+    }
+    document.addEventListener('mousedown', onMouseDown)
+    return () => document.removeEventListener('mousedown', onMouseDown)
+  }, [openId])
+
+  // Lock page scroll behind the open phone menu.
+  useEffect(() => {
+    document.body.style.overflow = mobileOpen ? 'hidden' : ''
     return () => {
       document.body.style.overflow = ''
     }
   }, [mobileOpen])
 
-  // ── Close mobile menu on route change ────────────────────────────────────
-  useEffect(() => {
-    setMobileOpen(false)
-    setCategoryOpen(false)
-  }, [pathname])
-
-  // ── Click-outside handler for desktop dropdown ────────────────────────────
-  useEffect(() => {
-    if (!categoryOpen) return
-    function handleMouseDown(e: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setCategoryOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handleMouseDown)
-    return () => document.removeEventListener('mousedown', handleMouseDown)
-  }, [categoryOpen])
-
-  // ── Escape key closes both menus ─────────────────────────────────────────
-  useEffect(() => {
-    function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === 'Escape') {
-        setCategoryOpen(false)
-        setMobileOpen(false)
-      }
-    }
-    document.addEventListener('keydown', handleKeyDown)
-    return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [])
-
   return (
-    <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/90 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-950/90">
-      <div className="container-page flex h-16 items-center justify-between">
-        {/* Logo */}
-        <Link href="/" className="flex items-center gap-2.5 font-display text-lg font-semibold">
+    <header className="sticky top-0 z-50 border-b border-rule bg-paper">
+      <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:px-6">
+        <Link href="/" className={cn('flex shrink-0 items-center gap-2.5 rounded', FOCUS)}>
           <BrandMark />
-          <span className="text-slate-900 dark:text-white">
-            SA <span className="text-brand-600">Data</span> Hub
-          </span>
+          <span className="font-display text-lg font-semibold text-ink">SA Data Hub</span>
         </Link>
 
-        {/* Desktop nav */}
-        <nav className="hidden items-center gap-1 md:flex" aria-label="Main navigation">
-          {navLinks.map((link) =>
-            link.children ? (
-              <div key={link.label} className="relative" ref={dropdownRef}>
-                <button
-                  onClick={() => setCategoryOpen(!categoryOpen)}
-                  aria-expanded={categoryOpen}
-                  aria-haspopup="true"
-                  className={cn(
-                    'flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-                    'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white',
-                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500'
-                  )}
-                >
-                  {link.label}
-                  <ChevronDown
-                    size={14}
-                    aria-hidden="true"
-                    className={cn('transition-transform duration-200', categoryOpen && 'rotate-180')}
-                  />
-                </button>
-                {categoryOpen && (
-                  <div
-                    role="menu"
-                    className="absolute left-0 top-full mt-1 w-52 rounded-xl border border-slate-200 bg-white p-1.5 shadow-lg dark:border-slate-700 dark:bg-slate-900"
-                  >
-                    {link.children.map((child) => (
-                      <Link
-                        key={child.href}
-                        href={child.href}
-                        role="menuitem"
-                        onClick={() => setCategoryOpen(false)}
-                        className="block rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-500"
-                      >
-                        {child.label}
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ) : (
-              <Link
-                key={link.label}
-                href={link.href!}
-                className={cn(
-                  'rounded-lg px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500',
-                  pathname === link.href
-                    ? 'bg-brand-50 text-brand-700 dark:bg-brand-950/40 dark:text-brand-300'
-                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'
-                )}
-              >
-                {link.label}
-              </Link>
-            )
-          )}
+        <nav ref={navRef} aria-label="Main" className="hidden lg:block">
+          <ul className="flex items-center">
+            {NAV_SECTIONS.map((section) => (
+              <DesktopSection
+                key={section.id}
+                section={section}
+                current={isCurrentSection(section, pathname)}
+                open={openId === section.id}
+                onToggle={() => setOpenId(openId === section.id ? null : section.id)}
+                onClose={() => setOpenId(null)}
+              />
+            ))}
+          </ul>
         </nav>
 
-        {/* Right controls */}
-        <div className="flex items-center gap-3">
+        <div className="ml-auto flex items-center gap-1">
+          <NavSearch className="hidden w-64 md:block" />
           <ThemeToggle />
           <button
-            className="rounded-lg p-2 text-slate-600 transition-colors hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 md:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+            type="button"
             onClick={() => setMobileOpen(!mobileOpen)}
-            aria-label={mobileOpen ? 'Close navigation menu' : 'Open navigation menu'}
             aria-expanded={mobileOpen}
             aria-controls="mobile-nav"
+            aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+            className={cn('rounded p-2 text-ink lg:hidden', FOCUS)}
           >
             {mobileOpen ? <X size={20} aria-hidden="true" /> : <Menu size={20} aria-hidden="true" />}
           </button>
         </div>
       </div>
 
-      {/* Mobile menu — max-height + overflow prevents viewport overflow */}
+      {/* On phones the search gets its own row, so it is always visible. */}
+      <div className="border-t border-rule px-4 py-2 md:hidden">
+        <NavSearch />
+      </div>
+
       {mobileOpen && (
-        <div
+        <nav
           id="mobile-nav"
-          className="border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950 md:hidden"
-          aria-label="Mobile navigation"
+          aria-label="Main"
+          className="overflow-y-auto border-t border-rule bg-paper lg:hidden"
+          style={{ maxHeight: 'calc(100dvh - 7.5rem)' }}
         >
-          <nav
-            className="container-page overflow-y-auto py-3"
-            style={{ maxHeight: 'calc(100dvh - 4rem)' }}
-            aria-label="Mobile navigation links"
-          >
-            <div className="space-y-1">
-              {navLinks.map((link) =>
-                link.children ? (
-                  <div key={link.label}>
-                    <p className="px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-slate-400">
-                      {link.label}
-                    </p>
-                    {link.children.map((child) => (
-                      <Link
-                        key={child.href}
-                        href={child.href}
-                        onClick={() => setMobileOpen(false)}
-                        className="block rounded-lg px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-500"
-                      >
-                        {child.label}
-                      </Link>
-                    ))}
-                  </div>
-                ) : (
+          <ul className="mx-auto max-w-7xl px-4 py-2 sm:px-6">
+            {NAV_SECTIONS.map((section) => (
+              <li key={section.id} className="border-b border-rule py-3 last:border-b-0">
+                {section.href ? (
                   <Link
-                    key={link.label}
-                    href={link.href!}
-                    onClick={() => setMobileOpen(false)}
-                    className={cn(
-                      'block rounded-lg px-3 py-2.5 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-500',
-                      pathname === link.href
-                        ? 'bg-brand-50 text-brand-700 dark:bg-brand-950/40 dark:text-brand-300'
-                        : 'text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
-                    )}
+                    href={section.href}
+                    aria-current={isCurrentSection(section, pathname) ? 'page' : undefined}
+                    className={cn('block py-1 text-body font-medium text-ink', FOCUS)}
                   >
-                    {link.label}
+                    {section.label}
                   </Link>
-                )
-              )}
-            </div>
-          </nav>
-        </div>
+                ) : (
+                  <>
+                    <p className="py-1 text-body font-medium text-ink">{section.label}</p>
+                    <ul className="mt-1 grid grid-cols-1 gap-x-4 sm:grid-cols-2">
+                      {section.links!.map((link) => (
+                        <li key={link.href}>
+                          <Link href={link.href} className={cn('block py-2 text-small text-muted hover:text-ink', FOCUS)}>
+                            {link.label}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                )}
+              </li>
+            ))}
+          </ul>
+        </nav>
       )}
     </header>
   )
