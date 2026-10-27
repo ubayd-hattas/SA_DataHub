@@ -7,7 +7,7 @@
 
 import { describe, it, expect } from 'vitest'
 import type { Statistic } from '@/types'
-import { getGoodDirection, judgeMove, GOOD_DIRECTION_BY_STAT } from '@/lib/utils'
+import { formatChange, getGoodDirection, judgeMove, GOOD_DIRECTION_BY_STAT } from '@/lib/utils'
 import { getDeltaSemantics } from '@/components/ui/DeltaBadge'
 import { generateInsight, generateEnrichedInsight } from '@/lib/insights'
 import { generateExplanation } from '@/lib/explanations'
@@ -51,8 +51,8 @@ describe('getGoodDirection', () => {
     }
   })
 
-  it('treats population statistics and nominal GDP as neutral', () => {
-    const ids = [...statistics.filter((s) => s.categoryId === 'population').map((s) => s.id), 'gdp-nominal']
+  it('treats population statistics and nominal GDP (total and per person) as neutral', () => {
+    const ids = [...statistics.filter((s) => s.categoryId === 'population').map((s) => s.id), 'gdp-nominal', 'gdp-per-capita']
     expect(ids.length).toBeGreaterThan(1)
     for (const id of ids) {
       expect(getGoodDirection(stat(id)), id).toBe('neutral')
@@ -96,5 +96,20 @@ describe('badges and insight text follow the per-statistic direction', () => {
     for (const word of ['a concern', 'positive development', 'deterioration', 'setback', 'improvement']) {
       expect(text, word).not.toContain(word)
     }
+  })
+})
+
+describe('change wording uses the series unit', () => {
+  it('writes population changes in millions, with a space', () => {
+    const s = stat('population-total')
+    const text = [generateInsight(s).summary, generateExplanation(s).whatChanged, generateExplanation(s).longTermTrend].join(' ')
+    expect(text).toMatch(/by \d+\.\d million/)
+    expect(text).not.toMatch(/\dpeople/)
+    expect(text).not.toMatch(/by \d+\.\d people/)
+  })
+
+  it('keeps percentage-point wording for rates', () => {
+    expect(formatChange(stat('unemployment-national'), 0.4)).toBe('0.4pp')
+    expect(formatChange(stat('unemployment-national'), 0.4, true)).toBe('0.4 percentage points')
   })
 })
