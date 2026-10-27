@@ -29,12 +29,16 @@ export function SourceLine({
       Source: {publisher}, {title}
       {code ? ` (${code})` : ''}
       {location ? `, ${location}` : ''}.{' '}
-      <span className="whitespace-nowrap">
-        Source released <time dateTime={releasedOn}>{formatLongDate(releasedOn)}</time>.
-      </span>{' '}
-      <span className="whitespace-nowrap">
-        Checked on SA Data Hub <time dateTime={checkedOn}>{formatLongDate(checkedOn)}</time>.
-      </span>
+      {/* Only the dates stay unbroken; whole phrases overflow narrow columns. */}
+      Source released{' '}
+      <time dateTime={releasedOn} className="whitespace-nowrap">
+        {formatLongDate(releasedOn)}
+      </time>
+      . Checked on SA Data Hub{' '}
+      <time dateTime={checkedOn} className="whitespace-nowrap">
+        {formatLongDate(checkedOn)}
+      </time>
+      .
     </p>
   )
 }
