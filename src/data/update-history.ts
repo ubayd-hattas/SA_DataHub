@@ -21,6 +21,14 @@ export interface UpdateHistoryEntry {
 }
 
 export const UPDATE_HISTORY: UpdateHistoryEntry[] = [
+  {
+    date: '2026-10-27',
+    datasetId: 'inflation',
+    datasetLabel: 'Inflation & CPI',
+    type: 'correction',
+    summary:
+      'Eight values corrected to the official rates in the Stats SA CPI history file (Table B2). Headline CPI: June 2025 3.2% to 3.0%, July 3.3% to 3.5%, August 3.4% to 3.3%, September 3.5% to 3.4%, October 3.3% to 3.6%, November 3.0% to 3.5%, December 3.2% to 3.6%. Annual average CPI for 2018: 4.6% to 4.7%.',
+  },
   // ── October 2026 data refresh ────────────────────────────────────────────────
   {
     date: '2026-10-19',
