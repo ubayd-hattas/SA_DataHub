@@ -34,6 +34,53 @@ export function FigureValue({
   )
 }
 
+/**
+ * The full citation for every source on a page, with both dates. Shown once
+ * at the top and once at the bottom of an explainer.
+ */
+export function SourceCitations({
+  sources,
+  checkedOn,
+  className,
+}: {
+  sources: ExplainerSource[]
+  checkedOn: string
+  className?: string
+}) {
+  return (
+    <div className={cn('rounded-xl border border-slate-200 p-4 text-xs leading-relaxed text-slate-500 dark:border-slate-800 dark:text-slate-400', className)}>
+      <p className="mb-2 font-semibold text-slate-700 dark:text-slate-200">Sources</p>
+      <ul className="space-y-2">
+        {sources.map((s) => (
+          <li key={s.id}>
+            {s.publisher}, <cite className="not-italic">{s.title}</cite>
+            {s.code ? ` (${s.code})` : ''}.{' '}
+            <span className="whitespace-nowrap">
+              <span className="font-medium text-slate-600 dark:text-slate-300">Source released</span>{' '}
+              <time dateTime={s.releasedOn}>{formatLongDate(s.releasedOn)}</time>.
+            </span>{' '}
+            <span className="whitespace-nowrap">
+              <span className="font-medium text-slate-600 dark:text-slate-300">Checked on SA Data Hub</span>{' '}
+              <time dateTime={checkedOn}>{formatLongDate(checkedOn)}</time>.
+            </span>
+            {s.releasedOnNote ? <span className="block">{s.releasedOnNote}</span> : null}
+            {s.provenance ? <span className="block">{s.provenance}</span> : null}
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
+/** Short pointer to the table and page a section's figures come from. */
+export function SourceNote({ source, location, className }: { source: ExplainerSource; location: string; className?: string }) {
+  return (
+    <p className={cn('text-xs text-slate-500 dark:text-slate-400', className)}>
+      From {source.shortName}, {location}.
+    </p>
+  )
+}
+
 /** The two dates shown with every figure or group of figures. */
 export function SourceDates({
   source,

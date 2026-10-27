@@ -12,6 +12,10 @@ export interface ExplainerSource {
   id: string
   publisher: string
   title: string
+  /** Name used in short section notes, e.g. "Stats SA P0141". */
+  shortName: string
+  /** Where and when the maintainer downloaded the file, when recorded. */
+  provenance?: string
   /** Release code, e.g. "P0141". */
   code?: string
   /** Date the publisher released the data (ISO yyyy-mm-dd). */
@@ -114,7 +118,7 @@ export function findSourcingProblems(explainer: Explainer): string[] {
   const problems: string[] = []
   const sources = new Map(explainer.sources.map((s) => [s.id, s]))
   for (const s of explainer.sources) {
-    if (!s.publisher || !s.title || !s.file) problems.push(`source ${s.id}: missing publisher, title or file`)
+    if (!s.publisher || !s.title || !s.shortName || !s.file) problems.push(`source ${s.id}: missing publisher, title, short name or file`)
     if (!ISO_DATE.test(s.releasedOn)) problems.push(`source ${s.id}: missing release date`)
   }
   const refs: { path: string; sourceId: string; location: string; checkedOn?: string }[] = [
