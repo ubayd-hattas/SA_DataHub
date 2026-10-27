@@ -271,7 +271,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
           {stats.map((stat) => {
             const insight = generateInsight(stat)
             return (
-              // id lets other pages link to one statistic's chart, e.g. /category/inflation#repo-rate.
+              // id lets other pages link to one statistic's chart, e.g. /category/inflation#repo-rate-sarb.
               <div key={stat.id} id={stat.id} className="flex scroll-mt-20 flex-col gap-2">
                 <StatCard stat={stat} />
                 <InsightPanel insight={insight} compact />

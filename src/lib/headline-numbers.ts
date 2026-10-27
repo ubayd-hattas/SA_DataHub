@@ -57,8 +57,8 @@ const HEADLINE_SPECS: { statId: string; label: string; link?: { href: string; la
   { statId: 'cpi-headline', label: 'Inflation' },
   { statId: 'unemployment-national', label: 'Unemployment' },
   { statId: 'gdp-growth', label: 'GDP growth' },
-  // The inflation dataset's record, so the figure and the chart it links to are the same record.
-  { statId: 'repo-rate', label: 'Repo rate', link: { href: '/category/inflation#repo-rate', label: 'Repo rate chart, on the inflation page' } },
+  // Charted on the inflation page, so the figure and the chart it links to are the same record.
+  { statId: 'repo-rate-sarb', label: 'Repo rate', link: { href: '/category/inflation#repo-rate-sarb', label: 'Repo rate chart, on the inflation page' } },
 ]
 
 export interface HeadlineNumber {

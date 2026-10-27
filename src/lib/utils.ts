@@ -88,7 +88,6 @@ export const GOOD_DIRECTION_BY_STAT: Record<string, GoodDirection> = {
   // Per-capita GDP here is nominal too (current prices).
   'gdp-per-capita': 'neutral',
   // Policy and lending rates are not good or bad in themselves.
-  'repo-rate': 'neutral',
   'repo-rate-sarb': 'neutral',
   'prime-lending-rate': 'neutral',
   // Crime
