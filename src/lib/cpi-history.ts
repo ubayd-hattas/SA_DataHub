@@ -37,7 +37,7 @@ export const SERIES_JOINS: SeriesJoin[] = [
   },
   {
     year: 2009,
-    label: 'All urban areas, new methods',
+    label: 'All urban areas',
     detail:
       'Primary urban areas up to December 2008, all urban areas from January 2009, linked into one index. Stats SA made substantial changes to how the CPI is compiled in January 2009.',
   },

@@ -13,7 +13,7 @@
  */
 
 import { Statistic, CategoryId } from '@/types'
-import { judgeMove } from '@/lib/utils'
+import { formatChange, judgeMove } from '@/lib/utils'
 
 export interface DatasetExplanation {
   whatChanged: string
@@ -75,14 +75,13 @@ export function generateExplanation(stat: Statistic): DatasetExplanation {
     const prev = points[points.length - 2]
     const delta = latest.value - prev.value
     const absDelta = Math.abs(delta)
-    const unit = stat.unit === '%' ? 'percentage points' : stat.unit
     const direction = delta > 0 ? 'rose' : delta < 0 ? 'fell' : 'remained unchanged'
     const verdict = judgeMove(stat, delta > 0 ? 'up' : delta < 0 ? 'down' : 'stable')
     const sentiment = verdict === 'positive' ? ', a positive development' : verdict === 'negative' ? ', a deterioration' : ''
 
     whatChanged = delta === 0
       ? `${stat.title} was unchanged at ${latest.value}${stat.unit === '%' ? '%' : ''} from ${prev.label} to ${latest.label}.`
-      : `${stat.title} ${direction} by ${absDelta.toFixed(1)} ${unit} from ${prev.label} (${prev.value}${stat.unit === '%' ? '%' : ''}) to ${latest.label} (${latest.value}${stat.unit === '%' ? '%' : ''})${sentiment}.`
+      : `${stat.title} ${direction} by ${formatChange(stat, absDelta, true)} from ${prev.label} (${prev.value}${stat.unit === '%' ? '%' : ''}) to ${latest.label} (${latest.value}${stat.unit === '%' ? '%' : ''})${sentiment}.`
   } else {
     whatChanged = `The latest reading for ${stat.title} is ${stat.value} (${stat.changeLabel}). ${stat.description.split('.')[0]}.`
   }
@@ -95,7 +94,6 @@ export function generateExplanation(stat: Statistic): DatasetExplanation {
     const totalChange = last.value - first.value
     const absTotalChange = Math.abs(totalChange)
     const overallDir = totalChange > 0 ? 'increased' : totalChange < 0 ? 'decreased' : 'remained broadly flat'
-    const unit = stat.unit === '%' ? 'pp' : stat.unit
     const verdict = judgeMove(stat, totalChange > 0 ? 'up' : totalChange < 0 ? 'down' : 'stable')
     const netChange = verdict === 'positive' ? ', a net improvement' : verdict === 'negative' ? ', a net deterioration' : ''
 
@@ -103,7 +101,7 @@ export function generateExplanation(stat: Statistic): DatasetExplanation {
     const maxPoint = points.reduce((a, b) => b.value > a.value ? b : a)
     const minPoint = points.reduce((a, b) => b.value < a.value ? b : a)
 
-    longTermTrend = `Over the ${points.length}-period dataset from ${first.label} to ${last.label}, ${stat.title} has ${overallDir} by ${absTotalChange.toFixed(1)}${unit}${netChange}. The highest recorded value was ${maxPoint.value}${stat.unit === '%' ? '%' : ''} (${maxPoint.label}) and the lowest was ${minPoint.value}${stat.unit === '%' ? '%' : ''} (${minPoint.label}).`
+    longTermTrend = `Over the ${points.length}-period dataset from ${first.label} to ${last.label}, ${stat.title} has ${overallDir} by ${formatChange(stat, absTotalChange)}${netChange}. The highest recorded value was ${maxPoint.value}${stat.unit === '%' ? '%' : ''} (${maxPoint.label}) and the lowest was ${minPoint.value}${stat.unit === '%' ? '%' : ''} (${minPoint.label}).`
   } else if (points.length >= 2) {
     longTermTrend = `The available data covers ${points.length} periods. With a limited series, long-run trend analysis is indicative only. The current reading of ${stat.value} compares to ${points[0].value}${stat.unit === '%' ? '%' : ''} in ${points[0].label}.`
   } else {

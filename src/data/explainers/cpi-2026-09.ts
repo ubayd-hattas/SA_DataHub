@@ -37,6 +37,7 @@ export const cpi202609: CpiExplainer = {
       id: REL,
       publisher: 'Statistics South Africa (Stats SA)',
       title: 'Consumer Price Index, September 2026',
+      shortName: 'Stats SA P0141 September 2026',
       code: 'P0141',
       releasedOn: '2026-10-21',
       url: 'https://www.statssa.gov.za',
@@ -46,6 +47,7 @@ export const cpi202609: CpiExplainer = {
       id: 'statssa-cpi-history',
       publisher: 'Statistics South Africa (Stats SA)',
       title: 'CPI headline index numbers and year-on-year rates (Tables B1 and B2)',
+      shortName: 'the Stats SA CPI history file',
       releasedOn: '2026-10-21',
       releasedOnNote:
         'The history file has no release date. Its latest values are for September 2026, which Stats SA released on 21 October 2026.',
@@ -112,15 +114,16 @@ export const cpi202609: CpiExplainer = {
       location: 'Key findings, page 2; Table A, page 3 and footnote 1',
     },
     {
-      text: 'It is an average. Stats SA also groups households into ten spending groups (deciles), and the rate differs between them.',
+      text:
+        'It is an average. Stats SA also publishes a rate for each of ten expenditure deciles, and the rate differs between them. The glossary gives each decile as a band of expenditure in rand. It does not say whose expenditure is measured or over what period; for full definitions it refers to Stats SA\'s sources and methods document.',
       figures: [
         { label: 'Decile 1, change over the year', figure: fig(3.3, '%', 'Table A, page 3') },
-        { label: 'Decile 1 upper limit', figure: fig(35864, 'R', 'Glossary, page 9') },
+        { label: 'Decile 1, expenditure up to', figure: fig(35864, 'R', 'Glossary, page 9') },
         { label: 'Decile 10, change over the year', figure: fig(4.8, '%', 'Table A, page 3') },
-        { label: 'Decile 10 lower limit', figure: fig(307886, 'R', 'Glossary, page 9') },
+        { label: 'Decile 10, expenditure from', figure: fig(307886, 'R', 'Glossary, page 9') },
       ],
       sourceId: REL,
-      location: 'Table A, page 3; Glossary, page 9',
+      location: 'Table A, page 3; Glossary, page 9 and footnote 1',
     },
     {
       text: 'Not every item is priced every month. Some, such as rents, school fees and municipal charges, are surveyed quarterly or once a year.',
