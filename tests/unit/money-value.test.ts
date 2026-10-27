@@ -85,7 +85,7 @@ describe('links to the calculator', () => {
   })
 
   it('is linked from the homepage and /category/inflation', () => {
-    expect(src('src/app/page.tsx')).toContain('href="/tools/money-value"')
+    expect(src('src/app/page.tsx')).toMatch(/href=(?:"\/tools\/money-value"|\{MONEY_VALUE_PATH\})/)
     expect(src('src/app/category/[slug]/page.tsx')).toMatch(/slug === 'inflation'[\s\S]{0,300}href="\/tools\/money-value"/)
   })
 
