@@ -55,8 +55,7 @@ export const NAV_SECTIONS: NavSection[] = [
     id: 'tools',
     label: 'Tools',
     links: [
-      // Moves to /tools/money-value when that page exists.
-      { href: '/explainers/cpi-2026-09#money-worth', label: 'Money value calculator' },
+      { href: '/tools/money-value', label: 'Money value calculator' },
       { href: '/provinces#compare', label: 'Compare provinces' },
       { href: '/downloads', label: 'Downloads' },
     ],

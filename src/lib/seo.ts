@@ -32,6 +32,8 @@ export interface PageMetadataOptions {
   modifiedTime?: string
   authors?: string[]
   tags?: string[]
+  /** A page-specific share image (1200 by 630). Defaults to the site image. */
+  image?: { url: string; alt: string }
 }
 
 /**
@@ -48,6 +50,7 @@ export function buildPageMetadata({
   modifiedTime,
   authors,
   tags,
+  image = { url: '/opengraph-image', alt: `${SITE_NAME} — ${SITE_TAGLINE}` },
 }: PageMetadataOptions): Metadata {
   const canonical = absoluteUrl(path)
 
@@ -63,7 +66,7 @@ export function buildPageMetadata({
       siteName: SITE_NAME,
       type: ogType,
       locale: 'en_ZA',
-      images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: `${SITE_NAME} — ${SITE_TAGLINE}` }],
+      images: [{ url: image.url, width: 1200, height: 630, alt: image.alt }],
       ...(ogType === 'article' && publishedTime
         ? { publishedTime, modifiedTime, authors, tags }
         : {}),
@@ -72,7 +75,7 @@ export function buildPageMetadata({
       card: 'summary_large_image',
       title,
       description,
-      images: ['/opengraph-image'],
+      images: [image.url],
     },
   }
 }
