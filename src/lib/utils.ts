@@ -74,7 +74,8 @@ export const GOOD_DIRECTION_BY_STAT: Record<string, GoodDirection> = {
   'gdp-annual-growth': 'up',
   // Nominal GDP rises with prices as well as output.
   'gdp-nominal': 'neutral',
-  'gdp-per-capita': 'up',
+  // Per-capita GDP here is nominal too (current prices).
+  'gdp-per-capita': 'neutral',
   // Policy and lending rates are not good or bad in themselves.
   'repo-rate': 'neutral',
   'repo-rate-sarb': 'neutral',
@@ -100,6 +101,21 @@ export const GOOD_DIRECTION_BY_STAT: Record<string, GoodDirection> = {
   'census-internet-access': 'up',
   // A falling share of people with no income is an improvement.
   'census-no-income': 'down',
+}
+
+/**
+ * A change in a statistic's series values, in the series' own unit
+ * ("8.3 million", "0.8pp"). The headline unit can differ from the series
+ * unit: population is counted in people but charted in millions.
+ */
+export function formatChange(
+  stat: { unit: string; series?: { unit?: string }[] },
+  amount: number,
+  long = false
+): string {
+  const unit = stat.series?.[0]?.unit ?? stat.unit
+  if (unit === '%') return `${amount.toFixed(1)}${long ? ' percentage points' : 'pp'}`
+  return `${amount.toFixed(1)} ${unit}`
 }
 
 /** A statistic missing from GOOD_DIRECTION_BY_STAT gets no verdict. */
