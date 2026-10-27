@@ -3,7 +3,6 @@ import { Inter, Source_Serif_4, DM_Mono } from 'next/font/google'
 import { ThemeProvider } from '@/components/layout/ThemeProvider'
 import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
-import { LogoComparison } from '@/components/layout/LogoComparison'
 import { Analytics } from '@vercel/analytics/react'
 import { JsonLd } from '@/components/seo/JsonLd'
 import { organizationSchema, personSchema, websiteSchema } from '@/lib/schema'
@@ -91,7 +90,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <main id="main-content" className="flex-1">
               {children}
             </main>
-            <LogoComparison />
             <Footer />
           </div>
         </ThemeProvider>
