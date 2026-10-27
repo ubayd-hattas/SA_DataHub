@@ -1,3 +1,5 @@
+import { formatDecimal, formatRand } from '@/lib/format'
+
 /**
  * Release explainers: one page per official release (CPI first).
  *
@@ -162,19 +164,11 @@ export function formatLongDate(iso: string): string {
 
 /** Display a figure the way the site writes numbers (decimal point, not comma). */
 export function formatFigure(figure: SourcedFigure): string {
-  const n = figure.value.toFixed(1)
+  const n = formatDecimal(figure.value)
   if (figure.unit === '%') return `${n}%`
   if (figure.unit === 'pp') return `${n} ${Math.abs(figure.value) === 1 ? 'point' : 'points'}`
   if (figure.unit === 'R') return formatRand(figure.value, Number.isInteger(figure.value) ? 0 : 2)
   return n
 }
 
-/**
- * "R1 045.45": a space between thousands and a decimal point, written by hand
- * so server and browser render the same string.
- */
-export function formatRand(value: number, decimals = 2): string {
-  const [whole, fraction] = Math.abs(value).toFixed(decimals).split('.')
-  const grouped = whole.replace(/\B(?=(\d{3})+(?!\d))/g, '\u00a0')
-  return `${value < 0 ? '-' : ''}R${grouped}${fraction ? `.${fraction}` : ''}`
-}
+export { formatRand }

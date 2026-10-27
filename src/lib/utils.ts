@@ -1,6 +1,17 @@
 import { clsx, type ClassValue } from 'clsx'
-import { twMerge } from 'tailwind-merge'
+import { extendTailwindMerge } from 'tailwind-merge'
 import { ProvinceCode } from '@/types'
+
+// The type scale in tailwind.config.ts adds text-caption, text-small and so on.
+// Without this, tailwind-merge reads them as colours and drops them next to a
+// text colour class such as text-muted.
+const twMerge = extendTailwindMerge({
+  extend: {
+    classGroups: {
+      'font-size': [{ text: ['caption', 'small', 'body', 'lede', 'h3', 'h2', 'h1', 'figure'] }],
+    },
+  },
+})
 
 // ─── Class merging ────────────────────────────────────────────────────────────
 export function cn(...inputs: ClassValue[]) {
