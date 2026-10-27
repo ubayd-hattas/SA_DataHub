@@ -3,6 +3,8 @@
   "title": "CPI headline: index numbers and year-on-year rates",
   "publisher": "Statistics South Africa (Stats SA)",
   "file": "sources/releases/CPIHistory (1).pdf (supplied by the maintainer; not committed)",
+  "source_url": "https://www.statssa.gov.za/publications/P0141/CPIHistory.pdf",
+  "downloaded_on": "2026-10-26",
   "tables": "Table B1, CPI headline index numbers (Dec 2024 = 100), page 1; Table B2, CPI headline year-on-year rates, pages 2 and 3",
   "publisher_basis": "The file does not name its publisher on the page. It is attributed to Stats SA because its footnotes say the rates are the official rates as published in the monthly CPI release and point to the Stats SA website, and because its 2022 to 2026 rows match Table B of Stats SA P0141 September 2026 (page 4) exactly.",
   "data_released": "2026-10-21",
