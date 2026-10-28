@@ -25,6 +25,14 @@ export interface UpdateHistoryEntry {
 export const UPDATE_HISTORY: UpdateHistoryEntry[] = [
   {
     date: '2026-10-28',
+    datasetId: 'youth-unemployment',
+    datasetLabel: 'Youth Unemployment',
+    type: 'correction',
+    summary:
+      'Two youth figures are no longer shown: the expanded youth unemployment rate (60.8%, Q4 2025) and the NEET rate (37.2%, 2025). Their source, QLFS Q4 2025, is not in the files SA Data Hub holds, so their values and release date cannot be checked. The 15 to 24 rate (62.8%) and the 15 to 34 rate (47.4%) for Q2 2026 were checked against QLFS Q2 2026, Table 2.2, pages 26 and 27; the 15 to 34 rate is worked out from the published counts.',
+  },
+  {
+    date: '2026-10-28',
     datasetId: 'census',
     datasetLabel: 'Census 2022 municipalities',
     type: 'correction',
