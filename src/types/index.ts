@@ -50,6 +50,8 @@ export interface Statistic {
   description: string
   source: DataSource
   lastUpdated: string
+  /** Why the record is kept in the file but not shown on the site (no traceable release date, for example). */
+  withheld?: string
   province?: Province
   series?: DataSeries[]
   insight?: Insight
