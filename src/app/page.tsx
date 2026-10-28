@@ -10,6 +10,7 @@ import { getAllMunicipalities } from '@/data/mock'
 import { formatLongDate, getSource, isCpi } from '@/lib/explainers'
 import { getHeadlineNumbers, getTopicRows } from '@/lib/headline-numbers'
 import { MONEY_VALUE_PATH } from '@/lib/money-value'
+import { assertSiteSourced } from '@/lib/sourcing'
 import { HUB_PATH, HUB_TITLE } from '@/lib/census-hub'
 import { buildPageMetadata } from '@/lib/seo'
 
@@ -29,6 +30,8 @@ export const metadata: Metadata = { ...baseMetadata, title: { absolute: TITLE } 
 const METRO_SHORTCUTS = ['CPT', 'ETH', 'TSH', 'JHB']
 
 export default function HomePage() {
+  // The homepage is static, so this fails `next build` on any unsourced statistic.
+  assertSiteSourced()
   const headline = getHeadlineNumbers()
 
   const municipalities: MunicipalityOption[] = getAllMunicipalities().map((m) => ({ id: m.id, name: m.name, province: m.provinceName }))

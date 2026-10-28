@@ -123,7 +123,8 @@ export const categories: Category[] = [
 
 // ─── Statistics ───────────────────────────────────────────────────────────────
 
-export const statistics: Statistic[] = [
+/** Every record in the dataset files, including withheld ones. */
+export const allStatistics: Statistic[] = [
   ...(unemploymentData.statistics  as Statistic[]),
   ...(youthUnemployment.statistics as Statistic[]),
   ...(labourForceData.statistics   as Statistic[]),
@@ -136,6 +137,9 @@ export const statistics: Statistic[] = [
   ...(housingData.statistics       as Statistic[]),
   ...(censusData.statistics        as Statistic[]),
 ]
+
+/** The statistics the site shows: every record that is not withheld. */
+export const statistics: Statistic[] = allStatistics.filter((s) => !s.withheld)
 
 // ─── Province data ────────────────────────────────────────────────────────────
 
