@@ -145,9 +145,11 @@ describe('comparisons', () => {
     ])
   })
 
-  it('writes percentage-point gaps as pts', () => {
-    expect(gapText(80, 73.8, 'percent')).toBe('6.2 pts above')
-    expect(gapText(3.1, 3.4, 'number')).toBe('0.3 below')
+  it('writes gaps with their unit: pts for shares, the noun for counts and numbers', () => {
+    expect(gapText(80, 73.8, { kind: 'percent' })).toBe('is 6.2 pts higher')
+    expect(gapText(5.1, 3.4, { kind: 'number', noun: 'people per household' })).toBe('has 1.7 more people per household')
+    expect(gapText(3.1, 3.4, { kind: 'number', noun: 'people per household' })).toBe('has 0.3 fewer people per household')
+    expect(gapText(120, 100, { kind: 'count', noun: 'people' })).toBe('has 20.0% more people')
   })
 
   it('gives notes without verdicts', () => {
