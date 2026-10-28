@@ -230,7 +230,7 @@ export function QlfsExplainerView({ explainer }: { explainer: QlfsExplainer }) {
         <Prose className="mt-3">
           <p>
             Some older SA Data Hub pages show an &ldquo;expanded&rdquo; unemployment rate. This release does not use that term
-            or publish such a rate, and neither does the Q1 2026 release in our files. We have no release in hand that defines
+            or publish such a rate, and neither do the Q4 2025 and Q1 2026 releases in our files. We have no release in hand that defines
             it, so we do not quote a definition or a figure for it here. LU3 is a different measure and should not be read as the
             expanded rate.
           </p>

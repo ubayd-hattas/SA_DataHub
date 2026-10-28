@@ -17,3 +17,14 @@ describe('stories', () => {
     expect(html).toContain(`href="${story.dataAsOf.topicPath}"`)
   })
 })
+
+describe('story claims that cannot be traced', () => {
+  it('are gone from the story text', async () => {
+    const { STORIES } = await import('@/data/stories')
+    const { SCROLL_STORIES } = await import('@/data/scroll-stories')
+    const text = JSON.stringify([STORIES, SCROLL_STORIES])
+    for (const claim of ['economists', 'stopped reporting', 'highest since', 'most reliable crime statistic', 'structural', 'well documented']) {
+      expect(text, claim).not.toContain(claim)
+    }
+  })
+})

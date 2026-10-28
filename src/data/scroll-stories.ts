@@ -56,9 +56,9 @@ By any global benchmark, this is a crisis. South Africa's unemployment rate is a
       heading: 'Beyond the headline: potential labour force',
       body: `The 33.6% official rate captures people who have actively looked for work. But South Africa also has a vast population of "discouraged work-seekers" and persons with an unmet need for employment.
 
-When these jobseekers are included, the combined rate of unemployment and the potential labour force (LU3) reached 43.8% in Q2 2026. Stats SA stopped reporting the former "expanded unemployment rate" after Q2 2025 in favour of the international LU3 standard.
+When these jobseekers are included, the combined rate of unemployment and the potential labour force (LU3) reached 43.8% in Q2 2026.
 
-The gap between the official rate and LU3 — over 10 percentage points — reflects the severe structural challenge of the labour market, where millions of potential workers are outside the active search pool.`,
+The gap between the official rate and LU3 is more than 10 percentage points.`,
       highlight: 'The combined unemployment and potential labour force rate (LU3) stood at 43.8% in Q2 2026.',
       visualization: {
         type: 'line',
@@ -76,7 +76,7 @@ The gap between the official rate and LU3 — over 10 percentage points — refl
       heading: 'Youth: a generation locked out',
       body: `The unemployment crisis is most severe among young South Africans. For those aged 15 to 34, the unemployment rate was 44.8% in Q4 2025. For the narrower 15–24 age group, it reaches 61.4% — more than six in ten young people actively seeking work cannot find it.
 
-Youth unemployment in South Africa is structural, not just cyclical. Even during periods of economic growth, young people without experience, networks, or credentials face near-insurmountable barriers to entering the formal labour market.
+Even during periods of economic growth, young people without experience, networks, or credentials face near-insurmountable barriers to entering the formal labour market.
 
 The Western Cape, with its more diversified economy and stronger tourism sector, consistently records the lowest youth unemployment among provinces. The Eastern Cape and North West consistently record the highest.`,
       statCalloutId: 'youth-unemployment-narrow',
@@ -96,9 +96,9 @@ The Western Cape, with its more diversified economy and stronger tourism sector,
       heading: 'The 15–24 cohort: the sharpest edge',
       body: `Among those aged 15 to 24 specifically, the unemployment rate is the most extreme reading in the dataset. This cohort — school leavers and recent graduates — faces the full weight of the skills mismatch, the credential barrier, and weak demand for entry-level labour.
 
-The NEET rate (Not in Education, Employment, or Training) compounds the picture. A significant share of young South Africans are neither gaining work experience nor improving their skills through study — a structural trap that makes future employment progressively harder to attain.
+The NEET rate (Not in Education, Employment, or Training) compounds the picture. A significant share of young South Africans are neither gaining work experience nor improving their skills through study.
 
-The 2024 matric pass rate of 87.3% was a record high, but matriculating into an economy that cannot absorb new entrants means that even academic progress does not resolve the underlying structural problem.`,
+The 2024 matric pass rate was 87.3%.`,
       statCalloutId: 'youth-unemployment-1524',
       visualization: {
         type: 'line',
@@ -115,7 +115,7 @@ The 2024 matric pass rate of 87.3% was a record high, but matriculating into an 
       heading: 'Who is even in the labour force?',
       body: `The labour force participation rate (LFPR) measures the share of the working-age population (15–64) that is either employed or actively looking for work. A low LFPR means large numbers of working-age people are not participating in the formal economy at all.
 
-South Africa's LFPR has remained structurally low by international standards — reflecting the high share of discouraged workers and the large informal economy. Understanding the LFPR is essential context for reading the narrow unemployment rate.
+Understanding the LFPR is essential context for reading the narrow unemployment rate.
 
 When the LFPR rises, it often temporarily pushes the unemployment rate up — not because fewer people have jobs, but because more discouraged workers have re-entered the market and started searching again. This is why a rising unemployment rate can sometimes be a sign of cautious optimism about job prospects.`,
       statCalloutId: 'lfpr-overall',
@@ -136,7 +136,7 @@ When the LFPR rises, it often temporarily pushes the unemployment rate up — no
 
 The economy continues to struggle to generate formal-sector jobs at the scale required. South Africa's working-age population grows by roughly 500,000 people annually, outpacing job absorption.
 
-The SARB has kept interest rates elevated (repo 7.25%) to maintain price stability, while medium-term growth projections remain well below the 5–6% economists say is needed to make a dent in structural unemployment. The gap remains enormous.`,
+The SARB has kept interest rates elevated (repo 7.25%) to maintain price stability. The gap remains enormous.`,
       statCalloutId: 'unemployment-national',
       highlight: 'At 33.6% in Q2 2026, South Africa\'s unemployment remains among the highest in the world.',
       visualization: {
