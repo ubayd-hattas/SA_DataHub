@@ -50,6 +50,8 @@ export interface Statistic {
   description: string
   source: DataSource
   lastUpdated: string
+  /** Why the record is kept in the file but not shown on the site (no traceable release date, for example). */
+  withheld?: string
   province?: Province
   series?: DataSeries[]
   insight?: Insight
@@ -344,7 +346,7 @@ export interface MunicipalityRecord {
   // ── Metadata ──────────────────────────────────────────────────────────────
   lastUpdated: string       // ISO date
   boundaryYear: number      // 2022
-  erratumApplied: boolean   // true for MP325 and MP322
+  erratumApplied: boolean   // true for MP321 and MP326 (Provinces at a glance erratum)
 }
 
 export interface MunicipalitiesDataset {

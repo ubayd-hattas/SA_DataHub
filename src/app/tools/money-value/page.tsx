@@ -6,7 +6,7 @@ import { Column, PageHeader, Prose, Section, linkClass } from '@/components/edit
 import { SourceDates } from '@/components/explainers/FigureValue'
 import { ValueCalculator } from '@/components/explainers/ValueCalculator'
 import { EXPLAINERS } from '@/data/explainers'
-import { getSource } from '@/lib/explainers'
+import { getSource, isCpi } from '@/lib/explainers'
 import { LATEST_INDEX, VALUE_YEARS, monthLabel } from '@/lib/cpi-history'
 import {
   MONEY_VALUE_PATH,
@@ -54,7 +54,7 @@ export async function generateMetadata({ searchParams }: MoneyValuePageProps): P
 
 export default async function MoneyValuePage({ searchParams }: MoneyValuePageProps) {
   const query = parseMoneyValueQuery(await searchParams)
-  const cpi = EXPLAINERS.find((e) => e.kind === 'cpi')!
+  const cpi = EXPLAINERS.find(isCpi)!
   const history = getSource(cpi, cpi.history.sourceId)
 
   const breadcrumbs = [

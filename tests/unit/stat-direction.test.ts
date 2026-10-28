@@ -10,7 +10,7 @@ import type { Statistic } from '@/types'
 import { formatChange, getGoodDirection, judgeMove, GOOD_DIRECTION_BY_STAT } from '@/lib/utils'
 import { generateInsight, generateEnrichedInsight } from '@/lib/insights'
 import { generateExplanation } from '@/lib/explanations'
-import { getStatById, statistics } from '@/data/mock'
+import { allStatistics, getStatById, statistics } from '@/data/mock'
 
 function stat(id: string): Statistic {
   const s = getStatById(id)
@@ -27,9 +27,9 @@ describe('getGoodDirection', () => {
     }
   })
 
-  it('every entry refers to a statistic that exists', () => {
+  it('every entry refers to a record that exists (shown or withheld)', () => {
     for (const id of Object.keys(GOOD_DIRECTION_BY_STAT)) {
-      expect(getStatById(id), id).toBeDefined()
+      expect(allStatistics.find((s) => s.id === id), id).toBeDefined()
     }
   })
 
@@ -39,8 +39,8 @@ describe('getGoodDirection', () => {
     expect(judgeMove(stat('female-labour-participation'), 'up')).toBe('positive')
   })
 
-  it('treats a fall in the share of people with no income as good', () => {
-    expect(judgeMove(stat('census-no-income'), 'down')).toBe('positive')
+  it('does not show the untraced no-income share', () => {
+    expect(statistics.find((s) => s.id === 'census-no-income')).toBeUndefined()
   })
 
   it('gives policy and lending rates no good or bad verdict', () => {
@@ -61,7 +61,7 @@ describe('getGoodDirection', () => {
 
   it('judges other statistics by their declared direction', () => {
     expect(judgeMove(stat('unemployment-national'), 'up')).toBe('negative')
-    expect(judgeMove(stat('youth-neet-rate'), 'down')).toBe('positive')
+    expect(judgeMove(stat('murder-rate'), 'down')).toBe('positive')
     expect(judgeMove(stat('matric-pass-rate'), 'up')).toBe('positive')
     expect(judgeMove(stat('cpi-headline'), 'up')).toBe('negative')
   })

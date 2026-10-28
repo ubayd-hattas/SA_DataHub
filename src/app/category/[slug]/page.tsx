@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { assertSiteSourced } from '@/lib/sourcing'
 import { Change, NumberBlock } from '@/components/editorial/NumberBlock'
 import { Column, PageHeader, linkClass } from '@/components/editorial/Section'
 import { SourceLine } from '@/components/editorial/SourceLine'
@@ -25,7 +26,7 @@ import {
   seriesPoints,
   statDates,
 } from '@/lib/stat-summary'
-import { formatLongDate } from '@/lib/explainers'
+import { formatLongDate, isQlfs } from '@/lib/explainers'
 import { buildPageMetadata } from '@/lib/seo'
 import { Breadcrumbs } from '@/components/seo/Breadcrumbs'
 import { JsonLd } from '@/components/seo/JsonLd'
@@ -44,6 +45,8 @@ interface CategoryPageProps {
 }
 
 export function generateStaticParams() {
+  // Fails `next build` if a statistic lacks a source, release date or checked date.
+  assertSiteSourced()
   return [
     'unemployment', 'gdp', 'inflation', 'crime',
     'education', 'population', 'housing', 'census',
@@ -65,7 +68,7 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
   const category = getCategoryById(slug)
   if (!category) return {}
   return buildPageMetadata({
-    title: `${category.label} Statistics`,
+    title: `${category.label} statistics`,
     description: `${category.description} View charts, trends, citations, and CSV downloads from official South African sources.`,
     path: `/category/${slug}`,
   })
@@ -165,6 +168,13 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
               ) : null
             }
           />
+          {explainer && isQlfs(explainer) && (
+            <p className="mt-3 text-body text-ink">
+              <Link href={`/explainers/${explainer.slug}#more-than-one-rate`} className={linkClass}>
+                Why South Africa has more than one unemployment rate
+              </Link>
+            </p>
+          )}
           {slug === 'inflation' && (
             <p className="mt-3 text-body text-ink">
               What was money worth?{' '}
