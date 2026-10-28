@@ -29,7 +29,7 @@
  */
 
 import { Statistic } from '@/types'
-import { DatasetRegistryEntry } from '@/lib/registry'
+import type { DatasetRegistryEntry } from '@/lib/registry'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -162,7 +162,6 @@ function buildHarvardHtml({ authorName, year, title, url, accessDate }: HarvardI
  */
 export function generateCitation(stat: Statistic, style: CitationStyle): CitationResult {
   const source = stat.source
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const title      = source.publicationName ?? (source as any).release ?? stat.title
   const year       = yearFrom(source.publicationDate ?? stat.lastUpdated)
   const authorName = source.name
