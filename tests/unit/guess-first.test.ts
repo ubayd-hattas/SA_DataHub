@@ -38,7 +38,8 @@ describe('GuessFirst', () => {
     expect(html).toContain('aria-valuetext="45.0%"')
     expect(html).toContain('>Show the answer</button>')
     expect(html).toContain('>Skip</button>')
-    expect(html).toContain('aria-live="polite"')
+    // The buttons go once the answer shows, so the answer takes focus.
+    expect(html).toContain('tabindex="-1"')
   })
 
   it('does not put the answer or its source in the page before it is revealed', () => {
