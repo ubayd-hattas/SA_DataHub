@@ -6,7 +6,15 @@
  */
 
 import { CategoryId, Province } from '@/types'
-import { DatasetRegistryEntry } from '@/lib/registry'
+import type { DatasetRegistryEntry } from '@/lib/registry'
+
+/** The registry fields search reads. Pages pass only these to the browser. */
+export type SearchRegistryEntry = Pick<DatasetRegistryEntry, 'id' | 'label' | 'description' | 'categoryId' | 'statIds' | 'updateFrequency'>
+
+/** Trim registry entries to what search needs. */
+export function toSearchRegistry(entries: SearchRegistryEntry[]): SearchRegistryEntry[] {
+  return entries.map(({ id, label, description, categoryId, statIds, updateFrequency }) => ({ id, label, description, categoryId, statIds, updateFrequency }))
+}
 import { provinceLabels } from '@/lib/utils'
 
 export interface SearchIntent {
@@ -96,7 +104,7 @@ export function detectProvince(query: string): Province | undefined {
   return matches[0].province
 }
 
-export function detectCategories(query: string, registry: DatasetRegistryEntry[]): CategoryId[] {
+export function detectCategories(query: string, registry: SearchRegistryEntry[]): CategoryId[] {
   const q = normalise(query)
   const found = new Set<CategoryId>()
 
@@ -119,7 +127,7 @@ export function detectCategories(query: string, registry: DatasetRegistryEntry[]
 
 export function detectDatasets(
   query: string,
-  registry: DatasetRegistryEntry[]
+  registry: SearchRegistryEntry[]
 ): string[] {
   const q = normalise(query)
   const ids = new Set<string>()
@@ -138,7 +146,7 @@ export function detectDatasets(
 
 export function parseSearchIntent(
   query: string,
-  registry: DatasetRegistryEntry[]
+  registry: SearchRegistryEntry[]
 ): SearchIntent {
   const rawQuery = query.trim()
   const normalised = normalise(rawQuery)
