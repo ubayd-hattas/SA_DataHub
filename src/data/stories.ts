@@ -24,13 +24,14 @@ export const STORIES: Story[] = [
     categoryLabel: 'Unemployment',
     readingTimeMinutes: 7,
     publishedDate: '2026-01-15',
-    lastUpdated: '2026-03-01',
+    lastUpdated: '2026-10-23',
     featured: true,
     coverEmoji: '📉',
     summary: 'South Africa has one of the world\'s highest unemployment rates. At 33.6%, more than 8.5 million people are jobless. This story examines the scale of the crisis, its causes, and what progress looks like.',
     relatedStatIds: ['unemployment-national', 'youth-unemployment-narrow', 'lfpr-overall'],
     relatedSlugs: ['inflation-what-it-means', 'gdp-growth-slowdown'],
     tags: ['unemployment', 'labour market', 'youth', 'QLFS'],
+    dataAsOf: { note: "The national unemployment rate here is for Q2 2026. The youth rates are for Q4 2025, older than the youth figures on the Unemployment page.", topicPath: '/category/unemployment', topicLabel: 'Unemployment' },
     sections: [
       {
         id: 'scale',
@@ -74,13 +75,14 @@ export const STORIES: Story[] = [
     categoryLabel: 'Inflation and prices',
     readingTimeMinutes: 5,
     publishedDate: '2026-02-10',
-    lastUpdated: '2026-05-01',
+    lastUpdated: '2026-10-23',
     featured: true,
     coverEmoji: '🛒',
     summary: 'South Africa\'s annual average inflation hit 3.2% in 2025 — the lowest in 21 years. The headline number suggests relief, but food prices, electricity tariffs, and interest rates still squeeze millions of households.',
     relatedStatIds: ['cpi-headline', 'food-inflation', 'repo-rate-sarb', 'annual-cpi-avg'],
     relatedSlugs: ['south-africa-unemployment-crisis', 'gdp-growth-slowdown'],
     tags: ['inflation', 'CPI', 'SARB', 'interest rates', 'food prices'],
+    dataAsOf: { note: "Monthly figures here run to September 2026. Inflation is published every month, so check the Inflation page for the latest rate.", topicPath: '/category/inflation', topicLabel: 'Inflation and prices' },
     sections: [
       {
         id: 'what-is-cpi',
@@ -119,13 +121,14 @@ export const STORIES: Story[] = [
     categoryLabel: 'GDP and economy',
     readingTimeMinutes: 6,
     publishedDate: '2026-03-15',
-    lastUpdated: '2026-03-15',
+    lastUpdated: '2026-10-23',
     featured: false,
     coverEmoji: '📊',
     summary: 'South Africa\'s economy grew 1.1% in 2025 — its strongest performance since 2022. But economists say 5% annual growth is needed to make a real dent in unemployment. This story explains the gap between what is happening and what is needed.',
     relatedStatIds: ['gdp-growth', 'gdp-annual-growth', 'gdp-nominal'],
     relatedSlugs: ['south-africa-unemployment-crisis', 'inflation-what-it-means'],
     tags: ['GDP', 'economic growth', 'Stats SA', 'load shedding'],
+    dataAsOf: { note: "Quarterly figures here run to Q2 2026. GDP is published every quarter, so check the GDP page for the latest figure.", topicPath: '/category/gdp', topicLabel: 'GDP and economy' },
     sections: [
       {
         id: 'recent-gdp',
@@ -169,6 +172,7 @@ export const STORIES: Story[] = [
     relatedStatIds: ['murder-rate', 'crime-contact', 'crime-robbery'],
     relatedSlugs: ['south-africa-unemployment-crisis'],
     tags: ['crime', 'SAPS', 'murder', 'contact crime'],
+    dataAsOf: { note: "This story uses the SAPS annual figures for 2023/24, which are still the latest annual figures on SA Data Hub.", topicPath: '/category/crime', topicLabel: 'Crime' },
     sections: [
       {
         id: 'what-saps-publishes',
@@ -207,6 +211,7 @@ export const STORIES: Story[] = [
     relatedStatIds: ['matric-pass-rate', 'education-literacy', 'higher-education-enrolment'],
     relatedSlugs: ['south-africa-unemployment-crisis'],
     tags: ['education', 'matric', 'DBE', 'NSC', 'inequality'],
+    dataAsOf: { note: "This story is about the 2024 matric results. The 2025 national result has since been announced.", topicPath: '/category/education', topicLabel: 'Education' },
     sections: [
       {
         id: 'the-record',
