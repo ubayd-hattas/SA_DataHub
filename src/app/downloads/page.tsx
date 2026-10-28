@@ -21,7 +21,7 @@ import { breadcrumbSchema } from '@/lib/schema'
 export const metadata: Metadata = buildPageMetadata({
   title: 'Data Downloads',
   description:
-    'Download South African public datasets as CSV files — unemployment, GDP, inflation, crime, education, census, and provincial data. Free, no sign-up required.',
+    'Download South African public datasets as CSV files: unemployment, GDP, inflation, crime, education, census and provincial data. Free, no sign-up required.',
   path: '/downloads',
 })
 

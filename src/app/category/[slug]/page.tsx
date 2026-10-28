@@ -144,7 +144,8 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
 
   const schemaBlocks = [
     breadcrumbSchema(breadcrumbs),
-    ...(registryEntries[0] ? [datasetSchema(registryEntries[0], `/category/${slug}`)] : []),
+    // One Dataset per file shown on the page (inflation also shows the SARB interest rates).
+    ...registryEntries.filter((e) => e.statIds.length > 0).map((e) => datasetSchema(e, `/category/${slug}`)),
   ]
 
   return (

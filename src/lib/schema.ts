@@ -79,22 +79,45 @@ export function breadcrumbSchema(items: BreadcrumbItem[]) {
   }
 }
 
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+/**
+ * A series label as an ISO 8601 date or year-month for temporalCoverage:
+ * "Q1 2022" starts 2022-01 and ends 2022-03, "May 2025" is 2025-05,
+ * "2017/18" (a financial year) starts 2017 and ends 2018, "2015" is 2015.
+ */
+export function isoPeriod(label: string | undefined, edge: 'start' | 'end'): string | null {
+  if (!label) return null
+  const pad = (n: number) => String(n).padStart(2, '0')
+  let m = /^Q([1-4]) (\d{4})$/.exec(label)
+  if (m) return `${m[2]}-${pad(edge === 'start' ? (Number(m[1]) - 1) * 3 + 1 : Number(m[1]) * 3)}`
+  m = /^([A-Z][a-z]{2}) (\d{4})$/.exec(label)
+  if (m && MONTHS.includes(m[1])) return `${m[2]}-${pad(MONTHS.indexOf(m[1]) + 1)}`
+  m = /^(\d{4})\/(\d{2})$/.exec(label)
+  if (m) return edge === 'start' ? m[1] : `${m[1].slice(0, 2)}${m[2]}`
+  m = /^(\d{4})$/.exec(label)
+  return m ? m[1] : null
+}
+
 export function datasetSchema(entry: DatasetRegistryEntry, path: string) {
+  const start = isoPeriod(entry.seriesStart, 'start')
+  const end = isoPeriod(entry.seriesEnd, 'end')
+  const publisher = {
+    '@type': 'Organization',
+    name: entry.sourceName,
+    ...(entry.sourceShortName ? { alternateName: entry.sourceShortName } : {}),
+    url: entry.sourceUrl,
+  }
   return {
     '@context': 'https://schema.org',
     '@type': 'Dataset',
     name: entry.label,
     description: entry.description,
     url: absoluteUrl(path),
-    creator: {
-      '@type': 'Organization',
-      name: entry.sourceName,
-      url: entry.sourceUrl,
-    },
+    creator: publisher,
+    publisher,
     provider: { '@id': `${SITE_URL}/#organization` },
-    temporalCoverage: entry.seriesEnd
-      ? `${entry.seriesStart}/${entry.seriesEnd}`
-      : entry.seriesStart,
+    ...(start ? { temporalCoverage: end && end !== start ? `${start}/${end}` : start } : {}),
     spatialCoverage: {
       '@type': 'Place',
       name: 'South Africa',
@@ -103,6 +126,13 @@ export function datasetSchema(entry: DatasetRegistryEntry, path: string) {
         box: '-34.8351 16.3449 -22.1250 32.8301',
       },
     },
+    distribution: [
+      {
+        '@type': 'DataDownload',
+        encodingFormat: 'text/csv',
+        contentUrl: absoluteUrl(`/data/${entry.id}.csv`),
+      },
+    ],
     license: 'https://creativecommons.org/licenses/by/4.0/',
     isAccessibleForFree: true,
     keywords: [entry.categoryId, entry.geographicLevel, 'South Africa', 'statistics'].filter(Boolean),

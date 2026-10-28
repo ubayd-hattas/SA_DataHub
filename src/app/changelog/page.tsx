@@ -11,7 +11,7 @@ import { breadcrumbSchema } from '@/lib/schema'
 export const metadata: Metadata = buildPageMetadata({
   title: 'Platform Changelog',
   description:
-    'Version history and release notes for SA Data Hub — new features, data additions, and platform improvements.',
+    'Version history and release notes for SA Data Hub: new features, data additions and platform improvements.',
   path: '/changelog',
 })
 

@@ -2,6 +2,9 @@ import type { Metadata } from 'next'
 
 /** Canonical apex domain — all URLs, sitemaps, and redirects use this host. */
 export const SITE_URL = 'https://sadatahub.tech'
+
+/** The RSS feed, linked from every page's head. */
+export const FEED_ALTERNATE = { 'application/rss+xml': [{ url: '/feed.xml', title: 'SA Data Hub: explainers, stories and updates' }] }
 export const SITE_NAME = 'SA Data Hub'
 export const SITE_TAGLINE = "South Africa's public data, made clear"
 export const SITE_DESCRIPTION =
@@ -50,7 +53,7 @@ export function buildPageMetadata({
   modifiedTime,
   authors,
   tags,
-  image = { url: '/opengraph-image', alt: `${SITE_NAME} — ${SITE_TAGLINE}` },
+  image = { url: '/opengraph-image', alt: `${SITE_NAME}: ${SITE_TAGLINE}` },
 }: PageMetadataOptions): Metadata {
   const canonical = absoluteUrl(path)
 
@@ -58,7 +61,8 @@ export function buildPageMetadata({
     title,
     description,
     // A noindex page (e.g. the 404) has no canonical URL to declare.
-    ...(noIndex ? { robots: { index: false, follow: true } } : { alternates: { canonical } }),
+    // Page alternates replace the layout's, so indexed pages repeat the feed link. Noindex pages keep the layout's.
+    ...(noIndex ? { robots: { index: false, follow: true } } : { alternates: { canonical, types: FEED_ALTERNATE } }),
     openGraph: {
       title,
       description,
