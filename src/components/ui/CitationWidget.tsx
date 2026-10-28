@@ -35,7 +35,7 @@
 import { useState } from 'react'
 import { Quote, Copy, Check, ChevronDown, ChevronUp, ExternalLink } from 'lucide-react'
 import { Statistic } from '@/types'
-import { DatasetRegistryEntry } from '@/lib/registry'
+import type { DatasetRegistryEntry } from '@/lib/registry'
 import {
   CitationStyle,
   CitationResult,

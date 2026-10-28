@@ -7,7 +7,8 @@ import { StatCard } from '@/components/ui/StatCard'
 import { LineChartCard } from '@/components/charts/LineChartCard'
 import { HistoricalTimeline } from '@/components/ui/HistoricalTimeline'
 import { SearchBar } from '@/components/ui/SearchBar'
-import { searchAllWithData } from '@/data/providers/utils'
+import { intelligentSearch } from '@/lib/search'
+import type { SearchRegistryEntry } from '@/lib/search-intent'
 import { Category, CategoryId, Province, ProvinceData, SearchResult, SearchResultKind, Statistic } from '@/types'
 import { cn, provinceLabels } from '@/lib/utils'
 
@@ -78,9 +79,11 @@ interface DashboardViewProps {
   statistics: Statistic[]
   categories: Category[]
   provinces: ProvinceData[]
+  /** Passed from the server so the browser bundle does not import the registry and every dataset with it. */
+  registry: SearchRegistryEntry[]
 }
 
-export default function DashboardView({ statistics, categories, provinces }: DashboardViewProps) {
+export default function DashboardView({ statistics, categories, provinces, registry }: DashboardViewProps) {
   const [selectedCategory, setSelectedCategory] = useState<CategoryId | 'all'>('all')
   const [selectedProvince, setSelectedProvince] = useState<Province>('all')
   const [search, setSearch] = useState('')
@@ -98,8 +101,8 @@ export default function DashboardView({ statistics, categories, provinces }: Das
   }, [])
 
   const searchResults = useMemo(
-    () => (search.trim() ? searchAllWithData(search, statistics, provinces, categories) : []),
-    [categories, provinces, search, statistics]
+    () => (search.trim() ? intelligentSearch(search, statistics, provinces, categories, registry) : []),
+    [categories, provinces, registry, search, statistics]
   )
 
   const filtered = useMemo(() => {
@@ -115,7 +118,7 @@ export default function DashboardView({ statistics, categories, provinces }: Das
       const matchCategory = selectedCategory === 'all' || s.categoryId === selectedCategory
       return matchCategory
     })
-  }, [selectedCategory, search, searchResults])
+  }, [selectedCategory, search, searchResults, statistics])
 
   // Pick a few stats with series for the chart showcase
   const chartStats = useMemo(

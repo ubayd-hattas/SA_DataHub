@@ -2,6 +2,8 @@ import type { Metadata } from 'next'
 import { getAppDataProvider } from '@/data/providers'
 import { buildPageMetadata } from '@/lib/seo'
 import DashboardView from './DashboardView'
+import { datasetRegistry } from '@/lib/registry'
+import { toSearchRegistry } from '@/lib/search-intent'
 
 // Every statistic here is also on its topic page (/category/*), which is the
 // indexed copy. The dashboard stays crawlable (follow) but is not indexed, and
@@ -27,6 +29,7 @@ export default async function DashboardPage() {
       statistics={statistics}
       categories={categories}
       provinces={provinces}
+      registry={toSearchRegistry(datasetRegistry)}
     />
   )
 }

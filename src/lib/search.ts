@@ -14,7 +14,7 @@ import {
   ProvinceData,
   Province,
 } from '@/types'
-import type { DatasetRegistryEntry } from '@/lib/registry'
+import type { SearchRegistryEntry } from '@/lib/search-intent'
 import {
   parseSearchIntent,
   SearchIntent,
@@ -127,7 +127,7 @@ function buildCategoryLabels(categories: Category[]): Record<string, string> {
   return Object.fromEntries(categories.map((c) => [c.id, c.label]))
 }
 
-function statInRegistryDataset(statId: string, datasetIds: string[], registry: DatasetRegistryEntry[]): boolean {
+function statInRegistryDataset(statId: string, datasetIds: string[], registry: SearchRegistryEntry[]): boolean {
   return datasetIds.some((dsId) => registry.find((e) => e.id === dsId)?.statIds.includes(statId))
 }
 
@@ -180,7 +180,7 @@ function provinceDisplayValue(province: ProvinceData, intent: SearchIntent, rawQ
 
 // ─── Dataset (registry) scoring ───────────────────────────────────────────────
 
-function scoreDataset(entry: DatasetRegistryEntry, intent: SearchIntent, rawQuery: string): number {
+function scoreDataset(entry: SearchRegistryEntry, intent: SearchIntent, rawQuery: string): number {
   const q = rawQuery.toLowerCase()
   let score = 0
 
@@ -213,7 +213,7 @@ function scoreStatistic(
   stat: Statistic,
   intent: SearchIntent,
   rawQuery: string,
-  registry: DatasetRegistryEntry[],
+  registry: SearchRegistryEntry[],
   expandedQueries: string[]
 ): number {
   let maxScore = 0
@@ -257,7 +257,7 @@ export function intelligentSearch(
   statistics: Statistic[],
   provinces: ProvinceData[],
   categories: Category[],
-  registry: DatasetRegistryEntry[]
+  registry: SearchRegistryEntry[]
 ): SearchResult[] {
   if (!query.trim()) return []
 
@@ -335,7 +335,7 @@ export function searchStatistics(
   options?: {
     provinces?: ProvinceData[]
     categories?: Category[]
-    registry?: DatasetRegistryEntry[]
+    registry?: SearchRegistryEntry[]
   }
 ): SearchResult[] {
   if (!options?.registry || !options.categories) {
