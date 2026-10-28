@@ -48,6 +48,28 @@ describe('every statistic can be summarised', () => {
   })
 })
 
+describe('unemployment topic page', () => {
+  it('links the Q2 2026 explainer and its section on the different rates', async () => {
+    const { default: CategoryPage } = await import('@/app/category/[slug]/page')
+    const { renderToStaticMarkup } = await import('react-dom/server')
+    const html = renderToStaticMarkup(await CategoryPage({ params: Promise.resolve({ slug: 'unemployment' }) }))
+    expect(html).toContain('href="/explainers/qlfs-2026-q2"')
+    expect(html).toContain('href="/explainers/qlfs-2026-q2#more-than-one-rate"')
+  })
+})
+
+describe('topic page metadata', () => {
+  it('uses a sentence-case browser tab title', async () => {
+    const { generateMetadata } = await import('@/app/category/[slug]/page')
+    for (const c of categories) {
+      const meta = await generateMetadata({ params: Promise.resolve({ slug: c.id }) })
+      expect(meta.title).toBe(`${c.label} statistics`)
+    }
+    const inflation = await generateMetadata({ params: Promise.resolve({ slug: 'inflation' }) })
+    expect(inflation.title).toBe('Inflation and prices statistics')
+  })
+})
+
 describe('chart takeaways', () => {
   it('state the change and the peak, worked out from the series', () => {
     expect(chartTakeaway(getStatById('cpi-headline')!)).toBe(
@@ -60,7 +82,7 @@ describe('chart takeaways', () => {
   })
 
   it('describe the latest change in the series unit', () => {
-    // The repo-rate series has 7.25, so every value in it gets two decimals.
+    // The repo-rate-sarb series has 7.25, so every value in it gets two decimals.
     expect(describeChange(getStatById('repo-rate-sarb')!)).toEqual({ text: 'Up from 7.00% in Jul 2026.', tone: 'neutral' })
   })
 })
