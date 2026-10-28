@@ -11,6 +11,7 @@ import { breadcrumbSchema } from '@/lib/schema'
 import { SourceLine } from '@/components/editorial/SourceLine'
 import { linkClass } from '@/components/editorial/Section'
 import { formatCount } from '@/lib/format'
+import { REPO_URL, reportErrorHref } from '@/lib/contact'
 
 export const metadata: Metadata = buildPageMetadata({
   title: 'Data Methodology',
@@ -189,9 +190,11 @@ const MYPE = {
 const CENSUS = {
   publisher: 'Stats SA',
   title: 'Census 2022 Provinces at a glance',
-  code: 'Report no. 03-01-43, revised',
+  code: 'Report no. 03-01-43',
   location: 'sum of the nine province rows, Person indicators per municipality, pages 6 to 44',
   releasedOn: '2023-10-10',
+  edition: 'revised edition',
+  downloadedOn: '2026-10-27',
   checkedOn: '2026-10-28',
 }
 const NUMBERS_DISAGREE = {
@@ -199,6 +202,35 @@ const NUMBERS_DISAGREE = {
   lu3: 43.8,
   censusCount: 62027503,
   midYear2026: 63522380,
+}
+
+/** Stats SA's condition for reusing its data, quoted from a release in sources/releases. */
+function ReuseCondition() {
+  return (
+    <section id="reuse" aria-labelledby="reuse-title" className="mb-12 scroll-mt-20 border-b border-rule pb-10">
+      <h2 id="reuse-title" className="font-display text-[1.5rem] font-semibold leading-snug text-ink sm:text-h2">
+        Using Stats SA&apos;s data
+      </h2>
+      <div className="mt-5 max-w-[44rem] space-y-3 text-body text-ink">
+        <p>Stats SA sets this condition on its publications:</p>
+        <blockquote className="m-0 border-l-2 border-ink pl-5 italic">
+          &ldquo;Users may apply or process this data, provided Statistics South Africa (Stats SA) is acknowledged as the
+          original source of the data; that it is specified that the application and/or analysis is the result of the
+          user&apos;s independent processing of the data; and that neither the basic data nor any reprocessed version or
+          application thereof may be sold or offered for sale in any form whatsoever without prior permission from Stats
+          SA.&rdquo;
+        </blockquote>
+        <p className="text-caption text-muted">
+          Stats SA, Census 2022 Provinces at a glance (Report no. 03-01-43), page iii.
+        </p>
+        <p>
+          So every Stats SA figure on SA Data Hub names Stats SA as the original source, and every change, share, average or
+          ranking worked out from it is SA Data Hub&apos;s own processing, not Stats SA&apos;s. SA Data Hub is free and sells
+          nothing.
+        </p>
+      </div>
+    </section>
+  )
 }
 
 function NumbersDisagree() {
@@ -268,6 +300,7 @@ export default function MethodologyPage() {
       </div>
 
       <NumbersDisagree />
+      <ReuseCondition />
 
       {/* Principles */}
       <section className="mb-10">
@@ -442,6 +475,33 @@ export default function MethodologyPage() {
           </p>
           <p>
             Historical revisions issued by Stats SA are incorporated in the next scheduled update cycle. We do not backdate individual data points between cycles unless the revision is material (defined as a change exceeding 1 percentage point for rates, or 0.5% for index levels).
+          </p>
+        </div>
+      </section>
+
+      {/* Code and corrections */}
+      <section id="code" aria-labelledby="code-title" className="mb-10 border-t border-rule pt-8">
+        <h2 id="code-title" className="font-display text-[1.5rem] font-semibold leading-snug text-ink sm:text-h2">
+          Code and corrections
+        </h2>
+        <div className="mt-4 max-w-[44rem] space-y-3 text-body text-ink">
+          <p>
+            The code, the data files and the scripts that check them against each release are public on{' '}
+            <a href={REPO_URL} className={linkClass}>
+              GitHub
+            </a>
+            . Every correction is listed on the{' '}
+            <Link href="/updates" className={linkClass}>
+              corrections and updates page
+            </Link>
+            .
+          </p>
+          <p>
+            Found a figure that does not match its source?{' '}
+            <a href={reportErrorHref('/methodology')} className={linkClass}>
+              Report an error
+            </a>
+            .
           </p>
         </div>
       </section>

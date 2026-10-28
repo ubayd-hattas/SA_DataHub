@@ -196,7 +196,7 @@ const datasetRegistryBase: DatasetRegistryEntry[] = [
     id: 'crime',
     label: 'Crime Statistics',
     description: 'Annual crime figures by category from SAPS, including murder and contact crimes.',
-    statIds: ['murder-rate', 'crime-contact', 'crime-robbery'],
+    statIds: ['murder-rate', 'crime-contact', 'crime-robbery', 'murder-q4', 'crime-contact-q4', 'crime-robbery-q4'],
     categoryId: 'crime',
     sourceName: 'South African Police Service',
     sourceShortName: 'SAPS',
