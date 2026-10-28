@@ -13,6 +13,15 @@ import { MONEY_VALUE_PATH } from '@/lib/money-value'
 import { assertSiteSourced } from '@/lib/sourcing'
 import { HUB_PATH, HUB_TITLE } from '@/lib/census-hub'
 import { buildPageMetadata } from '@/lib/seo'
+import { ANSWERS_PATH, getAnswer } from '@/data/answers'
+
+/** The four most searched questions (Search Console, 3 months to 23 October 2026). */
+const HOME_QUESTIONS = [
+  'how-many-municipalities-are-there-in-south-africa',
+  'which-province-is-a-municipality-in',
+  'how-many-people-live-in-the-metros',
+  'what-is-the-unemployment-rate-in-south-africa',
+].map((s) => getAnswer(s)!)
 
 const TITLE = "SA Data Hub: South Africa's official data, explained"
 
@@ -128,6 +137,24 @@ export default function HomePage() {
             </Link>
           </p>
         </div>
+      </Section>
+
+      {/* Questions people ask: four links into the answers section */}
+      <Section id="questions" title="Questions people ask">
+        <ul className="grid gap-x-8 gap-y-3 sm:grid-cols-2">
+          {HOME_QUESTIONS.map((a) => (
+            <li key={a.slug}>
+              <Link href={`${ANSWERS_PATH}/${a.slug}`} className={linkClass}>
+                {a.question}
+              </Link>
+            </li>
+          ))}
+        </ul>
+        <p className="mt-4 text-small">
+          <Link href={ANSWERS_PATH} className={linkClass}>
+            All questions
+          </Link>
+        </p>
       </Section>
 
       {/* 5. The eight topics, each with its latest number */}
