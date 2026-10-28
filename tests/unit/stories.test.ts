@@ -28,3 +28,11 @@ describe('story claims that cannot be traced', () => {
     }
   })
 })
+
+describe('matric "record" claims', () => {
+  it('are gone: no release in sources/releases gives a matric pass rate', () => {
+    const text = JSON.stringify(STORIES)
+    expect(text).not.toMatch(/\brecord (high|pass rate)\b|\ba record\b|record worth/i)
+    expect(STORIES.find((s) => s.slug === 'matric-results-2024')!.title).toBe('Matric 2024: an 87.3% pass rate and persistent inequalities')
+  })
+})
