@@ -53,7 +53,7 @@ export function Footer() {
                 { label: 'Release Explainers', href: '/explainers' },
                 { label: 'Data Stories', href: '/insights' },
                 { label: 'Data Downloads', href: '/downloads' },
-                { label: 'Dataset Updates', href: '/updates' },
+                { label: 'Corrections and updates', href: '/updates' },
                 { label: 'Province Explorer', href: '/provinces' },
                 { label: 'Municipalities', href: '/municipalities' },
                 { label: 'Dashboard', href: '/dashboard' },
