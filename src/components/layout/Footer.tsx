@@ -59,6 +59,7 @@ export function Footer() {
                 { label: 'Province Explorer', href: '/provinces' },
                 { label: 'Municipalities', href: '/municipalities' },
                 { label: 'Dashboard', href: '/dashboard' },
+                { label: 'Answers', href: '/answers' },
                 { label: 'Methodology', href: '/methodology' },
                 { label: 'About', href: '/about' },
                 { label: 'Changelog', href: '/changelog' },
