@@ -5,6 +5,7 @@
  */
 import { categories, getAllMunicipalities, provinces, statistics } from '@/data/mock'
 import { EXPLAINERS } from '@/data/explainers'
+import { ANSWERS, ANSWERS_PATH } from '@/data/answers'
 import { STORIES } from '@/data/stories'
 import { HUB_PATH, HUB_TITLE } from '@/lib/census-hub'
 import { MONEY_VALUE_PATH } from '@/lib/money-value'
@@ -12,7 +13,7 @@ import { normalise, type SearchEntry } from '@/lib/search-match'
 
 export type { SearchEntry } from '@/lib/search-match'
 
-/** Extra entries registered by other sections (answers pages add theirs here). */
+/** Extra entries registered by other sections. */
 const extra: (() => SearchEntry[])[] = []
 export function registerSearchEntries(build: () => SearchEntry[]): void {
   extra.push(build)
@@ -41,6 +42,13 @@ export function buildSearchIndex(): SearchEntry[] {
       detail: `${s.value}. ${categoryLabel.get(s.categoryId) ?? ''}`,
       href: `/category/${s.categoryId}#${s.id}`,
       terms: normalise(`${s.title} ${categoryLabel.get(s.categoryId) ?? ''} ${s.id.replace(/-/g, ' ')}`),
+    })),
+    ...ANSWERS.map((a) => ({
+      group: 'Answers' as const,
+      title: a.question,
+      detail: 'Answer',
+      href: `${ANSWERS_PATH}/${a.slug}`,
+      terms: normalise(`${a.question} ${a.keywords}`),
     })),
     ...EXPLAINERS.map((e) => ({
       group: 'Explainers' as const,

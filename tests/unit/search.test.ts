@@ -8,6 +8,7 @@ import { join } from 'node:path'
 import { buildSearchIndex } from '@/lib/search-index'
 import { normalise, searchEntries } from '@/lib/search-match'
 import { getAllMunicipalities } from '@/data/mock'
+import { ANSWERS } from '@/data/answers'
 
 const index = buildSearchIndex()
 const titles = (q: string) => searchEntries(index, q).map((r) => `${r.group}: ${r.title}`)
@@ -53,5 +54,13 @@ describe('header search component', () => {
       expect(src, s).toContain(s)
     }
     expect(src).not.toMatch(/from '@\/(data|lib\/search-index|lib\/registry)/)
+  })
+
+  it('lists every answers page in the Answers group', () => {
+    const index = buildSearchIndex()
+    expect(index.filter((e) => e.group === 'Answers')).toHaveLength(ANSWERS.length)
+    const r = searchEntries(index, 'how many municipalities')
+    expect(r.find((e) => e.group === 'Answers')?.href).toBe('/answers/how-many-municipalities-are-there-in-south-africa')
+    expect(searchEntries(index, 'interest rate').some((e) => e.href === '/answers/what-is-the-interest-rate-in-south-africa')).toBe(true)
   })
 })
