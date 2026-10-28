@@ -336,7 +336,7 @@ function build(): Answer[] {
       answer: `${provByPop[0].name} has the most people: Stats SA estimates ${formatCount(provByPop[0].population)} people there in mid-2026, ${formatDecimal(provByPop[0].populationShare)}% of the country (Mid-year population estimates, 2026).`,
       topic: 'population',
       guess: {
-        question: 'Guess how many people Stats SA estimates live in the Northern Cape in mid-2026.',
+        question: 'Guess how many people Stats SA estimates live in the Northern Cape on 30 June 2026.',
         min: 0,
         max: 5_000_000,
         step: 50_000,
