@@ -164,6 +164,17 @@ export default async function StoryPage({ params }: StoryPageProps) {
                 {story.readingTimeMinutes} min read
               </span>
             </div>
+
+            <p className="mt-5 border-l-2 border-rule pl-4 text-small text-ink">
+              <span className="font-medium">Data as of:</span> {story.dataAsOf.note}{' '}
+              <Link
+                href={story.dataAsOf.topicPath}
+                className="text-accent underline decoration-accent/40 underline-offset-4 hover:decoration-accent"
+              >
+                See the latest figures on the {story.dataAsOf.topicLabel} page
+              </Link>
+              .
+            </p>
           </header>
         </div>
 
