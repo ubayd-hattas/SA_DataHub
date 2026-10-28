@@ -1,6 +1,6 @@
 import type { ExplainerSource, SourcedFigure } from '@/lib/explainers'
 import { formatFigure, formatLongDate } from '@/lib/explainers'
-import { SourceLine } from '@/components/editorial/SourceLine'
+import { SourceLine, STATS_SA_ACKNOWLEDGEMENT, isStatsSa } from '@/components/editorial/SourceLine'
 import { formatCount, formatDecimal } from '@/lib/format'
 import { cn } from '@/lib/utils'
 
@@ -64,6 +64,7 @@ export function SourceCitations({
               Checked on SA Data Hub <time dateTime={checkedOn}>{formatLongDate(checkedOn)}</time>.
             </span>
             {s.releasedOnNote ? <span className="block">{s.releasedOnNote}</span> : null}
+            {isStatsSa(s.publisher) ? <span className="block">{STATS_SA_ACKNOWLEDGEMENT}</span> : null}
             {s.provenance ? <span className="block">{s.provenance}</span> : null}
           </li>
         ))}

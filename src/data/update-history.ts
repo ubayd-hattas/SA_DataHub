@@ -25,6 +25,28 @@ export interface UpdateHistoryEntry {
 export const UPDATE_HISTORY: UpdateHistoryEntry[] = [
   {
     date: '2026-10-28',
+    datasetId: 'census',
+    datasetLabel: 'Census 2022 municipalities',
+    type: 'correction',
+    summary:
+      'Corrected the name of NC067 in Northern Cape. The PDF of Provinces at a glance prints it as "Kh+ói - Ma" because of a font fault, and the site had copied that. The municipality is Khâi-Ma. No figures changed.',
+    changes: [{ item: 'Name of NC067', from: 'Kh+ói-Ma', to: 'Khâi-Ma' }],
+  },
+  {
+    date: '2026-10-28',
+    datasetId: 'crime',
+    datasetLabel: 'Crime Statistics',
+    type: 'data-update',
+    summary:
+      'Published the January to March 2022 to 2026 series from the SAPS fourth-quarter 2025/26 statistics, released on 22 May 2026 (SAPS, POLICE magazine special edition, May 2026, pages 4 and 7). Murder, contact crime and robbery with aggravating circumstances are shown as a separate quarterly series. The annual 2023/24 figures are unchanged.',
+    changes: [
+      { item: 'Murder, January to March 2026 (now shown)', from: 'not shown', to: '5 181' },
+      { item: 'Contact crime, January to March 2026 (now shown)', from: 'not shown', to: '154 267' },
+      { item: 'Robbery with aggravating circumstances, January to March 2026 (now shown)', from: 'not shown', to: '26 796' },
+    ],
+  },
+  {
+    date: '2026-10-28',
     datasetId: 'crime',
     datasetLabel: 'Crime Statistics',
     type: 'data-update',

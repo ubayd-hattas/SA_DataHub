@@ -90,7 +90,11 @@ export default function HomePage() {
         <div className="max-w-2xl">
           <FindMunicipality options={municipalities} shortcuts={shortcuts} />
           <p className="mt-2 text-small text-muted">
-            Or see the{' '}
+            Or{' '}
+            <Link href="/tools/compare" className={linkClass}>
+              compare two or three places
+            </Link>
+            , or see the{' '}
             <Link href="/provinces" className={linkClass}>
               nine provinces
             </Link>

@@ -20,6 +20,8 @@ const STATIC_ROUTES: { path: string; priority: number; changeFrequency: Metadata
   { path: '/changelog',    priority: 0.5, changeFrequency: 'monthly', lastModified: new Date('2026-04-01') },
   // Only the canonical URL; ?year=&amount= variants are not listed.
   { path: '/tools/money-value', priority: 0.7, changeFrequency: 'monthly', lastModified: new Date('2026-10-27') },
+  // Only the canonical URL; ?places= variants are not listed.
+  { path: '/tools/compare', priority: 0.7, changeFrequency: 'monthly', lastModified: new Date('2026-10-28') },
 ]
 
 /**
