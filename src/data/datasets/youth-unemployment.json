@@ -5,7 +5,7 @@
     "update_frequency": "Quarterly",
     "last_verified": "2026-10-19",
     "notes": "Youth unemployment (ages 15–34 and 15–24) from QLFS Q2 2026 (published 2026-08-11). 15–24 values are published in Table 2.2. 15–34 Q2 2026 (47.4%) and Q1 2026 (45.9%, implied by the official +1.5 pp change) are stated by Stats SA; 15–34 for Q2–Q4 2025 are DERIVED from Table 2.2 counts (unemployed 15–24 + 25–34 over labour force 15–24 + 25–34), rounded to 0.1. REVIEW REQUIRED: (1) youth-unemployment-expanded is unchanged — Stats SA stopped reporting the expanded rate after Q2 2025, so its Q3–Q4 2025 values cannot be traced to an official release; (2) youth-neet-rate is unchanged and annual, whereas Stats SA publishes a quarterly NEET rate for 15–24 (36.4% in Q2 2026, +1.2 pp year on year); (3) series points before Q2 2025 were not re-verified.",
-    "public_notes": "Youth unemployment for ages 15 to 34 and 15 to 24, from QLFS Q2 2026 (published 11 August 2026). The 15 to 34 values for Q2 to Q4 2025 are calculated by SA Data Hub from counts published by Stats SA. Stats SA stopped reporting the expanded unemployment rate after Q2 2025, so the expanded youth values for Q3 and Q4 2025 cannot be traced to an official release. The NEET rate shown is annual. Points before Q2 2025 have not yet been rechecked."
+    "public_notes": "Youth unemployment for ages 15 to 34 and 15 to 24, from QLFS Q2 2026 (published 11 August 2026), Table 2.2. The 15 to 34 rate is calculated by SA Data Hub from the published counts for ages 15 to 24 and 25 to 34, as are its values for Q2 to Q4 2025. The expanded youth unemployment rate and the NEET rate are not shown: their source, QLFS Q4 2025, is not in the files SA Data Hub holds, so they cannot be checked. Points before Q2 2025 have not yet been rechecked."
   },
   "statistics": [
     {
@@ -23,7 +23,9 @@
         "name": "Statistics South Africa",
         "shortName": "Stats SA",
         "url": "https://www.statssa.gov.za/publications/P0211/P02112ndQuarter2026.pdf",
-        "release": "QLFS Q2 2026 (P0211), published 2026-08-11"
+        "release": "QLFS Q2 2026 (P0211), published 2026-08-11",
+        "publicationName": "Quarterly Labour Force Survey, Quarter 2: 2026 (P0211), calculated by SA Data Hub from Table 2.2, pages 26 and 27 (15 to 24 and 25 to 34)",
+        "publicationDate": "2026-08-11"
       },
       "lastUpdated": "2026-08-11",
       "series": [
@@ -122,7 +124,9 @@
         "name": "Statistics South Africa",
         "shortName": "Stats SA",
         "url": "https://www.statssa.gov.za/publications/P0211/P02112ndQuarter2026.pdf",
-        "release": "QLFS Q2 2026 (P0211), published 2026-08-11"
+        "release": "QLFS Q2 2026 (P0211), published 2026-08-11",
+        "publicationName": "Quarterly Labour Force Survey, Quarter 2: 2026 (P0211), Table 2.2, page 26",
+        "publicationDate": "2026-08-11"
       },
       "lastUpdated": "2026-08-11",
       "series": [
@@ -208,6 +212,7 @@
     },
     {
       "id": "youth-unemployment-expanded",
+      "withheld": "Not shown: its source, QLFS Q4 2025, is not in the files SA Data Hub holds, so the release date cannot be confirmed, and Stats SA no longer publishes an expanded rate in the QLFS releases checked (Q1 and Q2 2026). Checked 2026-10-28.",
       "categoryId": "unemployment",
       "title": "Expanded youth unemployment rate, ages 15 to 34",
       "value": "60.8%",
@@ -299,6 +304,7 @@
     },
     {
       "id": "youth-neet-rate",
+      "withheld": "Not shown: its source, QLFS Q4 2025, is not in the files SA Data Hub holds, so the value and release date cannot be confirmed. Checked 2026-10-28.",
       "categoryId": "unemployment",
       "title": "Not in employment, education or training, ages 15 to 24",
       "value": "37.2%",
