@@ -6,7 +6,7 @@ import { Column, PageHeader, Prose, Section, linkClass } from '@/components/edit
 import { FigureValue, SourceCitations, SourceNote } from '@/components/explainers/FigureValue'
 import { CpiHistoryChart } from '@/components/explainers/CpiHistoryChart'
 import { MONEY_VALUE_PATH, moneyValueHref } from '@/lib/money-value'
-import { formatLongDate, formatRand, getSource, type Explainer } from '@/lib/explainers'
+import { formatLongDate, formatRand, getSource, type CpiExplainer } from '@/lib/explainers'
 import { CPI_HISTORY_META } from '@/lib/cpi-history'
 import { breadcrumbSchema } from '@/lib/schema'
 import { judgeMove } from '@/lib/utils'
@@ -25,7 +25,7 @@ function monthSpan(from: string, to: string): string {
   return fromYear === to.split(' ')[1] ? `${fromMonth} to ${to}` : `${from} to ${to}`
 }
 
-export function CpiExplainerView({ explainer }: { explainer: Explainer }) {
+export function CpiExplainerView({ explainer }: { explainer: CpiExplainer }) {
   const release = getSource(explainer, explainer.headline.annual.sourceId)
   const history = getSource(explainer, explainer.history.sourceId)
   const { annual, previousAnnual, monthly } = explainer.headline
@@ -264,7 +264,6 @@ export function CpiExplainerView({ explainer }: { explainer: Explainer }) {
             <Link href="/explainers" className={linkClass}>
               All explainers
             </Link>
-            <span className="text-muted"> (this is the first one)</span>
           </li>
         </ul>
         <p className="mt-6 text-body text-ink">

@@ -1,8 +1,8 @@
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
-import { CpiExplainerView } from '@/components/explainers/CpiExplainerView'
+import { ExplainerView } from '@/components/explainers/ExplainerView'
 import { EXPLAINERS, getExplainerBySlug } from '@/data/explainers'
-import { assertExplainerSourced } from '@/lib/explainers'
+import { assertExplainerSourced, headlineFigures } from '@/lib/explainers'
 import { buildPageMetadata } from '@/lib/seo'
 
 interface ExplainerPageProps {
@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: ExplainerPageProps): Promise<
   const explainer = getExplainerBySlug(slug)
   if (!explainer) return {}
   return buildPageMetadata({
-    title: `${explainer.title}: ${explainer.headline.annual.value.toFixed(1)}%`,
+    title: `${explainer.title}: ${headlineFigures(explainer).current.value.toFixed(1)}%`,
     description: explainer.summary,
     path: `/explainers/${explainer.slug}`,
     ogType: 'article',
@@ -36,5 +36,5 @@ export default async function ExplainerPage({ params }: ExplainerPageProps) {
   const explainer = getExplainerBySlug(slug)
   if (!explainer) notFound()
   assertExplainerSourced(explainer)
-  return <CpiExplainerView explainer={explainer} />
+  return <ExplainerView explainer={explainer} />
 }

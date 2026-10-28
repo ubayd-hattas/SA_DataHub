@@ -1,7 +1,7 @@
 import type { ExplainerSource, SourcedFigure } from '@/lib/explainers'
 import { formatFigure, formatLongDate } from '@/lib/explainers'
 import { SourceLine } from '@/components/editorial/SourceLine'
-import { formatDecimal } from '@/lib/format'
+import { formatCount, formatDecimal } from '@/lib/format'
 import { cn } from '@/lib/utils'
 
 /**
@@ -31,7 +31,7 @@ export function FigureValue({
       title={`${where}. Source released ${formatLongDate(source.releasedOn)}. Checked on SA Data Hub ${formatLongDate(figure.checkedOn)}.`}
       className={cn('tabular-nums', className)}
     >
-      {plain ? formatDecimal(figure.value) : formatFigure(figure)}
+      {plain ? (figure.unit === 'thousand' ? formatCount(figure.value) : formatDecimal(figure.value)) : formatFigure(figure)}
     </span>
   )
 }
