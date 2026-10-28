@@ -65,7 +65,7 @@ const PROVINCE_NAMES = {
 const METRO_CODES = new Set(['BUF', 'NMA', 'MAN', 'EKU', 'JHB', 'TSH', 'ETH', 'CPT'])
 
 // Mpumalanga erratum municipalities
-const ERRATUM_CODES = new Set(['MP325', 'MP322'])
+const ERRATUM_CODES = new Set(['MP321', 'MP326'])
 
 // ─── District code → name map (built from district CSVs) ─────────────────────
 
@@ -594,7 +594,7 @@ function main() {
       last_verified: '2026-06-04',
       source_url: 'https://census.statssa.gov.za',
       update_frequency: 'Decennial (next census ~2032)',
-      erratum: 'Thaba Chweu (MP325) and City of Mbombela (MP322) figures corrected in August 2025 revision of the Municipal Fact Sheet.',
+      erratum: 'Thaba Chweu (MP321) and City of Mbombela (MP326) 2022 figures follow the revised pages 40 to 43 of Provinces at a glance (erratum, page ii).',
       notes: 'Employment and income excluded by Stats SA due to data quality. Census 2022 estimated ~30% undercount (Post-Enumeration Survey). 2011 comparison figures use Stats SA boundary-aligned values. Disability data uses Washington Group Short Set — comparable across 2011 and 2022 only.',
       geographic_levels: ['metro', 'district', 'local'],
       geographic_level_counts: {

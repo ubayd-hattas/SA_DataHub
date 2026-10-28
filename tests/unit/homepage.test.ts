@@ -8,7 +8,7 @@ import { ExplainerCard } from '@/components/explainers/ExplainerCard'
 import { matchMunicipalities } from '@/components/home/FindMunicipality'
 import { EXPLAINERS } from '@/data/explainers'
 import { isCpi, isQlfs } from '@/lib/explainers'
-import { getAllMunicipalities, getStatById } from '@/data/mock'
+import { getAllMunicipalities, getStatById, statistics } from '@/data/mock'
 import { formatStatistic, getHeadlineNumbers, getTopicRows } from '@/lib/headline-numbers'
 
 const NBSP = ' '
@@ -40,8 +40,8 @@ describe('headline numbers', () => {
   it('links the repo rate to its chart on the inflation page, the same record it reads', () => {
     expect(numbers[3]).toMatchObject({ value: '7.25%', href: '/category/inflation#repo-rate-sarb' })
     expect(getStatById('repo-rate-sarb')!.categoryId).toBe('inflation')
-    // The duplicate from the inflation dataset is gone.
-    expect(getStatById('repo-rate')).toBeUndefined()
+    // The inflation topic carries one repo-rate record: repo-rate-sarb.
+    expect(statistics.filter((s) => s.categoryId === 'inflation' && /repo/i.test(s.id)).map((s) => s.id)).toEqual(['repo-rate-sarb'])
     expect(readFileSync(join(process.cwd(), 'src/app/category/[slug]/page.tsx'), 'utf8')).toContain('id={stat.id}')
   })
 
