@@ -8,9 +8,9 @@ import { buildPageMetadata, AUTHOR } from '@/lib/seo'
 import { REPO_URL, reportErrorHref } from '@/lib/contact'
 
 export const metadata: Metadata = buildPageMetadata({
-  title: 'About',
+  title: 'About SA Data Hub and Ubayd Hattas',
   description:
-    'SA Data Hub explains South Africa\'s official statistics with the source and two dates on every figure. Built and maintained by Ubayd Hattas, a Computer Science, Statistics and Data Science student at UCT.',
+    'SA Data Hub explains South Africa\'s official statistics with a source and two dates on every figure. Built by Ubayd Hattas, a Computer Science, Statistics and Data Science student at UCT who also works on machine learning and AI evaluation research.',
   path: '/about',
 })
 
@@ -19,32 +19,38 @@ const breadcrumbs = [
   { name: 'About', path: '/about' },
 ]
 
-interface Project {
+interface Work {
   name: string
+  context: string
   href: string
   text: string
 }
 
-const PROJECTS: Project[] = [
+/** Key results only. Each line matches the project's own repository and its page on ubayd.me. */
+const WORK: Work[] = [
   {
-    name: 'Evidence Before Erasure',
-    href: 'https://github.com/ubayd-hattas/AI_Incident',
-    text: 'Team entry for the Apart and CeSIA AI Incident Response Sprint. It asks how much critical evidence different collection policies keep from a live AI incident before it disappears. The main comparison came out null, and the report says so.',
+    name: 'Does AI actually know itself?',
+    context: 'Apart Research, Digital Minds Research Sprint',
+    href: 'https://ubayd.me/projects/digital-minds-hackathon',
+    text: 'Tested whether a language model can predict its own output better than an outsider reading the same text. Across 9,269 trials on three models, Hermes-3 picked its own reply above chance (balanced accuracy 0.719), but a one-feature rule that picks the longer reply did better (0.808). The team also released two diagnostic checks for catching surface cues and position bias before an experiment is run.',
+  },
+  {
+    name: 'Cross-city building-age classification',
+    context: 'Hack4Dev data science hackathon',
+    href: 'https://ubayd.me/projects/cross-city-building-age-classification',
+    text: 'Estimated the construction age of buildings from about forty years of Landsat satellite data, training on Madrid and transferring to Amsterdam. Class-conditional CORAL raised zero-shot macro-F1 from 0.36 to 0.65 with no Amsterdam labels. A spatial audit showed that about half of the few-shot gain came from neighbouring pixels rather than the labels themselves.',
   },
   {
     name: 'AfriGuard',
-    href: 'https://github.com/ubayd-hattas/AfriGuard',
-    text: 'Team entry for the Global South AI Safety Hackathon: 40 prompts in seven South African languages run against four models, 1,120 responses in all. The first scoring used an English-only refusal check, so no attack success rate is claimed. The scoring is being redone.',
+    context: 'Global South AI Safety Hackathon',
+    href: 'https://ubayd.me/projects/afriguard',
+    text: 'A safety benchmark for South African languages: 40 harmful prompts in English and six African languages, run against four models for 1,120 responses. An audit withdrew the first headline attack rate because the scoring only understood English. Language-aware scoring checked by native speakers is the next step.',
   },
   {
-    name: 'Digital Minds Research',
-    href: 'https://github.com/UbaJaz/Digital_Minds_Research',
-    text: 'Team entry for an Apart Research sprint: can a language model predict its own output better than a cheap outside observer? Across 9,269 trials, a one-feature rule that picks the longer reply beat Hermes-3\'s own prediction.',
-  },
-  {
-    name: 'Madrid to Amsterdam building-age transfer',
-    href: 'https://github.com/ubayd-hattas/data_science_hackathon',
-    text: 'Team entry for the Hack4Dev data science hackathon. A model trained on Madrid labels is reused in Amsterdam, with a fixed rule for adapting it from a few local labels. Scores are from our own evaluation on the supplied data, not the organisers\' held-out set.',
+    name: 'Evidence Before Erasure',
+    context: 'Apart Research and CeSIA, AI Incident Response Sprint',
+    href: 'https://ubayd.me/projects/evidence-before-erasure',
+    text: 'Compared policies for preserving evidence from a live AI incident, using a real trace of AI agents sharing answers through a wiki. The primary comparison was a clean null, and the report says so along with exactly how the result was obtained.',
   },
 ]
 
@@ -61,14 +67,13 @@ export default function AboutPage() {
       <Section id="what" title="What this is">
         <Prose>
           <p>
-            Official South African statistics are published as PDFs, Excel workbooks and portals that assume you
-            already know where to look. SA Data Hub takes figures from Stats SA, the South African Reserve Bank, the
-            South African Police Service and the Department of Basic Education, and puts them in plain English next
-            to the place or release you are asking about.
+            SA Data Hub takes figures from Stats SA, the South African Reserve Bank, the South African Police Service
+            and the Department of Basic Education and explains them in plain English: by municipality, by province and
+            release by release. It covers all 213 municipalities, with Census 2011 and 2022 side by side.
           </p>
           <p>
-            It is independent. It is not affiliated with any government department, it has no advertising and no
-            paywall, and it does not adjust official figures.
+            It is independent, has no advertising and does not adjust official figures. It is not affiliated with any
+            government department.
           </p>
         </Prose>
       </Section>
@@ -76,89 +81,69 @@ export default function AboutPage() {
       <Section id="trust" title="How to check a number">
         <Prose>
           <p>
-            Every figure shows its source, the date the source released it and the date it was last checked on SA
-            Data Hub. The site will not build if a displayed statistic is missing any of these.
+            Every figure shows its source, the date the source released it and the date it was last checked here. The
+            site will not build if a displayed statistic is missing any of the three.
           </p>
           <p>
-            When a number changes, the reason comes from the source&apos;s own breakdown, quoted and cited. Anything
-            under &ldquo;what it means&rdquo; is a calculation with the working shown. There are no forecasts.
-          </p>
-          <p>
-            Data is entered by hand from releases downloaded from the publisher, and a person checks each figure
-            against the release before it goes live. The site makes no automated requests to Stats SA. When a figure was wrong,
-            the{' '}
+            Figures are entered by hand from the publisher&apos;s release and checked against it before they go live.
+            Reasons for a change come from the source&apos;s own breakdown, and there are no forecasts. Corrections
+            are listed in the{' '}
             <Link href="/updates" className={linkClass}>
               corrections log
-            </Link>{' '}
-            shows what it was, what it is now and why. Full definitions, release schedules and known limits are on the{' '}
+            </Link>
+            , and definitions and known limits are on the{' '}
             <Link href="/methodology" className={linkClass}>
               methodology page
             </Link>
             .
           </p>
           <p>
-            If something looks wrong, tell me:{' '}
+            Spotted something wrong?{' '}
             <a href={reportErrorHref('/about')} className={linkClass}>
-              report an error
-            </a>
-            . Please include the page and where you saw the right figure.
+              Report an error
+            </a>{' '}
+            with the page and where you saw the right figure.
           </p>
         </Prose>
       </Section>
 
-      <Section id="maintainer" title="Who builds it">
+      <Section id="maintainer" title="Ubayd Hattas">
         <Prose>
           <p>
-            I am{' '}
+            SA Data Hub is designed, built and maintained by{' '}
             <a href={AUTHOR.url} rel="me author" className={linkClass}>
-              {AUTHOR.name}
+              Ubayd Hattas
             </a>
-            , a first-year BSc student at the{' '}
-            <a href="https://www.uct.ac.za" target="_blank" rel="noopener noreferrer" className={linkClass}>
-              University of Cape Town
-            </a>{' '}
-            studying Computer Science, Statistics and Data Science, with graduation expected in 2029. I started SA
-            Data Hub in May 2026 and design, build and maintain it myself, alongside my studies.
-          </p>
-          <p>
-            I built it because the numbers that shape South African life, like unemployment, inflation and census
-            counts, are hard to read in the form they are published. I would like a student, a journalist or a
-            municipal official to find the figure, see where it came from and understand what it does and does not
-            say.
-          </p>
-          <p>
-            Outside this site I work on data science and AI evaluation in small teams, usually in hackathons and
-            research sprints. The code for all of it is public.
+            , a Computer Science, Statistics and Data Science student at the University of Cape Town. He builds data
+            products and works on machine learning and AI evaluation research, mostly through hackathons and
+            research sprints. He is based in Cape Town.
           </p>
         </Prose>
-      </Section>
 
-      <Section id="projects" title="Other projects">
-        <ul className="space-y-6">
-          {PROJECTS.map((p) => (
-            <li key={p.name}>
-              <h3 className="mb-1 font-display text-h3 font-semibold text-ink">
-                <a href={p.href} target="_blank" rel="noopener noreferrer" className={linkClass}>
-                  {p.name}
+        <h3 className="mb-4 mt-10 font-display text-h3 font-semibold text-ink">Selected work</h3>
+        <ul className="space-y-7">
+          {WORK.map((w) => (
+            <li key={w.name}>
+              <p className="text-body font-semibold text-ink">
+                <a href={w.href} className={linkClass}>
+                  {w.name}
                 </a>
-              </h3>
-              <p className="text-body text-ink">{p.text}</p>
+              </p>
+              <p className="mb-1 text-caption text-muted">{w.context}</p>
+              <p className="text-body text-ink">{w.text}</p>
             </li>
           ))}
         </ul>
         <p className="mt-8 text-small text-muted">
-          These are team projects. The repositories show who did what, and each one states what it does and does not
-          claim.
+          All four were team projects. Scores are the teams&apos; own evaluations, and each repository states what it
+          does and does not claim.
         </p>
-      </Section>
 
-      <Section id="links" title="Find me elsewhere">
-        <ul className="space-y-2 text-body text-ink">
+        <ul className="mt-10 flex flex-wrap gap-x-6 gap-y-2 text-body">
           <li>
-            <a href={AUTHOR.url} rel="me" target="_blank" className={linkClass}>
+            <a href={AUTHOR.url} rel="me" className={linkClass}>
               ubayd.me
-            </a>{' '}
-            (portfolio and writing)
+            </a>
           </li>
           <li>
             <a href={AUTHOR.github} rel="me noopener noreferrer" target="_blank" className={linkClass}>
@@ -172,9 +157,8 @@ export default function AboutPage() {
           </li>
           <li>
             <a href={REPO_URL} target="_blank" rel="noopener noreferrer" className={linkClass}>
-              SA Data Hub source code
-            </a>{' '}
-            (MIT licence)
+              Source code (MIT)
+            </a>
           </li>
         </ul>
       </Section>

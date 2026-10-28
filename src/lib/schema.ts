@@ -55,14 +55,14 @@ export function personSchema() {
     name: AUTHOR.name,
     url: AUTHOR.url,
     sameAs: [AUTHOR.url, AUTHOR.github, AUTHOR.linkedin],
-    jobTitle: 'BSc Student — Computer Science, Statistics & Data Science',
-    worksFor: {
+    jobTitle: 'Computer Science, Statistics and Data Science student',
+    affiliation: {
       '@type': 'Organization',
       name: 'University of Cape Town',
       url: 'https://www.uct.ac.za',
     },
     description:
-      'BSc student at the University of Cape Town majoring in Computer Science, Statistics and Data Science. Builder of SA Data Hub and AfriGuard, an AI safety benchmark for underserved South African languages.',
+      'Computer Science, Statistics and Data Science student at the University of Cape Town. Builds and maintains SA Data Hub, and works on machine learning and AI evaluation research in hackathon and research-sprint teams.',
   }
 }
 
