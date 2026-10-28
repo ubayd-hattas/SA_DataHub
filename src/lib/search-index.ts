@@ -9,6 +9,7 @@ import { ANSWERS, ANSWERS_PATH } from '@/data/answers'
 import { STORIES } from '@/data/stories'
 import { HUB_PATH, HUB_TITLE } from '@/lib/census-hub'
 import { MONEY_VALUE_PATH } from '@/lib/money-value'
+import { COMPARE_PATH } from '@/lib/compare'
 import { normalise, type SearchEntry } from '@/lib/search-match'
 
 export type { SearchEntry } from '@/lib/search-match'
@@ -77,6 +78,13 @@ export function buildSearchIndex(): SearchEntry[] {
       detail: 'Money value calculator',
       href: MONEY_VALUE_PATH,
       terms: normalise('money value calculator inflation rand worth then now'),
+    },
+    {
+      group: 'Tools',
+      title: 'Compare places',
+      detail: 'Two or three municipalities, Census 2011 and 2022',
+      href: COMPARE_PATH,
+      terms: normalise('compare places municipalities side by side census 2011 2022 versus vs'),
     },
   ]
   for (const build of extra) entries.push(...build())

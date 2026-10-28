@@ -63,4 +63,10 @@ describe('header search component', () => {
     expect(r.find((e) => e.group === 'Answers')?.href).toBe('/answers/how-many-municipalities-are-there-in-south-africa')
     expect(searchEntries(index, 'interest rate').some((e) => e.href === '/answers/what-is-the-interest-rate-in-south-africa')).toBe(true)
   })
+
+  it('lists the compare tool in the Tools group', () => {
+    const index = buildSearchIndex()
+    expect(index.filter((e) => e.group === 'Tools').map((e) => e.title)).toEqual(['What was money worth?', 'Compare places'])
+    expect(searchEntries(index, 'compare').find((e) => e.group === 'Tools')?.href).toBe('/tools/compare')
+  })
 })
