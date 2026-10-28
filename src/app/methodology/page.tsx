@@ -11,6 +11,7 @@ import { breadcrumbSchema } from '@/lib/schema'
 import { SourceLine } from '@/components/editorial/SourceLine'
 import { linkClass } from '@/components/editorial/Section'
 import { formatCount } from '@/lib/format'
+import { REPO_URL, reportErrorHref } from '@/lib/contact'
 
 export const metadata: Metadata = buildPageMetadata({
   title: 'Data Methodology',
@@ -474,6 +475,33 @@ export default function MethodologyPage() {
           </p>
           <p>
             Historical revisions issued by Stats SA are incorporated in the next scheduled update cycle. We do not backdate individual data points between cycles unless the revision is material (defined as a change exceeding 1 percentage point for rates, or 0.5% for index levels).
+          </p>
+        </div>
+      </section>
+
+      {/* Code and corrections */}
+      <section id="code" aria-labelledby="code-title" className="mb-10 border-t border-rule pt-8">
+        <h2 id="code-title" className="font-display text-[1.5rem] font-semibold leading-snug text-ink sm:text-h2">
+          Code and corrections
+        </h2>
+        <div className="mt-4 max-w-[44rem] space-y-3 text-body text-ink">
+          <p>
+            The code, the data files and the scripts that check them against each release are public on{' '}
+            <a href={REPO_URL} className={linkClass}>
+              GitHub
+            </a>
+            . Every correction is listed on the{' '}
+            <Link href="/updates" className={linkClass}>
+              corrections and updates page
+            </Link>
+            .
+          </p>
+          <p>
+            Found a figure that does not match its source?{' '}
+            <a href={reportErrorHref('/methodology')} className={linkClass}>
+              Report an error
+            </a>
+            .
           </p>
         </div>
       </section>
