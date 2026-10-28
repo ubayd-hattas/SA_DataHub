@@ -50,6 +50,7 @@ export async function generateMetadata({ params }: { params: Promise<{ code: str
     title: municipalityTitle(m),
     description: municipalityDescription(m),
     path: `/municipalities/${m.id}`,
+    image: { url: `/municipalities/${m.id}/share-image`, alt: `${m.name} in numbers: Census 2022 population, households and services` },
   })
 }
 
