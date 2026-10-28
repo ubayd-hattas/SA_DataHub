@@ -1,6 +1,6 @@
 'use client'
 
-import { useId, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import { guessFeedback, formatGuess, type GuessUnit } from '@/lib/guess'
 
 export interface GuessFirstProps {
@@ -23,12 +23,17 @@ const BUTTON =
  * "Guess first": move the slider, then reveal the published figure with its
  * source. The figure also appears further down the page, so skipping loses
  * nothing. Arrow keys move the slider; both buttons are ordinary buttons.
+ * The buttons go once the answer shows, so focus moves to the answer.
  */
 export function GuessFirst({ question, min, max, step, unit, value, source }: GuessFirstProps) {
   const id = useId()
   const [guess, setGuess] = useState(() => min + Math.round((max - min) / 2 / step) * step)
   const [state, setState] = useState<'guessing' | 'guessed' | 'skipped'>('guessing')
   const revealed = state !== 'guessing'
+  const resultRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (revealed) resultRef.current?.focus()
+  }, [revealed])
 
   return (
     <section aria-labelledby={`${id}-title`}>
@@ -65,7 +70,7 @@ export function GuessFirst({ question, min, max, step, unit, value, source }: Gu
           </button>
         </div>
       )}
-      <div aria-live="polite" className="mt-4">
+      <div ref={resultRef} tabIndex={-1} className="mt-4 focus:outline-none">
         {revealed && (
           <>
             <p className="text-body text-ink">
