@@ -7,6 +7,68 @@ import { ChartFigure } from '@/components/editorial/ChartFigure'
 import { BarList } from '@/components/editorial/BarList'
 import { formatCount, formatDecimal, formatPercent, formatSigned } from '@/lib/format'
 import ProvinceCompare, { type CompareRow } from './ProvinceCompare'
+import { provinceHousing, type ProvinceHousing } from '@/lib/census-change'
+import { CENSUS_SOURCE } from '@/lib/municipality-profile'
+
+const HOUSING_MEASURES: { key: keyof Pick<ProvinceHousing, 'formal' | 'waterScheme' | 'flushToilet' | 'electricityCooking'>; label: string; phrase: string }[] = [
+  { key: 'formal', label: 'Households in a formal dwelling', phrase: 'of households lived in a formal dwelling' },
+  { key: 'waterScheme', label: 'Water from a regional or local scheme', phrase: 'of households got their water from a regional or local scheme' },
+  { key: 'flushToilet', label: 'Households with a flush toilet', phrase: 'of households had a flush toilet' },
+  { key: 'electricityCooking', label: 'Cooking with electricity', phrase: 'of households that named a cooking fuel cooked with electricity' },
+]
+
+/** Housing and services by province, Census 2022, from the province rows of Provinces at a glance. */
+function HousingByProvince() {
+  const rows = provinceHousing()
+  const pages = rows.map((r) => r.pages)
+  const pageList = (k: 'housing1' | 'housing2') => pages.map((p) => p[k]).join(', ')
+  return (
+    <Section id="housing" title="Housing and services by province">
+      <p className="mb-8 text-body text-ink">
+        Census 2022 shares of households, with the Census 2011 share for comparison. These are census counts, not the
+        2026 estimates used for population above.
+      </p>
+      <div className="space-y-12">
+        {HOUSING_MEASURES.map((m) => {
+          const sorted = [...rows].sort((a, b) => b[m.key][1] - a[m.key][1])
+          const top = sorted[0]
+          return (
+            <ChartFigure
+              key={m.key}
+              title={`${top.name} had the highest share in 2022: ${formatPercent(top[m.key][1])} ${m.phrase}.`}
+              source={
+                <SourceLine
+                  publisher={CENSUS_SOURCE.publisher}
+                  title={CENSUS_SOURCE.title}
+                  code={CENSUS_SOURCE.code}
+                  location={`General housing information per municipality (${m.key === 'formal' ? '1' : '2'}), province rows, pages ${pageList(m.key === 'formal' ? 'housing1' : 'housing2')}`}
+                  releasedOn={CENSUS_SOURCE.releasedOn}
+                  checkedOn={CENSUS_SOURCE.checkedOn}
+                />
+              }
+            >
+              <p className="mb-3 text-small font-medium text-muted">{m.label}</p>
+              <BarList
+                max={100}
+                bars={sorted.map((r) => ({
+                  label: r.name,
+                  value: r[m.key][1],
+                  display: formatPercent(r[m.key][1]),
+                  note: `${formatPercent(r[m.key][0])} in 2011`,
+                }))}
+              />
+            </ChartFigure>
+          )
+        })}
+      </div>
+      <p className="mt-6 text-caption text-muted">
+        Each share is SA Data Hub&apos;s calculation: a category divided by the sum of the categories in the table. Cooking
+        shares leave out households that named no fuel, as Stats SA does. GDP share and matric results are not shown until
+        their releases are added.
+      </p>
+    </Section>
+  )
+}
 
 /** Where the province figures on this page come from, checked against the releases. */
 export const QLFS_SOURCE = {
@@ -114,6 +176,8 @@ export default function ProvincesExplorer() {
           <SourceLine {...MYPE_SOURCE} />
         </div>
       </Section>
+
+      <HousingByProvince />
 
       <div id="compare" className="scroll-mt-20">
         <Section id="compare-heading" title="Compare two provinces">
