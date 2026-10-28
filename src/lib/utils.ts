@@ -94,6 +94,9 @@ export const GOOD_DIRECTION_BY_STAT: Record<string, GoodDirection> = {
   'murder-rate': 'down',
   'crime-contact': 'down',
   'crime-robbery': 'down',
+  'murder-q4': 'down',
+  'crime-contact-q4': 'down',
+  'crime-robbery-q4': 'down',
   // Education
   'matric-pass-rate': 'up',
   'education-literacy': 'up',

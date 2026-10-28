@@ -118,6 +118,6 @@ export function statDates(stat: Statistic): { releasedOn: string; checkedOn: str
   const entry = getEntryForStat(stat.id)
   return {
     releasedOn: stat.source.publicationDate ?? stat.lastUpdated,
-    checkedOn: entry ? getEntryLastVerified(entry) : '',
+    checkedOn: stat.checkedOn ?? (entry ? getEntryLastVerified(entry) : ''),
   }
 }
