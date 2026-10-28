@@ -113,6 +113,8 @@ export interface Story {
   relatedSlugs?: string[]         // Other story slugs for "related stories"
   sections: StorySection[]
   tags: string[]
+  /** What period the story's figures describe, and where the current figures are. */
+  dataAsOf: { note: string; topicPath: string; topicLabel: string }
 }
 
 // ─── Platform Changelog ─────────────────────────────────────────────────────
