@@ -4,6 +4,7 @@ import { categories, getAllMunicipalities, getProvinceData, statistics } from '@
 import provincesData from '@/data/datasets/provinces.json'
 import { STORIES } from '@/data/stories'
 import { EXPLAINERS } from '@/data/explainers'
+import { ANSWERS, ANSWERS_PATH } from '@/data/answers'
 
 /** Static routes with approximate change frequency for sitemap hints. */
 const STATIC_ROUTES: { path: string; priority: number; changeFrequency: MetadataRoute.Sitemap[0]['changeFrequency']; lastModified: Date }[] = [
@@ -62,6 +63,16 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.75,
   }))
 
+  const answerEntries: MetadataRoute.Sitemap = [
+    { url: `${SITE_URL}${ANSWERS_PATH}`, lastModified: new Date('2026-10-28'), changeFrequency: 'monthly', priority: 0.7 },
+    ...ANSWERS.map((a) => ({
+      url: `${SITE_URL}${ANSWERS_PATH}/${a.slug}`,
+      lastModified: new Date('2026-10-28'),
+      changeFrequency: 'monthly' as const,
+      priority: 0.7,
+    })),
+  ]
+
   const storyEntries: MetadataRoute.Sitemap = STORIES.map((s) => ({
     url: `${SITE_URL}/insights/${s.slug}`,
     lastModified: new Date(s.lastUpdated),
@@ -97,6 +108,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...provinceEntries,
     ...explainerEntries,
     ...storyEntries,
+    ...answerEntries,
     ...municipalityEntries,
   ]
 }
