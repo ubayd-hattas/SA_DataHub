@@ -7,7 +7,7 @@ import { ValueCalculator } from '@/components/explainers/ValueCalculator'
 import { FindMunicipality, type MunicipalityOption } from '@/components/home/FindMunicipality'
 import { EXPLAINERS } from '@/data/explainers'
 import { getAllMunicipalities } from '@/data/mock'
-import { formatLongDate, getSource } from '@/lib/explainers'
+import { formatLongDate, getSource, isCpi } from '@/lib/explainers'
 import { getHeadlineNumbers, getTopicRows } from '@/lib/headline-numbers'
 import { MONEY_VALUE_PATH } from '@/lib/money-value'
 import { HUB_PATH, HUB_TITLE } from '@/lib/census-hub'
@@ -37,7 +37,7 @@ export default function HomePage() {
   // Explainers checked in the most recent month with one.
   const latestMonth = EXPLAINERS.map((e) => e.publishedOn.slice(0, 7)).sort().at(-1)
   const latestExplainers = EXPLAINERS.filter((e) => e.publishedOn.startsWith(latestMonth ?? ''))
-  const cpi = EXPLAINERS.find((e) => e.kind === 'cpi')
+  const cpi = EXPLAINERS.find(isCpi)
   const cpiHistory = cpi ? getSource(cpi, cpi.history.sourceId) : null
 
   const topics = getTopicRows()

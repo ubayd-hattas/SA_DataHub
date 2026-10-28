@@ -5,7 +5,7 @@
  */
 import { EXPLAINERS } from '@/data/explainers'
 import { getEntryForStat, getEntryLastVerified } from '@/lib/registry'
-import { getSource, type Explainer } from '@/lib/explainers'
+import { getSource, headlineFigures, isCpi, type Explainer } from '@/lib/explainers'
 import { formatCount, formatDecimal, formatSeriesValue, percentDecimals } from '@/lib/format'
 import { judgeMove } from '@/lib/utils'
 import type { Tone } from '@/components/editorial/NumberBlock'
@@ -93,9 +93,13 @@ function shortMonth(period: string): string {
 
 /** The explainer that reports this exact figure for this period, if there is one. */
 export function explainerForStat(stat: Statistic): Explainer | undefined {
-  if (stat.id !== 'cpi-headline') return undefined
   const period = latestPeriod(stat)
-  return EXPLAINERS.find((e) => e.kind === 'cpi' && shortMonth(e.period) === period && e.headline.annual.value === stat.rawValue)
+  return EXPLAINERS.find((e) => {
+    if (headlineFigures(e).current.value !== stat.rawValue) return false
+    return isCpi(e)
+      ? stat.id === 'cpi-headline' && shortMonth(e.period) === period
+      : stat.id === 'unemployment-national' && e.period === period
+  })
 }
 
 /**
@@ -107,8 +111,8 @@ export function statDates(stat: Statistic): { releasedOn: string; checkedOn: str
   const explainer = explainerForStat(stat)
   if (explainer) {
     return {
-      releasedOn: getSource(explainer, explainer.headline.annual.sourceId).releasedOn,
-      checkedOn: explainer.headline.annual.checkedOn,
+      releasedOn: getSource(explainer, headlineFigures(explainer).current.sourceId).releasedOn,
+      checkedOn: headlineFigures(explainer).current.checkedOn,
     }
   }
   const entry = getEntryForStat(stat.id)
