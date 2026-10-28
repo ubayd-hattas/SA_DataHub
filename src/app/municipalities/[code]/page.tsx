@@ -25,6 +25,7 @@ import {
 import { municipalityDescription, municipalityTitle } from '@/lib/page-seo'
 import { assertSiteSourced } from '@/lib/sourcing'
 import { HUB_PATH } from '@/lib/census-hub'
+import { compareHref } from '@/lib/compare'
 import { formatCount, formatDecimal, formatPercent } from '@/lib/format'
 import { Breadcrumbs } from '@/components/seo/Breadcrumbs'
 import { JsonLd } from '@/components/seo/JsonLd'
@@ -120,6 +121,11 @@ function CensusComparison({ m }: { m: MunicipalityRecord }) {
       <p className="mt-6 text-small">
         <Link href={HUB_PATH} className={linkClass}>
           See how all municipalities changed between Census 2011 and Census 2022
+        </Link>
+      </p>
+      <p className="mt-2 text-small">
+        <Link href={compareHref([m.id])} className={linkClass}>
+          Compare with another place
         </Link>
       </p>
     </Section>
