@@ -247,7 +247,7 @@ export default async function StoryPage({ params }: StoryPageProps) {
 
                     {section.highlight && (
                       <blockquote>
-                        <p>"{section.highlight}"</p>
+                        <p>&ldquo;{section.highlight}&rdquo;</p>
                       </blockquote>
                     )}
 

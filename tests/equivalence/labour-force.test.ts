@@ -38,7 +38,6 @@ function jsonObservationsByStat(data: { statistics?: Array<{ id: string; series?
 }
 
 describe.skipIf(!hasDb)('labour-force: JSON ↔ PostgreSQL equivalence', () => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let sql: any
 
   beforeAll(() => {

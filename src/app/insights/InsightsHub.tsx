@@ -47,7 +47,7 @@ export default function InsightsHub() {
           <p className="section-label mb-3">Data Stories</p>
           <h1 className="heading-display text-4xl font-semibold sm:text-5xl">Insights</h1>
           <p className="mt-3 max-w-xl text-slate-500 dark:text-slate-400">
-            Data stories that explain what South Africa's numbers actually mean —
+            Data stories that explain what South Africa&apos;s numbers actually mean —
             written for everyone, not just economists.
           </p>
         </div>
@@ -69,7 +69,7 @@ export default function InsightsHub() {
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search stories…"
               aria-label="Search data stories"
-              className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-4 text-sm text-slate-900 placeholder-slate-400 shadow-sm outline-none transition-all focus:border-brand-400 focus:ring-2 focus:ring-brand-100 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:placeholder-slate-500 dark:focus:border-brand-500 dark:focus:ring-brand-900/30"
+              className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-4 text-sm text-slate-900 placeholder-slate-400 shadow-sm outline-none transition-all focus:border-brand-400 focus-visible:ring-2 focus-visible:ring-accent dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:placeholder-slate-500 dark:focus:border-brand-500"
             />
           </div>
 
