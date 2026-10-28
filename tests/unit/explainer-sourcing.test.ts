@@ -10,12 +10,16 @@ import { describe, it, expect } from 'vitest'
 import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { EXPLAINERS } from '@/data/explainers'
-import { assertExplainerSourced, collectFigures, findSourcingProblems, type Explainer } from '@/lib/explainers'
+import { assertExplainerSourced, collectFigures, findSourcingProblems, isCpi, isQlfs, type CpiExplainer, type Explainer } from '@/lib/explainers'
 import { CpiExplainerView } from '@/components/explainers/CpiExplainerView'
+import { ExplainerView } from '@/components/explainers/ExplainerView'
 import { ExplainerCard } from '@/components/explainers/ExplainerCard'
+import { formatCount } from '@/lib/format'
 import { ERAS, eraPoints, joinsInRange, peakAndTrough, valueToday, LATEST_INDEX } from '@/lib/cpi-history'
 
-const clone = (e: Explainer): Explainer => JSON.parse(JSON.stringify(e))
+const clone = <T extends Explainer>(e: T): T => JSON.parse(JSON.stringify(e))
+const CPI = EXPLAINERS.find(isCpi)!
+const QLFS = EXPLAINERS.find(isQlfs)!
 
 function figureAttributes(html: string) {
   return [...html.matchAll(/<span data-figure=""([^>]*)>([^<]*)</g)].map((m) => ({
@@ -34,7 +38,7 @@ describe.each(EXPLAINERS.map((e) => [e.slug, e] as const))('explainer %s', (_slu
   })
 
   it('renders every figure with its source, release date and checked date', () => {
-    const html = renderToStaticMarkup(createElement(CpiExplainerView, { explainer }))
+    const html = renderToStaticMarkup(createElement(ExplainerView, { explainer }))
     const figures = figureAttributes(html)
     expect(figures.length).toBeGreaterThan(20)
     for (const f of figures) {
@@ -48,7 +52,7 @@ describe.each(EXPLAINERS.map((e) => [e.slug, e] as const))('explainer %s', (_slu
   })
 
   it('gives the full citation once at the top and once at the bottom', () => {
-    const html = renderToStaticMarkup(createElement(CpiExplainerView, { explainer }))
+    const html = renderToStaticMarkup(createElement(ExplainerView, { explainer }))
     expect(html.split('>Sources</p>').length - 1).toBe(2)
     for (const s of explainer.sources) {
       expect(html.split(s.title).length - 1, s.id).toBeGreaterThanOrEqual(2)
@@ -64,7 +68,7 @@ describe.each(EXPLAINERS.map((e) => [e.slug, e] as const))('explainer %s', (_slu
 })
 
 describe('the sourcing check catches gaps', () => {
-  const base = EXPLAINERS[0]
+  const base: CpiExplainer = CPI
 
   it('flags a figure with no checked date', () => {
     const e = clone(base)
@@ -93,7 +97,7 @@ describe('the sourcing check catches gaps', () => {
 })
 
 describe('September 2026 CPI figures (Stats SA P0141 September 2026)', () => {
-  const e = EXPLAINERS.find((x) => x.slug === 'cpi-2026-09')!
+  const e = CPI
 
   it('matches the headline and the Table C contributions named in the product direction', () => {
     expect(e.headline.annual.value).toBe(4.5)
@@ -113,7 +117,7 @@ describe('September 2026 CPI figures (Stats SA P0141 September 2026)', () => {
 })
 
 describe('September 2026 page wording', () => {
-  const html = renderToStaticMarkup(createElement(CpiExplainerView, { explainer: EXPLAINERS[0] }))
+  const html = renderToStaticMarkup(createElement(CpiExplainerView, { explainer: CPI }))
 
   it('names the monthly card by both months', () => {
     expect(html).toContain('Monthly change in prices, August to September 2026')
@@ -122,6 +126,38 @@ describe('September 2026 page wording', () => {
   it('says only what the release says about groups missing from Table C', () => {
     expect(html).not.toContain('Groups not listed here')
     expect(html).toContain('The release does not say why they are left out of Table C.')
+  })
+})
+
+describe('Q2 2026 QLFS figures (Stats SA P0211 Q2 2026)', () => {
+  const html = renderToStaticMarkup(createElement(ExplainerView, { explainer: QLFS }))
+  const rate = (code: string) => QLFS.rates.find((r) => r.code === code)!
+
+  it('matches Table A, page 1', () => {
+    expect([QLFS.headline.yearAgoRate.value, QLFS.headline.previousRate.value, QLFS.headline.rate.value]).toEqual([33.2, 32.7, 33.6])
+    expect([rate('LU3').yearAgo.value, rate('LU3').previous.value, rate('LU3').current.value]).toEqual([43.0, 43.7, 43.8])
+    const counts = Object.fromEntries(QLFS.counts.map((c) => [c.label, c.current.value]))
+    expect(counts).toMatchObject({ 'Labour force': 25220, Employed: 16739, Unemployed: 8481, 'Potential labour force': 4571 })
+  })
+
+  it('has published counts that reproduce LU1 and LU3', () => {
+    const c = Object.fromEntries(QLFS.counts.map((x) => [x.label, x.current.value]))
+    expect(Math.round((1000 * c['Unemployed']) / c['Labour force']) / 10).toBe(rate('LU1').current.value)
+    const lu3 = (c['Unemployed'] + c['Potential labour force']) / (c['Labour force'] + c['Potential labour force'])
+    expect(Math.round(1000 * lu3) / 10).toBe(rate('LU3').current.value)
+    expect(html).toContain(`${formatCount(8481)}</span> thousand`)
+  })
+
+  it('explains why there is more than one rate, with quoted definitions, and does not invent the expanded rate', () => {
+    expect(html).toContain('Why South Africa has more than one unemployment rate')
+    for (const r of QLFS.rates) expect(html, r.code).toContain(r.definition.text.replace(/'/g, '&#x27;'))
+    expect(html).toContain('The former expanded rate')
+    expect(html).toContain('we do not quote a definition or a figure for it')
+  })
+
+  it('quotes the release for what moved the rate', () => {
+    expect(QLFS.reason.text).toContain('A decrease in employment and an increase in unemployment')
+    expect(html).toContain(QLFS.reason.text)
   })
 })
 
