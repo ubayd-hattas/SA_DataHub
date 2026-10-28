@@ -1,14 +1,17 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { Info } from 'lucide-react'
 import { getAllMunicipalities } from '@/data/mock'
-import MunicipalityExplorer from './MunicipalityExplorer'
+import MunicipalityExplorer, { type ExplorerRow } from './MunicipalityExplorer'
 import { buildPageMetadata } from '@/lib/seo'
 import { Breadcrumbs } from '@/components/seo/Breadcrumbs'
 import { JsonLd } from '@/components/seo/JsonLd'
 import { breadcrumbSchema } from '@/lib/schema'
 import { provinceCodeToSlug, provinceLabels } from '@/lib/utils'
 import type { ProvinceCode } from '@/types'
+import { Column, PageHeader, Section, linkClass } from '@/components/editorial/Section'
+import { SourceLine } from '@/components/editorial/SourceLine'
+import { CENSUS_SOURCE } from '@/lib/municipality-profile'
+import { formatCount } from '@/lib/format'
 
 export const metadata: Metadata = buildPageMetadata({
   title: 'Municipality Explorer',
@@ -17,70 +20,66 @@ export const metadata: Metadata = buildPageMetadata({
   path: '/municipalities',
 })
 
-const PROVINCE_LINKS = (Object.entries(provinceCodeToSlug) as [ProvinceCode, string][]).map(
-  ([code, slug]) => ({
-    code,
-    slug,
-    label: provinceLabels[slug] ?? slug,
-    count: getAllMunicipalities().filter((m) => m.province === code).length,
-  })
-)
+const PROVINCE_LINKS = (Object.entries(provinceCodeToSlug) as [ProvinceCode, string][]).map(([code, slug]) => ({
+  code,
+  slug,
+  label: provinceLabels[slug] ?? slug,
+  count: getAllMunicipalities().filter((m) => m.province === code).length,
+}))
 
 export default function MunicipalitiesPage() {
   const municipalities = getAllMunicipalities()
-
+  const rows: ExplorerRow[] = municipalities.map((m) => ({
+    id: m.id,
+    name: m.name,
+    category: m.category,
+    province: m.province,
+    provinceName: m.provinceName,
+    population2011: m.population2011,
+    population2022: m.population2022,
+    households2022: m.households2022,
+  }))
+  const metros = municipalities.filter((m) => m.category === 'A').length
   const breadcrumbs = [
     { name: 'Home', path: '/' },
     { name: 'Municipalities', path: '/municipalities' },
   ]
 
   return (
-    <div className="container-page py-10 space-y-10">
+    <Column className="pb-16">
       <JsonLd data={breadcrumbSchema(breadcrumbs)} />
-      {/* Breadcrumb + header */}
-      <div>
-        <Breadcrumbs items={breadcrumbs} className="mb-3" />
-        <h1 className="font-display text-3xl font-semibold text-slate-900 dark:text-white mb-2">
-          Municipality Explorer
-        </h1>
-        <p className="text-slate-500 dark:text-slate-400 max-w-2xl">
-          Search and filter all 213 South African municipalities. Population and household data
-          from Census 2022, sourced from Statistics South Africa Municipal Fact Sheets.
-        </p>
-      </div>
+      <Breadcrumbs items={breadcrumbs} className="pt-6" />
+      <PageHeader
+        title="Municipalities"
+        lede={`All ${municipalities.length} municipalities in South Africa: ${metros} metros and ${municipalities.length - metros} local municipalities. Each profile compares Census 2011 with Census 2022.`}
+      />
 
-      {/* Client-side explorer — search, filter, paginate */}
-      <MunicipalityExplorer municipalities={municipalities} />
+      <Section id="find" title="Find a municipality">
+        <MunicipalityExplorer municipalities={rows} />
+        <div className="mt-4">
+          <SourceLine
+            publisher={CENSUS_SOURCE.publisher}
+            title={CENSUS_SOURCE.title}
+            code={CENSUS_SOURCE.code}
+            location={`person indicators per municipality, ${formatCount(municipalities.length)} municipalities`}
+            releasedOn={CENSUS_SOURCE.releasedOn}
+            checkedOn={CENSUS_SOURCE.checkedOn}
+          />
+        </div>
+      </Section>
 
-      {/* Server-rendered province index for crawlability */}
-      <nav aria-label="Municipalities by province" className="border-t border-slate-200 pt-8 dark:border-slate-700">
-        <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-4">
-          Browse by province
-        </h2>
-        <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+      <Section id="by-province" title="By province">
+        <ul className="grid grid-cols-1 gap-x-8 sm:grid-cols-2">
           {PROVINCE_LINKS.map(({ slug, label, count }) => (
-            <li key={slug}>
-              <Link
-                href={`/provinces/${slug}`}
-                className="flex items-center justify-between rounded-lg border border-slate-100 px-3 py-2 text-sm hover:border-brand-300 dark:border-slate-800 dark:hover:border-brand-700 transition-colors"
-              >
-                <span className="text-slate-700 dark:text-slate-300">{label}</span>
-                <span className="text-xs text-slate-400">{count} municipalities</span>
+            <li key={slug} className="flex items-baseline justify-between gap-3 border-t border-rule py-2 text-small">
+              <Link href={`/provinces/${slug}`} className={linkClass}>
+                {label}
               </Link>
+              <span className="text-muted">{count} municipalities</span>
             </li>
           ))}
         </ul>
-      </nav>
-
-      {/* Footer note */}
-      <div className="flex items-start gap-2 text-xs text-slate-400 dark:text-slate-500">
-        <Info size={13} className="shrink-0 mt-0.5" />
-        <p>
-          All data from Stats SA Census 2022 Municipal Fact Sheets (revised August 2025).
-          Population and household figures are boundary-aligned to 2021 local government election boundaries.
-          Category A = metropolitan municipalities, B = local municipalities, C = district municipalities.
-        </p>
-      </div>
-    </div>
+      </Section>
+    </Column>
   )
 }

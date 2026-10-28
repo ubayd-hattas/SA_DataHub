@@ -256,7 +256,7 @@ const datasetRegistryBase: DatasetRegistryEntry[] = [
     id: 'census',
     label: 'Census 2022',
     description: 'Household, internet access, and income data from the South Africa Census 2022.',
-    statIds: ['census-households', 'census-internet-access', 'census-no-income'],
+    statIds: ['census-households', 'census-internet-access'],
     categoryId: 'census',
     sourceName: 'Statistics South Africa',
     sourceShortName: 'Stats SA',

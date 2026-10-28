@@ -5,7 +5,7 @@ import ProvincesExplorer from './ProvincesExplorer'
 export const metadata: Metadata = buildPageMetadata({
   title: 'Province Explorer',
   description:
-    'Compare unemployment, education, housing, and population indicators across all nine South African provinces. Interactive charts and provincial profiles.',
+    "Official unemployment, LU3 and 2026 population estimates for South Africa's nine provinces, from Stats SA releases, with a side-by-side comparison.",
   path: '/provinces',
 })
 

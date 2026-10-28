@@ -10,6 +10,7 @@ import { getAllMunicipalities } from '@/data/mock'
 import { formatLongDate, getSource, isCpi } from '@/lib/explainers'
 import { getHeadlineNumbers, getTopicRows } from '@/lib/headline-numbers'
 import { MONEY_VALUE_PATH } from '@/lib/money-value'
+import { HUB_PATH, HUB_TITLE } from '@/lib/census-hub'
 import { buildPageMetadata } from '@/lib/seo'
 
 const TITLE = "SA Data Hub: South Africa's official data, explained"
@@ -98,6 +99,17 @@ export default function HomePage() {
             All explainers
           </Link>
         </p>
+        <div className="mt-8 border-t border-rule pt-6">
+          <p className="text-caption font-medium text-muted">Census story</p>
+          <p className="mt-1 font-display text-h3 font-semibold text-ink">
+            <Link href={HUB_PATH} className={linkClass}>
+              {HUB_TITLE}
+            </Link>
+          </p>
+          <p className="mt-2 text-small text-muted">
+            Population, housing, water, toilets and cooking fuel in all 213 municipalities, with the biggest rises and falls.
+          </p>
+        </div>
       </Section>
 
       {/* 4. The calculator, working on the page */}
