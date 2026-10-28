@@ -5,7 +5,7 @@ import InsightsHub from './InsightsHub'
 export const metadata: Metadata = buildPageMetadata({
   title: 'Data Stories & Insights',
   description:
-    'Data-driven narratives explaining South African statistics — unemployment, inflation, GDP, crime, education, and more. Written for everyone, not just economists.',
+    'Stories that explain South African statistics on unemployment, inflation, GDP, crime, education and the census, with every figure sourced.',
   path: '/insights',
 })
 
