@@ -3,6 +3,7 @@ import { Breadcrumbs } from '@/components/seo/Breadcrumbs'
 import { JsonLd } from '@/components/seo/JsonLd'
 import { Change, NumberBlock, type Tone } from '@/components/editorial/NumberBlock'
 import { Column, PageHeader, Prose, Section, linkClass } from '@/components/editorial/Section'
+import { GuessFirst } from '@/components/editorial/GuessFirst'
 import { FigureValue, SourceCitations, SourceNote } from '@/components/explainers/FigureValue'
 import { getSource, type QlfsExplainer, type SourcedQuote } from '@/lib/explainers'
 import { formatCount, formatDecimal } from '@/lib/format'
@@ -141,6 +142,18 @@ export function QlfsExplainerView({ explainer }: { explainer: QlfsExplainer }) {
         </p>
         <SourceNote source={release} location={unemployed.current.location} className="mt-2" />
       </Section>
+
+      <div className="border-t border-rule py-10">
+        <GuessFirst
+          question={`The official rate counts only people who looked for work. Stats SA also publishes LU3, which also counts the potential labour force: people available for work who did not look, and people who looked but could not start yet. Guess LU3 for ${explainer.period}.`}
+          min={30}
+          max={60}
+          step={0.5}
+          unit="percent"
+          value={lu3Figure.value}
+          source={`${release.shortName}, ${lu3Figure.location}`}
+        />
+      </div>
 
       <Section id="in-numbers" title="What it means in numbers">
         <Prose>

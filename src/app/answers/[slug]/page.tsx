@@ -7,6 +7,7 @@ import { JsonLd } from '@/components/seo/JsonLd'
 import { Column, PageHeader, Prose, Section, linkClass } from '@/components/editorial/Section'
 import { ChartFigure } from '@/components/editorial/ChartFigure'
 import { BarList } from '@/components/editorial/BarList'
+import { GuessFirst } from '@/components/editorial/GuessFirst'
 import { SourceLine } from '@/components/editorial/SourceLine'
 import { breadcrumbSchema } from '@/lib/schema'
 import { buildPageMetadata } from '@/lib/seo'
@@ -50,6 +51,12 @@ export default async function AnswerPage({ params }: AnswerPageProps) {
       <Breadcrumbs items={breadcrumbs} className="pt-6" />
       {/* The answer is the standfirst: nothing sits between the question and its answer. */}
       <PageHeader title={a.question} lede={a.answer} />
+
+      {a.guess && (
+        <div className="border-t border-rule py-10">
+          <GuessFirst {...a.guess} />
+        </div>
+      )}
 
       <section aria-label="The figures" className="border-t border-rule py-10">
         <ChartFigure title={a.figure.title} source={sources}>
