@@ -48,6 +48,16 @@ describe('every statistic can be summarised', () => {
   })
 })
 
+describe('unemployment topic page', () => {
+  it('links the Q2 2026 explainer and its section on the different rates', async () => {
+    const { default: CategoryPage } = await import('@/app/category/[slug]/page')
+    const { renderToStaticMarkup } = await import('react-dom/server')
+    const html = renderToStaticMarkup(await CategoryPage({ params: Promise.resolve({ slug: 'unemployment' }) }))
+    expect(html).toContain('href="/explainers/qlfs-2026-q2"')
+    expect(html).toContain('href="/explainers/qlfs-2026-q2#more-than-one-rate"')
+  })
+})
+
 describe('chart takeaways', () => {
   it('state the change and the peak, worked out from the series', () => {
     expect(chartTakeaway(getStatById('cpi-headline')!)).toBe(
