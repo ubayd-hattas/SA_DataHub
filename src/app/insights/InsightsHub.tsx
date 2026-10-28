@@ -6,6 +6,8 @@ import { StoryCard } from '@/components/ui/StoryCard'
 import { STORIES, getFeaturedStories } from '@/data/stories'
 import { Story, StoryCategory } from '@/types'
 import { cn } from '@/lib/utils'
+import Link from 'next/link'
+import { HUB_PATH, HUB_TITLE } from '@/lib/census-hub'
 
 const CATEGORIES: { id: StoryCategory | 'all'; label: string }[] = [
   { id: 'all',          label: 'All' },
@@ -54,6 +56,21 @@ export default function InsightsHub() {
       </div>
 
       <div className="container-page py-10">
+        <div className="mb-10 border-b border-rule pb-8">
+          <p className="text-caption font-medium text-muted">Census story</p>
+          <h2 className="mt-1 font-display text-h3 font-semibold text-ink">
+            <Link
+              href={HUB_PATH}
+              className="text-accent underline decoration-accent/40 underline-offset-4 hover:decoration-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+            >
+              {HUB_TITLE}
+            </Link>
+          </h2>
+          <p className="mt-2 max-w-2xl text-small text-muted">
+            Census 2011 against Census 2022 for all 213 municipalities: population, households, dwellings, water, toilets
+            and cooking fuel, with the biggest rises and falls.
+          </p>
+        </div>
         {/* ── Search + Filter ─────────────────────────────────────────────── */}
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6">
           {/* Search */}
