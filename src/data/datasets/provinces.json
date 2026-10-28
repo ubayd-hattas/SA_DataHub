@@ -4,8 +4,8 @@
     "source_url": "https://www.statssa.gov.za/?page_id=1854&PPN=P0211",
     "update_frequency": "Quarterly — same release as national QLFS",
     "last_verified": "2026-10-19",
-    "notes": "Provincial official unemployment (LU1) is from QLFS Q2 2026 (published 2026-08-11), Table E — the same quarter as the national figure; all nine provinces share Q2 2026 and 'change' is the published quarter-on-quarter change in percentage points vs Q1 2026. 'trend' is 'stable' when |change| ≤ 0.1 pp. The legacy 'expanded' field is UNCHANGED (Q3 2025, legacy definition, not re-verified); LU3 (unemployment plus the potential labour force — a different measure) is supplied in the NEW optional fields 'lu3' and 'lu3Label' so it is never presented as the expanded rate. These additive fields need site-owner approval and a UI change (see antigravity-instructions.md). Population (Census 2022), education (matric 2024), literacy and housing fields were not refreshed in this file version and keep their own reference years. Rank 1 = lowest unemployment. Provincial population totals and shares were updated to Stats SA Mid-Year Population Estimates 2026 (P0302, published 2026-07-30; Appendix 1) so that the nine provinces sum to the national 63,522,380; the urban share (stats.population.urban) remains Census 2022. These are estimates for 2026 and are NOT comparable with the Census 2022 counts used for municipalities (which sum to 62.0M). Needs site-owner approval; to revert, restore population, populationShare and stats.population.total/source from the previous file.",
-    "public_notes": "Provincial official unemployment is from QLFS Q2 2026 (published 11 August 2026), Table E. Change is the published quarter-on-quarter change in percentage points against Q1 2026. The expanded unemployment rate is from Q3 2025 and uses the former definition. Provincial population totals are Stats SA Mid-Year Population Estimates for 2026 (P0302) and are not comparable with the Census 2022 counts used on municipality pages. Education, literacy and housing fields keep their own reference years. Rank 1 is the lowest unemployment rate."
+    "notes": "Provincial official unemployment (LU1) is from QLFS Q2 2026 (published 2026-08-11), Table E — the same quarter as the national figure; all nine provinces share Q2 2026 and 'change' is the published quarter-on-quarter change in percentage points vs Q1 2026. 'trend' is 'stable' when |change| ≤ 0.1 pp. The legacy 'expanded' field is UNCHANGED (Q3 2025, legacy definition, not re-verified); LU3 (unemployment plus the potential labour force — a different measure) is supplied in the NEW optional fields 'lu3' and 'lu3Label' so it is never presented as the expanded rate. These additive fields need site-owner approval and a UI change (see antigravity-instructions.md). Population (Census 2022), education (matric 2024) and literacy fields were not refreshed in this file version and keep their own reference years. Rank 1 = lowest unemployment. Provincial population totals and shares were updated to Stats SA Mid-Year Population Estimates 2026 (P0302, published 2026-07-30; Appendix 1) so that the nine provinces sum to the national 63,522,380; the urban share (stats.population.urban) remains Census 2022. These are estimates for 2026 and are NOT comparable with the Census 2022 counts used for municipalities (which sum to 62.0M). Needs site-owner approval; to revert, restore population, populationShare and stats.population.total/source from the previous file. Housing is no longer stored here: the province pages compute it from the province rows of Census 2022 Provinces at a glance (src/data/census-provinces.json, pages 8 and 9 of each province section). The old electricityAccess, pipedWaterInDwelling and formalDwellings values had no traceable source and were removed on 2026-10-28.",
+    "public_notes": "Provincial official unemployment is from QLFS Q2 2026 (published 11 August 2026), Table E. Change is the published quarter-on-quarter change in percentage points against Q1 2026. The expanded unemployment rate is from Q3 2025 and uses the former definition. Provincial population totals are Stats SA Mid-Year Population Estimates for 2026 (P0302) and are not comparable with the Census 2022 counts used on municipality pages. Education and literacy fields keep their own reference years. Housing and services are from Census 2022 Provinces at a glance. Rank 1 is the lowest unemployment rate."
   },
   "provinces": [
     {
@@ -38,11 +38,6 @@
           "matricPassRate": 89.1,
           "year": 2024,
           "literacyRate": 92.4
-        },
-        "housing": {
-          "electricityAccess": 95.8,
-          "pipedWaterInDwelling": 74.2,
-          "formalDwellings": 87.1
         }
       }
     },
@@ -76,11 +71,6 @@
           "matricPassRate": 87.2,
           "year": 2024,
           "literacyRate": 91.8
-        },
-        "housing": {
-          "electricityAccess": 95.1,
-          "pipedWaterInDwelling": 73.1,
-          "formalDwellings": 84.6
         }
       }
     },
@@ -114,11 +104,6 @@
           "matricPassRate": 81.4,
           "year": 2024,
           "literacyRate": 85.3
-        },
-        "housing": {
-          "electricityAccess": 88.1,
-          "pipedWaterInDwelling": 57.4,
-          "formalDwellings": 79.8
         }
       }
     },
@@ -152,11 +137,6 @@
           "matricPassRate": 79.8,
           "year": 2024,
           "literacyRate": 80.1
-        },
-        "housing": {
-          "electricityAccess": 82.3,
-          "pipedWaterInDwelling": 41.8,
-          "formalDwellings": 68.9
         }
       }
     },
@@ -190,11 +170,6 @@
           "matricPassRate": 84.6,
           "year": 2024,
           "literacyRate": 78.4
-        },
-        "housing": {
-          "electricityAccess": 88.2,
-          "pipedWaterInDwelling": 38.2,
-          "formalDwellings": 73.4
         }
       }
     },
@@ -228,11 +203,6 @@
           "matricPassRate": 82.1,
           "year": 2024,
           "literacyRate": 83.5
-        },
-        "housing": {
-          "electricityAccess": 85.4,
-          "pipedWaterInDwelling": 48.9,
-          "formalDwellings": 76.2
         }
       }
     },
@@ -266,11 +236,6 @@
           "matricPassRate": 85.3,
           "year": 2024,
           "literacyRate": 84.1
-        },
-        "housing": {
-          "electricityAccess": 86.7,
-          "pipedWaterInDwelling": 52.3,
-          "formalDwellings": 72.8
         }
       }
     },
@@ -304,11 +269,6 @@
           "matricPassRate": 88.4,
           "year": 2024,
           "literacyRate": 88.2
-        },
-        "housing": {
-          "electricityAccess": 90.3,
-          "pipedWaterInDwelling": 62.1,
-          "formalDwellings": 82.4
         }
       }
     },
@@ -342,11 +302,6 @@
           "matricPassRate": 86.1,
           "year": 2024,
           "literacyRate": 87.4
-        },
-        "housing": {
-          "electricityAccess": 89.1,
-          "pipedWaterInDwelling": 61.4,
-          "formalDwellings": 81.6
         }
       }
     }

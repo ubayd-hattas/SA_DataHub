@@ -162,11 +162,19 @@ export interface ProvinceStats {
     year: number
     literacyRate: number
   }
-  housing: {
-    electricityAccess: number
-    pipedWaterInDwelling: number
-    formalDwellings: number
-  }
+  /** From Provinces at a glance (Census 2022), added when the data loads. */
+  housing: ProvinceHousingShares
+}
+
+/** Shares of households, rounded to one decimal, as [2011, 2022]. */
+export interface ProvinceHousingShares {
+  formal: [number, number]
+  /** "Regional/local water scheme", the publication's term. */
+  waterScheme: [number, number]
+  flushToilet: [number, number]
+  electricityCooking: [number, number]
+  /** Printed pages of the two housing tables for this province. */
+  pages: { housing1: number; housing2: number }
 }
 
 export interface ProvinceData {
