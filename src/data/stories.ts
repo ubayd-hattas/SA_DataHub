@@ -36,32 +36,32 @@ export const STORIES: Story[] = [
       {
         id: 'scale',
         heading: 'The scale of the problem',
-        body: 'South Africa\'s unemployment rate stood at 33.6% in Q2 2026 — meaning roughly one in three South Africans who want a job cannot find one. That is approximately 8.5 million people.\n\nSeparately, the combined rate of unemployment and the potential labour force (LU3), which includes discouraged work-seekers who have given up looking, stood at 43.8% in the same period. Stats SA stopped reporting the former "expanded unemployment rate" after Q2 2025 in favour of LU3.\n\nBy any international measure, this is a crisis. South Africa consistently ranks among the highest unemployment rates in the world for a major economy.',
+        body: 'South Africa\'s unemployment rate stood at 33.6% in Q2 2026 — meaning roughly one in three South Africans who want a job cannot find one. That is approximately 8.5 million people.\n\nSeparately, the combined rate of unemployment and the potential labour force (LU3), which includes discouraged work-seekers who have given up looking, stood at 43.8% in the same period.\n\nBy any international measure, this is a crisis. South Africa consistently ranks among the highest unemployment rates in the world for a major economy.',
         statCallouts: ['unemployment-national'],
         highlight: 'The combined unemployment and potential labour force rate (LU3) reached 43.8% in Q2 2026.',
       },
       {
         id: 'youth',
         heading: 'Youth unemployment: a generation at risk',
-        body: 'The crisis is especially acute for young people. Among those aged 15 to 34, the unemployment rate was 44.8% in Q4 2025. For the narrower 15–24 age group, the rate reaches 61.4% — meaning six in ten young South Africans actively seeking work cannot find it.\n\nThe NEET rate (Not in Education, Employment, or Training) is particularly concerning. A significant share of young South Africans are neither gaining work experience nor improving their skills — a structural trap that compounds over time.\n\nThe Western Cape, with its more diversified economy and stronger tourism sector, consistently records the lowest youth unemployment. The Eastern Cape and North West consistently record the highest.',
+        body: 'The crisis is especially acute for young people. Among those aged 15 to 34, the unemployment rate was 44.8% in Q4 2025. For the narrower 15–24 age group, the rate reaches 61.4% — meaning six in ten young South Africans actively seeking work cannot find it.\n\nThe NEET rate (Not in Education, Employment, or Training) is particularly concerning. A significant share of young South Africans are neither gaining work experience nor improving their skills.\n\nThe Western Cape, with its more diversified economy and stronger tourism sector, consistently records the lowest youth unemployment. The Eastern Cape and North West consistently record the highest.',
         statCallouts: ['youth-unemployment-narrow'],
         highlight: '6 in 10 young South Africans who want work cannot find it.',
       },
       {
         id: 'causes',
         heading: 'What drives such high unemployment?',
-        body: 'South Africa\'s unemployment is structural, not just cyclical. It cannot be solved by economic growth alone — though growth is necessary.\n\nSeveral deep factors are at work. The mismatch between the skills employers need and those job-seekers have is severe. Apartheid-era education produced enormous inequality in outcomes, and despite progress, that legacy persists. The 2024 matric pass rate of 87.3% is a record high, but the quality of education — measured by literacy and numeracy at primary level — remains a serious concern.\n\nLabour market rigidity also plays a role. High minimum wages relative to productivity in certain sectors can reduce hiring. South Africa\'s labour laws are designed to protect workers, but critics argue they sometimes discourage formal-sector job creation.\n\nFinally, energy insecurity — the load-shedding crisis that peaked in 2022–23 — inflicted severe damage on small businesses, which are normally the primary engine of job creation. The situation has improved since late 2024, but the damage to the small business sector was substantial.',
+        body: 'Several deep factors are at work. The mismatch between the skills employers need and those job-seekers have is severe. Apartheid-era education produced enormous inequality in outcomes, and despite progress, that legacy persists. The 2024 matric pass rate of 87.3% is a record high, but the quality of education — measured by literacy and numeracy at primary level — remains a serious concern.\n\nLabour market rigidity also plays a role. High minimum wages relative to productivity in certain sectors can reduce hiring. South Africa\'s labour laws are designed to protect workers, but critics argue they sometimes discourage formal-sector job creation.\n\nFinally, energy insecurity — the load-shedding crisis that peaked in 2022–23 — inflicted severe damage on small businesses, which are normally the primary engine of job creation. The situation has improved since late 2024, but the damage to the small business sector was substantial.',
       },
       {
         id: 'progress',
         heading: 'Signs of improvement — and their limits',
-        body: 'While the Q4 2025 reading of 31.4% had represented an improvement from post-pandemic peaks, unemployment rose again in 2026 to reach 33.6% by Q2 2026. The number of employed South Africans stood at 16.7 million, with 8.5 million unemployed.\n\nThe formal sector continues to face headwinds. Even with occasional quarterly job gains in services and finance, the labour market is not absorbing new entrants fast enough to reduce structural unemployment meaningfully — South Africa\'s working-age population grows by roughly 500,000 people per year.\n\nThe SARB has maintained tight policy to safeguard price stability, hiking the repo rate to 7.25% in September 2026, while medium-term growth projections remain well below the 5–6% economists say is required to make a dent in structural unemployment.',
+        body: 'While the Q4 2025 reading of 31.4% had represented an improvement from post-pandemic peaks, unemployment rose again in 2026 to reach 33.6% by Q2 2026. The number of employed South Africans stood at 16.7 million, with 8.5 million unemployed.\n\nThe formal sector continues to face headwinds. Compared with Q2 2025, the working-age population grew by 488 000 and the number of employed people fell by 68 000 (QLFS Q2 2026, page 2).\n\nThe SARB has maintained tight policy to safeguard price stability, hiking the repo rate to 7.25% in September 2026.',
         statCallouts: ['lfpr-overall'],
       },
       {
         id: 'outlook',
         heading: 'The road ahead',
-        body: 'Most economists agree that reducing South Africa\'s unemployment to sustainable levels requires sustained GDP growth above 3%, major improvements in education quality, reduced energy costs, and expanded infrastructure investment.\n\nThe 2026 budget introduced a temporary fiscal stimulus — expanding public employment programmes and extending social grants. These measures support household income but do not resolve the structural jobs deficit.\n\nThe South African government\'s target is to reduce unemployment to below 20% by 2030. Given current trajectories, that target appears unlikely to be met — but continued incremental improvement is achievable with policy consistency and stronger private investment.',
+        body: 'The 2026 budget introduced a temporary fiscal stimulus — expanding public employment programmes and extending social grants.\n\nThe South African government\'s target is to reduce unemployment to below 20% by 2030. Given current trajectories, that target appears unlikely to be met — but continued incremental improvement is achievable with policy consistency and stronger private investment.',
       },
     ],
   },
@@ -124,7 +124,7 @@ export const STORIES: Story[] = [
     lastUpdated: '2026-10-23',
     featured: false,
     coverEmoji: '📊',
-    summary: 'South Africa\'s economy grew 1.1% in 2025, its strongest performance since 2022. But economists say 5% annual growth is needed to make a real dent in unemployment. This story explains the gap between what is happening and what is needed.',
+    summary: 'South Africa\'s economy grew 1.1% in 2025, its strongest performance since 2022. This story explains the gap between what is happening and what is needed.',
     relatedStatIds: ['gdp-growth', 'gdp-annual-growth', 'gdp-nominal'],
     relatedSlugs: ['south-africa-unemployment-crisis', 'inflation-what-it-means'],
     tags: ['GDP', 'economic growth', 'Stats SA', 'load shedding'],
@@ -140,12 +140,12 @@ export const STORIES: Story[] = [
       {
         id: 'not-enough',
         heading: 'Why 1.1% is not enough',
-        body: 'South Africa\'s population grows by roughly 1% per year. That means GDP must grow by at least 1% just to keep GDP per capita flat. At 1.1%, 2025 growth barely kept the country\'s head above water on a per-capita basis.\n\nMost development economists argue South Africa needs sustained GDP growth of 5% or more to meaningfully reduce the 33.6% unemployment rate. The World Bank and IMF have similar benchmarks for the level of growth needed to reduce structural poverty.\n\nSouth Africa has not grown above 3% since 2011 — more than a decade of sustained underperformance. Over that period, the economy grew at an average of around 1% per year in real terms.',
+        body: 'South Africa\'s population grows by roughly 1% per year. That means GDP must grow by at least 1% just to keep GDP per capita flat. At 1.1%, 2025 growth barely kept the country\'s head above water on a per-capita basis.\n\nSouth Africa has not grown above 3% since 2011 — more than a decade of sustained underperformance. Over that period, the economy grew at an average of around 1% per year in real terms.',
       },
       {
         id: 'what-held-back',
         heading: 'What held the economy back',
-        body: 'The structural constraints on South African growth are well documented.\n\nLoad-shedding — scheduled electricity outages — inflicted billions of rands of economic damage each year from 2022 to 2024. The situation improved significantly from late 2024 as Eskom\'s maintenance programme bore fruit and new renewable energy capacity came online. But load-shedding has not been eliminated, and its legacy damage to business confidence and investment takes time to repair.\n\nLogistics constraints also remain severe. Transnet, the state freight rail and ports company, has struggled with operational problems, theft of infrastructure, and deferred maintenance. Mining and agricultural exporters — the backbone of South Africa\'s current account — have been particularly hard hit.\n\nManufacturing recorded its second consecutive year of negative growth in 2025. Construction posted its ninth straight year of decline. Both sectors are critical for labour-intensive job creation.',
+        body: 'Load-shedding — scheduled electricity outages — inflicted billions of rands of economic damage each year from 2022 to 2024. The situation improved significantly from late 2024 as Eskom\'s maintenance programme bore fruit and new renewable energy capacity came online. But load-shedding has not been eliminated, and its legacy damage to business confidence and investment takes time to repair.\n\nLogistics constraints also remain severe. Transnet, the state freight rail and ports company, has struggled with operational problems, theft of infrastructure, and deferred maintenance. Mining and agricultural exporters — the backbone of South Africa\'s current account — have been particularly hard hit.\n\nManufacturing recorded its second consecutive year of negative growth in 2025. Construction posted its ninth straight year of decline. Both sectors are critical for labour-intensive job creation.',
       },
       {
         id: 'bright-spots',
@@ -183,7 +183,7 @@ export const STORIES: Story[] = [
       {
         id: 'murder',
         heading: 'Murder: the most reliable indicator',
-        body: 'Murder is considered the most reliable crime statistic internationally because bodies are difficult to conceal and the police almost always record them. The 2023/24 figure of 26,232 murders — a 4.6% decline from the 27,494 in 2022/23 — is therefore meaningful.\n\nThis equates to approximately 72 murders per day, or a rate of 41.9 per 100,000 population. For context, the global average is around 6 per 100,000. South Africa\'s rate is more than six times higher.\n\nGauteng, KwaZulu-Natal, and the Western Cape account for the majority of murders. The Cape Flats area of Cape Town — plagued by gang violence — has been a persistent hotspot. The SAPS has deployed the military in several Western Cape communities in recent years as part of anti-gang operations.',
+        body: 'This story looks at murder first. The 2023/24 figure of 26,232 murders — a 4.6% decline from the 27,494 in 2022/23 — is therefore meaningful.\n\nThis equates to approximately 72 murders per day, or a rate of 41.9 per 100,000 population. For context, the global average is around 6 per 100,000. South Africa\'s rate is more than six times higher.\n\nGauteng, KwaZulu-Natal, and the Western Cape account for the majority of murders. The Cape Flats area of Cape Town — plagued by gang violence — has been a persistent hotspot. The SAPS has deployed the military in several Western Cape communities in recent years as part of anti-gang operations.',
         statCallouts: ['murder-rate'],
       },
       {
@@ -216,7 +216,7 @@ export const STORIES: Story[] = [
       {
         id: 'the-record',
         heading: 'A record worth celebrating — carefully',
-        body: 'The 2024 National Senior Certificate pass rate of 87.3% is the highest since the current examination system was introduced in 2008. More than one million candidates wrote the exams, and a record 47.8% achieved a bachelor\'s degree pass — meaning they qualified for university entrance.\n\nThat is genuine progress. The sustained upward trend since 2015, with the exception of the COVID-disrupted 2020 cohort, reflects real improvements in teaching quality, curriculum support, and school management in many parts of the country.',
+        body: 'The 2024 National Senior Certificate pass rate of 87.3%. More than one million candidates wrote the exams, and a record 47.8% achieved a bachelor\'s degree pass — meaning they qualified for university entrance.\n\nThat is genuine progress. The sustained upward trend since 2015, with the exception of the COVID-disrupted 2020 cohort, reflects real improvements in teaching quality, curriculum support, and school management in many parts of the country.',
         statCallouts: ['matric-pass-rate'],
         highlight: 'A record 87.3% pass rate — but what counts as a "pass" matters enormously.',
       },
