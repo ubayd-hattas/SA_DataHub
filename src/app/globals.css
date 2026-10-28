@@ -3,6 +3,12 @@
 @tailwind utilities;
 
 @layer base {
+  /* Keyboard focus is always visible. Components with their own ring override this. */
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
   :root {
     --brand: 142 76% 36%;
     --gold: 43 96% 56%;

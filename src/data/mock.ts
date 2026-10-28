@@ -186,7 +186,6 @@ export function getFeaturedStats(): Statistic[] {
 
 function getDatasetRegistryLazy(): DatasetRegistryEntry[] {
   // Lazy require avoids mock ↔ registry circular init at module load.
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
   return require('@/lib/registry').datasetRegistry as DatasetRegistryEntry[]
 }
 
