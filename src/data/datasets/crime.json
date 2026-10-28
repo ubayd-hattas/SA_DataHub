@@ -4,155 +4,8 @@
     "source_url": "https://www.saps.gov.za/services/crimestats.php",
     "update_frequency": "Annual (September each year, for Apr–Mar financial year)",
     "last_verified": "2025-05-01",
-    "notes": "SAPS publishes crime stats once per year in September. No public API. Data must be manually extracted from the published Excel workbooks. Latest annual: 2023/24. Quarterly Jan-Mar 2022 to 2026 checked 2026-10-28 from newdatasets/2025-2026_-_4th_Quarter_WEB.xlsx (scripts/crime/import_quarter.py) and held in _meta.pending_statistics: the workbook has no annual totals and no release date. Update by running: python scripts/update_crime.py (manual step required — see script comments)",
-    "public_notes": "Annual figures for the 2023/24 financial year (April to March), from the South African Police Service. SAPS also publishes quarterly figures. Its figures for January to March 2026, with the same months in 2022 to 2025, have been checked and will be shown as a separate quarterly series once their release date is confirmed. They cover one quarter, so they cannot be compared with the annual totals. SAPS annual figures newer than 2023/24 have not been added.",
-    "pending_statistics": {
-      "reason": "Checked against the SAPS workbook on 2026-10-28 but not shown: the workbook does not state a release date. Run scripts/crime/import_quarter.py with --released once it is confirmed.",
-      "checkedOn": "2026-10-28",
-      "statistics": [
-        {
-          "id": "murder-q4",
-          "categoryId": "crime",
-          "title": "Murders reported to the police, January to March",
-          "value": "5,181",
-          "rawValue": 5181,
-          "unit": "cases",
-          "change": -9.5,
-          "changeLabel": "from January to March 2025",
-          "trend": "down",
-          "description": "Murder cases reported to SAPS in January to March 2026, the fourth quarter of the 2025/26 financial year, compared with the same three months in earlier years. This is one quarter, not a full year, so it cannot be compared with the annual totals.",
-          "source": {
-            "name": "South African Police Service",
-            "shortName": "SAPS",
-            "url": "https://www.saps.gov.za/services/crimestats.php",
-            "publicationName": "Crime statistics, fourth quarter 2025/26 (January to March 2026), sheet \"Crime stats per component\""
-          },
-          "lastUpdated": "2026-10-28",
-          "series": [
-            {
-              "name": "Murder cases, January to March",
-              "unit": "cases",
-              "data": [
-                {
-                  "label": "Jan-Mar 2022",
-                  "value": 6083
-                },
-                {
-                  "label": "Jan-Mar 2023",
-                  "value": 6289
-                },
-                {
-                  "label": "Jan-Mar 2024",
-                  "value": 6536
-                },
-                {
-                  "label": "Jan-Mar 2025",
-                  "value": 5727
-                },
-                {
-                  "label": "Jan-Mar 2026",
-                  "value": 5181
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "id": "crime-contact-q4",
-          "categoryId": "crime",
-          "title": "Contact crimes reported to the police, January to March",
-          "value": "154,267",
-          "rawValue": 154267,
-          "unit": "cases",
-          "change": -4.6,
-          "changeLabel": "from January to March 2025",
-          "trend": "down",
-          "description": "Contact crimes (crimes against the person) reported to SAPS in January to March 2026, the fourth quarter of the 2025/26 financial year. SAPS counts murder, sexual offences, attempted murder, assault with intent to inflict grievous bodily harm, common assault, common robbery and robbery with aggravating circumstances. One quarter, not a full year.",
-          "source": {
-            "name": "South African Police Service",
-            "shortName": "SAPS",
-            "url": "https://www.saps.gov.za/services/crimestats.php",
-            "publicationName": "Crime statistics, fourth quarter 2025/26 (January to March 2026), sheet \"Crime stats per component\""
-          },
-          "lastUpdated": "2026-10-28",
-          "series": [
-            {
-              "name": "Contact crimes, January to March",
-              "unit": "cases",
-              "data": [
-                {
-                  "label": "Jan-Mar 2022",
-                  "value": 157907
-                },
-                {
-                  "label": "Jan-Mar 2023",
-                  "value": 164206
-                },
-                {
-                  "label": "Jan-Mar 2024",
-                  "value": 171707
-                },
-                {
-                  "label": "Jan-Mar 2025",
-                  "value": 161672
-                },
-                {
-                  "label": "Jan-Mar 2026",
-                  "value": 154267
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "id": "crime-robbery-q4",
-          "categoryId": "crime",
-          "title": "Robbery with aggravating circumstances, January to March",
-          "value": "26,796",
-          "rawValue": 26796,
-          "unit": "cases",
-          "change": -15.6,
-          "changeLabel": "from January to March 2025",
-          "trend": "down",
-          "description": "Robbery with aggravating circumstances reported to SAPS in January to March 2026, the fourth quarter of the 2025/26 financial year. One quarter, not a full year.",
-          "source": {
-            "name": "South African Police Service",
-            "shortName": "SAPS",
-            "url": "https://www.saps.gov.za/services/crimestats.php",
-            "publicationName": "Crime statistics, fourth quarter 2025/26 (January to March 2026), sheet \"Crime stats per component\""
-          },
-          "lastUpdated": "2026-10-28",
-          "series": [
-            {
-              "name": "Aggravated robbery, January to March",
-              "unit": "cases",
-              "data": [
-                {
-                  "label": "Jan-Mar 2022",
-                  "value": 32783
-                },
-                {
-                  "label": "Jan-Mar 2023",
-                  "value": 34460
-                },
-                {
-                  "label": "Jan-Mar 2024",
-                  "value": 35426
-                },
-                {
-                  "label": "Jan-Mar 2025",
-                  "value": 31749
-                },
-                {
-                  "label": "Jan-Mar 2026",
-                  "value": 26796
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    }
+    "notes": "SAPS publishes crime stats once per year in September. No public API. Data must be manually extracted from the published Excel workbooks. Latest annual: 2023/24. Quarterly Jan-Mar 2022 to 2026 checked 2026-10-28 from newdatasets/2025-2026_-_4th_Quarter_WEB.xlsx (scripts/crime/import_quarter.py) and published 2026-10-28 with the release date 22 May 2026 from the SAPS POLICE magazine special edition (sources/releases/Special-Edition-4th-Quarter-Crime-Statistics.pdf, pages 4 and 7); the workbook has no annual totals. Update by running: python scripts/update_crime.py (manual step required — see script comments)",
+    "public_notes": "Annual figures are for the 2023/24 financial year (April to March), from the South African Police Service. Separately, the January to March figures for 2022 to 2026 come from the SAPS fourth-quarter 2025/26 statistics, released on 22 May 2026. They cover one quarter, not a full year, so they cannot be compared with the annual totals. SAPS annual figures newer than 2023/24 have not been added."
   },
   "statistics": [
     {
@@ -252,6 +105,156 @@
             { "label": "2021/22", "value": 160007 },
             { "label": "2022/23", "value": 167861 },
             { "label": "2023/24", "value": 162618 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "murder-q4",
+      "categoryId": "crime",
+      "title": "Murders reported to the police, January to March",
+      "value": "5,181",
+      "rawValue": 5181,
+      "unit": "cases",
+      "change": -9.5,
+      "changeLabel": "from January to March 2025",
+      "trend": "down",
+      "description": "Murder cases reported to SAPS in January to March 2026, the fourth quarter of the 2025/26 financial year, compared with the same three months in earlier years. This is one quarter, not a full year, so it cannot be compared with the annual totals.",
+      "source": {
+        "name": "South African Police Service",
+        "shortName": "SAPS",
+        "url": "https://www.saps.gov.za/services/crimestats.php",
+        "publicationName": "Crime statistics, fourth quarter 2025/26 (January to March 2026), sheet \"Crime stats per component\"",
+        "release": "Released at a SAPS media briefing on 22 May 2026 (SAPS, POLICE magazine special edition, May 2026, pages 4 and 7)",
+        "publicationDate": "2026-05-22"
+      },
+      "checkedOn": "2026-10-28",
+      "lastUpdated": "2026-05-22",
+      "series": [
+        {
+          "name": "Murder cases, January to March",
+          "unit": "cases",
+          "data": [
+            {
+              "label": "Jan-Mar 2022",
+              "value": 6083
+            },
+            {
+              "label": "Jan-Mar 2023",
+              "value": 6289
+            },
+            {
+              "label": "Jan-Mar 2024",
+              "value": 6536
+            },
+            {
+              "label": "Jan-Mar 2025",
+              "value": 5727
+            },
+            {
+              "label": "Jan-Mar 2026",
+              "value": 5181
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "crime-contact-q4",
+      "categoryId": "crime",
+      "title": "Contact crimes reported to the police, January to March",
+      "value": "154,267",
+      "rawValue": 154267,
+      "unit": "cases",
+      "change": -4.6,
+      "changeLabel": "from January to March 2025",
+      "trend": "down",
+      "description": "Contact crimes (crimes against the person) reported to SAPS in January to March 2026, the fourth quarter of the 2025/26 financial year. SAPS counts murder, sexual offences, attempted murder, assault with intent to inflict grievous bodily harm, common assault, common robbery and robbery with aggravating circumstances. One quarter, not a full year.",
+      "source": {
+        "name": "South African Police Service",
+        "shortName": "SAPS",
+        "url": "https://www.saps.gov.za/services/crimestats.php",
+        "publicationName": "Crime statistics, fourth quarter 2025/26 (January to March 2026), sheet \"Crime stats per component\"",
+        "release": "Released at a SAPS media briefing on 22 May 2026 (SAPS, POLICE magazine special edition, May 2026, pages 4 and 7)",
+        "publicationDate": "2026-05-22"
+      },
+      "checkedOn": "2026-10-28",
+      "lastUpdated": "2026-05-22",
+      "series": [
+        {
+          "name": "Contact crimes, January to March",
+          "unit": "cases",
+          "data": [
+            {
+              "label": "Jan-Mar 2022",
+              "value": 157907
+            },
+            {
+              "label": "Jan-Mar 2023",
+              "value": 164206
+            },
+            {
+              "label": "Jan-Mar 2024",
+              "value": 171707
+            },
+            {
+              "label": "Jan-Mar 2025",
+              "value": 161672
+            },
+            {
+              "label": "Jan-Mar 2026",
+              "value": 154267
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "crime-robbery-q4",
+      "categoryId": "crime",
+      "title": "Robbery with aggravating circumstances, January to March",
+      "value": "26,796",
+      "rawValue": 26796,
+      "unit": "cases",
+      "change": -15.6,
+      "changeLabel": "from January to March 2025",
+      "trend": "down",
+      "description": "Robbery with aggravating circumstances reported to SAPS in January to March 2026, the fourth quarter of the 2025/26 financial year. One quarter, not a full year.",
+      "source": {
+        "name": "South African Police Service",
+        "shortName": "SAPS",
+        "url": "https://www.saps.gov.za/services/crimestats.php",
+        "publicationName": "Crime statistics, fourth quarter 2025/26 (January to March 2026), sheet \"Crime stats per component\"",
+        "release": "Released at a SAPS media briefing on 22 May 2026 (SAPS, POLICE magazine special edition, May 2026, pages 4 and 7)",
+        "publicationDate": "2026-05-22"
+      },
+      "checkedOn": "2026-10-28",
+      "lastUpdated": "2026-05-22",
+      "series": [
+        {
+          "name": "Aggravated robbery, January to March",
+          "unit": "cases",
+          "data": [
+            {
+              "label": "Jan-Mar 2022",
+              "value": 32783
+            },
+            {
+              "label": "Jan-Mar 2023",
+              "value": 34460
+            },
+            {
+              "label": "Jan-Mar 2024",
+              "value": 35426
+            },
+            {
+              "label": "Jan-Mar 2025",
+              "value": 31749
+            },
+            {
+              "label": "Jan-Mar 2026",
+              "value": 26796
+            }
           ]
         }
       ]
