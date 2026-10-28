@@ -61,6 +61,8 @@ function CensusSource({ m, tables }: { m: MunicipalityRecord; tables: CensusTabl
       code={CENSUS_SOURCE.code}
       location={censusLocation(m, tables)}
       releasedOn={CENSUS_SOURCE.releasedOn}
+      edition={CENSUS_SOURCE.edition}
+      downloadedOn={CENSUS_SOURCE.downloadedOn}
       checkedOn={CENSUS_SOURCE.checkedOn}
     />
   )
@@ -398,7 +400,7 @@ export default async function MunicipalityDetailPage({ params }: { params: Promi
         <Prose className="text-small">
           <p>
             Every 2011 and 2022 figure on this page is from {CENSUS_SOURCE.publisher}, {CENSUS_SOURCE.title} (
-            {CENSUS_SOURCE.code}), which gives Census 2011 figures alongside Census 2022 ones. Tables for {m.name}:{' '}
+            {CENSUS_SOURCE.code}, {CENSUS_SOURCE.edition}, originally released 10 October 2023), which gives Census 2011 figures alongside Census 2022 ones. Tables for {m.name}:{' '}
             {censusLocation(m, ['person', 'age', 'housing1', 'housing2'])}. SA Data Hub checked them against the
             publication on 28 October 2026.
           </p>
