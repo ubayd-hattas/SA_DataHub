@@ -109,8 +109,6 @@ export const GOOD_DIRECTION_BY_STAT: Record<string, GoodDirection> = {
   // Census
   'census-households': 'up',
   'census-internet-access': 'up',
-  // A falling share of people with no income is an improvement.
-  'census-no-income': 'down',
 }
 
 /**
