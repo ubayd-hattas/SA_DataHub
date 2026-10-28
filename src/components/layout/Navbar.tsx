@@ -4,8 +4,9 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useId, useRef, useState } from 'react'
 import { useTheme } from 'next-themes'
-import { Menu, Moon, Search, Sun, X } from 'lucide-react'
+import { Menu, Moon, Sun, X } from 'lucide-react'
 import { BrandMark } from '@/components/layout/BrandMark'
+import { HeaderSearch } from '@/components/layout/HeaderSearch'
 import { NAV_SECTIONS, isCurrentSection, type NavSection } from '@/components/layout/nav-items'
 import { cn } from '@/lib/utils'
 
@@ -30,28 +31,6 @@ function ThemeToggle() {
     >
       {isDark ? <Sun size={18} aria-hidden="true" /> : <Moon size={18} aria-hidden="true" />}
     </button>
-  )
-}
-
-/** Always visible. Submits to the existing search on /dashboard, and works without JavaScript. */
-function NavSearch({ className }: { className?: string }) {
-  const id = useId()
-  return (
-    <form action="/dashboard" method="get" role="search" className={cn('relative', className)}>
-      <label htmlFor={id} className="sr-only">
-        Search statistics and places
-      </label>
-      <input
-        id={id}
-        name="search"
-        type="search"
-        placeholder="Search"
-        className="h-10 w-full rounded border border-rule bg-paper pl-3 pr-10 text-small text-ink placeholder:text-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
-      />
-      <button type="submit" aria-label="Search" className={cn('absolute inset-y-0 right-0 flex w-10 items-center justify-center text-muted hover:text-ink', FOCUS)}>
-        <Search size={16} aria-hidden="true" />
-      </button>
-    </form>
   )
 }
 
@@ -173,7 +152,7 @@ export function Navbar() {
         </nav>
 
         <div className="ml-auto flex items-center gap-1">
-          <NavSearch className="hidden w-64 md:block" />
+          <HeaderSearch className="hidden w-64 md:block" panelClassName="right-0 w-[26rem] max-w-[calc(100vw-2rem)]" />
           <ThemeToggle />
           <button
             type="button"
@@ -190,7 +169,7 @@ export function Navbar() {
 
       {/* On phones the search gets its own row, so it is always visible. */}
       <div className="border-t border-rule px-4 py-2 md:hidden">
-        <NavSearch />
+        <HeaderSearch panelClassName="left-0 right-0" />
       </div>
 
       {mobileOpen && (
