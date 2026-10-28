@@ -12,7 +12,9 @@ as "code field old -> new". With --write it also:
   - sets erratumApplied on the two municipalities Stats SA revised
     (erratum, page ii: Thaba Chweu MP321 and City of Mbombela MP326),
   - writes src/data/census-pages.json, the printed page of each table for
-    each municipality, for the source lines on the site.
+    each municipality, for the source lines on the site,
+  - writes src/data/census-provinces.json, the nine province rows (their sum
+    is the national figure; the publication has no national row).
 
 Shares follow scripts/transform_municipalities.js: a category divided by the
 sum of the categories (for cooking, "none" is excluded by Stats SA).
@@ -27,6 +29,9 @@ ROOT = Path(__file__).resolve().parents[2]
 TABLES = ROOT / 'sources/derived/provinces-at-a-glance-municipal-tables.json'
 DATA = ROOT / 'src/data/datasets/municipalities.json'
 PAGES = ROOT / 'src/data/census-pages.json'
+PROVINCES = ROOT / 'src/data/census-provinces.json'
+PROVINCE_NAMES = ['Western Cape', 'Eastern Cape', 'Northern Cape', 'Free State', 'KwaZulu-Natal',
+                  'North West', 'Gauteng', 'Mpumalanga', 'Limpopo']
 ERRATUM = {'MP321', 'MP326'}
 
 tables = json.loads(TABLES.read_text(encoding='utf8'))['tables']
@@ -140,8 +145,17 @@ if '--write' in sys.argv:
         pieces.append(block)
         cursor = end
     pieces.append(text[cursor:])
-    DATA.write_text(''.join(pieces), encoding='utf8', newline='')
+    if changes:
+        DATA.write_text(''.join(pieces), encoding='utf8', newline='')
     lines = ['{'] + [f'  {json.dumps(c)}: {json.dumps(p)},' for c, p in sorted(pages_by_code.items())]
     lines[-1] = lines[-1].rstrip(',')
     PAGES.write_text('\n'.join(lines + ['}']) + '\n', encoding='utf8', newline='\n')
+    rows = []
+    for name in PROVINCE_NAMES:
+        rec = {'name': name}
+        for kind in ('person', 'age', 'housing1', 'housing2'):
+            r = tables[kind][nkey(name)]
+            rec[kind] = {'printedPage': r['printedPage'], 'values': r['values']}
+        rows.append('  ' + json.dumps(rec))
+    PROVINCES.write_text('[\n' + ',\n'.join(rows) + '\n]\n', encoding='utf8', newline='\n')
     print('written')
