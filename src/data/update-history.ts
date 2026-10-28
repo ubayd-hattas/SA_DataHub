@@ -29,6 +29,19 @@ export const UPDATE_HISTORY: UpdateHistoryEntry[] = [
     datasetLabel: 'Crime Statistics',
     type: 'data-update',
     summary:
+      'Published the January to March 2022 to 2026 series from the SAPS fourth-quarter 2025/26 statistics, released on 22 May 2026 (SAPS, POLICE magazine special edition, May 2026, pages 4 and 7). Murder, contact crime and robbery with aggravating circumstances are shown as a separate quarterly series. The annual 2023/24 figures are unchanged.',
+    changes: [
+      { item: 'Murder, January to March 2026 (now shown)', from: 'not shown', to: '5 181' },
+      { item: 'Contact crime, January to March 2026 (now shown)', from: 'not shown', to: '154 267' },
+      { item: 'Robbery with aggravating circumstances, January to March 2026 (now shown)', from: 'not shown', to: '26 796' },
+    ],
+  },
+  {
+    date: '2026-10-28',
+    datasetId: 'crime',
+    datasetLabel: 'Crime Statistics',
+    type: 'data-update',
+    summary:
       'Checked the SAPS fourth-quarter 2025/26 workbook (January to March 2026, compared with January to March 2022 to 2025). It covers one quarter, not a full financial year, so the annual 2023/24 figures are unchanged (murder 26 232, contact crime 561 947, robbery with aggravating circumstances 162 618). The quarterly figures (January to March 2026: murder 5 181, down from 5 727; contact crime 154 267, down from 161 672; robbery with aggravating circumstances 26 796, down from 31 749) will be shown once the SAPS release date is confirmed; the workbook does not state one. It has no notes on definition or category changes.',
   },
   {
