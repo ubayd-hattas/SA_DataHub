@@ -39,8 +39,8 @@ describe('getGoodDirection', () => {
     expect(judgeMove(stat('female-labour-participation'), 'up')).toBe('positive')
   })
 
-  it('treats a fall in the share of people with no income as good', () => {
-    expect(judgeMove(stat('census-no-income'), 'down')).toBe('positive')
+  it('does not show the untraced no-income share', () => {
+    expect(statistics.find((s) => s.id === 'census-no-income')).toBeUndefined()
   })
 
   it('gives policy and lending rates no good or bad verdict', () => {

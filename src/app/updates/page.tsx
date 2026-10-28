@@ -170,6 +170,33 @@ export default function UpdatesPage() {
                       <span className="text-xs text-slate-400">{item.datasetLabel}</span>
                     </div>
                     <p className="text-sm text-slate-600 dark:text-slate-300">{item.summary}</p>
+                    {item.changes && (
+                      <details className="mt-2 text-sm">
+                        <summary className="cursor-pointer text-slate-600 dark:text-slate-300">
+                          {item.changes.length} values changed
+                        </summary>
+                        <div className="mt-2 overflow-x-auto">
+                          <table className="w-full text-left text-xs">
+                            <thead className="text-slate-500 dark:text-slate-400">
+                              <tr>
+                                <th scope="col" className="py-1 pr-3 font-medium">Figure</th>
+                                <th scope="col" className="py-1 pr-3 text-right font-medium">Was</th>
+                                <th scope="col" className="py-1 text-right font-medium">Now</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {item.changes.map((c) => (
+                                <tr key={c.item} className="border-t border-slate-100 dark:border-slate-800">
+                                  <td className="py-1 pr-3 text-slate-600 dark:text-slate-300">{c.item}</td>
+                                  <td className="whitespace-nowrap py-1 pr-3 text-right tabular-nums text-slate-500 dark:text-slate-400">{c.from}</td>
+                                  <td className="whitespace-nowrap py-1 text-right tabular-nums text-slate-700 dark:text-slate-200">{c.to}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </details>
+                    )}
                     {item.source && (
                       <a
                         href={item.source}
