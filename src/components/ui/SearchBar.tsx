@@ -61,8 +61,8 @@ export function SearchBar({
         aria-label={placeholder}
         className={cn(
           'w-full rounded-xl border border-slate-200 bg-white font-sans text-slate-900 placeholder-slate-400 shadow-sm outline-none',
-          'transition-all focus:border-brand-400 focus:ring-2 focus:ring-brand-100',
-          'dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:placeholder-slate-500 dark:focus:border-brand-500 dark:focus:ring-brand-900/30',
+          'transition-all focus:border-brand-400 focus-visible:ring-2 focus-visible:ring-accent',
+          'dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:placeholder-slate-500 dark:focus:border-brand-500',
           sizes[size]
         )}
       />
