@@ -32,6 +32,7 @@ async function allPages(): Promise<Meta[]> {
   const pages = await Promise.all([
     staticMeta('/', () => import('@/app/page')),
     staticMeta('/about', () => import('@/app/about/page')),
+    staticMeta('/answers', () => import('@/app/answers/page')),
     staticMeta('/changelog', () => import('@/app/changelog/page')),
     staticMeta('/dashboard', () => import('@/app/dashboard/page')),
     staticMeta('/downloads', () => import('@/app/downloads/page')),
@@ -48,6 +49,7 @@ async function allPages(): Promise<Meta[]> {
     dynamicMeta('/provinces', () => import('@/app/provinces/[id]/page'), 'id'),
     dynamicMeta('/explainers', () => import('@/app/explainers/[slug]/page'), 'slug'),
     dynamicMeta('/insights', () => import('@/app/insights/[slug]/page'), 'slug'),
+    dynamicMeta('/answers', () => import('@/app/answers/[slug]/page'), 'slug'),
   ])
   const money = (await import('@/app/tools/money-value/page')).generateMetadata
   const m = await money({ searchParams: Promise.resolve({}) })

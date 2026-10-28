@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { ANSWERS, ANSWERS_PATH, type Answer } from '@/data/answers'
 import { assertSiteSourced } from '@/lib/sourcing'
 import { Change, NumberBlock } from '@/components/editorial/NumberBlock'
 import { Column, PageHeader, linkClass } from '@/components/editorial/Section'
@@ -140,6 +141,15 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
     { name: category.label, path: `/category/${slug}` },
   ]
 
+  const answerTopics: Record<string, Answer['topic'][]> = {
+    unemployment: ['unemployment'],
+    population: ['population'],
+    inflation: ['inflation'],
+    housing: ['housing'],
+    census: ['census', 'municipalities'],
+  }
+  const topicAnswers = ANSWERS.filter((a) => (answerTopics[slug] ?? []).includes(a.topic)).slice(0, 4)
+
   const relatedStories = STORIES.filter((s) => STORY_CATEGORY_MAP[s.category] === slug).slice(0, 2)
 
   const schemaBlocks = [
@@ -226,6 +236,23 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
                 </Link>
               </li>
             )}
+          </ul>
+        </section>
+      )}
+
+      {topicAnswers.length > 0 && (
+        <section aria-labelledby="questions" className="border-t border-rule py-10">
+          <h2 id="questions" className="mb-4 font-display text-h3 font-semibold text-ink">
+            Questions people ask
+          </h2>
+          <ul className="space-y-2 text-body">
+            {topicAnswers.map((a) => (
+              <li key={a.slug}>
+                <Link href={`${ANSWERS_PATH}/${a.slug}`} className={linkClass}>
+                  {a.question}
+                </Link>
+              </li>
+            ))}
           </ul>
         </section>
       )}

@@ -26,6 +26,13 @@ import { municipalityDescription, municipalityTitle } from '@/lib/page-seo'
 import { assertSiteSourced } from '@/lib/sourcing'
 import { HUB_PATH } from '@/lib/census-hub'
 import { compareHref } from '@/lib/compare'
+import { ANSWERS_PATH, getAnswer } from '@/data/answers'
+
+const MUNICIPALITY_QUESTIONS = [
+  'which-province-is-a-municipality-in',
+  'which-municipalities-grew-fastest-between-2011-and-2022',
+  'how-many-municipalities-are-there-in-south-africa',
+].map((s) => getAnswer(s)!)
 import { formatCount, formatDecimal, formatPercent } from '@/lib/format'
 import { Breadcrumbs } from '@/components/seo/Breadcrumbs'
 import { JsonLd } from '@/components/seo/JsonLd'
@@ -127,6 +134,17 @@ function CensusComparison({ m }: { m: MunicipalityRecord }) {
         <Link href={compareHref([m.id])} className={linkClass}>
           Compare with another place
         </Link>
+      </p>
+      <p className="mt-2 text-small text-muted">
+        Questions people ask:{' '}
+        {MUNICIPALITY_QUESTIONS.map((q, i) => (
+          <span key={q.slug}>
+            <Link href={`${ANSWERS_PATH}/${q.slug}`} className={linkClass}>
+              {q.question}
+            </Link>
+            {i < MUNICIPALITY_QUESTIONS.length - 1 ? ' · ' : ''}
+          </span>
+        ))}
       </p>
     </Section>
   )
