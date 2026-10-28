@@ -6,9 +6,12 @@ import { Column, PageHeader, Prose, Section, linkClass } from '@/components/edit
 import { FigureValue, SourceCitations, SourceNote } from '@/components/explainers/FigureValue'
 import { CpiHistoryChart } from '@/components/explainers/CpiHistoryChart'
 import { MONEY_VALUE_PATH, moneyValueHref } from '@/lib/money-value'
+import { GuessFirst } from '@/components/editorial/GuessFirst'
 import { formatLongDate, formatRand, getSource, type CpiExplainer } from '@/lib/explainers'
+import { formatPercent } from '@/lib/format'
 import { CPI_HISTORY_META } from '@/lib/cpi-history'
 import { breadcrumbSchema } from '@/lib/schema'
+import { reportErrorHref } from '@/lib/contact'
 import { judgeMove } from '@/lib/utils'
 
 /**
@@ -28,6 +31,7 @@ function monthSpan(from: string, to: string): string {
 export function CpiExplainerView({ explainer }: { explainer: CpiExplainer }) {
   const release = getSource(explainer, explainer.headline.annual.sourceId)
   const history = getSource(explainer, explainer.history.sourceId)
+  const rural = explainer.coverage.flatMap((c) => c.figures ?? []).find((f) => f.label.startsWith('Rural'))?.figure
   const { annual, previousAnnual, monthly } = explainer.headline
   const [first, second, third] = explainer.contributions
   const maxContribution = Math.max(...explainer.contributions.map((c) => Math.abs(c.current.value)))
@@ -182,6 +186,20 @@ export function CpiExplainerView({ explainer }: { explainer: CpiExplainer }) {
         <SourceNote source={release} location="Table A, page 3 and Table E, page 7" className="mt-6" />
       </Section>
 
+      {rural && (
+        <div className="border-t border-rule py-10">
+          <GuessFirst
+            question={`The headline rate of ${formatPercent(explainer.headline.annual.value)} covers urban areas. Guess the rate Stats SA published for rural areas over the same year.`}
+            min={0}
+            max={10}
+            step={0.1}
+            unit="percent"
+            value={rural.value}
+            source={`${release.shortName}, ${rural.location}`}
+          />
+        </div>
+      )}
+
       {/* What it covers */}
       <Section id="coverage" title="What the measure covers and does not cover">
         <ul className="space-y-5">
@@ -272,6 +290,13 @@ export function CpiExplainerView({ explainer }: { explainer: CpiExplainer }) {
         </p>
         <SourceNote source={release} location={explainer.nextRelease.location} className="mt-2" />
         <SourceCitations sources={explainer.sources} checkedOn={checkedOn} className="mt-8" />
+        <p className="mt-4 text-small">
+          Spotted a figure that does not match the release?{' '}
+          <a href={reportErrorHref(`/explainers/${explainer.slug}`)} className={linkClass}>
+            Report an error
+          </a>
+          .
+        </p>
         <p className="mt-4 text-caption text-muted">
           Source of the basic data: Stats SA. The rand examples and the highest and lowest points on the chart are SA
           Data Hub&apos;s own calculations from that data.

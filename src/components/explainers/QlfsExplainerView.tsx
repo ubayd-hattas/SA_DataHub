@@ -3,10 +3,12 @@ import { Breadcrumbs } from '@/components/seo/Breadcrumbs'
 import { JsonLd } from '@/components/seo/JsonLd'
 import { Change, NumberBlock, type Tone } from '@/components/editorial/NumberBlock'
 import { Column, PageHeader, Prose, Section, linkClass } from '@/components/editorial/Section'
+import { GuessFirst } from '@/components/editorial/GuessFirst'
 import { FigureValue, SourceCitations, SourceNote } from '@/components/explainers/FigureValue'
 import { getSource, type QlfsExplainer, type SourcedQuote } from '@/lib/explainers'
 import { formatCount, formatDecimal } from '@/lib/format'
 import { breadcrumbSchema } from '@/lib/schema'
+import { reportErrorHref } from '@/lib/contact'
 import { judgeMove } from '@/lib/utils'
 
 /**
@@ -142,6 +144,18 @@ export function QlfsExplainerView({ explainer }: { explainer: QlfsExplainer }) {
         <SourceNote source={release} location={unemployed.current.location} className="mt-2" />
       </Section>
 
+      <div className="border-t border-rule py-10">
+        <GuessFirst
+          question={`The official rate counts only people who looked for work. Stats SA also publishes LU3, which adds the potential labour force: people available for work who did not look, and people who looked but could not start yet. Guess LU3 for ${explainer.period}.`}
+          min={30}
+          max={60}
+          step={0.5}
+          unit="percent"
+          value={lu3Figure.value}
+          source={`${release.shortName}, ${lu3Figure.location}`}
+        />
+      </div>
+
       <Section id="in-numbers" title="What it means in numbers">
         <Prose>
           <p>
@@ -230,7 +244,7 @@ export function QlfsExplainerView({ explainer }: { explainer: QlfsExplainer }) {
         <Prose className="mt-3">
           <p>
             Some older SA Data Hub pages show an &ldquo;expanded&rdquo; unemployment rate. This release does not use that term
-            or publish such a rate, and neither does the Q1 2026 release in our files. We have no release in hand that defines
+            or publish such a rate, and neither do the Q4 2025 and Q1 2026 releases in our files. We have no release in hand that defines
             it, so we do not quote a definition or a figure for it here. LU3 is a different measure and should not be read as the
             expanded rate.
           </p>
@@ -301,6 +315,13 @@ export function QlfsExplainerView({ explainer }: { explainer: QlfsExplainer }) {
         </p>
         <SourceNote source={release} location={explainer.nextRelease.location} className="mt-2" />
         <SourceCitations sources={explainer.sources} checkedOn={checkedOn} className="mt-8" />
+        <p className="mt-4 text-small">
+          Spotted a figure that does not match the release?{' '}
+          <a href={reportErrorHref(`/explainers/${explainer.slug}`)} className={linkClass}>
+            Report an error
+          </a>
+          .
+        </p>
         <p className="mt-4 text-caption text-muted">
           Source of the basic data: Stats SA. The worked calculations are SA Data Hub&apos;s own, from that data.
         </p>

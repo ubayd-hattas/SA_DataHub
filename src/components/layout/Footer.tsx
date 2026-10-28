@@ -1,6 +1,7 @@
 
 import Link from 'next/link'
 import { FEED_PATH } from '@/lib/feed-path'
+import { reportErrorHref } from '@/lib/contact'
 import { ExternalLink } from 'lucide-react'
 import { BrandMark } from '@/components/layout/BrandMark'
 import { categories } from '@/data/mock'
@@ -73,6 +74,11 @@ export function Footer() {
                 {/* A file, not a page, so a plain link rather than client navigation. */}
                 <a href={FEED_PATH} type="application/rss+xml" className="text-slate-500 hover:text-brand-600 dark:text-slate-400 dark:hover:text-brand-400">
                   RSS feed
+                </a>
+              </li>
+              <li>
+                <a href={reportErrorHref()} className="text-muted hover:text-accent">
+                  Report an error
                 </a>
               </li>
             </ul>
