@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { FigureValue, SourceDates } from '@/components/explainers/FigureValue'
-import { getSource, type Explainer } from '@/lib/explainers'
+import { explainerTopic, getSource, headlineFigures, type Explainer } from '@/lib/explainers'
 
 /**
  * One explainer in a list: the headline figure, its two dates and a link.
@@ -9,11 +9,11 @@ import { getSource, type Explainer } from '@/lib/explainers'
  * (the homepage numbers), and keeps the headline sentence.
  */
 export function ExplainerCard({ explainer, compact = false }: { explainer: Explainer; compact?: boolean }) {
-  const { annual, previousAnnual } = explainer.headline
-  const source = getSource(explainer, annual.sourceId)
+  const { current, previous, label, previousPeriod } = headlineFigures(explainer)
+  const source = getSource(explainer, current.sourceId)
   return (
     <article className="relative border border-rule p-5 hover:bg-subtle">
-      <p className="text-small font-medium text-muted">Consumer prices, {explainer.period}</p>
+      <p className="text-small font-medium text-muted">{explainerTopic(explainer)}, {explainer.period}</p>
       <h3 className="mt-1 font-display text-h3 font-semibold text-ink">
         {/* The heading link stretches over the card, so the whole card is clickable. */}
         <Link
@@ -26,15 +26,15 @@ export function ExplainerCard({ explainer, compact = false }: { explainer: Expla
       {!compact && (
         <>
           <p className="mt-3 font-display text-[2.5rem] font-semibold leading-none tabular-nums text-ink">
-            <FigureValue figure={annual} source={source} />
+            <FigureValue figure={current} source={source} />
           </p>
           <p className="mt-2 text-body text-ink">
-            Annual inflation. It was <FigureValue figure={previousAnnual} source={source} /> in {explainer.previousPeriod}.
+            {label}. It was <FigureValue figure={previous} source={source} /> in {previousPeriod}.
           </p>
         </>
       )}
       <p className="mt-2 text-body text-ink">{explainer.summary}</p>
-      <SourceDates source={source} checkedOn={annual.checkedOn} className="mt-3" />
+      <SourceDates source={source} checkedOn={current.checkedOn} className="mt-3" />
     </article>
   )
 }

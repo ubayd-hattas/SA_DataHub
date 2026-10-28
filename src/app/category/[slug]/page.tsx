@@ -25,7 +25,7 @@ import {
   seriesPoints,
   statDates,
 } from '@/lib/stat-summary'
-import { formatLongDate } from '@/lib/explainers'
+import { formatLongDate, isQlfs } from '@/lib/explainers'
 import { buildPageMetadata } from '@/lib/seo'
 import { Breadcrumbs } from '@/components/seo/Breadcrumbs'
 import { JsonLd } from '@/components/seo/JsonLd'
@@ -165,6 +165,13 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
               ) : null
             }
           />
+          {explainer && isQlfs(explainer) && (
+            <p className="mt-3 text-body text-ink">
+              <Link href={`/explainers/${explainer.slug}#more-than-one-rate`} className={linkClass}>
+                Why South Africa has more than one unemployment rate
+              </Link>
+            </p>
+          )}
           {slug === 'inflation' && (
             <p className="mt-3 text-body text-ink">
               What was money worth?{' '}
