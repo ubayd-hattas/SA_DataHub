@@ -201,6 +201,7 @@ describe('rendered profile', () => {
     expect(html).toContain('Census 2022 Provinces at a glance')
     expect(html).toContain('Person indicators per municipality, Western Cape, page 6')
     expect(html).toContain(BOUNDARY_QUOTE.text)
+    expect(html).toContain('Census 2022 Municipal fact sheet (Report no. 03-01-82, revised), page 1')
     expect(html).toContain('whose Census 2022 population is closest to')
     expect(html).not.toContain('afrith')
     expect(html).not.toContain('withheld')
@@ -222,5 +223,15 @@ describe('rendered profile', () => {
     const html = await renderProfile('ETH')
     expect(html).toContain('Average of the other 7 metros')
     expect(html).not.toContain('Average per municipality in KwaZulu-Natal')
+  })
+})
+
+describe('the boundary quote', () => {
+  it('is word for word on printed page 1 of the Fact Sheet', () => {
+    // Text of printed page 1, as extracted from sources/releases/Census_2022_Municipal_factsheet-Web.pdf.
+    const page1 =
+      'Important to note is that Census 2011 indicators were generated based on aligned census data to current municipal boundaries (2021) and therefore are not directly comparable to the Census 2011 municipal factsheet product published in 2012.'
+    expect(page1).toContain(BOUNDARY_QUOTE.text)
+    expect(BOUNDARY_QUOTE.page).toBe(1)
   })
 })

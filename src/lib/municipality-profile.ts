@@ -28,13 +28,16 @@ export const CENSUS_SOURCE = {
 
 /**
  * Why 2011 and 2022 can be compared for every municipality, in Stats SA's words.
- * Quoted from the Census 2022 Municipal Fact Sheet, page 1.
+ * Quoted from the Census 2022 Municipal fact sheet (Report no. 03-01-82, revised),
+ * printed page 1, checked against sources/releases/Census_2022_Municipal_factsheet-Web.pdf.
  */
 export const BOUNDARY_QUOTE = {
   text: 'Census 2011 indicators were generated based on aligned census data to current municipal boundaries (2021)',
   publisher: 'Stats SA',
-  title: 'Census 2022 Municipal Fact Sheet',
+  title: 'Census 2022 Municipal fact sheet',
+  code: 'Report no. 03-01-82, revised',
   page: 1,
+  checkedOn: '2026-10-28',
 }
 
 export type CensusTable = 'person' | 'age' | 'housing1' | 'housing2'
