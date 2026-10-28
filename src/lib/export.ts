@@ -251,9 +251,10 @@ export function buildProvinceCsvContent(
       'education_matric_pass_rate',
       'education_year',
       'education_literacy_rate',
-      'housing_electricity_access',
-      'housing_piped_water_in_dwelling',
-      'housing_formal_dwellings',
+      'housing_formal_dwelling_2022',
+      'housing_water_scheme_2022',
+      'housing_flush_toilet_2022',
+      'housing_cooking_electricity_2022',
       'gdp_share',
     ])
   )
@@ -277,9 +278,10 @@ export function buildProvinceCsvContent(
         p.stats.education.matricPassRate,
         p.stats.education.year,
         p.stats.education.literacyRate,
-        p.stats.housing.electricityAccess,
-        p.stats.housing.pipedWaterInDwelling,
-        p.stats.housing.formalDwellings,
+        p.stats.housing.formal[1],
+        p.stats.housing.waterScheme[1],
+        p.stats.housing.flushToilet[1],
+        p.stats.housing.electricityCooking[1],
         p.gdpShare,
       ])
     )
