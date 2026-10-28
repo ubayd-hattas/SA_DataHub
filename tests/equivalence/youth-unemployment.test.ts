@@ -46,7 +46,6 @@ function jsonObservationsByStat(data: {
 }
 
 describe.skipIf(!hasDb)('youth-unemployment: JSON ↔ PostgreSQL equivalence', () => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let sql: any
 
   beforeAll(() => {

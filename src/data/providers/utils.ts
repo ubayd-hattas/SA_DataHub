@@ -19,7 +19,6 @@ const FEATURED_IDS = [
 
 function getDatasetRegistryLazy() {
   // Lazy require avoids pulling registry into module initialisation paths.
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
   return require('@/lib/registry').datasetRegistry
 }
 
