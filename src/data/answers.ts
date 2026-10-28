@@ -15,6 +15,7 @@ import { CENSUS_SOURCE } from '@/lib/municipality-profile'
 import { municipalChanges, rankChanges, getChangeMeasure } from '@/lib/census-change'
 import { statDates } from '@/lib/stat-summary'
 import { formatCount, formatDecimal, formatPercent, formatSigned } from '@/lib/format'
+import type { GuessUnit } from '@/lib/guess'
 
 export interface AnswerSource {
   publisher: string
@@ -42,6 +43,8 @@ export interface Answer {
   topic: 'population' | 'unemployment' | 'inflation' | 'housing' | 'census' | 'municipalities'
   /** One chart (bars) or one top-10 list. */
   figure: { kind: 'bars' | 'list'; title: string; rows: AnswerRow[]; max?: number }
+  /** A "Guess first" question about a figure the chart shows (not the one in the answer). */
+  guess?: { question: string; min: number; max: number; step: number; unit: GuessUnit; value: number; source: string }
   method: string[]
   sources: AnswerSource[]
   related: string[]
@@ -173,6 +176,15 @@ function build(): Answer[] {
       question: 'How many municipalities are there in South Africa?',
       answer: `South Africa has 213 local and metropolitan municipalities: ${metros.length} metros and ${all.length - metros.length} local municipalities, according to Stats SA's Census 2022 Provinces at a glance.`,
       topic: 'municipalities',
+      guess: {
+        question: 'How many of the 213 are in KwaZulu-Natal? Make a guess.',
+        min: 0,
+        max: 60,
+        step: 1,
+        unit: 'count',
+        value: all.filter((m) => m.provinceName === 'KwaZulu-Natal').length,
+        source: `${CENSUS_SOURCE.publisher}, ${CENSUS_SOURCE.title}, pages 6 to 44`,
+      },
       figure: {
         kind: 'bars',
         title: `Municipalities in each province. ${byProvince(all, (m) => m.provinceName).sort((a, b) => b.items.length - a.items.length)[0].name} has the most.`,
@@ -323,6 +335,15 @@ function build(): Answer[] {
       question: 'Which province has the most people?',
       answer: `${provByPop[0].name} has the most people: Stats SA estimates ${formatCount(provByPop[0].population)} people there in mid-2026, ${formatDecimal(provByPop[0].populationShare)}% of the country (Mid-year population estimates, 2026).`,
       topic: 'population',
+      guess: {
+        question: 'Guess how many people Stats SA estimates live in the Northern Cape on 30 June 2026.',
+        min: 0,
+        max: 5_000_000,
+        step: 50_000,
+        unit: 'count',
+        value: provinces.find((p) => p.name === 'Northern Cape')!.population,
+        source: `${MYPE.publisher}, ${MYPE.title} (${MYPE.code}), ${MYPE.location}`,
+      },
       figure: { kind: 'bars', title: 'People in each province, mid-2026 estimates', rows: provByPop.map((p) => ({ label: p.name, href: `/provinces/${p.id}`, value: p.population, display: formatCount(p.population), note: `${formatDecimal(p.populationShare)}% of the country` })) },
       method: ['The provincial totals in Appendix 1 of the mid-year estimates. They are estimates for 30 June 2026, not census counts.'],
       sources: [MYPE],

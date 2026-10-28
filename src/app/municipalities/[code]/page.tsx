@@ -25,6 +25,7 @@ import {
 import { municipalityDescription, municipalityTitle } from '@/lib/page-seo'
 import { assertSiteSourced } from '@/lib/sourcing'
 import { HUB_PATH } from '@/lib/census-hub'
+import { compareHref } from '@/lib/compare'
 import { ANSWERS_PATH, getAnswer } from '@/data/answers'
 
 const MUNICIPALITY_QUESTIONS = [
@@ -57,6 +58,7 @@ export async function generateMetadata({ params }: { params: Promise<{ code: str
     title: municipalityTitle(m),
     description: municipalityDescription(m),
     path: `/municipalities/${m.id}`,
+    image: { url: `/municipalities/${m.id}/share-image`, alt: `${m.name} in numbers: Census 2022 population, households and services` },
   })
 }
 
@@ -68,6 +70,8 @@ function CensusSource({ m, tables }: { m: MunicipalityRecord; tables: CensusTabl
       code={CENSUS_SOURCE.code}
       location={censusLocation(m, tables)}
       releasedOn={CENSUS_SOURCE.releasedOn}
+      edition={CENSUS_SOURCE.edition}
+      downloadedOn={CENSUS_SOURCE.downloadedOn}
       checkedOn={CENSUS_SOURCE.checkedOn}
     />
   )
@@ -127,6 +131,11 @@ function CensusComparison({ m }: { m: MunicipalityRecord }) {
           See how all municipalities changed between Census 2011 and Census 2022
         </Link>
       </p>
+      <p className="mt-2 text-small">
+        <Link href={compareHref([m.id])} className={linkClass}>
+          Compare with another place
+        </Link>
+      </p>
       <p className="mt-2 text-small text-muted">
         Questions people ask:{' '}
         {MUNICIPALITY_QUESTIONS.map((q, i) => (
@@ -134,7 +143,7 @@ function CensusComparison({ m }: { m: MunicipalityRecord }) {
             <Link href={`${ANSWERS_PATH}/${q.slug}`} className={linkClass}>
               {q.question}
             </Link>
-            {i < MUNICIPALITY_QUESTIONS.length - 1 ? ' ' : ''}
+            {i < MUNICIPALITY_QUESTIONS.length - 1 ? ' · ' : ''}
           </span>
         ))}
       </p>
@@ -276,18 +285,21 @@ function Comparison({ m }: { m: MunicipalityRecord }) {
           return (
             <div key={measure.label} className="border-t border-rule py-3 text-small">
               <dt className="font-medium text-ink">{measure.label}</dt>
-              <dd className="mt-1 flex justify-between gap-3">
-                <span className="text-ink">{m.name}</span>
-                <span className="tabular-nums text-ink">{formatMeasure(value, measure.kind)}</span>
+              {/* Each name and value shares a line; the gap sentence gets a full-width line of its own. */}
+              <dd className="mt-1 flex items-baseline justify-between gap-3">
+                <span className="min-w-0 text-ink">{m.name}</span>
+                <span className="shrink-0 tabular-nums text-ink">{formatMeasure(value, measure.kind)}</span>
               </dd>
               {groups.map((g) => {
                 const avg = groupAverage(g, measure)
                 return (
-                  <dd key={g.label} className="mt-1 flex justify-between gap-3 text-muted">
-                    <span>{g.label}</span>
-                    <span className="shrink-0 text-right tabular-nums">
-                      {formatMeasure(avg, measure.kind)}
-                      <span className="block text-caption">{m.name} is {gapText(value, avg, measure.kind)}</span>
+                  <dd key={g.label} className="mt-2 text-muted">
+                    <span className="flex items-baseline justify-between gap-3">
+                      <span className="min-w-0">{g.label}</span>
+                      <span className="shrink-0 tabular-nums">{formatMeasure(avg, measure.kind)}</span>
+                    </span>
+                    <span className="mt-0.5 block text-caption">
+                      {m.name} {gapText(value, avg, measure)}
                     </span>
                   </dd>
                 )
@@ -416,7 +428,7 @@ export default async function MunicipalityDetailPage({ params }: { params: Promi
         <Prose className="text-small">
           <p>
             Every 2011 and 2022 figure on this page is from {CENSUS_SOURCE.publisher}, {CENSUS_SOURCE.title} (
-            {CENSUS_SOURCE.code}), which gives Census 2011 figures alongside Census 2022 ones. Tables for {m.name}:{' '}
+            {CENSUS_SOURCE.code}, {CENSUS_SOURCE.edition}, originally released 10 October 2023), which gives Census 2011 figures alongside Census 2022 ones. Tables for {m.name}:{' '}
             {censusLocation(m, ['person', 'age', 'housing1', 'housing2'])}. SA Data Hub checked them against the
             publication on 28 October 2026.
           </p>

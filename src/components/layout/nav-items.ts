@@ -56,6 +56,7 @@ export const NAV_SECTIONS: NavSection[] = [
     label: 'Tools',
     links: [
       { href: '/tools/money-value', label: 'Money value calculator' },
+      { href: '/tools/compare', label: 'Compare places' },
       { href: '/provinces#compare', label: 'Compare provinces' },
       { href: '/downloads', label: 'Downloads' },
     ],

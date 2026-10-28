@@ -28,8 +28,9 @@ describe('topic page order', () => {
 
 describe('statistic titles and topic descriptions', () => {
   it.each(statistics.map((s) => [s.id, s.title] as const))('%s has a sentence-case title: %s', (_id, title) => {
-    // Only the first word, acronyms (GDP) and numbers may start with a capital.
-    for (const word of title.split(' ').slice(1)) expect(word, title).not.toMatch(/^[A-Z][a-z]/)
+    // Only the first word, acronyms (GDP), month names and numbers may start with a capital.
+    const MONTHS = /^(January|February|March|April|May|June|July|August|September|October|November|December)$/
+    for (const word of title.split(' ').slice(1)) if (!MONTHS.test(word)) expect(word, title).not.toMatch(/^[A-Z][a-z]/)
     expect(title).not.toMatch(/[—&]/)
   })
 

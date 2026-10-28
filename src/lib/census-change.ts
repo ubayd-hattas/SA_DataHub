@@ -255,3 +255,34 @@ export function rankChanges(measure: ChangeMeasure, count = 10): { rises: Munici
 export function provincePages(table: ChangeMeasure['table']): number[] {
   return provinces.map((p) => p[table].printedPage)
 }
+
+export interface ProvinceHousing {
+  name: string
+  /** Shares of households, rounded to one decimal, for 2011 and 2022. */
+  formal: [number, number]
+  waterScheme: [number, number]
+  flushToilet: [number, number]
+  electricityCooking: [number, number]
+  /** Printed pages of the two housing tables for this province. */
+  pages: { housing1: number; housing2: number }
+}
+
+/**
+ * Housing and services for each province, from the province rows of
+ * Provinces at a glance. Each share is a category over the sum of its
+ * categories, as on municipality pages (cooking leaves out "none").
+ */
+export function provinceHousing(): ProvinceHousing[] {
+  return provinces.map((p) => {
+    const h1 = p.housing1.values
+    const h2 = p.housing2.values
+    return {
+      name: p.name,
+      formal: [share(h1[4], h1[4], h1[5], h1[6], h1[7]), share(h1[8], h1[8], h1[9], h1[10], h1[11])],
+      waterScheme: [share(h2[0], h2[0], h2[1]), share(h2[2], h2[2], h2[3])],
+      flushToilet: [share(h2[4], h2[4], h2[5], h2[6]), share(h2[7], h2[7], h2[8], h2[9])],
+      electricityCooking: [share(h2[10], h2[10], h2[11], h2[12]), share(h2[13], h2[13], h2[14], h2[15])],
+      pages: { housing1: p.housing1.printedPage, housing2: p.housing2.printedPage },
+    }
+  })
+}
