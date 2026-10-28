@@ -83,7 +83,7 @@ On the last full run of `main`, type-checking was clean and Vitest reported 455 
 3. Add an entry to `src/data/update-history.ts` so it appears on `/updates`.
 4. Run `npm test` and `npm run build`. The sourcing check will name any figure that is missing a field.
 
-A per-dataset runbook is planned in `docs/RUNBOOK.md`.
+Per-dataset steps (what to download, which files, the explainer and the 2-working-day target) are in [`docs/RUNBOOK.md`](docs/RUNBOOK.md).
 
 ## Where things are
 
