@@ -90,6 +90,17 @@ if '--write' in sys.argv:
     # Read with universal newlines; the file is written back with LF (git stores it that way).
     raw = DATA.read_text(encoding='utf8')
     doc = json.loads(raw)
+    if released and 'pending_statistics' in doc['_meta']:
+        # Publishing a held series: cut the pending block out of _meta (bracket matching on the text).
+        start = raw.index(',' + NL + '    "pending_statistics": ')
+        i = raw.index('{', start)
+        depth = 0
+        for j in range(i, len(raw)):
+            depth += {'{': 1, '}': -1}.get(raw[j], 0)
+            if depth == 0:
+                break
+        raw = raw[:start] + raw[j + 1:]
+        doc = json.loads(raw)
     if any(s['id'].endswith('-q4') for s in doc['statistics']) or 'pending_statistics' in doc['_meta']:
         raise SystemExit('crime.json already has quarter statistics; edit them by hand or restore the file first.')
     if released:
