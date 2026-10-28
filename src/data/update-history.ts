@@ -25,6 +25,15 @@ export interface UpdateHistoryEntry {
 export const UPDATE_HISTORY: UpdateHistoryEntry[] = [
   {
     date: '2026-10-28',
+    datasetId: 'census',
+    datasetLabel: 'Census 2022 municipalities',
+    type: 'correction',
+    summary:
+      'Corrected the name of NC067 in Northern Cape. The PDF of Provinces at a glance prints it as "Kh+ói - Ma" because of a font fault, and the site had copied that. The municipality is Khâi-Ma. No figures changed.',
+    changes: [{ item: 'Name of NC067', from: 'Kh+ói-Ma', to: 'Khâi-Ma' }],
+  },
+  {
+    date: '2026-10-28',
     datasetId: 'crime',
     datasetLabel: 'Crime Statistics',
     type: 'data-update',
