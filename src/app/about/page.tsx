@@ -9,7 +9,7 @@ import { buildPageMetadata, AUTHOR } from '@/lib/seo'
 export const metadata: Metadata = buildPageMetadata({
   title: 'About',
   description:
-    'Learn about SA Data Hub — an open-source platform for South African public statistics, built by Ubayd Hattas, a Computer Science and Data Science student at UCT.',
+    'Learn about SA Data Hub, an open-source platform for South African public statistics, built by Ubayd Hattas, a Computer Science and Data Science student at UCT.',
   path: '/about',
 })
 
