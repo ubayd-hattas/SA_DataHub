@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { assertSiteSourced } from '@/lib/sourcing'
 import { Change, NumberBlock } from '@/components/editorial/NumberBlock'
 import { Column, PageHeader, linkClass } from '@/components/editorial/Section'
 import { SourceLine } from '@/components/editorial/SourceLine'
@@ -44,6 +45,8 @@ interface CategoryPageProps {
 }
 
 export function generateStaticParams() {
+  // Fails `next build` if a statistic lacks a source, release date or checked date.
+  assertSiteSourced()
   return [
     'unemployment', 'gdp', 'inflation', 'crime',
     'education', 'population', 'housing', 'census',

@@ -23,6 +23,7 @@ import {
   type CensusTable,
 } from '@/lib/municipality-profile'
 import { municipalityDescription, municipalityTitle } from '@/lib/page-seo'
+import { assertSiteSourced } from '@/lib/sourcing'
 import { formatCount, formatDecimal, formatPercent } from '@/lib/format'
 import { Breadcrumbs } from '@/components/seo/Breadcrumbs'
 import { JsonLd } from '@/components/seo/JsonLd'
@@ -35,6 +36,8 @@ import { ChartFigure } from '@/components/editorial/ChartFigure'
 import { BarList } from '@/components/editorial/BarList'
 
 export async function generateStaticParams() {
+  // Fails `next build` if a figure lacks a source, release date or checked date.
+  assertSiteSourced()
   return getAllMunicipalities().map((m) => ({ code: m.id }))
 }
 
