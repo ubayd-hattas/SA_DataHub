@@ -227,7 +227,7 @@ function build(): Answer[] {
     {
       slug: 'which-municipality-has-the-largest-population',
       question: 'Which municipality has the largest population?',
-      answer: `${byPop[0].name} has the largest population of any municipality: Census 2022 counted ${formatCount(byPop[0].population2022)} people there, according to Stats SA's Provinces at a glance.`,
+      answer: `${byPop[0].name} (${byPop[0].provinceName}) has the largest population of any municipality: Census 2022 counted ${formatCount(byPop[0].population2022)} people there, according to Stats SA's Provinces at a glance.`,
       topic: 'municipalities',
       figure: { kind: 'list', title: 'The 10 municipalities with the most people, Census 2022', rows: byPop.slice(0, 10).map((m) => muniRow(m, m.population2022, formatCount(m.population2022))) },
       method: ['All 213 municipalities ranked by the Census 2022 population in the person tables of Provinces at a glance.'],
@@ -249,7 +249,7 @@ function build(): Answer[] {
     {
       slug: 'which-municipalities-grew-fastest-between-2011-and-2022',
       question: 'Which municipalities grew fastest between Census 2011 and Census 2022?',
-      answer: `${rises[0].name} grew fastest: its population rose ${formatDecimal(rises[0].change)}%, from ${formatCount(rises[0].value2011)} in Census 2011 to ${formatCount(rises[0].value2022)} in Census 2022, according to Stats SA's Provinces at a glance.`,
+      answer: `${rises[0].name} (${rises[0].provinceName}) grew fastest: its population rose ${formatDecimal(rises[0].change)}%, from ${formatCount(rises[0].value2011)} in Census 2011 to ${formatCount(rises[0].value2022)} in Census 2022, according to Stats SA's Provinces at a glance.`,
       topic: 'census',
       figure: { kind: 'list', title: 'The 10 fastest-growing municipalities, Census 2011 to 2022', rows: rises.map((c) => ({ label: c.name, href: `/municipalities/${c.id}`, value: c.change, display: `${formatSigned(c.change)}%`, note: `${c.provinceName}. ${formatCount(c.value2011)} to ${formatCount(c.value2022)}` })) },
       method: [
@@ -262,7 +262,7 @@ function build(): Answer[] {
     {
       slug: 'which-municipalities-lost-people-between-2011-and-2022',
       question: 'Which municipalities lost people between Census 2011 and Census 2022?',
-      answer: `${fell} of South Africa's 213 municipalities counted fewer people in Census 2022 than in Census 2011; ${falls[0].name} fell the most, by ${formatDecimal(Math.abs(falls[0].change))}%, according to Stats SA's Provinces at a glance.`,
+      answer: `${fell} of South Africa's 213 municipalities counted fewer people in Census 2022 than in Census 2011; ${falls[0].name} (${falls[0].provinceName}) fell the most, by ${formatDecimal(Math.abs(falls[0].change))}%, according to Stats SA's Provinces at a glance.`,
       topic: 'census',
       figure: { kind: 'list', title: 'The 10 largest falls in population, Census 2011 to 2022', rows: falls.map((c) => ({ label: c.name, href: `/municipalities/${c.id}`, value: c.change, display: `${formatSigned(c.change)}%`, note: `${c.provinceName}. ${formatCount(c.value2011)} to ${formatCount(c.value2022)}` })) },
       method: ['The percentage change between the two census counts for each municipality, worked out by SA Data Hub. The publication does not say why any population fell, so this page does not either.'],
@@ -457,7 +457,7 @@ function build(): Answer[] {
     {
       slug: 'which-municipalities-have-the-most-households-without-a-toilet',
       question: 'Which municipalities have the most households without a toilet?',
-      answer: `In ${noToilet[0].name}, ${formatPercent(noToilet[0].pctNoToilet2022)} of households had no toilet in Census 2022, the highest share of any municipality, according to Stats SA's Provinces at a glance.`,
+      answer: `In ${noToilet[0].name} (${noToilet[0].provinceName}), ${formatPercent(noToilet[0].pctNoToilet2022)} of households had no toilet in Census 2022, the highest share of any municipality, according to Stats SA's Provinces at a glance.`,
       topic: 'housing',
       figure: { kind: 'list', title: 'The 10 highest shares of households with no toilet, Census 2022', rows: noToilet.slice(0, 10).map((m) => muniRow(m, m.pctNoToilet2022, formatPercent(m.pctNoToilet2022), `${m.provinceName}. ${formatCount(m.serviceDetail.noToilet2022)} households`)) },
       method: ['The share of households with no toilet facility, out of all households in the toilet table of Provinces at a glance, worked out by SA Data Hub.'],
