@@ -6,7 +6,7 @@ import { Footer } from '@/components/layout/Footer'
 import { Analytics } from '@vercel/analytics/react'
 import { JsonLd } from '@/components/seo/JsonLd'
 import { organizationSchema, personSchema, websiteSchema } from '@/lib/schema'
-import { SITE_URL, SITE_NAME, SITE_DESCRIPTION, SITE_LOGO_MARK_PATH } from '@/lib/seo'
+import { SITE_URL, SITE_NAME, SITE_DESCRIPTION, SITE_LOGO_MARK_PATH, FEED_ALTERNATE } from '@/lib/seo'
 import './globals.css'
 
 const inter = Inter({
@@ -31,10 +31,11 @@ const dmMono = DM_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: `${SITE_NAME} — South African Public Data`,
+    default: `${SITE_NAME}: South African public data`,
     template: `%s | ${SITE_NAME}`,
   },
   description: SITE_DESCRIPTION,
+  alternates: { types: FEED_ALTERNATE },
   applicationName: SITE_NAME,
   manifest: '/manifest.webmanifest',
   icons: {
