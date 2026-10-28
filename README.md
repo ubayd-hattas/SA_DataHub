@@ -1,254 +1,111 @@
 # SA Data Hub
 
-**South Africa's public data, made clear.**
+South Africa's official numbers, explained where you live, with every figure traced to its source.
 
-[![Next.js](https://img.shields.io/badge/Next.js-15-black?logo=next.js)](https://nextjs.org)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?logo=typescript)](https://typescriptlang.org)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind-3-38bdf8?logo=tailwind-css)](https://tailwindcss.com)
-[![Vercel](https://img.shields.io/badge/Deployed-Vercel-black?logo=vercel)](https://sadatahub.tech)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green)](LICENSE)
-[![Open Source](https://img.shields.io/badge/Open%20Source-Not%20for%20profit-brand)](https://sadatahub.tech)
+Live at [sadatahub.tech](https://sadatahub.tech). Independent and not affiliated with any government department. MIT licensed.
 
-SA Data Hub is a modern platform that aggregates, visualises, and explains national statistics from trusted South African government sources — Stats SA, the Reserve Bank, SAPS, the Department of Basic Education, and more. Built for students, researchers, journalists, developers, policymakers, and the general public.
+| Home | Municipality | Release explainer |
+|------|--------------|-------------------|
+| ![Home](docs/case-study/after/home-1280.png) | ![Cape Town municipality page](docs/case-study/after/cpt-1280.png) | ![CPI explainer](docs/case-study/after/explainer-1280.png) |
 
-**[→ sadatahub.tech](https://sadatahub.tech)**
+## What it is
 
----
+Official South African statistics are published as PDFs, Excel workbooks and portals that assume you already know where to look. SA Data Hub takes the same figures from Stats SA, the South African Reserve Bank (SARB), the South African Police Service (SAPS) and the Department of Basic Education (DBE), and puts them in plain English next to the place or release people are asking about.
 
-## What it does
+Search Console for the three months to 23 October 2026 shows who uses it: 92% of clicks came from South Africa and about 80% landed on municipality pages. The product follows that. Municipality pages get the most care, and each monthly or quarterly release gets an explainer.
 
-Government statistics in South Africa are real and important — but the official releases are PDFs, Excel sheets, and sparse portals that require domain knowledge to navigate. SA Data Hub pulls from the same primary sources and presents the data without the friction.
+## What is on the site
 
-- **8 data categories** — unemployment, GDP, inflation, crime, education, population, housing, Census 2022
-- **9 provinces**, each with a full profile: unemployment trend, matric pass rate, electricity access, GDP share, and more
-- **213 municipalities** with Census 2022 profiles covering demographics, housing composition, basic services, age structure, and school attendance
-- **Data Stories** — long-form, data-driven narratives that explain what the numbers actually mean
-- **Free CSV downloads** for every dataset, with citation metadata
-- **Zero paywalls, zero advertising, no government affiliation**
+- **213 municipality pages** built from Census 2022, with the 2011 figures on today's boundaries (Stats SA aligned them, see the census story) and a side-by-side comparison with the province and with similar places. Each page can produce a share image.
+- **9 province pages** and a province explorer.
+- **Release explainers** for CPI (September 2026) and the Quarterly Labour Force Survey (Q2 2026). Each gives the number, what moved it in the source's own words, a worked example in rands and what the measure leaves out.
+- **Answers**: 22 short questions people ask about South African numbers, each answered in a sentence with its source.
+- **Tools**: a compare tool for any two places, and a money-value calculator built on Stats SA CPI history from 1980.
+- **A census story** that walks through 2011 to 2022, plus longer data stories on unemployment, inflation, GDP, crime and matric results.
+- **Topic pages** for unemployment, GDP, inflation, interest rates, crime, education, population and housing, with CSV downloads and ready-made citations (APA, Harvard, Vancouver).
+- **Header search** over places, topics, answers and tools.
+- **Trust pages**: methodology, a public corrections log at `/updates`, a platform changelog, and an RSS feed. Datasets carry schema.org `Dataset` markup.
 
----
+## How it earns trust
 
-## Screenshots
+Every figure shows three things: its source, the date the source released it, and the date it was last checked on SA Data Hub. The build fails if a displayed statistic is missing any of them (`assertSiteSourced()` in `src/lib/sourcing.ts`), so an unsourced number cannot ship by accident.
 
+Other rules the project follows:
 
-| Homepage | Province Explorer | Municipality Profile |
-|----------|-------------------|----------------------|
-| ![Homepage](docs/screenshots/home.png) | ![Provinces](docs/screenshots/provinces.png) | ![Municipality](docs/screenshots/municipality.png) |
+- The "why" behind a change comes from the source's own breakdown, quoted and cited. There are no forecasts and no guesses.
+- Anything under "what it means" is a calculation with the working shown.
+- Corrections are logged publicly with the old value, the new value and the reason.
+- Data is entered by hand from releases the maintainer downloads. Nothing makes automated requests to Stats SA domains. The Python automation in `automation/` and the PostgreSQL migration in `db/` are paused.
+- AI can draft text, but a person checks every number and sentence against the release before it is published.
 
-| Dashboard | Data Downloads | Methodology |
-|-----------|----------------|-------------|
-| ![Dashboard](docs/screenshots/dashboard.png) | ![Downloads](docs/screenshots/downloads.png) | ![Methodology](docs/screenshots/methodology.png) |
-
----
-
-## Key features
-
-### Data & content
-- **Dashboard with live search** — intent-aware search across statistics, provinces, and datasets; returns typed, ranked results
-- **8 category pages** — each with stat cards, trend charts (line + bar), auto-generated insights, dataset freshness indicators, and APA/Harvard/Vancouver citation widgets
-- **Province Explorer** — sortable comparison chart across all 9 provinces; side-by-side province comparator; click-through to full provincial profiles with provincial unemployment rankings
-- **Municipality Explorer** — searchable, filterable, paginated directory of all 213 municipalities (Category A/B/C); full demographic profiles powered by Census 2022 data, including age-structure charts, housing composition (pie), basic services coverage (bar), and national/provincial/peer comparisons
-- **Insights (Data Stories)** — long-form articles with inline stat callouts, table of contents, data-freshness indicators, and related-story recommendations
-- **Data Downloads** — one-click CSV export for every dataset; per-dataset automation level badges (auto/semi-auto/manual/static); citation widget with APA, Harvard, and Vancouver formats
-- **Dataset Updates tracker** — status dashboard (up-to-date / update expected / potentially outdated) with full update history timeline
-- **Methodology page** — source documentation for all 5 data providers, per-dataset definitions and known limitations, verification process, and transparency notes
-- **Platform Changelog** — versioned release history for platform updates
-
-### Technical
-- **App Router + static generation** — `generateStaticParams` used across categories, provinces, and all 213 municipality pages for zero-latency navigations
-- **Server/client boundary discipline** — data-heavy pages are server components; interactive features (search, filters, province comparator, municipality explorer) are isolated client islands
-- **Three-font typographic system** — DM Serif Display (headings), DM Sans (body), DM Mono (data values) via `next/font/google` with CSS variable injection
-- **Dark mode** — full system-aware dark mode via `next-themes`; all charts, cards, and components support both modes
-- **Citation engine** — `lib/citation.ts` generates APA, Harvard, and Vancouver citations from structured dataset registry entries; clipboard copy with graceful HTTP fallback
-- **Insight engine** — `lib/insights.ts` and `lib/explanations.ts` auto-generate plain-English context (what changed, long-term trend, why it matters, caveats) from stat objects
-- **Dataset registry** — `lib/registry.ts` is a single source of truth for all datasets: automation level, publication cadence, freshness status, geographic level, and update history
-- **Per-chart CSV export** — individual chart-level and category-level CSV export with source attribution headers
-- **Vercel Analytics** — embedded with `@vercel/analytics/react`
-- **OpenGraph metadata** — per-page SEO metadata including OG images, titles, and descriptions on municipality and story pages
-- **Responsive design** — mobile-first layout; sticky backdrop-blur navbar with collapsible mobile menu and category dropdown
-
----
-
-## Architecture overview
-
-```
-Browser
-  └── Next.js App Router (sadatahub.tech, Vercel Edge Network)
-        ├── Server Components (layout, category pages, municipality profiles, methodology)
-        │     └── Static Generation at build time (all 213 municipality pages, 9 province pages, 8 category pages)
-        ├── Client Islands (dashboard search, province comparator, municipality explorer, theme toggle)
-        │     └── React state + useMemo for filtering / sorting / pagination
-        ├── Data Layer
-        │     ├── src/data/mock.ts          — loads the JSON datasets (src/data/datasets/) and exposes statistics, categories, provinces, municipalities
-        │     ├── src/data/stories.ts       — data story content
-        │     ├── src/data/update-history.ts — dataset update log
-        │     ├── src/lib/registry.ts       — dataset registry & freshness logic
-        │     ├── src/lib/citation.ts       — multi-format citation generator
-        │     ├── src/lib/insights.ts       — auto-insight generator (category level)
-        │     └── src/lib/explanations.ts   — auto-explanation generator (stat level)
-        └── UI Components
-              ├── src/components/charts/    — Recharts wrappers (Line, Bar, Pie, Age Structure, Services)
-              ├── src/components/ui/        — StatCard, CitationWidget, DatasetExplanation, ExportButton, etc.
-              └── src/components/layout/    — Navbar (sticky, dark-mode, mobile), Footer, ThemeProvider
-```
-
-**Deployment:** Vercel (automatic deployments from `main`). By default the app reads the JSON datasets in `src/data/datasets/`. Setting `DATA_SOURCE=database` with a `DATABASE_URL` switches it to PostgreSQL on Neon; the migration is in progress (see `db/` and `docs/migration-plan.md`).
-
----
-
-## Technology stack
-
-| Layer | Technology |
-|-------|-----------|
-| Framework | Next.js 15 (App Router) |
-| Language | TypeScript 5 |
-| Styling | Tailwind CSS 3 |
-| Charts | Recharts |
-| Icons | Lucide React |
-| Fonts | DM Serif Display · DM Sans · DM Mono (Google Fonts via `next/font`) |
-| Dark mode | next-themes |
-| Analytics | Vercel Analytics |
-| Deployment | Vercel |
-| Data sources | Stats SA · SARB · SAPS · DBE · World Bank |
-
----
-
-## Project structure
-
-```
-src/
-├── app/
-│   ├── page.tsx                    # Homepage — hero, featured stats, category grid, insights promo
-│   ├── dashboard/page.tsx          # Dashboard — search, filters, chart showcase, historical timeline
-│   ├── category/[slug]/page.tsx    # Category detail — stat cards, charts, citations, dataset log
-│   ├── provinces/page.tsx          # Province Explorer — chart, grid, comparator
-│   ├── provinces/[id]/page.tsx     # Province profile — full stats, ranking bar, nav
-│   ├── municipalities/page.tsx     # Municipality directory — search, filter, paginate
-│   ├── municipalities/[code]/page.tsx  # Municipality profile — census data, comparisons, charts
-│   ├── municipalities/MunicipalityExplorer.tsx  # Client island for search/filter/paginate
-│   ├── insights/page.tsx           # Data stories index — search, category filter
-│   ├── insights/[slug]/page.tsx    # Story reader — TOC, stat callouts, related stories
-│   ├── downloads/page.tsx          # Data downloads — CSV export, citation, freshness
-│   ├── updates/page.tsx            # Dataset update tracker
-│   ├── methodology/page.tsx        # Full methodology — sources, definitions, limitations
-│   ├── changelog/page.tsx          # Platform changelog
-│   ├── layout.tsx                  # Root layout — fonts, ThemeProvider, Navbar, Footer
-│   └── globals.css                 # Tailwind directives, design tokens, card/heading utilities
-├── components/
-│   ├── charts/
-│   │   ├── LineChartCard.tsx       # Recharts line chart with custom tooltip and cursor
-│   │   ├── BarChartCard.tsx        # Recharts bar chart with per-bar CSV export
-│   │   ├── AgeStructureChart.tsx   # Coloured bar chart for age cohorts
-│   │   ├── BasicServicesChart.tsx  # Horizontal bar chart for service coverage
-│   │   └── HousingCompositionChart.tsx  # Donut chart for dwelling types
-│   ├── layout/
-│   │   ├── Navbar.tsx              # Sticky nav with dropdown, mobile menu, theme toggle
-│   │   ├── Footer.tsx              # Four-column footer with source links
-│   │   └── ThemeProvider.tsx       # next-themes wrapper
-│   └── ui/
-│       ├── CitationWidget.tsx      # Collapsible APA/Harvard/Vancouver citation with clipboard copy
-│       ├── DatasetExplanation.tsx  # Expandable "understanding the data" panel (4-quadrant)
-│       ├── CategoryCard.tsx        # Category grid card with icon, description, dataset count
-│       └── ExportButton.tsx        # CSV export button (category-level and per-chart)
-├── data/
-│   ├── mock.ts                     # Statistics, categories, provinces, municipalities
-│   ├── stories.ts                  # Data story content and metadata
-│   └── update-history.ts           # Dataset update history log
-├── lib/
-│   ├── registry.ts                 # Dataset registry, freshness, status logic
-│   ├── citation.ts                 # Multi-format citation generator
-│   ├── insights.ts                 # Category-level auto-insight generator
-│   ├── explanations.ts             # Stat-level explanation generator
-│   ├── changelog.ts                # Platform changelog data
-│   └── utils.ts                    # Date formatting, cn(), province label map
-└── types/
-    └── index.ts                    # Shared TypeScript types
-```
-
----
+The full set of rules is in [`docs/PRODUCT_DIRECTION.md`](docs/PRODUCT_DIRECTION.md). The visual system (light by default, serif headings, one accent colour, no gradients) is in [`docs/DESIGN.md`](docs/DESIGN.md). A draft write-up of the October 2026 redesign, with before and after screenshots, is in [`docs/case-study/`](docs/case-study/README.md).
 
 ## Data sources
 
-| Source | Datasets | Coverage | Frequency |
-|--------|----------|----------|-----------|
-| **Statistics South Africa (Stats SA)** | Unemployment (QLFS), CPI/PPI, GDP, Census 2022, Population Estimates, Housing (GHS) | 1994–present | Quarterly / Annual |
-| **South African Reserve Bank (SARB)** | Repo/Prime Rate, Government Debt, Balance of Payments | 1960–present | Monthly / Quarterly |
-| **SA Police Service (SAPS)** | Crime Statistics (contact, property, provincial) | 2000–present | Annual (September) |
-| **Department of Basic Education (DBE)** | Matric Pass Rates, School Enrolment, Provincial Education | 2000–present | Annual (January) |
-| **World Bank Open Data** | Long-run GDP, Gini Coefficient, Poverty, Internet Access | 1960–present | Annual |
+| Source | Used for |
+|--------|----------|
+| Statistics South Africa | Census 2022, Quarterly Labour Force Survey, CPI, GDP, mid-year population estimates, General Household Survey |
+| South African Reserve Bank | Repo and prime rates |
+| South African Police Service | Crime statistics |
+| Department of Basic Education | Matric results |
 
-All data is sourced directly from official publications. SA Data Hub is not affiliated with any government department. See [sadatahub.tech/methodology](https://sadatahub.tech/methodology) for full source documentation, per-dataset definitions, and known limitations.
+Definitions, release schedules and known limits are on the [methodology page](https://sadatahub.tech/methodology). Source files used for entry are kept in `sources/` (PDFs are not committed).
 
----
+## Stack
 
-## Local development
+Next.js 15 (App Router), TypeScript, Tailwind CSS, Recharts, Vitest, ESLint. Source Serif 4 and Inter for type. Deployed on Vercel from `main`.
 
-**Prerequisites:** Node.js 18+, npm or pnpm
+Data lives in JSON files in `src/data/datasets/` and is read at build time, so almost every page is static. Setting `DATA_SOURCE=database` with a `DATABASE_URL` switches the data layer to PostgreSQL on Neon, which is paused and not used in production.
+
+## Run it locally
 
 ```bash
-# 1. Clone
-git clone https://github.com/<your-username>/sa-data-hub.git
-cd sa-data-hub
-
-# 2. Install dependencies
+git clone https://github.com/ubayd-hattas/SA_DataHub.git
+cd SA_DataHub
 npm install
-
-# 3. Start development server
-npm run dev
-# → http://localhost:3000
-
-# 4. Build for production
-npm run build
-
-# 5. Run production build locally
-npm start
+npm run dev        # http://localhost:3000
 ```
 
-No environment variables are required for the default data layer, which reads the JSON datasets in `src/data/datasets/` through `src/data/mock.ts`. To use PostgreSQL instead, set `DATA_SOURCE=database` and `DATABASE_URL` (see `db/README.md`).
+No environment variables are needed for the default JSON data layer.
 
-### Updating a dataset
+```bash
+npm test           # Vitest
+npm run lint
+npm run build      # also runs the sourcing check
+```
 
-Each dataset has a corresponding Python update script (referenced in `src/app/methodology/page.tsx`). To add or update data:
+On the last full run of `main`, type-checking was clean and Vitest reported 455 passed and 27 skipped (the skipped ones need a database).
 
-1. Run the relevant `scripts/update_<dataset>.py` against the latest official release
-2. Update the corresponding section in `src/data/mock.ts`
-3. Bump `lastUpdated` in `src/lib/registry.ts` for that dataset entry
-4. Add a record to `src/data/update-history.ts`
+## Updating a dataset
 
----
+1. Download the release from the publisher and put it in `sources/releases/`.
+2. Edit the matching file in `src/data/datasets/`, keeping the source, release date and checked date for each figure.
+3. Add an entry to `src/data/update-history.ts` so it appears on `/updates`.
+4. Run `npm test` and `npm run build`. The sourcing check will name any figure that is missing a field.
 
-## Roadmap
+A per-dataset runbook is planned in `docs/RUNBOOK.md`.
 
-- [ ] **REST API** — public JSON endpoints for all datasets (currently data-layer only)
-- [ ] **Search autocomplete** — real-time suggestions as you type on the dashboard
-- [ ] **Provincial unemployment breakdowns** — per-province filter wired in dashboard
-- [ ] **Interest rate timeline** — SARB repo rate data with MPC meeting annotations
-- [ ] **Map visualisations** — choropleth maps for provincial and municipal data
-- [ ] **User bookmarks** — save stats and provinces for quick reference (localStorage or Supabase)
-- [ ] **Embed widgets** — shareable stat card embeds for external sites
-- [ ] **Automated data pipeline** — GitHub Actions workflow to run update scripts on release days
-- [ ] **International comparisons** — SA vs BRICS vs SSA peers on key indicators
+## Where things are
 
----
+```
+src/app/            Pages: home, municipalities, provinces, category, explainers,
+                    answers, insights, tools, methodology, updates, downloads
+src/components/     editorial/ (shared page pieces), charts/, explainers/, home/, layout/
+src/data/           datasets/*.json, answers.ts, explainers/, stories.ts, update-history.ts
+src/lib/            sourcing.ts, search*.ts, compare.ts, money-value.ts, citation.ts, seo.ts
+tests/              unit/ and equivalence/
+docs/               Product direction, design system, case study, architecture notes
+automation/, db/    Paused: scheduled data checks and the PostgreSQL migration
+```
 
 ## Contributing
 
-Contributions are welcome. The most impactful areas right now:
+The most useful contribution is a correction. If a figure looks wrong, open an issue with the page, the figure and where you saw the right one, or use the "Report an error" link on any page. Suggestions for questions the Answers section should cover are also welcome. Please open an issue before a large pull request.
 
-- **Data accuracy** — if you spot an outdated or incorrect figure, open an issue referencing the official source
-- **New datasets** — add a registry entry in `src/lib/registry.ts`, data in `src/data/mock.ts`, and a chart where appropriate
-- **Data stories** — write a structured story in `src/data/stories.ts` following the existing schema
-- **Accessibility** — keyboard navigation, screen reader labels, focus management
-- **Tests** — unit tests for `lib/citation.ts`, `lib/registry.ts`, and `lib/insights.ts` would be a great starting point
+## Author
 
-Please open an issue before a large pull request so we can discuss scope.
+Built and maintained by [Ubayd Hattas](https://ubayd.me), a Computer Science, Statistics and Data Science student at the University of Cape Town. More on the [About page](https://sadatahub.tech/about).
 
----
+## Licence
 
-## License
-
-MIT. Free for personal, academic, and commercial use. Data remains subject to the terms of the original government sources.
-
----
-
-*Built by [Ubayd Hattas](https://github.com/ubayd-hattas) · Data from official South African sources · Not affiliated with any government department.*
+MIT. The underlying data remains subject to the terms of the original publishers.
