@@ -9,6 +9,7 @@ import { MONEY_VALUE_PATH, moneyValueHref } from '@/lib/money-value'
 import { formatLongDate, formatRand, getSource, type CpiExplainer } from '@/lib/explainers'
 import { CPI_HISTORY_META } from '@/lib/cpi-history'
 import { breadcrumbSchema } from '@/lib/schema'
+import { reportErrorHref } from '@/lib/contact'
 import { judgeMove } from '@/lib/utils'
 
 /**
@@ -272,6 +273,13 @@ export function CpiExplainerView({ explainer }: { explainer: CpiExplainer }) {
         </p>
         <SourceNote source={release} location={explainer.nextRelease.location} className="mt-2" />
         <SourceCitations sources={explainer.sources} checkedOn={checkedOn} className="mt-8" />
+        <p className="mt-4 text-small">
+          Spotted a figure that does not match the release?{' '}
+          <a href={reportErrorHref(`/explainers/${explainer.slug}`)} className={linkClass}>
+            Report an error
+          </a>
+          .
+        </p>
         <p className="mt-4 text-caption text-muted">
           Source of the basic data: Stats SA. The rand examples and the highest and lowest points on the chart are SA
           Data Hub&apos;s own calculations from that data.
