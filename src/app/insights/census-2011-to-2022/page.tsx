@@ -45,6 +45,8 @@ function MeasureSource({ table }: { table: ChangeMeasure['table'] }) {
       code={CENSUS_SOURCE.code}
       location={`${CENSUS_TABLE_NAMES[table]}, the nine province rows (${pagesText(table)}) and each municipality's row`}
       releasedOn={CENSUS_SOURCE.releasedOn}
+      edition={CENSUS_SOURCE.edition}
+      downloadedOn={CENSUS_SOURCE.downloadedOn}
       checkedOn={CENSUS_SOURCE.checkedOn}
     />
   )
@@ -182,6 +184,8 @@ export default function CensusChangeHub() {
             code={CENSUS_SOURCE.code}
             location="person indicators and general housing information per municipality, printed pages 6 to 47"
             releasedOn={CENSUS_SOURCE.releasedOn}
+      edition={CENSUS_SOURCE.edition}
+      downloadedOn={CENSUS_SOURCE.downloadedOn}
             checkedOn={CENSUS_SOURCE.checkedOn}
           />
         </div>
@@ -190,7 +194,7 @@ export default function CensusChangeHub() {
       <Section id="method" title="Method">
         <Prose className="text-small">
           <p>
-            Every figure is from {CENSUS_SOURCE.publisher}, {CENSUS_SOURCE.title} ({CENSUS_SOURCE.code}), which gives Census
+            Every figure is from {CENSUS_SOURCE.publisher}, {CENSUS_SOURCE.title} ({CENSUS_SOURCE.code}, {CENSUS_SOURCE.edition}, originally released 10 October 2023), which gives Census
             2011 figures next to Census 2022 ones for every municipality. SA Data Hub checked all 213 municipalities against
             the publication on 28 October 2026.
           </p>
