@@ -8,6 +8,7 @@ import sitemap from '@/app/sitemap'
 import { CpiExplainerView } from '@/components/explainers/CpiExplainerView'
 import { NAV_SECTIONS } from '@/components/layout/nav-items'
 import { EXPLAINERS } from '@/data/explainers'
+import { isCpi } from '@/lib/explainers'
 import { valueToday } from '@/lib/cpi-history'
 import {
   DEFAULT_AMOUNT,
@@ -79,7 +80,7 @@ describe('links to the calculator', () => {
   const src = (path: string) => readFileSync(join(process.cwd(), path), 'utf8')
 
   it('is linked from the CPI explainer', () => {
-    const html = renderToStaticMarkup(createElement(CpiExplainerView, { explainer: EXPLAINERS[0] }))
+    const html = renderToStaticMarkup(createElement(CpiExplainerView, { explainer: EXPLAINERS.find(isCpi)! }))
     expect(html).toContain('href="/tools/money-value"')
     expect(html).toContain('id="money-worth"')
   })

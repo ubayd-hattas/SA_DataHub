@@ -8,6 +8,9 @@ import { buildPageMetadata, AUTHOR } from '@/lib/seo'
 import { Breadcrumbs } from '@/components/seo/Breadcrumbs'
 import { JsonLd } from '@/components/seo/JsonLd'
 import { breadcrumbSchema } from '@/lib/schema'
+import { SourceLine } from '@/components/editorial/SourceLine'
+import { linkClass } from '@/components/editorial/Section'
+import { formatCount } from '@/lib/format'
 
 export const metadata: Metadata = buildPageMetadata({
   title: 'Data Methodology',
@@ -166,6 +169,82 @@ function SectionIcon({ icon: Icon }: { icon: React.ElementType }) {
   )
 }
 
+/** Figures for "Why do the numbers disagree?", each checked against the release named beside it. */
+const QLFS = {
+  publisher: 'Stats SA',
+  title: 'Quarterly Labour Force Survey, Quarter 2: 2026',
+  code: 'P0211',
+  location: 'Table A, page 1',
+  releasedOn: '2026-08-11',
+  checkedOn: '2026-10-28',
+}
+const MYPE = {
+  publisher: 'Stats SA',
+  title: 'Mid-year population estimates, 2026',
+  code: 'P0302',
+  location: 'Appendix 1, page 27; Introduction, page 1',
+  releasedOn: '2026-07-30',
+  checkedOn: '2026-10-28',
+}
+const CENSUS = {
+  publisher: 'Stats SA',
+  title: 'Census 2022 Provinces at a glance',
+  code: 'Report no. 03-01-43, revised',
+  location: 'sum of the nine province rows, Person indicators per municipality, pages 6 to 44',
+  releasedOn: '2023-10-10',
+  checkedOn: '2026-10-28',
+}
+const NUMBERS_DISAGREE = {
+  officialRate: 33.6,
+  lu3: 43.8,
+  censusCount: 62027503,
+  midYear2026: 63522380,
+}
+
+function NumbersDisagree() {
+  const n = NUMBERS_DISAGREE
+  return (
+    <section id="numbers-disagree" aria-labelledby="numbers-disagree-title" className="mb-12 scroll-mt-20 border-y border-rule py-10">
+      <h2 id="numbers-disagree-title" className="font-display text-[1.5rem] font-semibold leading-snug text-ink sm:text-h2">
+        Why do the numbers disagree?
+      </h2>
+      <div className="mt-5 max-w-[44rem] space-y-8 text-body text-ink">
+        <div>
+          <h3 className="font-display text-h3 font-semibold">Unemployment: {n.officialRate}% or {n.lu3}%?</h3>
+          <p className="mt-2">
+            Both are Stats SA figures for April to June 2026. {n.officialRate}% is the official unemployment rate (LU1): people
+            without work who looked for it, as a share of the labour force. {n.lu3}% is LU3, which also counts the potential
+            labour force: people who want work but did not look, or looked but could not start yet. Stats SA publishes four such
+            rates and says they should be &ldquo;understood as complementary&rdquo;.
+          </p>
+          <p className="mt-2">
+            <Link href="/explainers/qlfs-2026-q2#more-than-one-rate" className={linkClass}>
+              Why South Africa has more than one unemployment rate
+            </Link>
+          </p>
+          <SourceLine {...QLFS} className="mt-2" />
+        </div>
+        <div>
+          <h3 className="font-display text-h3 font-semibold">Population: {formatCount(n.censusCount)} or {formatCount(n.midYear2026)}?</h3>
+          <p className="mt-2">
+            Census 2022 counted {formatCount(n.censusCount)} people. Stats SA&apos;s mid-year estimate for 2026 is{' '}
+            {formatCount(n.midYear2026)}. They describe different dates, and they are made differently. In Stats SA&apos;s words,
+            &ldquo;The mid-year estimates are an estimate of the population as of 30 June in a given year&rdquo;, and they use
+            &ldquo;the cohort-component method for population estimation&rdquo;, projecting a base population forward with
+            levels of fertility, mortality and migration.
+          </p>
+          <p className="mt-2">
+            On SA Data Hub, municipality pages use the Census 2022 counts and province pages use the 2026 mid-year estimates, so
+            the municipalities in a province do not add up to the figure on its province page.
+          </p>
+          <SourceLine {...CENSUS} className="mt-2" />
+          <SourceLine {...MYPE} className="mt-1" />
+        </div>
+      </div>
+    </section>
+  )
+}
+
 export default function MethodologyPage() {
   const breadcrumbs = [
     { name: 'Home', path: '/' },
@@ -187,6 +266,8 @@ export default function MethodologyPage() {
           This page documents every data source, update schedule, indicator definition, and known limitation.
         </p>
       </div>
+
+      <NumbersDisagree />
 
       {/* Principles */}
       <section className="mb-10">

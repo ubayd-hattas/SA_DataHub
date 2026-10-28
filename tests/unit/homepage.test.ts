@@ -7,7 +7,8 @@ import { metadata } from '@/app/page'
 import { ExplainerCard } from '@/components/explainers/ExplainerCard'
 import { matchMunicipalities } from '@/components/home/FindMunicipality'
 import { EXPLAINERS } from '@/data/explainers'
-import { getAllMunicipalities, getStatById } from '@/data/mock'
+import { isCpi, isQlfs } from '@/lib/explainers'
+import { getAllMunicipalities, getStatById, statistics } from '@/data/mock'
 import { formatStatistic, getHeadlineNumbers, getTopicRows } from '@/lib/headline-numbers'
 
 const NBSP = ' '
@@ -30,7 +31,7 @@ describe('headline numbers', () => {
   })
 
   it('takes inflation dates from the explainer, so the homepage and explainer agree', () => {
-    const cpi = EXPLAINERS[0]
+    const cpi = EXPLAINERS.find(isCpi)!
     expect(numbers[0].checkedOn).toBe(cpi.headline.annual.checkedOn)
     expect(numbers[0].sourceShort).toBe('Stats SA, 21 Oct 2026')
     expect(numbers[0].href).toBe(`/explainers/${cpi.slug}`)
@@ -39,13 +40,15 @@ describe('headline numbers', () => {
   it('links the repo rate to its chart on the inflation page, the same record it reads', () => {
     expect(numbers[3]).toMatchObject({ value: '7.25%', href: '/category/inflation#repo-rate-sarb' })
     expect(getStatById('repo-rate-sarb')!.categoryId).toBe('inflation')
-    // The duplicate from the inflation dataset is gone.
-    expect(getStatById('repo-rate')).toBeUndefined()
+    // The inflation topic carries one repo-rate record: repo-rate-sarb.
+    expect(statistics.filter((s) => s.categoryId === 'inflation' && /repo/i.test(s.id)).map((s) => s.id)).toEqual(['repo-rate-sarb'])
     expect(readFileSync(join(process.cwd(), 'src/app/category/[slug]/page.tsx'), 'utf8')).toContain('id={stat.id}')
   })
 
-  it('links the others to their topic pages', () => {
-    expect(numbers.slice(1, 3).map((n) => n.href)).toEqual(['/category/unemployment', '/category/gdp'])
+  it('links unemployment to its explainer, with the same dates, and GDP to its topic page', () => {
+    const qlfs = EXPLAINERS.find(isQlfs)!
+    expect(numbers[1]).toMatchObject({ href: `/explainers/${qlfs.slug}`, checkedOn: qlfs.headline.rate.checkedOn })
+    expect(numbers[2].href).toBe('/category/gdp')
   })
 })
 

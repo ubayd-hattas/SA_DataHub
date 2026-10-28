@@ -27,7 +27,6 @@
 import { Category, Statistic, ProvinceData, MunicipalityRecord, MunicipalitiesDataset, ProvinceCode } from '@/types'
 import { intelligentSearch } from '@/lib/search'
 import type { DatasetRegistryEntry } from '@/lib/registry'
-import { has2011Comparison } from './municipal-boundaries'
 import { SearchResult } from '@/types'
 
 // ─── Dataset imports ──────────────────────────────────────────────────────────
@@ -114,7 +113,7 @@ export const categories: Category[] = [
   {
     id: 'census',
     label: 'Census 2022',
-    description: 'Households, internet access and people with no income, from Census 2022 and earlier censuses.',
+    description: 'Households and internet access, from Census 2022 and earlier censuses.',
     icon: 'BarChart3',
     color: 'text-teal-600 dark:text-teal-400',
     bgColor: 'bg-teal-50 dark:bg-teal-950/30',
@@ -124,7 +123,8 @@ export const categories: Category[] = [
 
 // ─── Statistics ───────────────────────────────────────────────────────────────
 
-export const statistics: Statistic[] = [
+/** Every record in the dataset files, including withheld ones. */
+export const allStatistics: Statistic[] = [
   ...(unemploymentData.statistics  as Statistic[]),
   ...(youthUnemployment.statistics as Statistic[]),
   ...(labourForceData.statistics   as Statistic[]),
@@ -137,6 +137,9 @@ export const statistics: Statistic[] = [
   ...(housingData.statistics       as Statistic[]),
   ...(censusData.statistics        as Statistic[]),
 ]
+
+/** The statistics the site shows: every record that is not withheld. */
+export const statistics: Statistic[] = allStatistics.filter((s) => !s.withheld)
 
 // ─── Province data ────────────────────────────────────────────────────────────
 
@@ -233,203 +236,6 @@ export function getMunicipalityByCode(code: string): MunicipalityRecord | undefi
 
 export function getMunicipalitiesByProvince(provinceCode: ProvinceCode): MunicipalityRecord[] {
   return municipalities.filter((m) => m.province === provinceCode)
-}
-
-/**
- * Computes national averages across all municipalities for the six
- * comparison metrics used on the municipality detail page.
- * Only municipalities with valid (finite, > 0) values contribute to each mean.
- */
-export function getMunicipalityNationalAverages(): {
-  population: number | null
-  populationDensity: number | null
-  avgHouseholdSize: number | null
-  pctFormalDwelling: number | null
-  pctElectricityCooking: number | null
-  pctFlushToilet: number | null
-} {
-  function mean(vals: number[]): number | null {
-    const valid = vals.filter((v) => v != null && isFinite(v) && v >= 0)
-    return valid.length > 0 ? valid.reduce((a, b) => a + b, 0) / valid.length : null
-  }
-  return {
-    population:          mean(municipalities.map((m) => m.population2022)),
-    populationDensity:   mean(municipalities.map((m) => m.populationDensity2022)),
-    avgHouseholdSize:    mean(municipalities.map((m) => m.avgHouseholdSize2022)),
-    pctFormalDwelling:   mean(municipalities.map((m) => m.pctFormalDwelling2022)),
-    pctElectricityCooking: mean(municipalities.map((m) => m.pctElectricityCooking2022)),
-    pctFlushToilet:      mean(municipalities.map((m) => m.pctFlushToilet2022)),
-  }
-}
-
-/**
- * Computes provincial averages for the comparison metrics,
- * scoped to municipalities in the given province.
- */
-export function getMunicipalityProvincialAverages(provinceCode: ProvinceCode): {
-  population: number | null
-  populationDensity: number | null
-  avgHouseholdSize: number | null
-  pctFormalDwelling: number | null
-  pctElectricityCooking: number | null
-  pctFlushToilet: number | null
-} {
-  const peers = municipalities.filter((m) => m.province === provinceCode)
-  function mean(vals: number[]): number | null {
-    const valid = vals.filter((v) => v != null && isFinite(v) && v >= 0)
-    return valid.length > 0 ? valid.reduce((a, b) => a + b, 0) / valid.length : null
-  }
-  return {
-    population:            mean(peers.map((m) => m.population2022)),
-    populationDensity:     mean(peers.map((m) => m.populationDensity2022)),
-    avgHouseholdSize:      mean(peers.map((m) => m.avgHouseholdSize2022)),
-    pctFormalDwelling:     mean(peers.map((m) => m.pctFormalDwelling2022)),
-    pctElectricityCooking: mean(peers.map((m) => m.pctElectricityCooking2022)),
-    pctFlushToilet:        mean(peers.map((m) => m.pctFlushToilet2022)),
-  }
-}
-
-/**
- * Returns the largest municipality in a province by population2022,
- * excluding the municipality identified by `excludeId`.
- */
-export function getLargestMunicipalityInProvince(
-  provinceCode: ProvinceCode,
-  excludeId: string
-): MunicipalityRecord | null {
-  const peers = municipalities.filter(
-    (m) => m.province === provinceCode && m.id !== excludeId
-  )
-  if (peers.length === 0) return null
-  return peers.reduce((best, m) =>
-    m.population2022 > best.population2022 ? m : best
-  )
-}
-
-// ─── V5 helpers ──────────────────────────────────────────────────────────────
-
-/**
- * Returns up to `limit` municipalities from the same province,
- * excluding the current municipality, sorted by absolute population
- * similarity to the current municipality (closest first).
- */
-export function getRelatedMunicipalities(
-  current: MunicipalityRecord,
-  limit = 3
-): MunicipalityRecord[] {
-  return municipalities
-    .filter((m) => m.province === current.province && m.id !== current.id)
-    .sort(
-      (a, b) =>
-        Math.abs(a.population2022 - current.population2022) -
-        Math.abs(b.population2022 - current.population2022)
-    )
-    .slice(0, limit)
-}
-
-export type MunicipalityInsight = {
-  text: string
-  sentiment: 'positive' | 'negative' | 'neutral'
-}
-
-/**
- * Generates 3–5 deterministic, data-driven observations for a municipality.
- * Rules only — no AI, no randomness.
- */
-export function generateMunicipalityInsights(
-  m: MunicipalityRecord
-): MunicipalityInsight[] {
-  const insights: MunicipalityInsight[] = []
-
-  // ── 1. Population change since Census 2011 (only where boundaries match) ──
-  if (has2011Comparison(m.id) && m.population2011 > 0) {
-    const pct = ((m.population2022 - m.population2011) / m.population2011) * 100
-    const direction = pct >= 0 ? 'grew' : 'fell'
-    insights.push({
-      text: `Population ${direction} by ${Math.abs(pct).toFixed(1)}% between Census 2011 and Census 2022.`,
-      sentiment: 'neutral',
-    })
-  }
-
-  // ── 2. Formal housing vs provincial average ───────────────────────────────
-  const provAvg = getMunicipalityProvincialAverages(m.province)
-  if (
-    m.pctFormalDwelling2022 != null &&
-    provAvg.pctFormalDwelling != null &&
-    isFinite(m.pctFormalDwelling2022)
-  ) {
-    const diff = m.pctFormalDwelling2022 - provAvg.pctFormalDwelling
-    if (Math.abs(diff) >= 2) {
-      const dir = diff > 0 ? 'above' : 'below'
-      insights.push({
-        text: `Formal housing (${m.pctFormalDwelling2022.toFixed(1)}%) is ${Math.abs(diff).toFixed(1)} percentage points ${dir} the provincial average.`,
-        sentiment: diff > 0 ? 'positive' : 'negative',
-      })
-    }
-  }
-
-  // ── 3. Population density vs national average ─────────────────────────────
-  const natAvg = getMunicipalityNationalAverages()
-  const density =
-    m.areaKm2 > 0
-      ? m.population2022 / m.areaKm2
-      : m.populationDensity2022
-  if (
-    density != null &&
-    natAvg.populationDensity != null &&
-    isFinite(density) &&
-    isFinite(natAvg.populationDensity)
-  ) {
-    if (density > natAvg.populationDensity * 1.5) {
-      insights.push({
-        text: `Population density (${density.toFixed(1)} /km²) is well above the national municipal average of ${natAvg.populationDensity.toFixed(1)} /km².`,
-        sentiment: 'neutral',
-      })
-    } else if (density < natAvg.populationDensity * 0.5) {
-      insights.push({
-        text: `Population density (${density.toFixed(1)} /km²) is significantly below the national municipal average of ${natAvg.populationDensity.toFixed(1)} /km².`,
-        sentiment: 'neutral',
-      })
-    }
-  }
-
-  // ── 4. Youth population (15–34) ───────────────────────────────────────────
-  if (m.pctAge15to34_2022 != null && isFinite(m.pctAge15to34_2022)) {
-    if (m.pctAge15to34_2022 > 38) {
-      insights.push({
-        text: `Youth population (15–34) is ${m.pctAge15to34_2022.toFixed(1)}%, indicating a young demographic profile.`,
-        sentiment: 'neutral',
-      })
-    }
-  }
-
-  // ── 5. Flush toilet access ────────────────────────────────────────────────
-  if (
-    m.pctFlushToilet2022 != null &&
-    provAvg.pctFlushToilet != null &&
-    isFinite(m.pctFlushToilet2022)
-  ) {
-    const diff = m.pctFlushToilet2022 - provAvg.pctFlushToilet
-    if (Math.abs(diff) >= 5) {
-      const dir = diff > 0 ? 'above' : 'below'
-      insights.push({
-        text: `Flush toilet access (${m.pctFlushToilet2022.toFixed(1)}%) is ${Math.abs(diff).toFixed(1)} percentage points ${dir} the provincial average.`,
-        sentiment: diff > 0 ? 'positive' : 'negative',
-      })
-    }
-  }
-
-  // ── 6. No toilet access (sanitation concern) ──────────────────────────────
-  if (m.pctNoToilet2022 != null && isFinite(m.pctNoToilet2022)) {
-    if (m.pctNoToilet2022 > 5) {
-      insights.push({
-        text: `${m.pctNoToilet2022.toFixed(1)}% of households have no access to any toilet facility — a notable service delivery gap.`,
-        sentiment: 'negative',
-      })
-    }
-  }
-
-  return insights.slice(0, 5)
 }
 
 /**
