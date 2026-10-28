@@ -7,6 +7,7 @@ import { FigureValue, SourceCitations, SourceNote } from '@/components/explainer
 import { getSource, type QlfsExplainer, type SourcedQuote } from '@/lib/explainers'
 import { formatCount, formatDecimal } from '@/lib/format'
 import { breadcrumbSchema } from '@/lib/schema'
+import { reportErrorHref } from '@/lib/contact'
 import { judgeMove } from '@/lib/utils'
 
 /**
@@ -301,6 +302,13 @@ export function QlfsExplainerView({ explainer }: { explainer: QlfsExplainer }) {
         </p>
         <SourceNote source={release} location={explainer.nextRelease.location} className="mt-2" />
         <SourceCitations sources={explainer.sources} checkedOn={checkedOn} className="mt-8" />
+        <p className="mt-4 text-small">
+          Spotted a figure that does not match the release?{' '}
+          <a href={reportErrorHref(`/explainers/${explainer.slug}`)} className={linkClass}>
+            Report an error
+          </a>
+          .
+        </p>
         <p className="mt-4 text-caption text-muted">
           Source of the basic data: Stats SA. The worked calculations are SA Data Hub&apos;s own, from that data.
         </p>
