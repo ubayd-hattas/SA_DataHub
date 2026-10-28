@@ -63,6 +63,8 @@ export default function MunicipalitiesPage() {
             code={CENSUS_SOURCE.code}
             location={`person indicators per municipality, ${formatCount(municipalities.length)} municipalities`}
             releasedOn={CENSUS_SOURCE.releasedOn}
+      edition={CENSUS_SOURCE.edition}
+      downloadedOn={CENSUS_SOURCE.downloadedOn}
             checkedOn={CENSUS_SOURCE.checkedOn}
           />
         </div>

@@ -17,9 +17,12 @@ import censusPages from '@/data/census-pages.json'
 export const CENSUS_SOURCE = {
   publisher: 'Stats SA',
   title: 'Census 2022 Provinces at a glance',
-  code: 'Report no. 03-01-43, revised',
-  /** Release date already on record for this publication (10 October 2023). */
+  code: 'Report no. 03-01-43',
+  /** First release of the publication (10 October 2023); the file used is the revised edition. */
   releasedOn: '2023-10-10',
+  edition: 'revised edition',
+  /** When the maintainer downloaded the revised file (sources/releases/Provinces_at_a_Glance.pdf). */
+  downloadedOn: '2026-10-27',
   checkedOn: '2026-10-28',
 }
 
