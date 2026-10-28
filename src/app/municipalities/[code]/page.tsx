@@ -258,18 +258,21 @@ function Comparison({ m }: { m: MunicipalityRecord }) {
           return (
             <div key={measure.label} className="border-t border-rule py-3 text-small">
               <dt className="font-medium text-ink">{measure.label}</dt>
-              <dd className="mt-1 flex justify-between gap-3">
-                <span className="text-ink">{m.name}</span>
-                <span className="tabular-nums text-ink">{formatMeasure(value, measure.kind)}</span>
+              {/* Each name and value shares a line; the gap sentence gets a full-width line of its own. */}
+              <dd className="mt-1 flex items-baseline justify-between gap-3">
+                <span className="min-w-0 text-ink">{m.name}</span>
+                <span className="shrink-0 tabular-nums text-ink">{formatMeasure(value, measure.kind)}</span>
               </dd>
               {groups.map((g) => {
                 const avg = groupAverage(g, measure)
                 return (
-                  <dd key={g.label} className="mt-1 flex justify-between gap-3 text-muted">
-                    <span>{g.label}</span>
-                    <span className="shrink-0 text-right tabular-nums">
-                      {formatMeasure(avg, measure.kind)}
-                      <span className="block text-caption">{m.name} is {gapText(value, avg, measure.kind)}</span>
+                  <dd key={g.label} className="mt-2 text-muted">
+                    <span className="flex items-baseline justify-between gap-3">
+                      <span className="min-w-0">{g.label}</span>
+                      <span className="shrink-0 tabular-nums">{formatMeasure(avg, measure.kind)}</span>
+                    </span>
+                    <span className="mt-0.5 block text-caption">
+                      {m.name} {gapText(value, avg, measure)}
                     </span>
                   </dd>
                 )

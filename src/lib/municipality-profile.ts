@@ -182,12 +182,14 @@ export function formatCensusValue(v: number, kind: CensusRow['kind']): string {
 export interface ComparisonMeasure {
   label: string
   kind: 'count' | 'percent' | 'number'
+  /** What a count or number measures, for gap sentences: "people", "people per household". */
+  noun?: string
   value: (m: MunicipalityRecord) => number
 }
 
 export const COMPARISON_MEASURES: ComparisonMeasure[] = [
-  { label: 'Population, 2022', kind: 'count', value: (m) => m.population2022 },
-  { label: 'People per household', kind: 'number', value: (m) => m.avgHouseholdSize2022 },
+  { label: 'Population, 2022', kind: 'count', noun: 'people', value: (m) => m.population2022 },
+  { label: 'People per household', kind: 'number', noun: 'people per household', value: (m) => m.avgHouseholdSize2022 },
   { label: 'Households in a formal dwelling', kind: 'percent', value: (m) => m.pctFormalDwelling2022 },
   { label: 'Water from a regional or local scheme', kind: 'percent', value: (m) => m.pctWaterScheme2022 },
   { label: 'Households with a flush toilet', kind: 'percent', value: (m) => m.pctFlushToilet2022 },
@@ -229,16 +231,25 @@ export function groupAverage(group: ComparisonGroup, measure: ComparisonMeasure)
   return mean(group.members.map(measure.value))
 }
 
-/** "6.2 pts above", "0.3 below", "about the same". */
-export function gapText(value: number, average: number, kind: ComparisonMeasure['kind']): string {
+/**
+ * The gap to an average, as the end of a sentence that starts with the place's
+ * name: "is 6.2 pts higher", "has 0.3 more people per household",
+ * "has 20.2% more people", "is about the same".
+ */
+export function gapText(value: number, average: number, measure: Pick<ComparisonMeasure, 'kind' | 'noun'>): string {
   const gap = value - average
-  if (kind === 'count') {
-    const pct = (gap / average) * 100
-    if (Math.abs(pct) < 0.05) return 'about the same'
-    return `${formatDecimal(Math.abs(pct))}% ${pct > 0 ? 'above' : 'below'}`
+  if (measure.kind === 'percent') {
+    if (Math.abs(gap) < 0.05) return 'is about the same'
+    return `is ${formatDecimal(Math.abs(gap))} pts ${gap > 0 ? 'higher' : 'lower'}`
   }
-  if (Math.abs(gap) < 0.05) return 'about the same'
-  return `${formatDecimal(Math.abs(gap))}${kind === 'percent' ? ' pts' : ''} ${gap > 0 ? 'above' : 'below'}`
+  const noun = measure.noun ?? ''
+  if (measure.kind === 'count') {
+    const pct = (gap / average) * 100
+    if (Math.abs(pct) < 0.05) return `has about the same number of ${noun}`.trim()
+    return `has ${formatDecimal(Math.abs(pct))}% ${pct > 0 ? 'more' : 'fewer'} ${noun}`.trim()
+  }
+  if (Math.abs(gap) < 0.05) return 'is about the same'
+  return `has ${formatDecimal(Math.abs(gap))} ${gap > 0 ? 'more' : 'fewer'} ${noun}`.trim()
 }
 
 /**
