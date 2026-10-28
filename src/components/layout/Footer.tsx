@@ -1,5 +1,6 @@
 
 import Link from 'next/link'
+import { FEED_PATH } from '@/lib/feed-path'
 import { ExternalLink } from 'lucide-react'
 import { BrandMark } from '@/components/layout/BrandMark'
 import { categories } from '@/data/mock'
@@ -67,6 +68,12 @@ export function Footer() {
                   </Link>
                 </li>
               ))}
+              <li>
+                {/* A file, not a page, so a plain link rather than client navigation. */}
+                <a href={FEED_PATH} type="application/rss+xml" className="text-slate-500 hover:text-brand-600 dark:text-slate-400 dark:hover:text-brand-400">
+                  RSS feed
+                </a>
+              </li>
             </ul>
             <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400">Data Sources</h3>
             <ul className="space-y-2 text-sm">
