@@ -19,7 +19,7 @@ So the people arriving were mostly South Africans looking up a place, and the si
 
 ## What changed
 
-The work followed the product direction in `docs/PRODUCT_DIRECTION.md`, in pull requests #2 to #30.
+The work followed the product direction in `docs/PRODUCT_DIRECTION.md`, in pull requests #2 to #46.
 
 **Release explainers.** One page per official release: the number, what moved it in the source's own words, a worked calculation and what the measure does not cover. CPI for September 2026 came first, then unemployment for the second quarter of 2026, with a section on why South Africa publishes more than one unemployment rate.
 
@@ -30,6 +30,8 @@ The work followed the product direction in `docs/PRODUCT_DIRECTION.md`, in pull 
 **Trust layer.** A build step fails if a figure on the homepage, a topic page or a municipality page has no source, no release date or no checked date. The same check already covered the explainers. Figures that could not be traced were withheld rather than shown without a date, and each withholding is recorded. The corrections log at `/updates` lists old and new values.
 
 **Discoverability.** Unique titles and descriptions on every page, schema.org Dataset data that points to a CSV file per dataset, and an RSS feed of explainers, stories and updates.
+
+**Answers, search and tools.** Pull requests #32 to #43 added 22 answer pages for questions people search for, each answering in its first sentence with the number, period and source. They also added a header search over places, statistics, answers, explainers, stories and tools; a tool to compare two or three municipalities; a share image for every municipality page; and a "Guess first" block on four pages. The "How it compares" section on municipality pages was rebuilt after its text overlapped on wide screens.
 
 **Performance and accessibility.** The dashboard stopped loading every dataset in the browser (324 kB to 239 kB of JavaScript on first load), and the provinces page became server-rendered (307 kB to 107 kB). After the footer's contrast was fixed, an automated accessibility check (axe) found no serious issues on the homepage, a topic page, the CPI explainer and the calculator, and keyboard focus was visible at every stop on six pages. The rebuilt municipality page has not been checked yet.
 
@@ -43,7 +45,7 @@ The work followed the product direction in `docs/PRODUCT_DIRECTION.md`, in pull 
 
 ## Before and after
 
-Before: the site at pull request #14, when the CPI explainer already existed but the rest of the site still had the old design, dark by default. After: the work in pull requests #23 and #24, light by default. Same pages, same widths.
+Before: the site at pull request #14, when the CPI explainer already existed but the rest of the site still had the old design, dark by default. After: `main` on 28 October 2026, after pull request #46, light by default. Same pages, same widths. Each image is the top of the page (3200 px at desktop width, 5200 px on a phone).
 
 | Page | Before | After |
 | --- | --- | --- |
