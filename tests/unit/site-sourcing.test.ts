@@ -32,8 +32,18 @@ describe('site sourcing check', () => {
 
   it('does not show the records it withholds, and says why', () => {
     const withheld = allStatistics.filter((s) => s.withheld)
-    expect(withheld.map((s) => s.id).sort()).toEqual(['youth-neet-rate', 'youth-unemployment-expanded'])
+    expect(withheld.map((s) => s.id).sort()).toEqual(['youth-unemployment-expanded'])
     for (const s of withheld) expect(statistics).not.toContain(s)
+  })
+
+  it('shows the NEET rate from QLFS Q4 2025, labelled as printed, with its page', () => {
+    const neet = statistics.find((s) => s.id === 'youth-neet-rate')!
+    expect(neet.title).toBe('NEET rate for youth aged 15–24 years')
+    expect(neet.rawValue).toBe(34.0)
+    expect(neet.source.publicationName).toContain('page 8')
+    expect(neet.source.publicationDate).toBe('2026-02-17')
+    expect(neet.series![0].data.at(-1)).toEqual({ label: 'Q4 2025', value: 34.0 })
+    expect(statisticSourcingProblems(neet)).toEqual([])
   })
 
   it('runs when the homepage, topic pages and municipality pages are built', () => {
