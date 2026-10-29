@@ -1,9 +1,8 @@
 /**
- * Where readers report an error. The maintainer's address on ubayd.me goes in
- * REPORT_ERROR_EMAIL; until it is set, reports go to the repository's public
- * issue tracker instead of a guessed address.
+ * Where readers report an error. If REPORT_ERROR_EMAIL is ever emptied,
+ * reports go to the repository's public issue tracker instead.
  */
-export const REPORT_ERROR_EMAIL = ''
+export const REPORT_ERROR_EMAIL = 'uhattas@gmail.com'
 
 export const REPO_URL = 'https://github.com/ubayd-hattas/SA_DataHub'
 
