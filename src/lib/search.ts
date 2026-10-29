@@ -170,7 +170,7 @@ function provinceDisplayValue(province: ProvinceData, intent: SearchIntent, rawQ
     case 'population':
       return `${(province.population / 1_000_000).toFixed(1)}M population`
     case 'housing':
-      return `${province.stats.housing.electricityAccess}% electricity access`
+      return `${province.stats.housing.formal[1]}% of households in a formal dwelling`
     case 'gdp':
       return `${province.gdpShare}% of national GDP`
     default:
