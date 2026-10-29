@@ -81,7 +81,7 @@ function CensusSource({ m, tables }: { m: MunicipalityRecord; tables: CensusTabl
 function BoundaryNote() {
   return (
     <p className="text-caption text-muted">
-      The 2011 and 2022 figures cover the same area. {BOUNDARY_QUOTE.publisher}, {BOUNDARY_QUOTE.title}, page{' '}
+      The 2011 and 2022 figures cover the same area. {BOUNDARY_QUOTE.publisher}, {BOUNDARY_QUOTE.title} ({BOUNDARY_QUOTE.code}), page{' '}
       {BOUNDARY_QUOTE.page}: &ldquo;{BOUNDARY_QUOTE.text}&rdquo;.
     </p>
   )
