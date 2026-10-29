@@ -1,4 +1,4 @@
-# SA Data Hub: product direction (October 2026)
+# SA Data Hub: product direction (updated 28 October 2026)
 
 ## Positioning
 
@@ -11,55 +11,63 @@ People in South Africa who meet a statistic in the news, at school or at work an
 ## Principles
 
 1. Every figure shows its source, the source's release date and the date SA Data Hub checked it.
-2. The "why" comes from the source's own breakdown (for example the contributions table in a Stats SA CPI release), quoted and cited. No speculation and no forecasts.
+2. The "why" comes from the source's own breakdown (for example the contributions table in a Stats SA CPI release), quoted and cited with its page. No speculation and no forecasts.
 3. "What it means" is a calculation with its working shown, not an opinion.
 4. Plain English, short sentences, no em dashes, no hype.
 5. Data is entered by hand from releases the maintainer downloads. No automated requests to Stats SA. Automation and the PostgreSQL migration are paused.
 6. AI may draft text, but a person checks every number and sentence against the release before it is published.
 7. Corrections are logged publicly.
+8. A figure that can't be traced to a release we hold is withheld, with the reason recorded, not shown without a date.
+9. New releases go live within 2 working days ([`RUNBOOK.md`](RUNBOOK.md)).
 
 ## Pillar 1: release explainers
 
-One page per release: CPI (monthly), QLFS (quarterly), GDP (quarterly) and SARB MPC decisions. Each page has:
+One page per release, each with the number and how it changed, what moved it in the source's own breakdown, one quoted and cited line, a worked example in rands, what the measure covers and leaves out, and links onward. The homepage leads with "What changed this month".
 
-- the number and how it changed
-- what moved it, using the source's own breakdown
-- one quoted, cited line from the release
-- what it means in rands, as a worked example
-- what the measure covers and does not cover
-- links to the dataset and to earlier explainers
-
-The homepage leads with "What changed this month".
-
-The template is built first on CPI for September 2026. Figures to check against the PDF before use: headline 4.5%, and in Table C transport 1.5 points, housing and utilities 1.3 points, insurance and financial services 0.6 of a point.
+- **Built:** CPI (September 2026) and QLFS (Q2 2026, with a section on why South Africa publishes more than one unemployment rate). Both have a "Guess first" question.
+- **Next:** a template for GDP (quarterly) and one for SARB MPC decisions.
 
 ## Pillar 2: your municipality
 
-Municipality pages carry most of the traffic, so they get the most care:
+Municipality pages carry most of the traffic, so they get the most care.
 
-- a plain-language summary at the top
-- the Census 2011 to 2022 change, shown only where boundaries match, with a boundary note on the 20 codes that do not (see the research notes from 25 Oct 2026)
-- comparison with similar municipalities (same province, similar size)
-- how province-level figures apply to the place
-- titles and descriptions that mention both censuses where 2011 data exists
-
-The 2011 figures need a corrected source attribution before this ships.
+- **Built:**
+  - All 213 profiles checked against Census 2022 Provinces at a glance, each figure citing its table and printed page.
+  - 2011 and 2022 shown side by side for every municipality. The Municipal fact sheet (page 1) says the 2011 figures were aligned to the 2021 boundaries.
+  - "How it compares" with the province and similar places.
+  - "Compare with another place" (`/tools/compare`).
+  - A share image per municipality.
+  - Three related questions on each page.
+- **Next:** check the rebuilt municipality page with an automated accessibility test.
 
 ## Pillar 3: trust layer
 
-- two dates on every figure: "Source released" and "Checked on SA Data Hub"
-- a public corrections log
-- a "Why do the numbers disagree?" page: official vs expanded unemployment, LU3 from Q3 2025, mid-year estimates vs census counts
-- methodology linked from every chart
-- a build-time check that fails if a displayed statistic lacks a source, release date or checked date
+- **Built:**
+  - Two dates on every figure.
+  - The build-time sourcing check, plus a separate one for explainers.
+  - The public corrections log at `/updates`.
+  - "Why do the numbers disagree?" on /methodology.
+  - Stats SA's reuse condition, quoted on /methodology and added to Stats SA citations.
+  - "Report an error" links.
+  - A public repository linked from /methodology.
+- **Next:** trace or withdraw the remaining unsourced figures on province pages (GDP share, matric, literacy, urban population, legacy expanded rate) and unsourced explanations in the stories.
+
+## Pillar 4: answers
+
+Short pages for questions people search for, chosen from Search Console queries. Each answers in its first sentence (number, period, source), then gives one chart or top-10 list, the working, sources and three related questions. Factual only: no "best" or "safest" rankings and no page per municipality.
+
+- **Built:** 22 pages at `/answers`, linked from the homepage, topic pages, municipality pages, the footer and the header search.
+- **Next:** add questions as new queries show up in Search Console.
 
 ## Supporting work
 
-- Share and cite: a stable link per chart and a share image showing the figure and its source.
-- schema.org Dataset structured data so datasets can appear in Google Dataset Search.
-- An RSS feed of explainers and updates.
-- Measurement: page views per page type against the 25 Oct 2026 Search Console baseline. Check whether the Vercel plan supports custom events before relying on them.
-- Mobile performance: 39% of impressions are mobile, and the /dashboard and /provinces bundle is about 535 KB.
+- **Done:**
+  - Share images (municipality pages, the compare tool, the calculator).
+  - schema.org `Dataset` markup with a CSV per dataset.
+  - An RSS feed.
+  - A header search over places, statistics, answers, explainers, stories and tools.
+  - Lighter /dashboard and /provinces bundles (see the case study).
+- **Measurement:** page views per page type against the 25 Oct 2026 Search Console baseline. Check whether the Vercel plan supports custom events before relying on them.
 
 ## Not now
 
@@ -68,6 +76,7 @@ Translations into African languages (no search demand in the data so far, and an
 ## Success measures, reviewed monthly
 
 - clicks and click-through from South Africa per page type, against the 25 Oct 2026 baseline
-- explainer page views and shares
+- whether the number of indexed pages recovers from 89 (23 Oct 2026)
+- explainer and answer page views and shares
 - returning visitors
 - messages or links from journalists, teachers or researchers
