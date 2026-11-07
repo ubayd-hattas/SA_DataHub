@@ -110,3 +110,39 @@ describe('series discovery', () => {
     for (const s of allSeries()) expect(urls, s.id).toContain(`https://sadatahub.tech${seriesHref(s.id)}`)
   })
 })
+
+describe('series revisions and change log', () => {
+  it('only records revisions that name a real period, change the value and have valid dates', () => {
+    for (const stat of allSeries()) {
+      const periods = new Set(seriesPointsFor(stat).map((p) => p.period))
+      for (const r of stat.revisions ?? []) {
+        expect(periods.has(r.period), `${stat.id} ${r.period}`).toBe(true)
+        expect(Number.isFinite(r.from) && Number.isFinite(r.to) && r.from !== r.to, stat.id).toBe(true)
+        expect(r.releasedOn, stat.id).toMatch(ISO)
+        expect(r.recordedOn >= r.releasedOn, stat.id).toBe(true)
+        expect(r.release, stat.id).toBeTruthy()
+      }
+    }
+  })
+
+  it('puts revisions in the JSON, newest first', async () => {
+    const { seriesRevisions } = await import('@/lib/series')
+    const base = getSeries('gdp-growth')!
+    const stat = {
+      ...base,
+      revisions: [
+        { period: 'Q1 2026', from: 0.1, to: 0.4, release: 'A', releasedOn: '2026-06-01', recordedOn: '2026-06-02' },
+        { period: 'Q1 2026', from: 0.4, to: 0.5, release: 'B', releasedOn: '2026-09-08', recordedOn: '2026-09-09' },
+      ],
+    }
+    expect(seriesRevisions(stat).map((r) => r.release)).toEqual(['B', 'A'])
+    expect(seriesDocument(stat).revisions).toHaveLength(2)
+  })
+
+  it('carries the public update log for the series dataset', () => {
+    const doc = seriesDocument(getSeries('cpi-headline')!)
+    expect(doc.changeLog.length).toBeGreaterThan(0)
+    const dates = doc.changeLog.map((c) => c.date)
+    expect([...dates].sort().reverse()).toEqual(dates)
+  })
+})
