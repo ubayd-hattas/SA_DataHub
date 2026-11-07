@@ -56,6 +56,7 @@ export function Footer() {
                 { label: 'Release calendar', href: '/calendar' },
                 { label: 'Data Stories', href: '/insights' },
                 { label: 'Data Downloads', href: '/downloads' },
+                { label: 'Data series', href: '/series' },
                 { label: 'Corrections and updates', href: '/updates' },
                 { label: 'Province Explorer', href: '/provinces' },
                 { label: 'Municipalities', href: '/municipalities' },

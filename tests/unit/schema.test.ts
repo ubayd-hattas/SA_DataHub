@@ -58,3 +58,17 @@ describe('structured data', () => {
     expect(JSON.parse(json)).toEqual({ name: '</script><script>alert(1)</script>' })
   })
 })
+
+describe('series Dataset markup', () => {
+  it('describes each series with downloads, coverage and a long enough description', async () => {
+    const { seriesDatasetSchema } = await import('@/lib/schema')
+    const { allSeries, seriesDocument, seriesCsvHref, seriesJsonHref } = await import('@/lib/series')
+    for (const stat of allSeries()) {
+      const schema = seriesDatasetSchema(seriesDocument(stat), { csv: seriesCsvHref(stat.id), json: seriesJsonHref(stat.id) })
+      expect(schema['@type']).toBe('Dataset')
+      expect(schema.description.length, stat.id).toBeGreaterThanOrEqual(50)
+      expect(schema.distribution.map((d) => d.encodingFormat)).toEqual(['text/csv', 'application/json'])
+      expect(schema.distribution[0].contentUrl).toBe(`https://sadatahub.tech/data/series/${stat.id}.csv`)
+    }
+  })
+})

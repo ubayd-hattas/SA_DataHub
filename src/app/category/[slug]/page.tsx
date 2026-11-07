@@ -34,6 +34,7 @@ import { JsonLd } from '@/components/seo/JsonLd'
 import { breadcrumbSchema, datasetSchema } from '@/lib/schema'
 import { STORIES } from '@/data/stories'
 import type { Statistic } from '@/types'
+import { seriesHref } from '@/lib/series'
 
 const STATUS_TEXT: Record<DatasetStatus, string> = {
   'up-to-date': 'Up to date',
@@ -87,6 +88,17 @@ function StatSource({ stat }: { stat: Statistic }) {
   )
 }
 
+/** Link to the statistic's series page: every value, downloads and a citation. */
+function SeriesLink({ stat }: { stat: Statistic }) {
+  return (
+    <p className="mt-4 text-small">
+      <Link href={seriesHref(stat.id)} className={linkClass}>
+        Every value, CSV and JSON downloads, and how to cite this
+      </Link>
+    </p>
+  )
+}
+
 /** The chart for a statistic with a series, or its description and source when it has none. */
 function StatBody({ stat }: { stat: Statistic }) {
   const takeaway = chartTakeaway(stat)
@@ -95,17 +107,21 @@ function StatBody({ stat }: { stat: Statistic }) {
       <div className="mt-4 space-y-3">
         <p className="max-w-2xl text-body text-ink">{stat.description}</p>
         <StatSource stat={stat} />
+        <SeriesLink stat={stat} />
       </div>
     )
   }
   return (
-    <StatChart
-      title={takeaway}
-      points={seriesPoints(stat)}
-      unit={stat.series![0].unit}
-      description={stat.description}
-      source={<StatSource stat={stat} />}
-    />
+    <>
+      <StatChart
+        title={takeaway}
+        points={seriesPoints(stat)}
+        unit={stat.series![0].unit}
+        description={stat.description}
+        source={<StatSource stat={stat} />}
+      />
+      <SeriesLink stat={stat} />
+    </>
   )
 }
 
