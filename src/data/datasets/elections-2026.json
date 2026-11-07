@@ -14,7 +14,7 @@
    "The files give every independent candidate the same party name, INDEPENDENT, so votes for two independents in one ward are merged. Wards where that label comes first are counted as won by independents, not as one party.",
    "PR seats and council sizes are not in these files, so seat totals are not shown.",
    "The DC 40% ballot elects the district council and is only cast in local municipalities, not metros.",
-   "Results are as the IEC generated them between generated_from and generated_to. They were not checked against final declared results."
+   "Results are as the IEC generated them between 21:35 on 6 November 2026 and 12:31 on 7 November 2026. They were not checked against final declared results."
   ]
  },
  "national": {
