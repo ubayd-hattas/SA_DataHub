@@ -101,3 +101,12 @@ describe('series index', () => {
     for (const s of allSeries()) expect(html, s.id).toContain(`href="${seriesHref(s.id)}"`)
   })
 })
+
+describe('series discovery', () => {
+  it('lists the index and every series page in the sitemap', async () => {
+    const { default: sitemap } = await import('@/app/sitemap')
+    const urls = sitemap().map((e) => e.url)
+    expect(urls).toContain('https://sadatahub.tech/series')
+    for (const s of allSeries()) expect(urls, s.id).toContain(`https://sadatahub.tech${seriesHref(s.id)}`)
+  })
+})
