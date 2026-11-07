@@ -201,6 +201,11 @@ export function QlfsExplainerView({ explainer }: { explainer: QlfsExplainer }) {
         <div className="mt-6">
           <Quote quote={explainer.ratesNote} explainer={explainer} />
         </div>
+        <p className="mt-4 text-small">
+          <Link href="/why-numbers-differ#unemployment" className={linkClass}>
+            Which rate to use, and why news stories quote different ones
+          </Link>
+        </p>
         <div className="mt-8 overflow-x-auto">
           <table className="w-full min-w-[20rem] text-left text-small">
             <caption className="pb-3 text-left font-display text-h3 font-semibold text-ink">
