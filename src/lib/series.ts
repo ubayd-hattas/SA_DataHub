@@ -1,8 +1,10 @@
 import { statistics, getStatById } from '@/data/mock'
 import { buildCsvContent } from '@/lib/export'
 import { absoluteUrl } from '@/lib/seo'
+import { getEntryForStat, getEntryUpdateHistory } from '@/lib/registry'
 import { statDates } from '@/lib/stat-summary'
-import type { Statistic } from '@/types'
+import type { UpdateHistoryEntry } from '@/data/update-history'
+import type { SeriesRevision, Statistic } from '@/types'
 
 /**
  * Series pages: one stable page and download per statistic, at
@@ -47,6 +49,10 @@ export interface SeriesDocument {
   license: string
   citation: string
   points: SeriesPoint[]
+  /** Values the publisher revised, newest first. */
+  revisions: SeriesRevision[]
+  /** SA Data Hub's own log of changes to the dataset this series belongs to, newest first. */
+  changeLog: { date: string; type: UpdateHistoryEntry['type']; summary: string }[]
 }
 
 /** The points of the statistic's series, or a single point when it has none. */
@@ -54,6 +60,17 @@ export function seriesPointsFor(stat: Statistic): SeriesPoint[] {
   const series = stat.series?.[0]
   if (!series?.data.length) return [{ period: stat.lastUpdated, value: stat.rawValue }]
   return series.data.map((p) => ({ period: p.label, value: p.value }))
+}
+
+/** Publisher revisions to this series, newest first. */
+export function seriesRevisions(stat: Statistic): SeriesRevision[] {
+  return [...(stat.revisions ?? [])].sort((a, b) => b.recordedOn.localeCompare(a.recordedOn))
+}
+
+/** Entries in the public update log for this series' dataset, newest first. */
+export function seriesChangeLog(stat: Statistic): UpdateHistoryEntry[] {
+  const entry = getEntryForStat(stat.id)
+  return entry ? getEntryUpdateHistory(entry.id) : []
 }
 
 /** The suggested citation, in one plain sentence. */
@@ -83,6 +100,8 @@ export function seriesDocument(stat: Statistic): SeriesDocument {
     license: LICENSE_URL,
     citation: seriesCitation(stat),
     points: seriesPointsFor(stat),
+    revisions: seriesRevisions(stat),
+    changeLog: seriesChangeLog(stat).map(({ date, type, summary }) => ({ date, type, summary })),
   }
 }
 
