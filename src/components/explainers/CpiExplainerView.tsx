@@ -10,7 +10,7 @@ import { GuessFirst } from '@/components/editorial/GuessFirst'
 import { formatLongDate, formatRand, getSource, type CpiExplainer } from '@/lib/explainers'
 import { formatPercent } from '@/lib/format'
 import { CPI_HISTORY_META } from '@/lib/cpi-history'
-import { breadcrumbSchema } from '@/lib/schema'
+import { breadcrumbSchema, explainerArticleSchema } from '@/lib/schema'
 import { reportErrorHref } from '@/lib/contact'
 import { judgeMove } from '@/lib/utils'
 
@@ -48,7 +48,7 @@ export function CpiExplainerView({ explainer }: { explainer: CpiExplainer }) {
 
   return (
     <Column className="pb-16">
-      <JsonLd data={breadcrumbSchema(breadcrumbs)} />
+      <JsonLd data={[breadcrumbSchema(breadcrumbs), explainerArticleSchema(explainer)]} />
       <Breadcrumbs items={breadcrumbs} className="pt-6" />
 
       <PageHeader kicker="CPI explainer" title={explainer.title} lede={explainer.summary}>

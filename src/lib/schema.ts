@@ -2,6 +2,7 @@ import { absoluteUrl, AUTHOR, SITE_NAME, SITE_DESCRIPTION, SITE_LOGO_PATH, SITE_
 import type { DatasetRegistryEntry } from '@/lib/registry'
 import type { Story } from '@/types'
 import type { MunicipalityRecord } from '@/types'
+import type { Explainer } from '@/lib/explainers'
 
 export interface BreadcrumbItem {
   name: string
@@ -149,6 +150,33 @@ export function articleSchema(story: Story) {
     inLanguage: 'en-ZA',
     keywords: story.tags.join(', '),
     articleSection: story.categoryLabel,
+  }
+}
+
+/** Article markup for a release explainer, citing the releases it is based on. */
+export function explainerArticleSchema(explainer: Explainer) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: explainer.title,
+    description: explainer.summary,
+    url: absoluteUrl(`/explainers/${explainer.slug}`),
+    datePublished: explainer.publishedOn,
+    dateModified: explainer.publishedOn,
+    author: {
+      '@type': 'Person',
+      name: AUTHOR.name,
+      url: AUTHOR.url,
+    },
+    publisher: { '@id': `${SITE_URL}/#organization` },
+    inLanguage: 'en-ZA',
+    isBasedOn: explainer.sources.map((s) => ({
+      '@type': 'CreativeWork',
+      name: s.title,
+      ...(s.url ? { url: s.url } : {}),
+      datePublished: s.releasedOn,
+      publisher: { '@type': 'Organization', name: s.publisher },
+    })),
   }
 }
 
