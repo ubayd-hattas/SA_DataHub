@@ -71,8 +71,9 @@ export const RELEASE_CALENDAR: ScheduledRelease[] = [
     period: 'November 2026',
     date: '2026-11-19',
     source: {
-      document: 'SARB MPC meeting date, recorded in the interest-rates dataset notes',
-      location: 'src/data/datasets/interest-rates.json, _meta.notes',
+      // Recorded in src/data/datasets/interest-rates.json (_meta.notes) when the rate was last checked.
+      document: "the SARB's monetary policy meeting dates",
+      location: 'as recorded when SA Data Hub last checked the repo rate',
       checkedOn: '2026-10-19',
     },
     href: '/category/gdp',
