@@ -57,6 +57,27 @@ export interface Statistic {
   province?: Province
   series?: DataSeries[]
   insight?: Insight
+  /** Values the publisher later revised, recorded when the revising release is entered. */
+  revisions?: SeriesRevision[]
+}
+
+/**
+ * One value a publisher revised in a later release. Recorded by hand when the
+ * revising release is entered (docs/RUNBOOK.md), never inferred.
+ */
+export interface SeriesRevision {
+  /** The period whose value changed, as labelled in the series, e.g. "Q1 2026". */
+  period: string
+  from: number
+  to: number
+  /** The release that published the new value, e.g. "Stats SA P0441 Q3 2026". */
+  release: string
+  /** ISO date of that release. */
+  releasedOn: string
+  /** ISO date SA Data Hub recorded the change. */
+  recordedOn: string
+  /** The publisher's reason, quoted with its page, when it gives one. */
+  note?: string
 }
 
 export interface DataSource {
