@@ -169,6 +169,9 @@ def main() -> None:
     def parse_generated(value: str) -> datetime:
         return datetime.strptime(value, '%m/%d/%Y %I:%M:%S %p')
 
+    def fmt(stamp: datetime) -> str:
+        return f'{stamp.hour:02d}:{stamp.minute:02d} on {stamp.day} {stamp:%B %Y}'
+
     stamps = sorted(parse_generated(v) for vs in generated.values() for v in vs)
     output = {
         '_meta': {
@@ -186,7 +189,7 @@ def main() -> None:
                 'The files give every independent candidate the same party name, INDEPENDENT, so votes for two independents in one ward are merged. Wards where that label comes first are counted as won by independents, not as one party.',
                 'PR seats and council sizes are not in these files, so seat totals are not shown.',
                 'The DC 40% ballot elects the district council and is only cast in local municipalities, not metros.',
-                'Results are as the IEC generated them between generated_from and generated_to. They were not checked against final declared results.',
+                f'Results are as the IEC generated them between {fmt(stamps[0])} and {fmt(stamps[-1])}. They were not checked against final declared results.',
             ],
         },
         'national': {
