@@ -62,6 +62,7 @@ export function Footer() {
                 { label: 'Dashboard', href: '/dashboard' },
                 { label: 'Answers', href: '/answers' },
                 { label: 'Methodology', href: '/methodology' },
+                { label: 'Why numbers differ', href: '/why-numbers-differ' },
                 { label: 'About', href: '/about' },
                 { label: 'Changelog', href: '/changelog' },
               ].map(({ label, href }) => (
