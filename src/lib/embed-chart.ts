@@ -14,7 +14,9 @@ export const EMBED_WIDTH = 640
 export const EMBED_HEIGHT = 420
 export const embedHref = (id: string) => `/embed/series/${id}`
 
-const W = 600
+/** Drawing widths: the wide chart, and a narrow one for frames under 480px so text stays readable. */
+export const WIDE = 600
+export const NARROW = 340
 const H = 240
 const PAD = { top: 28, right: 16, bottom: 28, left: 52 }
 
@@ -31,8 +33,8 @@ function niceBounds(min: number, max: number): { lo: number; hi: number; step: n
   return { lo: Math.floor(min / step) * step, hi: Math.ceil(max / step) * step, step }
 }
 
-/** The chart alone, as an SVG string. */
-export function seriesSvg(doc: SeriesDocument): string {
+/** The chart alone, as an SVG string drawn W units wide. */
+export function seriesSvg(doc: SeriesDocument, W: number = WIDE): string {
   const points = doc.points
   const decimals = percentDecimals(points.map((p) => p.value))
   const fmt = (v: number) => formatSeriesValue(v, doc.unit, decimals)
@@ -60,8 +62,13 @@ export function seriesSvg(doc: SeriesDocument): string {
       // A wide invisible target so the hover value is easy to reach.
       const target = `<circle cx="${cx}" cy="${cy}" r="10" class="hit">${tip}</circle>`
       if (!labelled.has(i)) return target
+      const isEnd = i === 0 || i === points.length - 1
       const anchor = i === 0 ? 'start' : i === points.length - 1 ? 'end' : 'middle'
-      return `${target}<circle cx="${cx}" cy="${cy}" r="4" class="dot"/><text x="${cx}" y="${(Number(cy) - 10).toFixed(1)}" text-anchor="${anchor}" class="label">${escapeHtml(fmt(p.value))}</text>`
+      // An end label goes below its point when the line arrives from above, so it doesn't sit on the line.
+      const neighbour = points[i === 0 ? 1 : i - 1]
+      const below = isEnd && i !== peak && neighbour !== undefined && neighbour.value > p.value
+      const ly = below ? Number(cy) + 18 : Number(cy) - 10
+      return `${target}<circle cx="${cx}" cy="${cy}" r="4" class="dot"/><text x="${cx}" y="${ly.toFixed(1)}" text-anchor="${anchor}" class="label">${escapeHtml(fmt(p.value))}</text>`
     })
     .join('')
 
@@ -114,13 +121,16 @@ svg{display:block;width:100%;height:auto;overflow:visible}
 .label{fill:var(--ink);font-size:12px;font-weight:600;font-variant-numeric:tabular-nums}
 .source{margin:8px 0 0;font-size:12px;color:var(--muted)}
 a{color:var(--accent)}
+.narrow{display:none}
+@media (max-width:479px){.wide{display:none}.narrow{display:block}}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 </style>
 </head>
 <body>
 <h1>${escapeHtml(doc.title)}, South Africa</h1>
 <p class="latest"><strong>${escapeHtml(fmt(last.value))}</strong> in ${escapeHtml(last.period)}</p>
-${seriesSvg(doc)}
+<div class="wide">${seriesSvg(doc, WIDE)}</div>
+<div class="narrow">${seriesSvg(doc, NARROW)}</div>
 <table class="sr"><caption>${escapeHtml(doc.title)}, every value</caption><thead><tr><th scope="col">Period</th><th scope="col">Value</th></tr></thead><tbody>${rows}</tbody></table>
 <p class="source">Source: ${escapeHtml(doc.source.publisher)}, ${escapeHtml(doc.source.publication)}, released ${escapeHtml(formatLongDate(doc.source.releasedOn))}. <a href="${page}" target="_blank" rel="noopener">Data and citation on SA Data Hub</a></p>
 </body>
