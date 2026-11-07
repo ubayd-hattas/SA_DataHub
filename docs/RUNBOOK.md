@@ -10,6 +10,7 @@ How to put a new official release on SA Data Hub by hand. One section per datase
 - **Write down the place.** Record the table and the printed page number (not the PDF page) in `source.publicationName` or the explainer's `location`.
 - **Quote, don't explain.** A reason for a change goes on the site only if the release gives it, quoted with its page.
 - **If the release date isn't printed** in a file you hold, the figure waits. Put it in `_meta.pending_statistics` or set `withheld` with the reason, and add it later.
+- **Record revisions.** When a release changes a value the site already shows for an earlier period, update the series point and add an entry to that statistic's `revisions` array: `period`, `from`, `to`, `release`, `releasedOn`, `recordedOn` (today) and, if the release gives a reason, `note` quoted with its page. Series pages show these, and the JSON downloads carry them. `tests/unit/series.test.ts` rejects a revision whose period is not in the series or whose value did not change.
 - **One pull request per release.** Branch from `main`, and don't merge your own PR without looking at the Vercel preview.
 
 ### Checks (run for every release)
@@ -105,7 +106,7 @@ Add its id to `statIds` in `src/lib/registry.ts` and to `GOOD_DIRECTION_BY_STAT`
 
 | File | What |
 |---|---|
-| `src/data/datasets/gdp.json` | `gdp-growth` (quarter on quarter, seasonally adjusted), `gdp-annual-growth` (in the fourth-quarter release), `gdp-nominal`, `gdp-per-capita`. Stats SA revises earlier quarters: update revised series points too, and say so in the log. |
+| `src/data/datasets/gdp.json` | `gdp-growth` (quarter on quarter, seasonally adjusted), `gdp-annual-growth` (in the fourth-quarter release), `gdp-nominal`, `gdp-per-capita`. Stats SA revises earlier quarters: update revised series points, add each change to `revisions` on the statistic, and say so in the log. |
 | `src/data/update-history.ts` | Log entry, listing any revised quarters with old and new values. |
 
 **Explainer:** there is no GDP explainer template yet. `docs/PRODUCT_DIRECTION.md` plans one (the number, what moved it from the industry breakdown, a quote, what it leaves out). Until it exists, update the dataset and the GDP story (`gdp-growth-slowdown` in `src/data/stories.ts`). In the story, quote the industry contributions with their page rather than explaining them.
