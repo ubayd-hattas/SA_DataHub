@@ -58,3 +58,22 @@ describe('series pages', () => {
   })
 
 })
+
+describe('series downloads', () => {
+  it('serves JSON and CSV for every series and 404s anything else', async () => {
+    const { GET, generateStaticParams } = await import('@/app/data/series/[file]/route')
+    expect(generateStaticParams()).toHaveLength(allSeries().length * 2)
+    const call = (file: string) => GET(new Request(`http://x/data/series/${file}`), { params: Promise.resolve({ file }) })
+
+    const json = await call('unemployment-national.json')
+    expect(json.headers.get('Content-Type')).toBe('application/json; charset=utf-8')
+    expect(json.headers.get('Access-Control-Allow-Origin')).toBe('*')
+    expect((await json.json()).id).toBe('unemployment-national')
+
+    const csv = await call('unemployment-national.csv')
+    expect(csv.headers.get('Content-Type')).toBe('text/csv; charset=utf-8')
+
+    expect((await call('no-such-series.json')).status).toBe(404)
+    expect((await call('unemployment-national.xml')).status).toBe(404)
+  })
+})
