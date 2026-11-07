@@ -45,3 +45,14 @@ describe('public dataset notes', () => {
     expect(findMarkers(html)).toEqual([])
   })
 })
+
+describe('CSV attribution header', () => {
+  it('names the real site domain', async () => {
+    const { buildCsvContent, buildProvinceCsvContent } = await import('@/lib/export')
+    const { statistics, provinces } = await import('@/data/mock')
+    for (const csv of [buildCsvContent(statistics.slice(0, 1), 'Test'), buildProvinceCsvContent(provinces, 'Test')]) {
+      expect(csv).toContain('https://sadatahub.tech')
+      expect(csv).not.toContain('sadatahub.co.za')
+    }
+  })
+})

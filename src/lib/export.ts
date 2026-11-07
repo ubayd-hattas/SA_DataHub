@@ -16,6 +16,7 @@
  */
 
 import { ProvinceData, Statistic } from '@/types'
+import { SITE_URL } from '@/lib/seo'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -83,8 +84,8 @@ export function buildCsvContent(
 
   // Attribution comment header (valid CSV — most parsers skip # rows)
   if (includeHeader) {
-    rows.push(`# SA Data Hub — ${datasetLabel} — Downloaded ${today} — sadatahub.co.za`)
-    rows.push(`# Data sourced from official South African government publications. See sadatahub.co.za/methodology`)
+    rows.push(`# SA Data Hub, ${datasetLabel}. Downloaded ${today} from ${SITE_URL}`)
+    rows.push(`# Data from official South African publications. How it is checked: ${SITE_URL}/methodology`)
   }
 
   if (mode === 'series') {
@@ -229,8 +230,8 @@ export function buildProvinceCsvContent(
   const rows: string[] = []
 
   if (includeHeader) {
-    rows.push(`# SA Data Hub — ${datasetLabel} — Downloaded ${today} — sadatahub.co.za`)
-    rows.push(`# Data sourced from official South African government publications. See sadatahub.co.za/methodology`)
+    rows.push(`# SA Data Hub, ${datasetLabel}. Downloaded ${today} from ${SITE_URL}`)
+    rows.push(`# Data from official South African publications. How it is checked: ${SITE_URL}/methodology`)
   }
 
   rows.push(
