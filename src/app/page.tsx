@@ -115,6 +115,10 @@ export default function HomePage() {
           <Link href="/explainers" className={linkClass}>
             All explainers
           </Link>
+          {' · '}
+          <Link href="/calendar" className={linkClass}>
+            When the next figures come out
+          </Link>
         </p>
         <div className="mt-8 border-t border-rule pt-6">
           <p className="text-caption font-medium text-muted">Local elections</p>
