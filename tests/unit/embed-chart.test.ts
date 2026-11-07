@@ -29,6 +29,12 @@ describe('embed chart', () => {
     }
   })
 
+  it('draws a narrow version that fits 340 units', () => {
+    const svg = seriesSvg(doc, 340)
+    expect(svg).toContain('viewBox="0 0 340 240"')
+    for (const m of svg.matchAll(/cx="([-\d.]+)"/g)) expect(Number(m[1])).toBeLessThanOrEqual(340)
+  })
+
   it('builds a page with the source, a link back, a table and no script', () => {
     const html = seriesEmbedHtml(doc)
     expect(html).toContain('<link rel="canonical" href="https://sadatahub.tech/series/cpi-headline">')
@@ -36,6 +42,8 @@ describe('embed chart', () => {
     expect(html).toContain('<table class="sr">')
     expect(html).toContain('prefers-color-scheme:dark')
     expect(html).not.toContain('<script')
+    expect(html).toContain('<div class="wide"><svg viewBox="0 0 600 240"')
+    expect(html).toContain('<div class="narrow"><svg viewBox="0 0 340 240"')
   })
 
   it('escapes text that could break the markup', () => {
@@ -53,5 +61,15 @@ describe('embed route', () => {
     expect(res.headers.get('X-Robots-Tag')).toBe('noindex')
     expect(await res.text()).toContain('GDP growth')
     expect((await GET(new Request('http://x/'), { params: Promise.resolve({ id: 'nope' }) })).status).toBe(404)
+  })
+})
+
+describe('embed snippet on the series page', () => {
+  it('gives an iframe pointing at the embed route', async () => {
+    const { renderToStaticMarkup } = await import('react-dom/server')
+    const { default: SeriesPage } = await import('@/app/series/[id]/page')
+    const html = renderToStaticMarkup(await SeriesPage({ params: Promise.resolve({ id: 'gdp-growth' }) }))
+    expect(html).toContain('Embed this chart')
+    expect(html).toContain('&lt;iframe src=&quot;https://sadatahub.tech/embed/series/gdp-growth&quot;')
   })
 })

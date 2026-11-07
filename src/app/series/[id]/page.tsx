@@ -8,10 +8,11 @@ import { SourceLine } from '@/components/editorial/SourceLine'
 import { Breadcrumbs } from '@/components/seo/Breadcrumbs'
 import { JsonLd } from '@/components/seo/JsonLd'
 import { getCategoryById } from '@/data/mock'
+import { EMBED_HEIGHT, embedHref } from '@/lib/embed-chart'
 import { formatLongDate } from '@/lib/explainers'
 import { formatSeriesValue, percentDecimals } from '@/lib/format'
 import { breadcrumbSchema, seriesDatasetSchema } from '@/lib/schema'
-import { buildPageMetadata } from '@/lib/seo'
+import { absoluteUrl, buildPageMetadata } from '@/lib/seo'
 import {
   allSeries,
   getSeries,
@@ -208,6 +209,21 @@ export default async function SeriesPage({ params }: SeriesPageProps) {
 
       <Section id="cite" title="Cite this series">
         <p className="rounded-lg border border-rule bg-subtle p-4 font-mono text-caption text-ink">{doc.citation}</p>
+      </Section>
+
+      <Section id="embed" title="Embed this chart">
+        <p className="text-body text-ink">
+          Paste this into a web page or article to show the chart with its source. It updates when new figures are
+          added and loads no scripts.
+        </p>
+        <pre className="mt-4 overflow-x-auto rounded-lg border border-rule bg-subtle p-4 font-mono text-caption text-ink">
+          <code>{`<iframe src="${absoluteUrl(embedHref(stat.id))}" title="${stat.title}, South Africa" width="100%" height="${EMBED_HEIGHT}" style="border:0" loading="lazy"></iframe>`}</code>
+        </pre>
+        <p className="mt-3 text-small">
+          <a href={embedHref(stat.id)} className={linkClass}>
+            Preview the embedded chart
+          </a>
+        </p>
       </Section>
 
       <Section id="context" title="More on this figure">
