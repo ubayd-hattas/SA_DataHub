@@ -197,6 +197,54 @@ export const STORIES: Story[] = [
 
   // ── Story 5: Education ─────────────────────────────────────────────────────
   {
+    slug: 'matric-results-2025',
+    title: 'Matric 2025: 88.0% passed, and 345 857 qualified for a degree',
+    subtitle: 'What the Department of Basic Education\'s 2025 report shows about passes, provinces and mathematics.',
+    category: 'education',
+    categoryLabel: 'Education',
+    readingTimeMinutes: 4,
+    publishedDate: '2026-11-07',
+    lastUpdated: '2026-11-07',
+    featured: false,
+    coverEmoji: '🎓',
+    summary: '746 110 full-time candidates wrote the 2025 National Senior Certificate and 87.98% passed, up from 87.26% in 2024. KwaZulu-Natal had the highest provincial pass rate. Fewer candidates reached 30% in Mathematics than in 2024.',
+    relatedStatIds: ['matric-pass-rate', 'higher-education-enrolment'],
+    relatedSlugs: ['matric-results-2024', 'south-africa-unemployment-crisis'],
+    tags: ['education', 'matric', 'DBE', 'NSC', 'provinces', 'mathematics'],
+    dataAsOf: { note: "This story is about the November 2025 NSC exams, from the Department of Basic Education's 2025 NSC Examination Report. The 2026 results are due in January 2027.", topicPath: '/category/education', topicLabel: 'Education' },
+    sections: [
+      {
+        id: 'the-result',
+        heading: 'What the 88.0% counts',
+        body: '901 790 candidates registered for the November 2025 exams: 764 014 full-time and 137 776 part-time. The pass rate is worked out on the full-time candidates who wrote, 746 110 of them.\n\nThe Department of Basic Education (DBE) reports that 656 415 passed, a rate of 87.98%, up from 87.26% in 2024 (2025 NSC Examination Report, Executive summary and Table 1, page 6). Its chart of earlier years puts the rate at 81.3% in 2019 and 76.2% in 2020 (Figure 1, page 6).',
+        statCallouts: ['matric-pass-rate'],
+        highlight: '87.98% of the 746 110 full-time candidates who wrote passed.',
+      },
+      {
+        id: 'pass-types',
+        heading: 'Which kind of pass',
+        body: 'A pass comes in levels. The highest, a Bachelor pass, is the minimum for admission to a university degree. In 2025, 345 857 candidates achieved one, 46.4% of those who wrote. The DBE says this is the most since 1996, when the first national exam was written (page 7).\n\nAnother 209 292 (28.1%) achieved a Diploma pass and 100 729 (13.5%) a Higher Certificate pass (Table 2, page 8).',
+        highlight: '345 857 Bachelor passes, 46.4% of those who wrote.',
+      },
+      {
+        id: 'provinces',
+        heading: 'Provinces',
+        body: 'KwaZulu-Natal had the highest pass rate, 90.60%, and the highest share of Bachelor passes, 52.0%. Free State (89.17%) and Gauteng (89.00%) came next. Eastern Cape had the lowest pass rate, 84.17%, and Northern Cape the lowest share of Bachelor passes, 39.3% (Table 2, page 8).\n\nThe other provinces: North West 88.49%, Western Cape 88.14%, Northern Cape 87.77%, Mpumalanga 86.55% and Limpopo 86.15%.',
+      },
+      {
+        id: 'mathematics',
+        heading: 'Mathematics went the other way',
+        body: 'The report lists ten high-enrolment subjects. In seven, a higher share of candidates reached 30% than in 2024. Mathematics fell: 64.0% of the 254 415 who wrote it reached 30%, down from 69.1% in 2024. Accounting (77.9%, from 81.2%) and Agricultural Science (81.2%, from 86.9%) also fell (Table 3, page 8).\n\nNearly twice as many candidates wrote Mathematical Literacy (477 160) as Mathematics, and 86.2% of them reached 30%.',
+        highlight: 'Mathematics: 64.0% reached 30% in 2025, down from 69.1% in 2024.',
+      },
+      {
+        id: 'two-totals',
+        heading: 'A note on the totals',
+        body: 'The report gives two slightly different national totals. The executive summary and Table 1 give 656 415 passes (87.98%). Table 2, which breaks passes down by type, gives 656 221 (87.95%), and its provincial rows add up to that figure. The provincial numbers in this story are from Table 2. The headline rate is the 87.98% the DBE announced.',
+      },
+    ],
+  },
+  {
     slug: 'matric-results-2024',
     title: 'Matric 2024: an 87.3% pass rate and persistent inequalities',
     subtitle: 'The pass rate was 87.3%. The story behind the number is more complicated.',
@@ -211,7 +259,7 @@ export const STORIES: Story[] = [
     relatedStatIds: ['matric-pass-rate', 'education-literacy', 'higher-education-enrolment'],
     relatedSlugs: ['south-africa-unemployment-crisis'],
     tags: ['education', 'matric', 'DBE', 'NSC', 'inequality'],
-    dataAsOf: { note: "This story is about the 2024 matric results. The 2025 national result has since been announced.", topicPath: '/category/education', topicLabel: 'Education' },
+    dataAsOf: { note: "This story is about the 2024 matric results. The 2025 results are in the story Matric 2025: 88.0% passed, and 345 857 qualified for a degree.", topicPath: '/category/education', topicLabel: 'Education' },
     sections: [
       {
         id: 'the-record',
