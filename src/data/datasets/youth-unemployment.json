@@ -4,8 +4,8 @@
     "source_url": "https://www.statssa.gov.za/?page_id=1854&PPN=P0211",
     "update_frequency": "Quarterly",
     "last_verified": "2026-10-19",
-    "notes": "Youth unemployment (ages 15–34 and 15–24) from QLFS Q2 2026 (published 2026-08-11). 15–24 values are published in Table 2.2. 15–34 Q2 2026 (47.4%) and Q1 2026 (45.9%, implied by the official +1.5 pp change) are stated by Stats SA; 15–34 for Q2–Q4 2025 are DERIVED from Table 2.2 counts (unemployed 15–24 + 25–34 over labour force 15–24 + 25–34), rounded to 0.1. REVIEW REQUIRED: (1) youth-unemployment-expanded is unchanged — Stats SA stopped reporting the expanded rate after Q2 2025, so its Q3–Q4 2025 values cannot be traced to an official release; (2) youth-neet-rate is unchanged and annual, whereas Stats SA publishes a quarterly NEET rate for 15–24 (36.4% in Q2 2026, +1.2 pp year on year); (3) series points before Q2 2025 were not re-verified.",
-    "public_notes": "Youth unemployment for ages 15 to 34 and 15 to 24, from QLFS Q2 2026 (published 11 August 2026), Table 2.2. The 15 to 34 rate is calculated by SA Data Hub from the published counts for ages 15 to 24 and 25 to 34, as are its values for Q2 to Q4 2025. The expanded youth unemployment rate and the NEET rate are not shown: their source, QLFS Q4 2025, is not in the files SA Data Hub holds, so they cannot be checked. Points before Q2 2025 have not yet been rechecked."
+    "notes": "Youth unemployment (ages 15–34 and 15–24) from QLFS Q2 2026 (published 2026-08-11). 15–24 values are published in Table 2.2. 15–34 Q2 2026 (47.4%) and Q1 2026 (45.9%, implied by the official +1.5 pp change) are stated by Stats SA; 15–34 for Q2–Q4 2025 are DERIVED from Table 2.2 counts (unemployed 15–24 + 25–34 over labour force 15–24 + 25–34), rounded to 0.1. REVIEW REQUIRED: (1) youth-unemployment-expanded is unchanged — Stats SA stopped reporting the expanded rate after Q2 2025, so its Q3–Q4 2025 values cannot be traced to an official release; (2) youth-neet-rate is the quarterly NEET rate for 15–24 from QLFS Q4 2025 (34.0%, section 4.2, page 8; series from Table 7b, page 82), shown as the maintainer asked on 2026-10-28; QLFS Q2 2026 prints 36.4% (page 8); (3) series points before Q2 2025 were not re-verified.",
+    "public_notes": "Youth unemployment for ages 15 to 34 and 15 to 24, from QLFS Q2 2026 (published 11 August 2026), Table 2.2. The 15 to 34 rate is calculated by SA Data Hub from the published counts for ages 15 to 24 and 25 to 34, as are its values for Q2 to Q4 2025. The NEET rate for youth aged 15–24 years is from QLFS Q4 2025 (published 17 February 2026), page 8 and Table 7b, page 82. The expanded youth unemployment rate is not shown: Stats SA does not publish an expanded rate in the QLFS releases SA Data Hub holds. Points before Q2 2025 have not yet been rechecked."
   },
   "statistics": [
     {
@@ -212,7 +212,7 @@
     },
     {
       "id": "youth-unemployment-expanded",
-      "withheld": "Not shown: its source, QLFS Q4 2025, is not in the files SA Data Hub holds, so the release date cannot be confirmed, and Stats SA no longer publishes an expanded rate in the QLFS releases checked (Q1 and Q2 2026). Checked 2026-10-28.",
+      "withheld": "Not shown: neither QLFS Q4 2025 nor QLFS Q2 2026, the releases SA Data Hub holds, prints an expanded youth unemployment rate, so this value cannot be traced to a release. Checked 2026-10-28.",
       "categoryId": "unemployment",
       "title": "Expanded youth unemployment rate, ages 15 to 34",
       "value": "60.8%",
@@ -304,59 +304,53 @@
     },
     {
       "id": "youth-neet-rate",
-      "withheld": "Not shown: its source, QLFS Q4 2025, is not in the files SA Data Hub holds, so the value and release date cannot be confirmed. Checked 2026-10-28.",
       "categoryId": "unemployment",
-      "title": "Not in employment, education or training, ages 15 to 24",
-      "value": "37.2%",
-      "rawValue": 37.2,
+      "title": "NEET rate for youth aged 15–24 years",
+      "value": "34.0%",
+      "rawValue": 34.0,
       "unit": "%",
-      "change": -0.4,
-      "changeLabel": "from 2024",
-      "trend": "down",
-      "description": "Percentage of youth aged 15–24 who are Not in Employment, Education, or Training (NEET). It counts young people who are neither working nor studying or training.",
+      "change": 0.5,
+      "changeLabel": "from Q4 2024 (33.5%)",
+      "trend": "up",
+      "description": "Share of young people aged 15–24 who are not in employment, education or training (NEET). Stats SA: \"There were about 10,3 million young people aged 15–24 years in Q4: 2025, of which 34,0% were not in employment, education or training. This is 0,5 of a percentage point higher than the NEET rate in Q4: 2024.\" (QLFS Q4 2025, page 8).",
       "source": {
         "name": "Statistics South Africa",
         "shortName": "Stats SA",
         "url": "https://www.statssa.gov.za/?page_id=1854&PPN=P0211",
-        "release": "QLFS Q4 2025"
+        "release": "QLFS Q4 2025 (P0211), published 2026-02-17",
+        "publicationName": "Quarterly Labour Force Survey, Quarter 4: 2025 (P0211), section 4.2, page 8, and Table 7b, page 82",
+        "publicationDate": "2026-02-17"
       },
-      "lastUpdated": "2026-02-18",
+      "lastUpdated": "2026-02-17",
       "series": [
         {
-          "name": "NEET Rate (15–24)",
+          "name": "NEET rate for youth aged 15–24 years",
           "unit": "%",
           "data": [
             {
-              "label": "2019",
-              "value": 34.5
+              "label": "Q4 2024",
+              "value": 33.5
             },
             {
-              "label": "2020",
-              "value": 41.2
+              "label": "Q1 2025",
+              "value": 37.1
             },
             {
-              "label": "2021",
-              "value": 40.1
+              "label": "Q2 2025",
+              "value": 35.2
             },
             {
-              "label": "2022",
-              "value": 39.3
+              "label": "Q3 2025",
+              "value": 33.9
             },
             {
-              "label": "2023",
-              "value": 38.7
-            },
-            {
-              "label": "2024",
-              "value": 37.6
-            },
-            {
-              "label": "2025",
-              "value": 37.2
+              "label": "Q4 2025",
+              "value": 34.0
             }
           ]
         }
-      ]
+      ],
+      "checkedOn": "2026-10-28"
     }
   ]
 }

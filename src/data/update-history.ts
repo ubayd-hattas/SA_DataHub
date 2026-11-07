@@ -25,6 +25,15 @@ export interface UpdateHistoryEntry {
 export const UPDATE_HISTORY: UpdateHistoryEntry[] = [
   {
     date: '2026-10-28',
+    datasetId: 'youth-unemployment',
+    datasetLabel: 'Youth Unemployment',
+    type: 'correction',
+    summary:
+      'The NEET rate is shown again, now from QLFS Q4 2025 (released 17 February 2026), which SA Data Hub holds: "NEET rate for youth aged 15–24 years", 34.0% in Q4 2025, up 0.5 of a percentage point from Q4 2024 (section 4.2, page 8). The quarterly series from Q4 2024 is from Table 7b, page 82. The old annual series (2019 to 2025) could not be traced to a release and was replaced.',
+    changes: [{ item: 'NEET rate, ages 15 to 24', from: '37.2% (2025, not shown)', to: '34.0% (Q4 2025)' }],
+  },
+  {
+    date: '2026-10-28',
     datasetId: 'census',
     datasetLabel: 'Census 2022 municipalities',
     type: 'correction',

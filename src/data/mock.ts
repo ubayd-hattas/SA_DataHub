@@ -39,6 +39,8 @@ import populationData      from './datasets/population.json'
 import housingData         from './datasets/housing.json'
 import censusData          from './datasets/census.json'
 import provincesData       from './datasets/provinces.json'
+import censusProvinceRows  from './census-provinces.json'
+import { housingFromCensusRow } from '@/lib/province-housing'
 import municipalitiesData  from './datasets/municipalities.json'
 import youthUnemployment   from './datasets/youth-unemployment.json'
 import interestRatesData   from './datasets/interest-rates.json'
@@ -143,7 +145,12 @@ export const statistics: Statistic[] = allStatistics.filter((s) => !s.withheld)
 
 // ─── Province data ────────────────────────────────────────────────────────────
 
-export const provinces: ProvinceData[] = provincesData.provinces as ProvinceData[]
+/** Housing comes from the province rows of Provinces at a glance, not from provinces.json. */
+export const provinces: ProvinceData[] = provincesData.provinces.map((p) => {
+  const row = censusProvinceRows.find((r) => r.name === p.name)
+  if (!row) throw new Error(`No Provinces at a glance row for ${p.name}`)
+  return { ...p, stats: { ...p.stats, housing: housingFromCensusRow(row) } } as ProvinceData
+})
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 

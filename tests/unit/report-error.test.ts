@@ -14,8 +14,8 @@ import MethodologyPage from '@/app/methodology/page'
 describe('report an error', () => {
   it('builds a pre-filled report for the page', () => {
     const href = reportErrorHref('/explainers/cpi-2026-09')
-    if (REPORT_ERROR_EMAIL) expect(href).toMatch(/^mailto:[^@]+@ubayd\.me\?/)
-    else expect(href.startsWith(`${REPO_URL}/issues/new?`)).toBe(true)
+    expect(REPORT_ERROR_EMAIL).toBe('uhattas@gmail.com')
+    expect(href.startsWith('mailto:uhattas@gmail.com?subject=')).toBe(true)
     expect(decodeURIComponent(href)).toContain('https://sadatahub.tech/explainers/cpi-2026-09')
   })
 
