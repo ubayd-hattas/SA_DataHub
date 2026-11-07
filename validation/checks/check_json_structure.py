@@ -35,6 +35,11 @@ def run() -> CheckResult:
             if "municipalities" not in data:
                 result.add(Severity.FAIL, f"{slug}.json missing 'municipalities' array.")
                 errors += 1
+        elif slug.startswith("elections-"):
+            for key in ("_meta", "national", "municipalities"):
+                if key not in data:
+                    result.add(Severity.FAIL, f"{slug}.json missing '{key}'.")
+                    errors += 1
         else:
             if "statistics" not in data:
                 result.add(Severity.FAIL, f"{slug}.json missing 'statistics' array.")
