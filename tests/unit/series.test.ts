@@ -77,3 +77,18 @@ describe('series downloads', () => {
     expect((await call('unemployment-national.xml')).status).toBe(404)
   })
 })
+
+describe('series page', () => {
+  it('renders every value, the downloads, the citation and Dataset markup in the HTML', async () => {
+    const { renderToStaticMarkup } = await import('react-dom/server')
+    const { default: SeriesPage, generateStaticParams } = await import('@/app/series/[id]/page')
+    expect(generateStaticParams()).toHaveLength(allSeries().length)
+    const stat = getSeries('cpi-headline')!
+    const html = renderToStaticMarkup(await SeriesPage({ params: Promise.resolve({ id: stat.id }) }))
+    for (const p of seriesPointsFor(stat)) expect(html).toContain(`>${p.period}</th>`)
+    expect(html).toContain('href="/data/series/cpi-headline.csv"')
+    expect(html).toContain('href="/data/series/cpi-headline.json"')
+    expect(html).toContain('"@type":"Dataset"')
+    expect(html).toContain('Cite this series')
+  })
+})

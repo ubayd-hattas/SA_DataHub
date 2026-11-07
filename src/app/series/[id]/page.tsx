@@ -1,0 +1,186 @@
+import Link from 'next/link'
+import type { Metadata } from 'next'
+import { notFound } from 'next/navigation'
+import { StatChart } from '@/components/charts/StatChart'
+import { Change } from '@/components/editorial/NumberBlock'
+import { Column, PageHeader, Prose, Section, linkClass } from '@/components/editorial/Section'
+import { SourceLine } from '@/components/editorial/SourceLine'
+import { Breadcrumbs } from '@/components/seo/Breadcrumbs'
+import { JsonLd } from '@/components/seo/JsonLd'
+import { getCategoryById } from '@/data/mock'
+import { formatSeriesValue, percentDecimals } from '@/lib/format'
+import { breadcrumbSchema, seriesDatasetSchema } from '@/lib/schema'
+import { buildPageMetadata } from '@/lib/seo'
+import {
+  allSeries,
+  getSeries,
+  SERIES_PATH,
+  seriesCsvHref,
+  seriesDocument,
+  seriesHref,
+  seriesJsonHref,
+} from '@/lib/series'
+import { chartTakeaway, describeChange, explainerForStat, formatStatistic, latestPeriod } from '@/lib/stat-summary'
+
+interface SeriesPageProps {
+  params: Promise<{ id: string }>
+}
+
+export const dynamicParams = false
+
+export function generateStaticParams() {
+  return allSeries().map((s) => ({ id: s.id }))
+}
+
+export async function generateMetadata({ params }: SeriesPageProps): Promise<Metadata> {
+  const stat = getSeries((await params).id)
+  if (!stat) return {}
+  const period = latestPeriod(stat)
+  return buildPageMetadata({
+    title: `${stat.title}, South Africa: ${formatStatistic(stat)}${period ? ` (${period})` : ''}`,
+    description: `${stat.title} for South Africa from ${stat.source.shortName || stat.source.name}: every value, with CSV and JSON downloads and a citation. ${stat.description}`.slice(0, 300),
+    path: seriesHref(stat.id),
+  })
+}
+
+export default async function SeriesPage({ params }: SeriesPageProps) {
+  const stat = getSeries((await params).id)
+  if (!stat) notFound()
+
+  const doc = seriesDocument(stat)
+  const category = getCategoryById(stat.categoryId)
+  const period = latestPeriod(stat)
+  const change = describeChange(stat)
+  const takeaway = chartTakeaway(stat)
+  const explainer = explainerForStat(stat)
+  const decimals = percentDecimals(doc.points.map((p) => p.value))
+  const fmt = (v: number) => formatSeriesValue(v, doc.unit, decimals)
+  const downloads = { csv: seriesCsvHref(stat.id), json: seriesJsonHref(stat.id) }
+
+  const source = (
+    <SourceLine
+      publisher={doc.source.publisher}
+      title={doc.source.publication}
+      releasedOn={doc.source.releasedOn}
+      checkedOn={doc.checkedOn}
+    />
+  )
+
+  const breadcrumbs = [
+    { name: 'Home', path: '/' },
+    { name: 'Data series', path: SERIES_PATH },
+    { name: stat.title, path: seriesHref(stat.id) },
+  ]
+
+  return (
+    <Column className="pb-16">
+      <JsonLd data={[breadcrumbSchema(breadcrumbs), seriesDatasetSchema(doc, downloads)]} />
+      <Breadcrumbs items={breadcrumbs} className="pt-6" />
+      <PageHeader kicker={`Data series${category ? `, ${category.label}` : ''}`} title={stat.title}>
+        <p className="mt-4 text-body text-ink">
+          <span className="mr-2 font-display text-h2 font-semibold tabular-nums">{formatStatistic(stat)}</span>
+          {period && `${period}. `}
+          {change && <Change tone={change.tone}>{change.text}</Change>}
+        </p>
+        <p className="mt-3 text-small text-muted">
+          Series id <code className="font-mono">{stat.id}</code>. This page and its downloads keep the same address when
+          new figures are added.
+        </p>
+      </PageHeader>
+
+      <div className="border-t border-rule py-10">
+        {takeaway ? (
+          <StatChart title={takeaway} points={stat.series![0].data} unit={doc.unit} description={stat.description} source={source} />
+        ) : (
+          <div className="space-y-3">
+            <p className="text-body text-ink">{stat.description}</p>
+            {source}
+          </div>
+        )}
+      </div>
+
+      <Section id="values" title="Every value">
+        <div className="overflow-x-auto">
+          <table className="w-full max-w-md text-left text-small">
+            <caption className="sr-only">
+              {stat.title}, every value on SA Data Hub, {doc.unit}
+            </caption>
+            <thead>
+              <tr className="border-b border-ink text-caption text-muted">
+                <th scope="col" className="py-2 pr-3 font-medium">Period</th>
+                <th scope="col" className="py-2 pl-2 text-right font-medium">Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[...doc.points].reverse().map((p) => (
+                <tr key={p.period} className="border-t border-rule">
+                  <th scope="row" className="py-2 pr-3 font-normal text-ink">{p.period}</th>
+                  <td className="py-2 pl-2 text-right tabular-nums text-ink">{fmt(p.value)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </Section>
+
+      <Section id="download" title="Download and use">
+        <ul className="space-y-2 text-body">
+          <li>
+            <a href={downloads.csv} className={linkClass}>
+              Download CSV
+            </a>{' '}
+            <span className="text-small text-muted">for Excel, Google Sheets or Datawrapper</span>
+          </li>
+          <li>
+            <a href={downloads.json} className={linkClass}>
+              Download JSON
+            </a>{' '}
+            <span className="text-small text-muted">for code; the address stays the same and any site may read it</span>
+          </li>
+        </ul>
+        <Prose className="mt-6 text-small">
+          <p>
+            You may reuse this series under{' '}
+            <a href={doc.license} className={linkClass}>
+              CC BY 4.0
+            </a>
+            . Credit {doc.source.publisher} as the original source and SA Data Hub as the place you got it.
+          </p>
+        </Prose>
+      </Section>
+
+      <Section id="cite" title="Cite this series">
+        <p className="rounded-lg border border-rule bg-subtle p-4 font-mono text-caption text-ink">{doc.citation}</p>
+      </Section>
+
+      <Section id="context" title="More on this figure">
+        <ul className="space-y-2 text-body">
+          {category && (
+            <li>
+              <Link href={`/category/${category.id}#${stat.id}`} className={linkClass}>
+                {category.label}: all related figures
+              </Link>
+            </li>
+          )}
+          {explainer && (
+            <li>
+              <Link href={`/explainers/${explainer.slug}`} className={linkClass}>
+                {explainer.title}: what moved it
+              </Link>
+            </li>
+          )}
+          <li>
+            <Link href="/methodology" className={linkClass}>
+              How SA Data Hub checks every figure
+            </Link>
+          </li>
+          <li>
+            <Link href="/calendar" className={linkClass}>
+              When the next figures come out
+            </Link>
+          </li>
+        </ul>
+      </Section>
+    </Column>
+  )
+}
