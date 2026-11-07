@@ -199,7 +199,7 @@ export default function CensusChangeHub() {
             the publication on 28 October 2026.
           </p>
           <p>
-            The 2011 and 2022 figures cover the same areas. {BOUNDARY_QUOTE.publisher}, {BOUNDARY_QUOTE.title}, page{' '}
+            The 2011 and 2022 figures cover the same areas. {BOUNDARY_QUOTE.publisher}, {BOUNDARY_QUOTE.title} ({BOUNDARY_QUOTE.code}), page{' '}
             {BOUNDARY_QUOTE.page}: &ldquo;{BOUNDARY_QUOTE.text}&rdquo;. Annexure 1 of Provinces at a glance lists the
             boundary changes between 2011 and 2018.
           </p>

@@ -50,7 +50,7 @@ export const STORIES: Story[] = [
       {
         id: 'causes',
         heading: 'What drives such high unemployment?',
-        body: 'Several deep factors are at work. The mismatch between the skills employers need and those job-seekers have is severe. Apartheid-era education produced enormous inequality in outcomes, and despite progress, that legacy persists. The 2024 matric pass rate of 87.3% is a record high, but the quality of education — measured by literacy and numeracy at primary level — remains a serious concern.\n\nLabour market rigidity also plays a role. High minimum wages relative to productivity in certain sectors can reduce hiring. South Africa\'s labour laws are designed to protect workers, but critics argue they sometimes discourage formal-sector job creation.\n\nFinally, energy insecurity — the load-shedding crisis that peaked in 2022–23 — inflicted severe damage on small businesses, which are normally the primary engine of job creation. The situation has improved since late 2024, but the damage to the small business sector was substantial.',
+        body: 'Several deep factors are at work. The mismatch between the skills employers need and those job-seekers have is severe. Apartheid-era education produced enormous inequality in outcomes, and despite progress, that legacy persists. The 2024 matric pass rate was 87.3%, but the quality of education, measured by literacy and numeracy at primary level, remains a serious concern.\n\nLabour market rigidity also plays a role. High minimum wages relative to productivity in certain sectors can reduce hiring. South Africa\'s labour laws are designed to protect workers, but critics argue they sometimes discourage formal-sector job creation.\n\nFinally, energy insecurity — the load-shedding crisis that peaked in 2022–23 — inflicted severe damage on small businesses, which are normally the primary engine of job creation. The situation has improved since late 2024, but the damage to the small business sector was substantial.',
       },
       {
         id: 'progress',
@@ -198,8 +198,8 @@ export const STORIES: Story[] = [
   // ── Story 5: Education ─────────────────────────────────────────────────────
   {
     slug: 'matric-results-2024',
-    title: 'Matric 2024: Record Pass Rate, Persistent Inequalities',
-    subtitle: 'The 87.3% pass rate is a record high — but the story behind the number is more complicated.',
+    title: 'Matric 2024: an 87.3% pass rate and persistent inequalities',
+    subtitle: 'The pass rate was 87.3%. The story behind the number is more complicated.',
     category: 'education',
     categoryLabel: 'Education',
     readingTimeMinutes: 4,
@@ -207,7 +207,7 @@ export const STORIES: Story[] = [
     lastUpdated: '2026-01-20',
     featured: false,
     coverEmoji: '🎓',
-    summary: 'South Africa\'s 2024 matric pass rate hit a record 87.3%, up from 82.9% in 2023. That\'s genuinely good news. But the rate masks large disparities between provinces, school types, and subjects.',
+    summary: 'South Africa\'s 2024 matric pass rate was 87.3%, up from 82.9% in 2023. The rate masks large disparities between provinces, school types, and subjects.',
     relatedStatIds: ['matric-pass-rate', 'education-literacy', 'higher-education-enrolment'],
     relatedSlugs: ['south-africa-unemployment-crisis'],
     tags: ['education', 'matric', 'DBE', 'NSC', 'inequality'],
@@ -215,10 +215,10 @@ export const STORIES: Story[] = [
     sections: [
       {
         id: 'the-record',
-        heading: 'A record worth celebrating — carefully',
-        body: 'The 2024 National Senior Certificate pass rate of 87.3%. More than one million candidates wrote the exams, and a record 47.8% achieved a bachelor\'s degree pass — meaning they qualified for university entrance.\n\nThat is genuine progress. The sustained upward trend since 2015, with the exception of the COVID-disrupted 2020 cohort, reflects real improvements in teaching quality, curriculum support, and school management in many parts of the country.',
+        heading: 'What the 87.3% counts',
+        body: 'The 2024 National Senior Certificate pass rate was 87.3%. More than one million candidates wrote the exams, and 47.8% achieved a bachelor\'s degree pass — meaning they qualified for university entrance.\n\nThat is genuine progress. The sustained upward trend since 2015, with the exception of the COVID-disrupted 2020 cohort, reflects real improvements in teaching quality, curriculum support, and school management in many parts of the country.',
         statCallouts: ['matric-pass-rate'],
-        highlight: 'A record 87.3% pass rate — but what counts as a "pass" matters enormously.',
+        highlight: 'An 87.3% pass rate. What counts as a "pass" matters.',
       },
       {
         id: 'what-counts',

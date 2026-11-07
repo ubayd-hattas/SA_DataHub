@@ -3,11 +3,12 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import {
   MapPin, ArrowLeft, TrendingUp, TrendingDown, Minus,
-  Users, GraduationCap, Home, Zap, Droplets, BarChart3,
+  Users, GraduationCap, Home, BarChart3,
   ArrowRight,
 } from 'lucide-react'
 import { getProvinceById, getProvinceData, getMunicipalitiesByProvince } from '@/data/mock'
 import { cn, getProvinceCodeFromSlug } from '@/lib/utils'
+import { formatPercent } from '@/lib/format'
 import { buildPageMetadata } from '@/lib/seo'
 import { provinceDescription, provinceTitle } from '@/lib/page-seo'
 import { Breadcrumbs } from '@/components/seo/Breadcrumbs'
@@ -63,15 +64,15 @@ export async function generateMetadata({ params }: ProvincePageProps): Promise<M
 function StatRow({ label, value, sub, highlight }: { label: string; value: string; sub?: string; highlight?: 'good' | 'bad' | 'neutral' }) {
   return (
     <div className="flex items-center justify-between py-2.5 border-b border-slate-100 dark:border-slate-800 last:border-0">
-      <span className="text-sm text-slate-600 dark:text-slate-400">{label}</span>
-      <div className="text-right">
+      <span className="min-w-0 text-sm text-slate-600 dark:text-slate-400">{label}</span>
+      <div className="shrink-0 pl-3 text-right">
         <span className={cn(
           'font-mono text-sm font-semibold',
           highlight === 'good' ? 'text-green-600 dark:text-green-400' :
           highlight === 'bad' ? 'text-red-500 dark:text-red-400' :
           'text-slate-900 dark:text-white'
         )}>{value}</span>
-        {sub && <p className="text-xs text-slate-400">{sub}</p>}
+        {sub && <p className="whitespace-nowrap text-xs text-slate-400">{sub}</p>}
       </div>
     </div>
   )
@@ -115,7 +116,6 @@ export default async function ProvincePage({ params }: ProvincePageProps) {
   // National averages
   const avgUnemployment = allProvinces.reduce((s, p) => s + p.unemploymentRate, 0) / allProvinces.length
   const avgMatric = allProvinces.reduce((s, p) => s + p.matricPassRate, 0) / allProvinces.length
-  const avgElectricity = allProvinces.reduce((s, p) => s + p.stats.housing.electricityAccess, 0) / allProvinces.length
 
   // Neighbouring provinces for nav (sorted by id for simplicity)
   const sorted = [...allProvinces].sort((a, b) => a.name.localeCompare(b.name))
@@ -215,10 +215,10 @@ export default async function ProvincePage({ params }: ProvincePageProps) {
           color="bg-purple-500"
         />
         <StatBlock
-          label="Electricity Access"
-          value={housing.electricityAccess + '%'}
-          sub={'of households · avg ' + avgElectricity.toFixed(1) + '%'}
-          icon={Zap}
+          label="Formal dwelling"
+          value={formatPercent(housing.formal[1])}
+          sub={'of households, Census 2022 (' + formatPercent(housing.formal[0]) + ' in 2011)'}
+          icon={Home}
           color="bg-amber-500"
         />
       </div>
@@ -256,10 +256,14 @@ export default async function ProvincePage({ params }: ProvincePageProps) {
         {/* Housing & Services */}
         <div className="card p-5">
           <h3 className="font-semibold text-slate-900 dark:text-white mb-3">Services & Housing</h3>
-          <StatRow label="Electricity access" value={housing.electricityAccess + '%'} highlight={housing.electricityAccess > avgElectricity ? 'good' : 'neutral'} />
-          <StatRow label="Piped water (in dwelling)" value={housing.pipedWaterInDwelling + '%'} />
-          <StatRow label="Formal dwellings" value={housing.formalDwellings + '%'} />
+          <StatRow label="Formal dwelling" value={formatPercent(housing.formal[1])} sub={'2011: ' + formatPercent(housing.formal[0])} />
+          <StatRow label="Water from a regional or local scheme" value={formatPercent(housing.waterScheme[1])} sub={'2011: ' + formatPercent(housing.waterScheme[0])} />
+          <StatRow label="Flush toilet" value={formatPercent(housing.flushToilet[1])} sub={'2011: ' + formatPercent(housing.flushToilet[0])} />
+          <StatRow label="Cooking with electricity" value={formatPercent(housing.electricityCooking[1])} sub={'2011: ' + formatPercent(housing.electricityCooking[0])} />
           <StatRow label="Urban population" value={pop.urban + '%'} />
+          <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">
+            The four housing rows are shares of households in Census 2022. Source: Stats SA, Census 2022 Provinces at a glance, pages {housing.pages.housing1} and {housing.pages.housing2}.
+          </p>
         </div>
       </div>
 
