@@ -14,6 +14,7 @@ import { assertSiteSourced } from '@/lib/sourcing'
 import { HUB_PATH, HUB_TITLE } from '@/lib/census-hub'
 import { buildPageMetadata } from '@/lib/seo'
 import { ANSWERS_PATH, getAnswer } from '@/data/answers'
+import { ELECTIONS_PATH } from '@/lib/elections'
 
 /** The four most searched questions (Search Console, 3 months to 23 October 2026). */
 const HOME_QUESTIONS = [
@@ -115,6 +116,17 @@ export default function HomePage() {
             All explainers
           </Link>
         </p>
+        <div className="mt-8 border-t border-rule pt-6">
+          <p className="text-caption font-medium text-muted">Local elections</p>
+          <p className="mt-1 font-display text-h3 font-semibold text-ink">
+            <Link href={ELECTIONS_PATH} className={linkClass}>
+              2026 local election results by municipality
+            </Link>
+          </p>
+          <p className="mt-2 text-small text-muted">
+            Turnout, PR vote shares and ward wins for all 213 councils, from the IEC&apos;s voting-station results.
+          </p>
+        </div>
         <div className="mt-8 border-t border-rule pt-6">
           <p className="text-caption font-medium text-muted">Census story</p>
           <p className="mt-1 font-display text-h3 font-semibold text-ink">
