@@ -9,6 +9,14 @@ export interface BreadcrumbItem {
   path: string
 }
 
+/**
+ * JSON for an inline <script type="application/ld+json">. Escaping "<" stops a
+ * string such as "</script>" from closing the tag early.
+ */
+export function serializeJsonLd(data: unknown): string {
+  return JSON.stringify(data).replace(/</g, '\\u003c')
+}
+
 export function websiteSchema() {
   return {
     '@context': 'https://schema.org',

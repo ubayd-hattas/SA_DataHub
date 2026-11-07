@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { datasetSchema, explainerArticleSchema, organizationSchema, websiteSchema } from '@/lib/schema'
+import {
+  datasetSchema,
+  explainerArticleSchema,
+  organizationSchema,
+  serializeJsonLd,
+  websiteSchema,
+} from '@/lib/schema'
 import { EXPLAINERS } from '@/data/explainers'
 import { datasetRegistry } from '@/lib/registry'
 import { absoluteUrl, SITE_LOGO_PATH } from '@/lib/seo'
@@ -44,5 +50,11 @@ describe('structured data', () => {
         expect(work.datePublished).toMatch(/^\d{4}-\d{2}-\d{2}$/)
       }
     }
+  })
+
+  it('escapes "<" so JSON-LD cannot close its script tag early', () => {
+    const json = serializeJsonLd({ name: '</script><script>alert(1)</script>' })
+    expect(json).not.toContain('<')
+    expect(JSON.parse(json)).toEqual({ name: '</script><script>alert(1)</script>' })
   })
 })
