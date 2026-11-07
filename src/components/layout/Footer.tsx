@@ -53,6 +53,7 @@ export function Footer() {
             <ul className="space-y-2 text-sm mb-6">
               {[
                 { label: 'Release Explainers', href: '/explainers' },
+                { label: 'Release calendar', href: '/calendar' },
                 { label: 'Data Stories', href: '/insights' },
                 { label: 'Data Downloads', href: '/downloads' },
                 { label: 'Corrections and updates', href: '/updates' },
