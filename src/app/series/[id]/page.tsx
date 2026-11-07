@@ -8,6 +8,7 @@ import { SourceLine } from '@/components/editorial/SourceLine'
 import { Breadcrumbs } from '@/components/seo/Breadcrumbs'
 import { JsonLd } from '@/components/seo/JsonLd'
 import { getCategoryById } from '@/data/mock'
+import { formatLongDate } from '@/lib/explainers'
 import { formatSeriesValue, percentDecimals } from '@/lib/format'
 import { breadcrumbSchema, seriesDatasetSchema } from '@/lib/schema'
 import { buildPageMetadata } from '@/lib/seo'
@@ -121,6 +122,62 @@ export default async function SeriesPage({ params }: SeriesPageProps) {
             </tbody>
           </table>
         </div>
+      </Section>
+
+      <Section id="changes" title="Changes to this series">
+        {doc.revisions.length ? (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-small">
+              <caption className="sr-only">Values the publisher revised, newest first</caption>
+              <thead>
+                <tr className="border-b border-ink text-caption text-muted">
+                  <th scope="col" className="py-2 pr-3 font-medium">Period</th>
+                  <th scope="col" className="px-2 py-2 text-right font-medium">Was</th>
+                  <th scope="col" className="px-2 py-2 text-right font-medium">Now</th>
+                  <th scope="col" className="py-2 pl-2 font-medium">Revised in</th>
+                </tr>
+              </thead>
+              <tbody>
+                {doc.revisions.map((r) => (
+                  <tr key={`${r.period}-${r.releasedOn}`} className="border-t border-rule align-top">
+                    <th scope="row" className="py-2 pr-3 font-normal text-ink">{r.period}</th>
+                    <td className="whitespace-nowrap px-2 py-2 text-right tabular-nums text-muted">{fmt(r.from)}</td>
+                    <td className="whitespace-nowrap px-2 py-2 text-right tabular-nums text-ink">{fmt(r.to)}</td>
+                    <td className="py-2 pl-2 text-ink">
+                      {r.release}, {formatLongDate(r.releasedOn)}
+                      {r.note && <span className="block text-caption text-muted">{r.note}</span>}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <p className="text-body text-ink">
+            No revisions by the publisher have been recorded for this series. SA Data Hub started recording them on 7
+            November 2026; earlier revisions are not listed.
+          </p>
+        )}
+        {doc.changeLog.length > 0 && (
+          <>
+            <h3 className="mt-8 font-display text-h3 font-semibold text-ink">SA Data Hub&apos;s update log for this dataset</h3>
+            <ul className="mt-3 space-y-4">
+              {doc.changeLog.slice(0, 5).map((c) => (
+                <li key={`${c.date}-${c.summary.slice(0, 40)}`} className="text-small">
+                  <p className="text-muted">
+                    <time dateTime={c.date}>{formatLongDate(c.date)}</time>, {c.type.replace('-', ' ')}
+                  </p>
+                  <p className="mt-1 text-ink">{c.summary}</p>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-4 text-small">
+              <Link href="/updates" className={linkClass}>
+                Every update and correction
+              </Link>
+            </p>
+          </>
+        )}
       </Section>
 
       <Section id="download" title="Download and use">

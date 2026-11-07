@@ -146,3 +146,14 @@ describe('series revisions and change log', () => {
     expect([...dates].sort().reverse()).toEqual(dates)
   })
 })
+
+describe('series page changes section', () => {
+  it('says when no revisions are recorded and shows the dataset log', async () => {
+    const { renderToStaticMarkup } = await import('react-dom/server')
+    const { default: SeriesPage } = await import('@/app/series/[id]/page')
+    const html = renderToStaticMarkup(await SeriesPage({ params: Promise.resolve({ id: 'cpi-headline' }) }))
+    expect(html).toContain('Changes to this series')
+    expect(html).toContain('No revisions by the publisher have been recorded')
+    expect(html).toContain('update log for this dataset')
+  })
+})
