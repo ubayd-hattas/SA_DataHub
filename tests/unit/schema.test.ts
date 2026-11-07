@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { datasetSchema, organizationSchema } from '@/lib/schema'
+import { datasetSchema, organizationSchema, websiteSchema } from '@/lib/schema'
 import { datasetRegistry } from '@/lib/registry'
 import { absoluteUrl, SITE_LOGO_PATH } from '@/lib/seo'
 
@@ -15,6 +15,10 @@ describe('structured data', () => {
       name: 'South Africa',
     })
     expect(schema.spatialCoverage).toHaveProperty('geo')
+  })
+
+  it('does not advertise a SearchAction that targets the noindexed dashboard', () => {
+    expect(websiteSchema()).not.toHaveProperty('potentialAction')
   })
 
   it('publishes a crawlable organization logo image object', () => {
