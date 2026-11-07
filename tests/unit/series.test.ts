@@ -92,3 +92,12 @@ describe('series page', () => {
     expect(html).toContain('Cite this series')
   })
 })
+
+describe('series index', () => {
+  it('links to every series page', async () => {
+    const { renderToStaticMarkup } = await import('react-dom/server')
+    const { default: SeriesIndexPage } = await import('@/app/series/page')
+    const html = renderToStaticMarkup(SeriesIndexPage())
+    for (const s of allSeries()) expect(html, s.id).toContain(`href="${seriesHref(s.id)}"`)
+  })
+})
