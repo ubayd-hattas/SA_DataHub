@@ -3,6 +3,7 @@ import type { DatasetRegistryEntry } from '@/lib/registry'
 import type { Story } from '@/types'
 import type { MunicipalityRecord } from '@/types'
 import type { Explainer } from '@/lib/explainers'
+import type { SeriesDocument } from '@/lib/series'
 
 export interface BreadcrumbItem {
   name: string
@@ -137,6 +138,40 @@ export function datasetSchema(entry: DatasetRegistryEntry, path: string) {
     license: 'https://creativecommons.org/licenses/by/4.0/',
     isAccessibleForFree: true,
     keywords: [entry.categoryId, entry.geographicLevel, 'South Africa', 'statistics'].filter(Boolean),
+  }
+}
+
+/** Dataset markup for one series page, with its CSV and JSON downloads. */
+export function seriesDatasetSchema(doc: SeriesDocument, downloads: { csv: string; json: string }) {
+  const start = isoPeriod(doc.points[0]?.period, 'start')
+  const end = isoPeriod(doc.points.at(-1)?.period, 'end')
+  const publisher = { '@type': 'Organization', name: doc.source.publisher, url: doc.source.url }
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Dataset',
+    name: `${doc.title}, South Africa`,
+    description: doc.description.length >= 50 ? doc.description : `${doc.title} for South Africa. ${doc.description}`,
+    url: doc.page,
+    identifier: doc.id,
+    creator: publisher,
+    publisher,
+    provider: { '@id': `${SITE_URL}/#organization` },
+    dateModified: doc.checkedOn,
+    ...(start ? { temporalCoverage: end && end !== start ? `${start}/${end}` : start } : {}),
+    spatialCoverage: {
+      '@type': 'Place',
+      name: 'South Africa',
+      geo: { '@type': 'GeoShape', box: '-34.8351 16.3449 -22.1250 32.8301' },
+    },
+    variableMeasured: { '@type': 'PropertyValue', name: doc.title, unitText: doc.unit },
+    distribution: [
+      { '@type': 'DataDownload', encodingFormat: 'text/csv', contentUrl: absoluteUrl(downloads.csv) },
+      { '@type': 'DataDownload', encodingFormat: 'application/json', contentUrl: absoluteUrl(downloads.json) },
+    ],
+    license: doc.license,
+    isAccessibleForFree: true,
+    citation: doc.citation,
+    keywords: [doc.category, 'South Africa', 'statistics', doc.source.publisher],
   }
 }
 
