@@ -17,14 +17,6 @@ export function websiteSchema() {
     description: SITE_DESCRIPTION,
     inLanguage: 'en-ZA',
     publisher: { '@id': `${SITE_URL}/#organization` },
-    potentialAction: {
-      '@type': 'SearchAction',
-      target: {
-        '@type': 'EntryPoint',
-        urlTemplate: `${SITE_URL}/dashboard?search={search_term_string}`,
-      },
-      'query-input': 'required name=search_term_string',
-    },
   }
 }
 
