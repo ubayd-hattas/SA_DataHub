@@ -43,6 +43,8 @@ import { NumberBlock } from '@/components/editorial/NumberBlock'
 import { SourceLine } from '@/components/editorial/SourceLine'
 import { ChartFigure } from '@/components/editorial/ChartFigure'
 import { BarList } from '@/components/editorial/BarList'
+import { MunicipalElectionSection } from '@/components/elections/ElectionResults'
+import { getMunicipalElection } from '@/lib/elections'
 
 export async function generateStaticParams() {
   // Fails `next build` if a figure lacks a source, release date or checked date.
@@ -386,6 +388,7 @@ export default async function MunicipalityDetailPage({ params }: { params: Promi
   if (!m) return notFound()
 
   const summary = municipalitySummary(m)
+  const election = getMunicipalElection(m.id)
   const provinceSlug = getProvinceSlugFromCode(m.province)
   const breadcrumbs = [
     { name: 'Home', path: '/' },
@@ -417,6 +420,7 @@ export default async function MunicipalityDetailPage({ params }: { params: Promi
         source={<CensusSource m={m} tables={['person']} />}
       />
 
+      {election && <MunicipalElectionSection name={m.name} election={election} />}
       <CensusComparison m={m} />
       <People m={m} />
       <Housing m={m} />
