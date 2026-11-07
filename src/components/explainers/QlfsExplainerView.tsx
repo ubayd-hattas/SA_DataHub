@@ -7,7 +7,7 @@ import { GuessFirst } from '@/components/editorial/GuessFirst'
 import { FigureValue, SourceCitations, SourceNote } from '@/components/explainers/FigureValue'
 import { getSource, type QlfsExplainer, type SourcedQuote } from '@/lib/explainers'
 import { formatCount, formatDecimal } from '@/lib/format'
-import { breadcrumbSchema } from '@/lib/schema'
+import { breadcrumbSchema, explainerArticleSchema } from '@/lib/schema'
 import { reportErrorHref } from '@/lib/contact'
 import { judgeMove } from '@/lib/utils'
 
@@ -58,7 +58,7 @@ export function QlfsExplainerView({ explainer }: { explainer: QlfsExplainer }) {
 
   return (
     <Column className="pb-16">
-      <JsonLd data={breadcrumbSchema(breadcrumbs)} />
+      <JsonLd data={[breadcrumbSchema(breadcrumbs), explainerArticleSchema(explainer)]} />
       <Breadcrumbs items={breadcrumbs} className="pt-6" />
 
       <PageHeader kicker="Unemployment explainer" title={explainer.title} lede={explainer.summary}>

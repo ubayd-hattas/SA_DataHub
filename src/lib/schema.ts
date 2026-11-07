@@ -2,10 +2,19 @@ import { absoluteUrl, AUTHOR, SITE_NAME, SITE_DESCRIPTION, SITE_LOGO_PATH, SITE_
 import type { DatasetRegistryEntry } from '@/lib/registry'
 import type { Story } from '@/types'
 import type { MunicipalityRecord } from '@/types'
+import type { Explainer } from '@/lib/explainers'
 
 export interface BreadcrumbItem {
   name: string
   path: string
+}
+
+/**
+ * JSON for an inline <script type="application/ld+json">. Escaping "<" stops a
+ * string such as "</script>" from closing the tag early.
+ */
+export function serializeJsonLd(data: unknown): string {
+  return JSON.stringify(data).replace(/</g, '\\u003c')
 }
 
 export function websiteSchema() {
@@ -17,14 +26,6 @@ export function websiteSchema() {
     description: SITE_DESCRIPTION,
     inLanguage: 'en-ZA',
     publisher: { '@id': `${SITE_URL}/#organization` },
-    potentialAction: {
-      '@type': 'SearchAction',
-      target: {
-        '@type': 'EntryPoint',
-        urlTemplate: `${SITE_URL}/dashboard?search={search_term_string}`,
-      },
-      'query-input': 'required name=search_term_string',
-    },
   }
 }
 
@@ -157,6 +158,33 @@ export function articleSchema(story: Story) {
     inLanguage: 'en-ZA',
     keywords: story.tags.join(', '),
     articleSection: story.categoryLabel,
+  }
+}
+
+/** Article markup for a release explainer, citing the releases it is based on. */
+export function explainerArticleSchema(explainer: Explainer) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: explainer.title,
+    description: explainer.summary,
+    url: absoluteUrl(`/explainers/${explainer.slug}`),
+    datePublished: explainer.publishedOn,
+    dateModified: explainer.publishedOn,
+    author: {
+      '@type': 'Person',
+      name: AUTHOR.name,
+      url: AUTHOR.url,
+    },
+    publisher: { '@id': `${SITE_URL}/#organization` },
+    inLanguage: 'en-ZA',
+    isBasedOn: explainer.sources.map((s) => ({
+      '@type': 'CreativeWork',
+      name: s.title,
+      ...(s.url ? { url: s.url } : {}),
+      datePublished: s.releasedOn,
+      publisher: { '@type': 'Organization', name: s.publisher },
+    })),
   }
 }
 
