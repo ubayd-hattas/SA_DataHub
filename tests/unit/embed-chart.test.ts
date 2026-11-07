@@ -42,3 +42,16 @@ describe('embed chart', () => {
     expect(escapeHtml('<a href="x">&')).toBe('&lt;a href=&quot;x&quot;&gt;&amp;')
   })
 })
+
+describe('embed route', () => {
+  it('serves every series as framable, noindexed HTML and 404s unknown ids', async () => {
+    const { GET, generateStaticParams } = await import('@/app/embed/series/[id]/route')
+    expect(generateStaticParams()).toHaveLength(allSeries().length)
+    const res = await GET(new Request('http://x/'), { params: Promise.resolve({ id: 'gdp-growth' }) })
+    expect(res.headers.get('Content-Type')).toBe('text/html; charset=utf-8')
+    expect(res.headers.get('Content-Security-Policy')).toContain('frame-ancestors *')
+    expect(res.headers.get('X-Robots-Tag')).toBe('noindex')
+    expect(await res.text()).toContain('GDP growth')
+    expect((await GET(new Request('http://x/'), { params: Promise.resolve({ id: 'nope' }) })).status).toBe(404)
+  })
+})
