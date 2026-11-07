@@ -15,6 +15,7 @@ const STATIC_ROUTES: { path: string; priority: number; changeFrequency: Metadata
   { path: '/insights/census-2011-to-2022', priority: 0.8, changeFrequency: 'monthly', lastModified: new Date('2026-10-28') },
   { path: '/elections-2026', priority: 0.9, changeFrequency: 'weekly', lastModified: new Date('2026-11-07') },
   { path: '/calendar', priority: 0.8, changeFrequency: 'weekly', lastModified: new Date('2026-11-07') },
+  { path: '/why-numbers-differ', priority: 0.8, changeFrequency: 'monthly', lastModified: new Date('2026-11-07') },
   { path: '/downloads',    priority: 0.8, changeFrequency: 'weekly',  lastModified: new Date('2026-07-01') },
   { path: '/methodology',  priority: 0.7, changeFrequency: 'monthly', lastModified: new Date('2026-04-01') },
   { path: '/about',        priority: 0.6, changeFrequency: 'monthly', lastModified: new Date('2026-07-29') },
