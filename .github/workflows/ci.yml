@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - run: npm ci
+
+      - name: Type-check
+        run: npx tsc --noEmit
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Unit tests
+        # Database equivalence tests skip themselves without DATABASE_URL.
+        run: npm test
+
+      - name: Validate datasets
+        run: npm run validate
+
+      - name: Validation tests
+        run: |
+          python -m pip install --quiet pytest
+          python -m pytest -q validation/tests
+
+      - name: Build
+        # No DATA_SOURCE set, so the site builds from the JSON datasets.
+        run: npm run build
