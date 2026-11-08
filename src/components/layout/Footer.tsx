@@ -66,6 +66,7 @@ export function Footer() {
                 { label: 'Why numbers differ', href: '/why-numbers-differ' },
                 { label: 'About', href: '/about' },
                 { label: 'Changelog', href: '/changelog' },
+                { label: 'Help improve SA Data Hub', href: '/support' },
               ].map(({ label, href }) => (
                 <li key={label}>
                   <Link href={href} className="text-muted hover:text-accent">
