@@ -1,4 +1,4 @@
-"""Period label → sortable date. Mirrors docs/database-schema.md normalization rules."""
+"""Period label → sortable date. Mirrors docs/archive/database-schema.md normalization rules."""
 
 from __future__ import annotations
 

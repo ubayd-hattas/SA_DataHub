@@ -1,4 +1,4 @@
-> **Archived.** This is the automation framework's state as of August 2026, kept for reference. The automation and the PostgreSQL migration are paused. For the site as it is now, see [`CURRENT_STATE.md`](CURRENT_STATE.md).
+> **Archived.** This is the automation framework's state as of August 2026, kept for reference. The automation and the PostgreSQL migration are paused. For the site as it is now, see [`CURRENT_STATE.md`](../CURRENT_STATE.md).
 
 # SA Data Hub — Automation Framework: Current State
 

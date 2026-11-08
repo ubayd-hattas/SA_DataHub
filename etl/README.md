@@ -64,4 +64,4 @@ Second run: 0 inserted, 0 updated, 44 skipped (idempotent).
 
 Archived under `etl/raw-snapshots/{slug}/` (gitignored). Never mutate after write.
 
-See [docs/etl-pipeline.md](../docs/etl-pipeline.md).
+See [docs/archive/etl-pipeline.md](../docs/archive/etl-pipeline.md).
