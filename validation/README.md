@@ -45,4 +45,4 @@ npm run validate
 - ⚠ warnings (review recommended)
 - ✗ failures (must fix before migration)
 
-See [docs/migration-readiness.md](../docs/migration-readiness.md) for current health status.
+See [docs/archive/migration-readiness.md](../docs/archive/migration-readiness.md) for current health status.

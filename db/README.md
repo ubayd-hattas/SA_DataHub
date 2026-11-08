@@ -45,4 +45,4 @@ This rewrites `004_seed_reference_data.sql` from:
 - `observations` is empty after Phase 1 — expected.
 - Use a Neon dev branch for experimentation; apply to main only after review.
 
-See [docs/database-schema.md](../docs/database-schema.md) and [docs/migration-plan.md](../docs/migration-plan.md).
+See [docs/archive/database-schema.md](../docs/archive/database-schema.md) and [docs/archive/migration-plan.md](../docs/archive/migration-plan.md).
