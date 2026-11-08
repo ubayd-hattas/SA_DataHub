@@ -1,0 +1,22 @@
+name: Ask for a dataset or feature
+description: Suggest data, a place, a chart or a tool for SA Data Hub.
+title: "Request: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What would you like to see?
+      description: A dataset, a place, a chart, a tool or a fix.
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: What would you use it for?
+      description: For a class, a story, a report, a council meeting or research, for example.
+  - type: input
+    id: source
+    attributes:
+      label: Where is the data published?
+      description: A link or the name of the release, if you know it. SA Data Hub only uses official published sources.
