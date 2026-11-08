@@ -15,3 +15,21 @@ export function reportErrorHref(pagePath = '/'): string {
   }
   return `${REPO_URL}/issues/new?title=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
 }
+
+/**
+ * The maintainer's GitHub Sponsors page, e.g. https://github.com/sponsors/ubayd-hattas.
+ * Empty until GitHub approves the Sponsors profile; while it is empty the
+ * site shows no donation link, so there is never a link to a missing page.
+ */
+export const SPONSORS_URL = ''
+
+/** A link that opens a pre-filled request for a dataset or feature. */
+export function requestDataHref(): string {
+  const subject = 'Request for SA Data Hub'
+  const body =
+    'What would you like to see on SA Data Hub (a dataset, a place, a chart, a fix)?\n\nWhat would you use it for?\n\nWhere is the data published, if you know?\n'
+  if (REPORT_ERROR_EMAIL) {
+    return `mailto:${REPORT_ERROR_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
+  }
+  return `${REPO_URL}/issues/new?title=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
+}
