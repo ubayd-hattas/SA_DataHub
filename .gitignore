@@ -56,3 +56,6 @@ etl/raw-snapshots/
 
 # Search Console exports (never commit)
 sources/search-console/
+
+# Neon CLI project link (the database migration is paused)
+.neon
