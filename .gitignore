@@ -46,6 +46,10 @@ repomix-output.xml
 
 # Release PDFs supplied by the maintainer (figures are checked against these)
 sources/releases/
+# Same for release files kept in newdatasets/: publishers' documents are not redistributed
+newdatasets/*.pdf
+newdatasets/*.xlsx
+newdatasets/*.xls
 
 # ETL raw snapshots (immutable archives)
 etl/raw-snapshots/
