@@ -24,6 +24,22 @@ export interface UpdateHistoryEntry {
 
 export const UPDATE_HISTORY: UpdateHistoryEntry[] = [
   {
+    date: '2026-11-09',
+    datasetId: 'education',
+    datasetLabel: 'Education',
+    type: 'correction',
+    summary:
+      `Retired the story "Matric 2024: an 87.3% pass rate and persistent inequalities". Its provincial pass rates and its claims about international reading tests could not be traced to a release SA Data Hub holds. Its address now redirects to "Matric 2025: 88.0% passed, and 345 857 qualified for a degree", where every figure cites the Department of Basic Education's 2025 NSC Examination Report with its table and page.`,
+  },
+  {
+    date: '2026-11-09',
+    datasetId: 'interest-rates',
+    datasetLabel: 'Interest Rates',
+    type: 'methodology-change',
+    summary:
+      'Moved the prime lending rate, and the interest-rates download, from the GDP and economy topic to Inflation and prices, next to the repo rate it follows. No figures changed.',
+  },
+  {
     date: '2026-10-28',
     datasetId: 'youth-unemployment',
     datasetLabel: 'Youth Unemployment',

@@ -182,7 +182,7 @@ const datasetRegistryBase: DatasetRegistryEntry[] = [
     label: 'Interest Rates',
     description: 'SARB repo rate and prime lending rate from MPC statements.',
     statIds: ['repo-rate-sarb', 'prime-lending-rate'],
-    categoryId: 'gdp',
+    categoryId: 'inflation',
     sourceName: 'South African Reserve Bank',
     sourceShortName: 'SARB',
     sourceUrl: 'https://www.resbank.co.za/en/home/what-we-do/monetary-policy/monetary-policy-decisions',

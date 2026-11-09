@@ -165,7 +165,7 @@
     },
     {
       "id": "prime-lending-rate",
-      "categoryId": "gdp",
+      "categoryId": "inflation",
       "title": "Prime lending rate",
       "value": "10.75%",
       "rawValue": 10.75,
