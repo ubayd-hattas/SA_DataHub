@@ -25,4 +25,4 @@ npm run validate
 npm run build
 ```
 
-CI runs the same checks. Keep each commit to one change, with a plain message such as "Add the October CPI explainer".
+CI runs the same checks. Please follow the [code of conduct](CODE_OF_CONDUCT.md). Keep each commit to one change, with a plain message such as "Add the October CPI explainer".
