@@ -72,7 +72,7 @@ function StatRow({ label, value, sub, highlight }: { label: string; value: strin
           highlight === 'bad' ? 'text-red-500 dark:text-red-400' :
           'text-slate-900 dark:text-white'
         )}>{value}</span>
-        {sub && <p className="whitespace-nowrap text-xs text-slate-400">{sub}</p>}
+        {sub && <p className="whitespace-nowrap text-xs text-muted">{sub}</p>}
       </div>
     </div>
   )
@@ -90,7 +90,7 @@ function StatBlock({ label, value, sub, icon: Icon, color }: {
         <p className="text-xs text-slate-500 dark:text-slate-400">{label}</p>
       </div>
       <p className="font-mono text-2xl font-semibold text-slate-900 dark:text-white">{value}</p>
-      {sub && <p className="text-xs text-slate-400 mt-0.5">{sub}</p>}
+      {sub && <p className="text-xs text-muted mt-0.5">{sub}</p>}
     </div>
   )
 }
@@ -111,7 +111,7 @@ export default async function ProvincePage({ params }: ProvincePageProps) {
 
   const trend = unem.trend
   const TrendIcon = trend === 'down' ? TrendingDown : trend === 'up' ? TrendingUp : Minus
-  const trendColor = trend === 'down' ? 'text-green-500' : trend === 'up' ? 'text-red-500' : 'text-slate-400'
+  const trendColor = trend === 'down' ? 'text-green-500' : trend === 'up' ? 'text-red-500' : 'text-muted'
 
   // National averages
   const avgUnemployment = allProvinces.reduce((s, p) => s + p.unemploymentRate, 0) / allProvinces.length
@@ -175,17 +175,17 @@ export default async function ProvincePage({ params }: ProvincePageProps) {
               {Math.abs(unem.change).toFixed(1)}pp
             </span>
           </div>
-          <p className="text-xs text-slate-400 mt-1">{unem.period} · Rank #{province.unemploymentRank} lowest</p>
+          <p className="text-xs text-muted mt-1">{unem.period} · Rank #{province.unemploymentRank} lowest</p>
           {unem.lu3 !== undefined && (
             <div className="mt-2 text-xs text-slate-500">
               Unemployment + potential labour force (LU3): <span className="font-medium text-slate-700 dark:text-slate-300">{unem.lu3}%</span>
             </div>
           )}
-          <div className="mt-1 text-xs text-slate-400">
+          <div className="mt-1 text-xs text-muted">
             Expanded: <span className="font-medium text-slate-700 dark:text-slate-300">{unem.expanded}%</span>
-            <span className="text-[11px] block text-slate-400">Legacy measure (Q3 2025)</span>
+            <span className="text-[11px] block text-muted">Legacy measure (Q3 2025)</span>
           </div>
-          <div className="mt-1 text-xs text-slate-400">
+          <div className="mt-1 text-xs text-muted">
             National avg: {avgUnemployment.toFixed(1)}%
           </div>
         </div>
@@ -305,7 +305,7 @@ export default async function ProvincePage({ params }: ProvincePageProps) {
               )
             })}
         </div>
-        <p className="text-xs text-slate-400 mt-3">Source: Stats SA QLFS Q2 2026</p>
+        <p className="text-xs text-muted mt-3">Source: Stats SA QLFS Q2 2026</p>
       </div>
 
       {/* Municipalities in this province */}
@@ -316,7 +316,7 @@ export default async function ProvincePage({ params }: ProvincePageProps) {
               <h3 className="font-semibold text-slate-900 dark:text-white">
                 Municipalities in {province.name}
               </h3>
-              <p className="text-xs text-slate-400 mt-0.5">Population figures based on Census 2022 baseline</p>
+              <p className="text-xs text-muted mt-0.5">Population figures based on Census 2022 baseline</p>
             </div>
             <Link
               href="/municipalities"
@@ -333,7 +333,7 @@ export default async function ProvincePage({ params }: ProvincePageProps) {
                 className="flex items-center justify-between rounded-lg border border-slate-100 px-3 py-2.5 text-sm hover:border-brand-300 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-800/50 transition-colors"
               >
                 <span className="font-medium text-slate-800 dark:text-slate-200">{m.name}</span>
-                <span className="font-mono text-xs text-slate-400">
+                <span className="font-mono text-xs text-muted">
                   {m.population2022.toLocaleString('en-ZA')}
                 </span>
               </Link>
@@ -348,9 +348,9 @@ export default async function ProvincePage({ params }: ProvincePageProps) {
           href={`/provinces/${prev.id}`}
           className="flex-1 card p-4 flex items-center gap-3 hover:shadow-md transition-all group"
         >
-          <ArrowLeft size={16} className="text-slate-400 group-hover:text-brand-600 transition-colors" />
+          <ArrowLeft size={16} className="text-muted group-hover:text-brand-600 transition-colors" />
           <div>
-            <p className="text-xs text-slate-400">Previous</p>
+            <p className="text-xs text-muted">Previous</p>
             <p className="text-sm font-medium text-slate-900 dark:text-white">{prev.name}</p>
           </div>
         </Link>
@@ -359,10 +359,10 @@ export default async function ProvincePage({ params }: ProvincePageProps) {
           className="flex-1 card p-4 flex items-center justify-end gap-3 hover:shadow-md transition-all group text-right"
         >
           <div>
-            <p className="text-xs text-slate-400">Next</p>
+            <p className="text-xs text-muted">Next</p>
             <p className="text-sm font-medium text-slate-900 dark:text-white">{next.name}</p>
           </div>
-          <ArrowRight size={16} className="text-slate-400 group-hover:text-brand-600 transition-colors" />
+          <ArrowRight size={16} className="text-muted group-hover:text-brand-600 transition-colors" />
         </Link>
       </div>
     </div>
