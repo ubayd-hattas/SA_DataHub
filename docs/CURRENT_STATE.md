@@ -22,7 +22,7 @@ The main menu has five sections: What changed, Your area, Topics, Tools and Abou
 | Release calendar | `/calendar`, `/calendar.ics` | Next release dates, each taken from a release the site holds |
 | Why numbers differ | `/why-numbers-differ` | Census count, mid-year estimate and UN projection for population; LU1 to LU4 for unemployment |
 | Answers | `/answers`, `/answers/[slug]` | 22 factual questions, answer first, with sources |
-| Stories | `/insights`, `/insights/[slug]` | The census story, a scrolling unemployment story, and stories on unemployment, inflation, GDP, crime, Matric 2024 and Matric 2025 |
+| Stories | `/insights`, `/insights/[slug]` | The census story, a scrolling unemployment story, and stories on unemployment, inflation, GDP, crime and Matric 2025 (the Matric 2024 story was retired and redirects there) |
 | Tools | `/tools/money-value`, `/tools/compare` | Money value calculator (CPI from 1980) and a compare tool, each with a share image |
 | Trust | `/methodology`, `/updates`, `/changelog`, `/feed.xml` | Methods, Stats SA's reuse condition, the public corrections log, the changelog and an RSS feed |
 | Support | `/support` | Ways to help: report an error, ask for data, share, contribute code. A sponsorship section appears once GitHub Sponsors is approved (`SPONSORS_URL` in `src/lib/contact.ts`) |
@@ -51,6 +51,6 @@ The main menu has five sections: What changed, Your area, Topics, Tools and Abou
 - Release explainers wait on the releases: QLFS Q3 (November), CPI October (18 November), the MPC decision (19 November) and GDP Q3 (December). There is no GDP or MPC explainer template yet.
 - Election results have no council seats: the IEC voting-station files don't include the seat calculation.
 - The population series for 2015 to 2024 is calculated back from growth rates, not taken from Stats SA's published series.
-- The Matric 2024 story still has unsourced provincial figures.
+- Some older stories still give unsourced explanations, for example the reasons for unemployment in the unemployment story.
 - No source the site holds covers the Census 2022 undercount yet, so the planned Post-Enumeration Survey explainer is waiting on those documents.
 - Annual crime figures end at 2023/24 until the SAPS annual release is added.
