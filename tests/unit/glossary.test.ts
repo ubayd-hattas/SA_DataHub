@@ -37,3 +37,11 @@ describe('glossary', () => {
     expect(html).not.toContain('—')
   })
 })
+
+describe('glossary links from series pages', () => {
+  it('links a series page to the terms that describe it', async () => {
+    const { default: SeriesPage } = await import('@/app/series/[id]/page')
+    const html = renderToStaticMarkup(await SeriesPage({ params: Promise.resolve({ id: 'unemployment-national' }) }))
+    expect(html).toContain('href="/glossary#unemployment-rate"')
+  })
+})

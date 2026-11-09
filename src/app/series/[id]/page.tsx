@@ -8,6 +8,7 @@ import { SourceLine } from '@/components/editorial/SourceLine'
 import { Breadcrumbs } from '@/components/seo/Breadcrumbs'
 import { JsonLd } from '@/components/seo/JsonLd'
 import { getCategoryById } from '@/data/mock'
+import { glossaryHref, termsForSeries } from '@/data/glossary'
 import { EMBED_HEIGHT, embedHref } from '@/lib/embed-chart'
 import { formatLongDate } from '@/lib/explainers'
 import { formatSeriesValue, percentDecimals } from '@/lib/format'
@@ -235,6 +236,13 @@ export default async function SeriesPage({ params }: SeriesPageProps) {
               </Link>
             </li>
           )}
+          {termsForSeries(stat.id).map((t) => (
+            <li key={t.slug}>
+              <Link href={glossaryHref(t.slug)} className={linkClass}>
+                What &ldquo;{t.term}&rdquo; means
+              </Link>
+            </li>
+          ))}
           {explainer && (
             <li>
               <Link href={`/explainers/${explainer.slug}`} className={linkClass}>
