@@ -8,6 +8,7 @@ import { FigureValue, SourceCitations, SourceNote } from '@/components/explainer
 import { getSource, type QlfsExplainer, type SourcedQuote } from '@/lib/explainers'
 import { formatCount, formatDecimal } from '@/lib/format'
 import { breadcrumbSchema, explainerArticleSchema } from '@/lib/schema'
+import { glossaryHref } from '@/data/glossary'
 import { reportErrorHref } from '@/lib/contact'
 import { judgeMove } from '@/lib/utils'
 
@@ -28,6 +29,14 @@ function Quote({ quote, explainer }: { quote: SourcedQuote; explainer: QlfsExpla
       <SourceNote source={getSource(explainer, quote.sourceId)} location={quote.location} className="mt-3" />
     </>
   )
+}
+
+/** The glossary entry that defines each labour underutilisation rate. */
+const RATE_TERMS: Record<'LU1' | 'LU2' | 'LU3' | 'LU4', string> = {
+  LU1: 'unemployment-rate',
+  LU2: 'time-related-underemployment',
+  LU3: 'potential-labour-force',
+  LU4: 'labour-underutilisation',
 }
 
 export function QlfsExplainerView({ explainer }: { explainer: QlfsExplainer }) {
@@ -223,7 +232,10 @@ export function QlfsExplainerView({ explainer }: { explainer: QlfsExplainer }) {
               {explainer.rates.map((r) => (
                 <tr key={r.code} className="border-t border-rule align-top">
                   <th scope="row" className="py-2 pr-3 font-normal text-ink">
-                    <span className="font-semibold">{r.code}</span> {r.label}
+                    <span className="font-semibold">{r.code}</span>{' '}
+                    <Link href={glossaryHref(RATE_TERMS[r.code])} className={linkClass}>
+                      {r.label}
+                    </Link>
                   </th>
                   <td className="whitespace-nowrap px-2 py-2 text-right text-muted"><FigureValue figure={r.yearAgo} source={release} /></td>
                   <td className="whitespace-nowrap px-2 py-2 text-right text-muted"><FigureValue figure={r.previous} source={release} /></td>

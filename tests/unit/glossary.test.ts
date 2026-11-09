@@ -45,3 +45,16 @@ describe('glossary links from series pages', () => {
     expect(html).toContain('href="/glossary#unemployment-rate"')
   })
 })
+
+describe('glossary links from the QLFS explainer', () => {
+  it('links each of the four rates to its definition', async () => {
+    const { createElement } = await import('react')
+    const { ExplainerView } = await import('@/components/explainers/ExplainerView')
+    const { EXPLAINERS } = await import('@/data/explainers')
+    const qlfs = EXPLAINERS.find((e) => e.kind === 'qlfs')!
+    const html = renderToStaticMarkup(createElement(ExplainerView, { explainer: qlfs }))
+    for (const slug of ['unemployment-rate', 'time-related-underemployment', 'potential-labour-force', 'labour-underutilisation']) {
+      expect(html, slug).toContain(`href="/glossary#${slug}"`)
+    }
+  })
+})
