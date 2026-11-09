@@ -25,6 +25,17 @@ export interface UpdateHistoryEntry {
 export const UPDATE_HISTORY: UpdateHistoryEntry[] = [
   {
     date: '2026-11-09',
+    datasetId: 'unemployment',
+    datasetLabel: 'Unemployment',
+    type: 'correction',
+    summary: `Rewrote the unemployment story so every figure cites the Quarterly Labour Force Survey for Q2 2026 with its table and page. Removed the sections on causes and the outlook, which gave opinions without a source, and unsourced claims about provinces and world rankings. The youth rates now use Q2 2026 instead of Q4 2025.`,
+    changes: [
+      { item: 'Youth unemployment rate, ages 15 to 34', from: '44.8% (Q4 2025)', to: '47.4% (Q2 2026)' },
+      { item: 'Youth unemployment rate, ages 15 to 24', from: '61.4% (Q4 2025)', to: '62.8% (Q2 2026)' },
+    ],
+  },
+  {
+    date: '2026-11-09',
     datasetId: 'education',
     datasetLabel: 'Education',
     type: 'correction',
