@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { TrendingUp, TrendingDown, Minus, MapPin } from 'lucide-react'
 import { ProvinceData } from '@/types'
 import { cn } from '@/lib/utils'
+import { formatPercent } from '@/lib/format'
 
 interface ProvinceCardProps {
   province: ProvinceData
@@ -56,9 +57,9 @@ export function ProvinceCard({ province, metric = 'unemployment' }: ProvinceCard
         <div>
           <p className="text-xs text-slate-500 dark:text-slate-400">Matric Pass</p>
           <p className="font-mono text-xl font-medium text-slate-900 dark:text-white">
-            {province.matricPassRate}%
+            {formatPercent(province.matricPassRate, 2)}
           </p>
-          <p className="text-xs text-muted">2024</p>
+          <p className="text-xs text-muted">{province.stats.education.year}</p>
         </div>
       </div>
 

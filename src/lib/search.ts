@@ -5,6 +5,8 @@
  * Registry and province metadata are passed in by callers (mock.ts) to avoid import cycles.
  */
 
+import { formatPercent } from '@/lib/format'
+
 import {
   Statistic,
   SearchResult,
@@ -166,7 +168,7 @@ function provinceDisplayValue(province: ProvinceData, intent: SearchIntent, rawQ
     case 'unemployment':
       return `${province.unemploymentRate}% unemployment`
     case 'education':
-      return `${province.matricPassRate}% matric pass rate`
+      return `${formatPercent(province.matricPassRate, 2)} matric pass rate (${province.stats.education.year})`
     case 'population':
       return `${(province.population / 1_000_000).toFixed(1)}M population`
     case 'housing':
