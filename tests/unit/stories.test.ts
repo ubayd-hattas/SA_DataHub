@@ -33,6 +33,13 @@ describe('matric "record" claims', () => {
   it('are gone: no release in sources/releases gives a matric pass rate', () => {
     const text = JSON.stringify(STORIES)
     expect(text).not.toMatch(/\brecord (high|pass rate)\b|\ba record\b|record worth/i)
-    expect(STORIES.find((s) => s.slug === 'matric-results-2024')!.title).toBe('Matric 2024: an 87.3% pass rate and persistent inequalities')
+    expect(STORIES.find((s) => s.slug === 'matric-results-2024')).toBeUndefined()
+  })
+
+  it('send the retired Matric 2024 story to the sourced Matric 2025 one', async () => {
+    const config = (await import('../../next.config.js')).default as { redirects: () => Promise<{ source: string; destination: string; permanent: boolean }[]> }
+    const redirects = await config.redirects()
+    expect(redirects).toContainEqual({ source: '/insights/matric-results-2024', destination: '/insights/matric-results-2025', permanent: true })
+    expect(STORIES.some((s) => s.slug === 'matric-results-2025')).toBe(true)
   })
 })

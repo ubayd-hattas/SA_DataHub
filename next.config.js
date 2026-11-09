@@ -6,6 +6,8 @@ const nextConfig = {
   },
   async redirects() {
     return [
+      // The Matric 2024 story was retired: its provincial figures could not be traced to a held release.
+      { source: '/insights/matric-results-2024', destination: '/insights/matric-results-2025', permanent: true },
       // Canonical host: apex domain (non-www), matching ubayd.me pattern
       {
         source: '/:path*',
