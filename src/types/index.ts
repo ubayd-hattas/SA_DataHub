@@ -165,13 +165,11 @@ export interface TimelineEvent {
 export interface ProvinceStats {
   unemployment: {
     rate: number
-    expanded: number
     period: string
     trend: 'up' | 'down' | 'stable'
     change: number
     lu3?: number
     lu3Label?: string
-    expandedPeriod?: string
   }
   population: {
     total: number
@@ -181,7 +179,6 @@ export interface ProvinceStats {
   education: {
     matricPassRate: number
     year: number
-    literacyRate: number
   }
   /** From Provinces at a glance (Census 2022), added when the data loads. */
   housing: ProvinceHousingShares
@@ -206,7 +203,6 @@ export interface ProvinceData {
   populationShare: number
   unemploymentRate: number
   unemploymentRank: number
-  gdpShare: number
   matricPassRate: number
   stats: ProvinceStats
 }

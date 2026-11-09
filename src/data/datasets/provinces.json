@@ -4,7 +4,7 @@
     "source_url": "https://www.statssa.gov.za/?page_id=1854&PPN=P0211",
     "update_frequency": "Quarterly — same release as national QLFS",
     "last_verified": "2026-10-19",
-    "notes": "Provincial official unemployment (LU1) is from QLFS Q2 2026 (published 2026-08-11), Table E — the same quarter as the national figure; all nine provinces share Q2 2026 and 'change' is the published quarter-on-quarter change in percentage points vs Q1 2026. 'trend' is 'stable' when |change| ≤ 0.1 pp. The legacy 'expanded' field is UNCHANGED (Q3 2025, legacy definition, not re-verified); LU3 (unemployment plus the potential labour force — a different measure) is supplied in the NEW optional fields 'lu3' and 'lu3Label' so it is never presented as the expanded rate. These additive fields need site-owner approval and a UI change (see antigravity-instructions.md). Matric pass rates (matricPassRate, stats.education) are for 2025, from the Department of Basic Education's 2025 NSC Examination Report, Table 2, page 8, as printed with two decimals (checked 2026-11-09); they replaced untraced 2024 values. The literacy, GDP share and legacy expanded-unemployment fields could not be traced to a held release and are not shown on the site. Rank 1 = lowest unemployment. Provincial population totals and shares were updated to Stats SA Mid-Year Population Estimates 2026 (P0302, published 2026-07-30; Appendix 1) so that the nine provinces sum to the national 63,522,380; the urban share (stats.population.urban) remains Census 2022. These are estimates for 2026 and are NOT comparable with the Census 2022 counts used for municipalities (which sum to 62.0M). Needs site-owner approval; to revert, restore population, populationShare and stats.population.total/source from the previous file. Housing is no longer stored here: the province pages compute it from the province rows of Census 2022 Provinces at a glance (src/data/census-provinces.json, pages 8 and 9 of each province section). The old electricityAccess, pipedWaterInDwelling and formalDwellings values had no traceable source and were removed on 2026-10-28.",
+    "notes": "Provincial official unemployment (LU1) is from QLFS Q2 2026 (published 2026-08-11), Table E — the same quarter as the national figure; all nine provinces share Q2 2026 and 'change' is the published quarter-on-quarter change in percentage points vs Q1 2026. 'trend' is 'stable' when |change| ≤ 0.1 pp. LU3 (unemployment plus the potential labour force, a different measure from the old expanded rate) is in 'lu3' and 'lu3Label', from the same Table E. Matric pass rates (matricPassRate, stats.education) are for 2025, from the Department of Basic Education's 2025 NSC Examination Report, Table 2, page 8, as printed with two decimals (checked 2026-11-09); they replaced untraced 2024 values. The literacy, GDP share and legacy expanded-unemployment fields could not be traced to a held release and were removed on 2026-11-09. Rank 1 = lowest unemployment. Provincial population totals and shares were updated to Stats SA Mid-Year Population Estimates 2026 (P0302, published 2026-07-30; Appendix 1) so that the nine provinces sum to the national 63,522,380; the urban share (stats.population.urban) remains Census 2022. These are estimates for 2026 and are NOT comparable with the Census 2022 counts used for municipalities (which sum to 62.0M). Needs site-owner approval; to revert, restore population, populationShare and stats.population.total/source from the previous file. Housing is no longer stored here: the province pages compute it from the province rows of Census 2022 Provinces at a glance (src/data/census-provinces.json, pages 8 and 9 of each province section). The old electricityAccess, pipedWaterInDwelling and formalDwellings values had no traceable source and were removed on 2026-10-28.",
     "public_notes": "Provincial official unemployment is from QLFS Q2 2026 (published 11 August 2026), Table E. Change is the published quarter-on-quarter change in percentage points against Q1 2026. The expanded unemployment rate is from Q3 2025 and uses the former definition. Provincial population totals are Stats SA Mid-Year Population Estimates for 2026 (P0302) and are not comparable with the Census 2022 counts used on municipality pages. Education and literacy fields keep their own reference years. Housing and services are from Census 2022 Provinces at a glance. Rank 1 is the lowest unemployment rate."
   },
   "provinces": [
@@ -16,16 +16,13 @@
       "populationShare": 12.2,
       "unemploymentRate": 19.5,
       "unemploymentRank": 1,
-      "gdpShare": 14.2,
       "matricPassRate": 88.14,
       "stats": {
         "unemployment": {
           "rate": 19.5,
-          "expanded": 25.7,
           "period": "Q2 2026",
           "trend": "stable",
           "change": -0.1,
-          "expandedPeriod": "Q3 2025 (legacy measure; Stats SA stopped publishing it after Q2 2025; value not re-verified)",
           "lu3": 26.1,
           "lu3Label": "Unemployment plus potential labour force (LU3), Q2 2026"
         },
@@ -36,8 +33,7 @@
         },
         "education": {
           "matricPassRate": 88.14,
-          "year": 2025,
-          "literacyRate": 92.4
+          "year": 2025
         }
       }
     },
@@ -49,16 +45,13 @@
       "populationShare": 25.7,
       "unemploymentRate": 34.6,
       "unemploymentRank": 5,
-      "gdpShare": 33.8,
       "matricPassRate": 89.00,
       "stats": {
         "unemployment": {
           "rate": 34.6,
-          "expanded": 39.6,
           "period": "Q2 2026",
           "trend": "up",
           "change": 0.5,
-          "expandedPeriod": "Q3 2025 (legacy measure; Stats SA stopped publishing it after Q2 2025; value not re-verified)",
           "lu3": 40.5,
           "lu3Label": "Unemployment plus potential labour force (LU3), Q2 2026"
         },
@@ -69,8 +62,7 @@
         },
         "education": {
           "matricPassRate": 89.00,
-          "year": 2025,
-          "literacyRate": 91.8
+          "year": 2025
         }
       }
     },
@@ -82,16 +74,13 @@
       "populationShare": 19.3,
       "unemploymentRate": 32.5,
       "unemploymentRank": 4,
-      "gdpShare": 15.9,
       "matricPassRate": 90.60,
       "stats": {
         "unemployment": {
           "rate": 32.5,
-          "expanded": 44.2,
           "period": "Q2 2026",
           "trend": "up",
           "change": 1.3,
-          "expandedPeriod": "Q3 2025 (legacy measure; Stats SA stopped publishing it after Q2 2025; value not re-verified)",
           "lu3": 47.8,
           "lu3Label": "Unemployment plus potential labour force (LU3), Q2 2026"
         },
@@ -102,8 +91,7 @@
         },
         "education": {
           "matricPassRate": 90.60,
-          "year": 2025,
-          "literacyRate": 85.3
+          "year": 2025
         }
       }
     },
@@ -115,16 +103,13 @@
       "populationShare": 11.1,
       "unemploymentRate": 47.5,
       "unemploymentRank": 9,
-      "gdpShare": 7.4,
       "matricPassRate": 84.17,
       "stats": {
         "unemployment": {
           "rate": 47.5,
-          "expanded": 50.1,
           "period": "Q2 2026",
           "trend": "up",
           "change": 2.9,
-          "expandedPeriod": "Q3 2025 (legacy measure; Stats SA stopped publishing it after Q2 2025; value not re-verified)",
           "lu3": 54.1,
           "lu3Label": "Unemployment plus potential labour force (LU3), Q2 2026"
         },
@@ -135,8 +120,7 @@
         },
         "education": {
           "matricPassRate": 84.17,
-          "year": 2025,
-          "literacyRate": 80.1
+          "year": 2025
         }
       }
     },
@@ -148,16 +132,13 @@
       "populationShare": 10.0,
       "unemploymentRate": 32.0,
       "unemploymentRank": 3,
-      "gdpShare": 6.6,
       "matricPassRate": 86.15,
       "stats": {
         "unemployment": {
           "rate": 32.0,
-          "expanded": 43.9,
           "period": "Q2 2026",
           "trend": "up",
           "change": 0.3,
-          "expandedPeriod": "Q3 2025 (legacy measure; Stats SA stopped publishing it after Q2 2025; value not re-verified)",
           "lu3": 46.7,
           "lu3Label": "Unemployment plus potential labour force (LU3), Q2 2026"
         },
@@ -168,8 +149,7 @@
         },
         "education": {
           "matricPassRate": 86.15,
-          "year": 2025,
-          "literacyRate": 78.4
+          "year": 2025
         }
       }
     },
@@ -181,16 +161,13 @@
       "populationShare": 8.1,
       "unemploymentRate": 36.6,
       "unemploymentRank": 6,
-      "gdpShare": 7.1,
       "matricPassRate": 86.55,
       "stats": {
         "unemployment": {
           "rate": 36.6,
-          "expanded": 48.4,
           "period": "Q2 2026",
           "trend": "up",
           "change": 0.3,
-          "expandedPeriod": "Q3 2025 (legacy measure; Stats SA stopped publishing it after Q2 2025; value not re-verified)",
           "lu3": 48.3,
           "lu3Label": "Unemployment plus potential labour force (LU3), Q2 2026"
         },
@@ -201,8 +178,7 @@
         },
         "education": {
           "matricPassRate": 86.55,
-          "year": 2025,
-          "literacyRate": 83.5
+          "year": 2025
         }
       }
     },
@@ -214,16 +190,13 @@
       "populationShare": 6.7,
       "unemploymentRate": 38.1,
       "unemploymentRank": 8,
-      "gdpShare": 5.8,
       "matricPassRate": 88.49,
       "stats": {
         "unemployment": {
           "rate": 38.1,
-          "expanded": 54.7,
           "period": "Q2 2026",
           "trend": "up",
           "change": 2.8,
-          "expandedPeriod": "Q3 2025 (legacy measure; Stats SA stopped publishing it after Q2 2025; value not re-verified)",
           "lu3": 56.0,
           "lu3Label": "Unemployment plus potential labour force (LU3), Q2 2026"
         },
@@ -234,8 +207,7 @@
         },
         "education": {
           "matricPassRate": 88.49,
-          "year": 2025,
-          "literacyRate": 84.1
+          "year": 2025
         }
       }
     },
@@ -247,16 +219,13 @@
       "populationShare": 4.8,
       "unemploymentRate": 37.3,
       "unemploymentRank": 7,
-      "gdpShare": 5.3,
       "matricPassRate": 89.17,
       "stats": {
         "unemployment": {
           "rate": 37.3,
-          "expanded": 43.1,
           "period": "Q2 2026",
           "trend": "down",
           "change": -0.5,
-          "expandedPeriod": "Q3 2025 (legacy measure; Stats SA stopped publishing it after Q2 2025; value not re-verified)",
           "lu3": 44.0,
           "lu3Label": "Unemployment plus potential labour force (LU3), Q2 2026"
         },
@@ -267,8 +236,7 @@
         },
         "education": {
           "matricPassRate": 89.17,
-          "year": 2025,
-          "literacyRate": 88.2
+          "year": 2025
         }
       }
     },
@@ -280,16 +248,13 @@
       "populationShare": 2.2,
       "unemploymentRate": 28.7,
       "unemploymentRank": 2,
-      "gdpShare": 2.5,
       "matricPassRate": 87.77,
       "stats": {
         "unemployment": {
           "rate": 28.7,
-          "expanded": 42.8,
           "period": "Q2 2026",
           "trend": "down",
           "change": -1.7,
-          "expandedPeriod": "Q3 2025 (legacy measure; Stats SA stopped publishing it after Q2 2025; value not re-verified)",
           "lu3": 47.1,
           "lu3Label": "Unemployment plus potential labour force (LU3), Q2 2026"
         },
@@ -300,8 +265,7 @@
         },
         "education": {
           "matricPassRate": 87.77,
-          "year": 2025,
-          "literacyRate": 87.4
+          "year": 2025
         }
       }
     }
