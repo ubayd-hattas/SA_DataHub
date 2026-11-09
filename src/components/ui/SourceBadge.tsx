@@ -17,7 +17,7 @@ export function SourceBadge({ source, className }: SourceBadgeProps) {
           <p className="text-xs text-slate-500 dark:text-slate-400">{source.publicationName}</p>
         )}
         {source.publicationDate && (
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-muted">
             Published{' '}
             {new Date(source.publicationDate).toLocaleDateString('en-ZA', {
               year: 'numeric',

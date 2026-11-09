@@ -134,12 +134,12 @@ export function CitationWidget({
         )}
       >
         <span className="flex items-center gap-2">
-          <Quote size={14} className="shrink-0 text-slate-400 dark:text-slate-500" />
+          <Quote size={14} className="shrink-0 text-muted" />
           Cite this dataset
         </span>
         {isOpen
-          ? <ChevronUp size={14} className="shrink-0 text-slate-400" />
-          : <ChevronDown size={14} className="shrink-0 text-slate-400" />
+          ? <ChevronUp size={14} className="shrink-0 text-muted" />
+          : <ChevronDown size={14} className="shrink-0 text-muted" />
         }
       </button>
 
@@ -189,7 +189,7 @@ export function CitationWidget({
               href={sourceUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-xs text-slate-400 hover:text-brand-600 dark:text-slate-500 dark:hover:text-brand-400"
+              className="inline-flex items-center gap-1 text-xs text-muted hover:text-brand-600 dark:hover:text-brand-400"
             >
               <ExternalLink size={11} />
               {sourceName}
@@ -223,7 +223,7 @@ export function CitationWidget({
 
           {/* Methodology note — only shown when entry has multiple sources */}
           {entry && (
-            <p className="text-xs text-slate-400 dark:text-slate-500">
+            <p className="text-xs text-muted">
               Individual indicators may cite different sources.{' '}
               <a
                 href="/methodology"
