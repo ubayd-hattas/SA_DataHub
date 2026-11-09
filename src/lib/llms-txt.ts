@@ -44,6 +44,7 @@ export function buildLlmsTxt(): string {
     '',
     link('All data series', SERIES_PATH, 'every statistic with its page, CSV and JSON'),
     link('Why do the numbers disagree?', '/why-numbers-differ', 'census count vs mid-year estimate vs UN projection for population; the four Stats SA unemployment measures (LU1 to LU4)'),
+    link('Glossary', '/glossary', "what the terms mean, with Stats SA's own definitions and page numbers"),
     link('Release calendar', CALENDAR_PATH, 'dates of the next releases, each from the previous release'),
     link('2026 local election results', ELECTIONS_PATH, 'turnout, PR vote shares and ward wins for all 213 municipalities'),
     ...EXPLAINERS.map((e) => link(e.title, `/explainers/${e.slug}`, e.summary)),

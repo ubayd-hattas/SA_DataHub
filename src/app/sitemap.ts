@@ -17,6 +17,7 @@ const STATIC_ROUTES: { path: string; priority: number; changeFrequency: Metadata
   { path: '/elections-2026', priority: 0.9, changeFrequency: 'weekly', lastModified: new Date('2026-11-07') },
   { path: '/calendar', priority: 0.8, changeFrequency: 'weekly', lastModified: new Date('2026-11-07') },
   { path: '/support', priority: 0.4, changeFrequency: 'yearly', lastModified: new Date('2026-11-08') },
+  { path: '/glossary', priority: 0.7, changeFrequency: 'monthly', lastModified: new Date('2026-11-09') },
   { path: '/why-numbers-differ', priority: 0.8, changeFrequency: 'monthly', lastModified: new Date('2026-11-07') },
   { path: '/downloads',    priority: 0.8, changeFrequency: 'weekly',  lastModified: new Date('2026-07-01') },
   { path: '/methodology',  priority: 0.7, changeFrequency: 'monthly', lastModified: new Date('2026-04-01') },

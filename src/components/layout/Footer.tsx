@@ -64,6 +64,7 @@ export function Footer() {
                 { label: 'Answers', href: '/answers' },
                 { label: 'Methodology', href: '/methodology' },
                 { label: 'Why numbers differ', href: '/why-numbers-differ' },
+                { label: 'Glossary', href: '/glossary' },
                 { label: 'About', href: '/about' },
                 { label: 'Changelog', href: '/changelog' },
                 { label: 'Help improve SA Data Hub', href: '/support' },
