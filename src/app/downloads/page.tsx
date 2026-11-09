@@ -128,7 +128,7 @@ function DatasetDownloadCard({ entry }: { entry: DatasetRegistryEntry }) {
       </div>
 
       {/* Source */}
-      <div className="flex items-center gap-1.5 text-xs text-slate-400 dark:text-slate-500">
+      <div className="flex items-center gap-1.5 text-xs text-muted">
         <span>Source:</span>
         <a
           href={entry.sourceUrl}
@@ -140,12 +140,12 @@ function DatasetDownloadCard({ entry }: { entry: DatasetRegistryEntry }) {
           <ExternalLink size={10} />
         </a>
         {entry.publicationName && (
-          <span className="text-slate-400 dark:text-slate-500">— {entry.publicationName}</span>
+          <span className="text-muted">— {entry.publicationName}</span>
         )}
       </div>
 
       {entry.publicNotes && (
-        <p className="text-xs leading-relaxed text-slate-400 dark:text-slate-500">
+        <p className="text-xs leading-relaxed text-muted">
           Notes: {entry.publicNotes}
         </p>
       )}
@@ -252,7 +252,7 @@ export default function DownloadsPage() {
         </div>
 
         {/* Bottom note */}
-        <p className="mt-10 text-center text-xs text-slate-400 dark:text-slate-500">
+        <p className="mt-10 text-center text-xs text-muted">
           Data sourced from Statistics South Africa, the South African Reserve Bank, SAPS, and other official bodies.
           Not affiliated with any government department.
           <Link href="/methodology" className="ml-1 hover:text-brand-600 dark:hover:text-brand-400">
