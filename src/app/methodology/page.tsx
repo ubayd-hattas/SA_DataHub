@@ -395,9 +395,9 @@ export default function MethodologyPage() {
               ].map((row) => (
                 <tr key={row.name} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
                   <td className="px-4 py-3 font-medium text-slate-900 dark:text-white">{row.name}</td>
-                  <td className="px-4 py-3 text-slate-600 dark:text-slate-400">{row.freq}</td>
-                  <td className="px-4 py-3 text-slate-600 dark:text-slate-400">{row.lag}</td>
-                  <td className="px-4 py-3 text-xs text-slate-400 hidden sm:table-cell">{row.auto}</td>
+                  <td className="px-4 py-3 text-slate-600">{row.freq}</td>
+                  <td className="px-4 py-3 text-slate-600">{row.lag}</td>
+                  <td className="px-4 py-3 text-xs text-muted hidden sm:table-cell">{row.auto}</td>
                 </tr>
               ))}
             </tbody>
@@ -424,7 +424,7 @@ export default function MethodologyPage() {
               </div>
 
               <div className="mb-3">
-                <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1">Source</p>
+                <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">Source</p>
                 <a
                   href={d.sourceUrl}
                   target="_blank"
@@ -436,18 +436,18 @@ export default function MethodologyPage() {
               </div>
 
               <div className="mb-3">
-                <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1">Definition</p>
-                <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">{d.definition}</p>
+                <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">Definition</p>
+                <p className="text-sm text-slate-700 leading-relaxed">{d.definition}</p>
               </div>
 
               {d.limitations.length > 0 && (
                 <div>
-                  <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2 flex items-center gap-1">
+                  <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-2 flex items-center gap-1">
                     <AlertTriangle size={11} /> Known Limitations
                   </p>
                   <ul className="space-y-1">
                     {d.limitations.map((lim, i) => (
-                      <li key={i} className="text-xs text-slate-500 dark:text-slate-400 flex items-start gap-2">
+                      <li key={i} className="text-xs text-slate-500 flex items-start gap-2">
                         <span className="mt-1.5 h-1 w-1 rounded-full bg-amber-400 shrink-0" />
                         {lim}
                       </li>
@@ -466,7 +466,7 @@ export default function MethodologyPage() {
           <SectionIcon icon={CheckCircle} />
           <h2 className="font-semibold text-xl text-slate-900 dark:text-white">Verification Process</h2>
         </div>
-        <div className="card p-5 space-y-4 text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+        <div className="card p-5 space-y-4 text-sm text-slate-600 leading-relaxed">
           <p>
             All data is sourced directly from official statistical publications and cross-referenced with the original press releases before publication. Rather than relying on unverified third-party automated aggregators, headline figures and series are curated from official primary releases (Stats SA, SARB, DBE, SAPS) and validated against historical trends and official statistical tables.
           </p>
