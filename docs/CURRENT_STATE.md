@@ -51,7 +51,6 @@ The main menu has five sections: What changed, Your area, Topics, Tools and Abou
 - Release explainers wait on the releases: QLFS Q3 (November), CPI October (18 November), the MPC decision (19 November) and GDP Q3 (December). There is no GDP or MPC explainer template yet.
 - Election results have no council seats: the IEC voting-station files don't include the seat calculation.
 - The population series for 2015 to 2024 is calculated back from growth rates, not taken from Stats SA's published series.
-- The prime rate is filed under GDP and economy while the repo rate is under inflation.
 - The Matric 2024 story still has unsourced provincial figures.
 - No source the site holds covers the Census 2022 undercount yet, so the planned Post-Enumeration Survey explainer is waiting on those documents.
 - Annual crime figures end at 2023/24 until the SAPS annual release is added.
