@@ -33,6 +33,24 @@ describe('release calendar data', () => {
     expect(order.indexOf('qlfs-2026-q3')).toBeLessThan(order.indexOf('cpi-2026-10'))
     expect(order.at(-1)).toBe('mye-2027')
   })
+
+  it('dates the next two GDP releases from the Q1 2026 release', () => {
+    const gdp = RELEASE_CALENDAR.filter((r) => r.code === 'P0441')
+    expect(gdp.map((r) => [r.period, r.date])).toEqual([
+      ['Q3 2026', '2026-12-01'],
+      ['Q4 2026', '2027-03-09'],
+    ])
+    for (const r of gdp) expect(r.source.document).toContain('first quarter 2026')
+  })
+
+  it('lists no release as undated while every one has a printed date', async () => {
+    const { renderToStaticMarkup } = await import('react-dom/server')
+    const { default: CalendarPage } = await import('@/app/calendar/page')
+    const html = renderToStaticMarkup(CalendarPage())
+    expect(UNSCHEDULED_RELEASES).toHaveLength(0)
+    expect(html).not.toContain('Not dated yet')
+    expect(html).toContain('Gross domestic product')
+  })
 })
 
 describe('release calendar .ics', () => {

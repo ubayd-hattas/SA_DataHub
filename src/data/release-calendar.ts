@@ -39,6 +39,11 @@ const CPI_SEP_2026: Omit<ReleaseSource, 'location'> = {
   checkedOn: '2026-11-07',
 }
 
+const GDP_Q1_2026: Omit<ReleaseSource, 'location'> = {
+  document: 'Stats SA, Gross domestic product, first quarter 2026 (P0441)',
+  checkedOn: '2026-11-09',
+}
+
 export const RELEASE_CALENDAR: ScheduledRelease[] = [
   {
     id: 'qlfs-2026-q3',
@@ -99,6 +104,26 @@ export const RELEASE_CALENDAR: ScheduledRelease[] = [
     href: '/category/inflation',
   },
   {
+    id: 'gdp-2026-q3',
+    title: 'Gross domestic product',
+    publisher: STATS_SA,
+    code: 'P0441',
+    period: 'Q3 2026',
+    date: '2026-12-01',
+    source: { ...GDP_Q1_2026, location: 'page 18, "Forthcoming issues"' },
+    href: '/category/gdp',
+  },
+  {
+    id: 'gdp-2026-q4',
+    title: 'Gross domestic product',
+    publisher: STATS_SA,
+    code: 'P0441',
+    period: 'Q4 2026',
+    date: '2027-03-09',
+    source: { ...GDP_Q1_2026, location: 'page 18, "Forthcoming issues"' },
+    href: '/category/gdp',
+  },
+  {
     id: 'mye-2027',
     title: 'Mid-year population estimates',
     publisher: STATS_SA,
@@ -114,18 +139,18 @@ export const RELEASE_CALENDAR: ScheduledRelease[] = [
   },
 ]
 
-/** Releases SA Data Hub covers whose next date is not printed in any document it holds. */
-export const UNSCHEDULED_RELEASES = [
-  {
-    title: 'Gross domestic product',
-    publisher: STATS_SA,
-    code: 'P0441',
-    period: 'Q3 2026',
-    reason:
-      'Each GDP release prints the date of the next one. SA Data Hub holds the Q1 2026 release, which gave the Q2 date; the Q3 date is in the Q2 release, which the site does not hold yet.',
-    href: '/category/gdp',
-  },
-]
+export interface UnscheduledRelease {
+  title: string
+  publisher: string
+  code: string
+  period: string
+  /** Why no date is shown. */
+  reason: string
+  href: string
+}
+
+/** Releases SA Data Hub covers whose next date is not printed in any document it holds. Empty when every one is dated. */
+export const UNSCHEDULED_RELEASES: UnscheduledRelease[] = []
 
 /** Sort key: the date, or the first of the month when only the month is known. */
 export function releaseSortKey(r: Pick<ScheduledRelease, 'date' | 'month'>): string {

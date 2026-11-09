@@ -83,23 +83,25 @@ export default function CalendarPage() {
         </Section>
       ))}
 
-      <Section id="not-yet-dated" title="Not dated yet">
-        <ul className="space-y-6">
-          {UNSCHEDULED_RELEASES.map((r) => (
-            <li key={`${r.code}-${r.period}`}>
-              <p className="font-display text-h3 font-semibold text-ink">
-                <Link href={r.href} className={linkClass}>
-                  {r.title}, {r.period}
-                </Link>
-              </p>
-              <p className="mt-1 text-small text-muted">
-                {r.publisher}, {r.code}
-              </p>
-              <p className="mt-2 text-small text-ink">{r.reason}</p>
-            </li>
-          ))}
-        </ul>
-      </Section>
+      {UNSCHEDULED_RELEASES.length > 0 && (
+        <Section id="not-yet-dated" title="Not dated yet">
+          <ul className="space-y-6">
+            {UNSCHEDULED_RELEASES.map((r) => (
+              <li key={`${r.code}-${r.period}`}>
+                <p className="font-display text-h3 font-semibold text-ink">
+                  <Link href={r.href} className={linkClass}>
+                    {r.title}, {r.period}
+                  </Link>
+                </p>
+                <p className="mt-1 text-small text-muted">
+                  {r.publisher}, {r.code}
+                </p>
+                <p className="mt-2 text-small text-ink">{r.reason}</p>
+              </li>
+            ))}
+          </ul>
+        </Section>
+      )}
 
       <Section id="about-dates" title="About these dates">
         <Prose className="text-small">
