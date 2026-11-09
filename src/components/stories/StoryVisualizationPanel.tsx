@@ -21,7 +21,7 @@ interface StoryVisualizationPanelProps {
 export function StoryVisualizationPanel({ config, stat, className }: StoryVisualizationPanelProps) {
   if (!stat.series || stat.series.length === 0) {
     return (
-      <div className={`flex h-[300px] items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50 text-sm text-slate-400 dark:border-slate-800 dark:bg-slate-900/50 ${className}`}>
+      <div className={`flex h-[300px] items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50 text-sm text-muted dark:border-slate-800 dark:bg-slate-900/50 ${className}`}>
         No series data available for {stat.id}
       </div>
     )

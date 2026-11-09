@@ -100,7 +100,7 @@ export function StoryChapterText({
       {/* Citation row */}
       {citationStats.length > 0 && (
         <div className="mt-6 flex flex-wrap gap-2 border-t border-slate-100 pt-4 dark:border-slate-800">
-          <span className="self-center text-xs text-slate-400">Sources:</span>
+          <span className="self-center text-xs text-muted">Sources:</span>
           {citationStats.map((stat) => (
             <a
               key={stat.id}
