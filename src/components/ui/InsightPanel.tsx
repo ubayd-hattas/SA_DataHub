@@ -79,7 +79,7 @@ export function InsightPanel({ insight, className, compact = false }: InsightPan
               {typeLabels[insight.type]}
             </span>
             {insight.generatedFrom && !compact && (
-              <span className="text-xs text-slate-400">
+              <span className="text-xs text-muted">
                 Based on {insight.generatedFrom}
               </span>
             )}

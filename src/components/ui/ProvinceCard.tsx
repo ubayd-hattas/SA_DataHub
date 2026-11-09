@@ -28,12 +28,12 @@ export function ProvinceCard({ province, metric = 'unemployment' }: ProvinceCard
           <h3 className="font-semibold text-slate-900 dark:text-white group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors">
             {province.name}
           </h3>
-          <div className="mt-0.5 flex items-center gap-1 text-xs text-slate-400">
+          <div className="mt-0.5 flex items-center gap-1 text-xs text-muted">
             <MapPin size={10} />
             {province.capital}
           </div>
         </div>
-        <span className="shrink-0 text-xs font-medium text-slate-400">
+        <span className="shrink-0 text-xs font-medium text-muted">
           #{province.unemploymentRank} lowest
         </span>
       </div>
@@ -51,20 +51,20 @@ export function ProvinceCard({ province, metric = 'unemployment' }: ProvinceCard
               {Math.abs(unem.change).toFixed(1)}pp
             </span>
           </div>
-          <p className="text-xs text-slate-400">{unem.period}</p>
+          <p className="text-xs text-muted">{unem.period}</p>
         </div>
         <div>
           <p className="text-xs text-slate-500 dark:text-slate-400">Matric Pass</p>
           <p className="font-mono text-xl font-medium text-slate-900 dark:text-white">
             {province.matricPassRate}%
           </p>
-          <p className="text-xs text-slate-400">2024</p>
+          <p className="text-xs text-muted">2024</p>
         </div>
       </div>
 
       {/* Population bar */}
       <div>
-        <div className="mb-1 flex justify-between text-xs text-slate-400">
+        <div className="mb-1 flex justify-between text-xs text-muted">
           <span>Population share</span>
           <span>{province.populationShare}%</span>
         </div>

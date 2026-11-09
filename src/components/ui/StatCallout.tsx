@@ -43,7 +43,7 @@ export function StatCallout({ stat, className }: StatCalloutProps) {
               size="sm"
             />
             {stat.changeLabel && (
-              <span className="text-xs text-slate-400">{stat.changeLabel}</span>
+              <span className="text-xs text-muted">{stat.changeLabel}</span>
             )}
           </div>
         </div>
@@ -57,7 +57,7 @@ export function StatCallout({ stat, className }: StatCalloutProps) {
           <p className="mt-1 line-clamp-2 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
             {stat.description}
           </p>
-          <p className="mt-2 text-xs text-slate-400">
+          <p className="mt-2 text-xs text-muted">
             {stat.source.shortName}
             {stat.lastUpdated && (
               <> · Updated {formatDate(stat.lastUpdated)}</>

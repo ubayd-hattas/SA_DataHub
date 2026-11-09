@@ -61,7 +61,7 @@ export function FreshnessIndicator({
   if (compact) {
     return (
       <div className={cn('flex items-center gap-1.5 text-xs', className)}>
-        <Clock size={11} className="text-slate-400 shrink-0" />
+        <Clock size={11} className="text-muted shrink-0" />
         <span className="text-slate-500 dark:text-slate-400">
           {formatRelativeDate(lastUpdated)}
         </span>
@@ -84,7 +84,7 @@ export function FreshnessIndicator({
           {/* Date info */}
           <div className="space-y-1">
             <div className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-300">
-              <Clock size={11} className="text-slate-400 shrink-0" />
+              <Clock size={11} className="text-muted shrink-0" />
               <span>
                 Last updated:{' '}
                 <strong className="font-medium">{formatAbsoluteDate(lastUpdated)}</strong>
@@ -94,13 +94,13 @@ export function FreshnessIndicator({
 
             {updateFrequency && (
               <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
-                <RefreshCw size={11} className="text-slate-400 shrink-0" />
+                <RefreshCw size={11} className="text-muted shrink-0" />
                 <span>Update frequency: <strong className="font-medium text-slate-600 dark:text-slate-300">{updateFrequency}</strong></span>
               </div>
             )}
 
             <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
-              <span className="text-slate-400">Source:</span>
+              <span className="text-muted">Source:</span>
               <a
                 href={source.url}
                 target="_blank"
@@ -112,7 +112,7 @@ export function FreshnessIndicator({
             </div>
 
             {(source.publicationName ?? source.release) && (
-              <div className="text-xs text-slate-400">
+              <div className="text-xs text-muted">
                 {source.publicationName ?? source.release}
                 {source.publicationDate && (
                   <span> · {formatAbsoluteDate(source.publicationDate)}</span>

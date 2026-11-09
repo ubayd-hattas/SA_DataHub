@@ -48,7 +48,7 @@ export function StoryCard({ story, featured = false }: StoryCardProps) {
                 Featured
               </span>
             </div>
-            <div className="flex shrink-0 items-center gap-1.5 text-xs text-slate-400">
+            <div className="flex shrink-0 items-center gap-1.5 text-xs text-muted">
               <Clock size={11} aria-hidden="true" />
               <span>{story.readingTimeMinutes} min read</span>
             </div>
@@ -67,7 +67,7 @@ export function StoryCard({ story, featured = false }: StoryCardProps) {
             </p>
 
             <div className="mt-5 flex items-center justify-between gap-4">
-              <div className="flex items-center gap-1.5 text-xs text-slate-400">
+              <div className="flex items-center gap-1.5 text-xs text-muted">
                 <Calendar size={11} aria-hidden="true" />
                 <time dateTime={story.publishedDate}>{formatStoryDate(story.publishedDate)}</time>
               </div>
@@ -92,7 +92,7 @@ export function StoryCard({ story, featured = false }: StoryCardProps) {
               {story.categoryLabel}
             </span>
           </div>
-          <div className="flex shrink-0 items-center gap-1 text-[11px] text-slate-400">
+          <div className="flex shrink-0 items-center gap-1 text-[11px] text-muted">
             <Clock size={10} aria-hidden="true" />
             <span>{story.readingTimeMinutes} min</span>
           </div>
@@ -113,7 +113,7 @@ export function StoryCard({ story, featured = false }: StoryCardProps) {
           <div className="flex items-center justify-between border-t border-slate-100 pt-3 dark:border-slate-800">
             <time
               dateTime={story.publishedDate}
-              className="text-xs text-slate-400"
+              className="text-xs text-muted"
             >
               {formatStoryDate(story.publishedDate)}
             </time>

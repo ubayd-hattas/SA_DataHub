@@ -47,7 +47,7 @@ export function SearchBar({
       <Search
         size={iconSizes[size]}
         className={cn(
-          'pointer-events-none absolute top-1/2 -translate-y-1/2 text-slate-400',
+          'pointer-events-none absolute top-1/2 -translate-y-1/2 text-muted',
           size === 'sm' && 'left-3',
           size === 'md' && 'left-3.5',
           size === 'lg' && 'left-4'
@@ -71,7 +71,7 @@ export function SearchBar({
           type="button"
           onClick={() => setQuery('')}
           className={cn(
-            'absolute top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200',
+            'absolute top-1/2 -translate-y-1/2 text-muted hover:text-slate-600 dark:hover:text-slate-200',
             size === 'sm' && 'right-2.5',
             size === 'md' && 'right-3.5',
             size === 'lg' && 'right-4'

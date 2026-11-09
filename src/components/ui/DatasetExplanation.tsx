@@ -72,8 +72,8 @@ export function DatasetExplanation({ stat, className, defaultOpen = false }: Dat
           </span>
         </div>
         {open
-          ? <ChevronUp size={16} className="text-slate-400 shrink-0" />
-          : <ChevronDown size={16} className="text-slate-400 shrink-0" />
+          ? <ChevronUp size={16} className="text-muted shrink-0" />
+          : <ChevronDown size={16} className="text-muted shrink-0" />
         }
       </button>
 

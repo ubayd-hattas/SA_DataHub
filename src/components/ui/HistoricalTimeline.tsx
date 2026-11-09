@@ -116,14 +116,14 @@ export function HistoricalTimeline({
           <XAxis
             dataKey="label"
             tick={{ fontSize: 10, fill: 'currentColor' }}
-            className="text-slate-400"
+            className="text-muted"
             tickLine={false}
             axisLine={false}
             interval="preserveStartEnd"
           />
           <YAxis
             tick={{ fontSize: 10, fill: 'currentColor' }}
-            className="text-slate-400"
+            className="text-muted"
             tickLine={false}
             axisLine={false}
           />
@@ -168,7 +168,7 @@ export function HistoricalTimeline({
         {showEvents && visibleEvents.length > 0 && (
           <>
             <span className="mx-1 text-slate-300 dark:text-slate-700">|</span>
-            <span className="text-xs text-slate-400">Key events:</span>
+            <span className="text-xs text-muted">Key events:</span>
             {Object.entries(EVENT_COLORS).map(([type, color]) => {
               const hasEvents = visibleEvents.some((e) => e.type === type)
               if (!hasEvents) return null
@@ -186,7 +186,7 @@ export function HistoricalTimeline({
       {/* Events list */}
       {showEvents && visibleEvents.length > 0 && (
         <div className="mt-4 space-y-2 border-t border-slate-100 pt-3 dark:border-slate-800">
-          <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Key events on timeline</p>
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted">Key events on timeline</p>
           <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
             {visibleEvents.map((event) => (
               <div
@@ -201,7 +201,7 @@ export function HistoricalTimeline({
                   <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
                     {event.date} — {event.label}
                   </span>
-                  <p className="text-xs text-slate-400 leading-relaxed">{event.description}</p>
+                  <p className="text-xs text-muted leading-relaxed">{event.description}</p>
                 </div>
               </div>
             ))}

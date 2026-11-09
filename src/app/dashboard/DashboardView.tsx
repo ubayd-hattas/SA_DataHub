@@ -68,7 +68,7 @@ function SearchResultRow({ result }: { result: SearchResult }) {
           <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400 line-clamp-2">{result.subtitle}</p>
         )}
         <p className="mt-1 text-sm font-semibold text-brand-600 dark:text-brand-400">{result.value}</p>
-        <p className="text-xs text-slate-400">{result.categoryLabel}</p>
+        <p className="text-xs text-muted">{result.categoryLabel}</p>
       </div>
       <ArrowRight size={16} className="mt-1 shrink-0 text-slate-300" />
     </Link>
@@ -165,7 +165,7 @@ export default function DashboardView({ statistics, categories, provinces, regis
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               {/* Category */}
               <div>
-                <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-slate-400">
+                <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-muted">
                   Category
                 </label>
                 <div className="flex flex-wrap gap-1.5">
@@ -188,7 +188,7 @@ export default function DashboardView({ statistics, categories, provinces, regis
 
               {/* Province */}
               <div>
-                <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-slate-400">
+                <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-muted">
                   Province
                 </label>
                 <select
@@ -203,7 +203,7 @@ export default function DashboardView({ statistics, categories, provinces, regis
                   ))}
                 </select>
                 {selectedProvince !== 'all' && (
-                  <p className="mt-1.5 text-xs text-slate-400">
+                  <p className="mt-1.5 text-xs text-muted">
                     Note: provincial breakdowns coming in a future update.
                   </p>
                 )}
@@ -251,7 +251,7 @@ export default function DashboardView({ statistics, categories, provinces, regis
           <h2 className="section-label mb-4">All statistics</h2>
           {filtered.length === 0 ? (
             <div className="card flex flex-col items-center justify-center py-16 text-center">
-              <p className="text-slate-400">
+              <p className="text-muted">
                 {search.trim() ? 'No statistics in this category for your search.' : 'No statistics match your filters.'}
               </p>
               <button
@@ -315,7 +315,7 @@ export default function DashboardView({ statistics, categories, provinces, regis
         </div>
 
         {/* Source note */}
-        <p className="mt-10 text-center text-xs text-slate-400">
+        <p className="mt-10 text-center text-xs text-muted">
           All data sourced from official South African government publications.
           See individual statistics for specific source attribution.
         </p>

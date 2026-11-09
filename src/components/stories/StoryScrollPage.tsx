@@ -103,7 +103,7 @@ export function StoryScrollPage({ story, stats }: StoryScrollPageProps) {
                 role="img"
                 aria-label="No visualization for this chapter"
               >
-                <p className="text-sm text-slate-400">No chart for this chapter</p>
+                <p className="text-sm text-muted">No chart for this chapter</p>
               </div>
             )}
           </div>

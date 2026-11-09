@@ -88,7 +88,7 @@ export function LineChartCard({
       <div className="card p-5">
         <p className="mb-4 text-sm font-semibold text-slate-700 dark:text-slate-200">{title}</p>
         <div
-          className="flex h-40 items-center justify-center rounded-xl border border-dashed border-slate-200 text-sm text-slate-400 dark:border-slate-700"
+          className="flex h-40 items-center justify-center rounded-xl border border-dashed border-slate-200 text-sm text-muted dark:border-slate-700"
           role="img"
           aria-label={`${title} — no data available`}
         >
@@ -119,13 +119,13 @@ export function LineChartCard({
             <XAxis
               dataKey="label"
               tick={{ fontSize: 11, fill: 'currentColor' }}
-              className="text-slate-400"
+              className="text-muted"
               tickLine={false}
               axisLine={false}
             />
             <YAxis
               tick={{ fontSize: 11, fill: 'currentColor' }}
-              className="text-slate-400"
+              className="text-muted"
               tickLine={false}
               axisLine={false}
             />
@@ -170,7 +170,7 @@ export function LineChartCard({
       {(unit || stat?.source) && (
         <div className="mt-3 flex items-center justify-between gap-2 border-t border-slate-100 pt-3 dark:border-slate-800">
           {unit && (
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-muted">
               <span className="font-medium">Unit:</span> {unit}
             </p>
           )}
@@ -179,7 +179,7 @@ export function LineChartCard({
               href={stat.source.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-xs text-slate-400 transition-colors hover:text-brand-600 dark:hover:text-brand-400"
+              className="text-xs text-muted transition-colors hover:text-brand-600 dark:hover:text-brand-400"
             >
               {stat.source.shortName}
             </a>

@@ -51,11 +51,11 @@ export function StatCard({ stat, compact = false, href }: StatCardProps) {
           <div className="flex items-baseline gap-1.5">
             <p className="stat-value">{stat.value}</p>
             {stat.unit && stat.unit !== '%' && (
-              <span className="text-sm text-slate-400 dark:text-slate-500">{stat.unit}</span>
+              <span className="text-sm text-muted">{stat.unit}</span>
             )}
           </div>
           {stat.changeLabel && (
-            <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">{stat.changeLabel}</p>
+            <p className="mt-1 text-xs text-muted">{stat.changeLabel}</p>
           )}
         </div>
 
@@ -67,7 +67,7 @@ export function StatCard({ stat, compact = false, href }: StatCardProps) {
         )}
 
         {/* Footer — date + source */}
-        <div className="flex items-center gap-1.5 border-t border-slate-100 pt-3 text-xs text-slate-400 dark:border-slate-800 dark:text-slate-500">
+        <div className="flex items-center gap-1.5 border-t border-slate-100 pt-3 text-xs text-muted dark:border-slate-800">
           <Clock size={11} aria-hidden="true" />
           <span>Updated {formatDate(stat.lastUpdated)}</span>
           <span className="mx-1 text-slate-200 dark:text-slate-700">·</span>

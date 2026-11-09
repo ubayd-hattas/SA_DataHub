@@ -68,3 +68,18 @@ describe.each([':root', '.dark'] as const)('colour tokens in %s meet WCAG AA', (
     expect(contrast(t.rule, t.paper)).toBeLessThan(2)
   })
 })
+
+describe('text contrast', () => {
+  it('uses no light-mode text-slate-400, which is 2.4:1 on the paper background', async () => {
+    const { readdirSync, statSync } = await import('node:fs')
+    const walk = (dir: string): string[] =>
+      readdirSync(dir).flatMap((name) => {
+        const path = join(dir, name)
+        return statSync(path).isDirectory() ? walk(path) : path.endsWith('.tsx') ? [path] : []
+      })
+    const offenders = walk(join(process.cwd(), 'src')).filter((file) =>
+      /(^|[\s"'`])text-slate-400(?![\w-])/.test(readFileSync(file, 'utf8')),
+    )
+    expect(offenders).toEqual([])
+  })
+})

@@ -53,7 +53,7 @@ export function StoryStatCallout({ stat, className }: StoryStatCalloutProps) {
         </div>
 
         {stat.changeLabel && (
-          <p className="text-xs text-slate-400">{stat.changeLabel}</p>
+          <p className="text-xs text-muted">{stat.changeLabel}</p>
         )}
 
         <div className="border-t border-slate-100 pt-2 dark:border-slate-800">
