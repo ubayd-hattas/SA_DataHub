@@ -3,12 +3,13 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import {
   MapPin, ArrowLeft, TrendingUp, TrendingDown, Minus,
-  Users, GraduationCap, Home, BarChart3,
+  Users, GraduationCap, Home,
   ArrowRight,
 } from 'lucide-react'
-import { getProvinceById, getProvinceData, getMunicipalitiesByProvince } from '@/data/mock'
+import { getProvinceById, getProvinceData, getMunicipalitiesByProvince, getStatById } from '@/data/mock'
+import type { ProvinceData } from '@/types'
 import { cn, getProvinceCodeFromSlug } from '@/lib/utils'
-import { formatPercent } from '@/lib/format'
+import { formatDecimal, formatPercent } from '@/lib/format'
 import { buildPageMetadata } from '@/lib/seo'
 import { provinceDescription, provinceTitle } from '@/lib/page-seo'
 import { Breadcrumbs } from '@/components/seo/Breadcrumbs'
@@ -31,16 +32,20 @@ const PROVINCE_COLORS: Record<string, string> = {
   'northern-cape':  '#14b8a6',
 }
 
-const PROVINCE_DESCRIPTIONS: Record<string, string> = {
-  'western-cape': 'The Western Cape is South Africa\'s most economically productive province per capita and home to Cape Town. It consistently records the lowest unemployment rate nationally, driven by tourism, finance, and agri-processing sectors.',
-  'gauteng': 'Gauteng is the economic powerhouse of South Africa, contributing over a third of national GDP despite being the smallest province by area. Johannesburg and Pretoria (Tshwane) are its dominant cities, anchoring banking, mining services, and government.',
-  'kwazulu-natal': 'KwaZulu-Natal is South Africa\'s third-largest economy, centred on Durban\'s port — the busiest in sub-Saharan Africa. Agriculture, logistics, and manufacturing are key sectors alongside a growing automotive industry.',
-  'eastern-cape': 'The Eastern Cape faces structural economic challenges with high unemployment and poverty rates. The province is home to Nelson Mandela Bay (Port Elizabeth/Gqeberha) and a significant automotive manufacturing cluster.',
-  'limpopo': 'Limpopo is rich in mineral resources including platinum, chrome, and coal. Despite this, high unemployment persists. The province borders Zimbabwe, Botswana, and Mozambique and is a key agricultural producer.',
-  'mpumalanga': 'Mpumalanga is central to South Africa\'s energy supply, hosting most of Eskom\'s coal-fired power stations. Tourism around the Kruger National Park and Blyde River Canyon supports a growing services sector.',
-  'north-west': 'North West records one of the highest unemployment rates nationally. The Bushveld Complex, the world\'s largest known platinum deposit, anchors the mining economy. Rustenburg is the provincial economic hub.',
-  'free-state': 'The Free State is centrally located and primarily agricultural, producing significant shares of the nation\'s grain. Bloemfontein serves as the judicial capital of South Africa and the provincial capital.',
-  'northern-cape': 'The Northern Cape is South Africa\'s largest province by area but smallest by population. Mining (iron ore, manganese, diamonds) and agriculture drive the economy. Upington and Kimberley are major centres.',
+/**
+ * The page's opening sentence, built from the province's sourced figures:
+ * the 2026 mid-year population estimate, the Q2 2026 unemployment rate and
+ * its rank (QLFS Table E), and the 2025 matric pass rate (NSC 2025 Table 2).
+ */
+function provinceSummary(p: ProvinceData): string {
+  const unem = p.stats.unemployment
+  const rank =
+    p.unemploymentRank === 1
+      ? 'the lowest of the nine provinces'
+      : p.unemploymentRank === 9
+        ? 'the highest of the nine provinces'
+        : `number ${p.unemploymentRank} of nine, from lowest to highest`
+  return `${p.name} had an estimated ${formatDecimal(p.population / 1_000_000, 2)} million people in mid-2026, ${formatPercent(p.populationShare)} of South Africa. Its official unemployment rate was ${formatPercent(unem.rate)} in ${unem.period}, ${rank}. ${formatPercent(p.matricPassRate, 2)} of its full-time matric candidates passed in 2025.`
 }
 
 export function generateStaticParams() {
@@ -102,7 +107,7 @@ export default async function ProvincePage({ params }: ProvincePageProps) {
 
   const allProvinces = getProvinceData()
   const color = PROVINCE_COLORS[province.id] ?? '#64748b'
-  const description = PROVINCE_DESCRIPTIONS[province.id] ?? ''
+  const description = provinceSummary(province)
 
   const unem = province.stats.unemployment
   const edu = province.stats.education
@@ -113,9 +118,9 @@ export default async function ProvincePage({ params }: ProvincePageProps) {
   const TrendIcon = trend === 'down' ? TrendingDown : trend === 'up' ? TrendingUp : Minus
   const trendColor = trend === 'down' ? 'text-green-500' : trend === 'up' ? 'text-red-500' : 'text-muted'
 
-  // National averages
-  const avgUnemployment = allProvinces.reduce((s, p) => s + p.unemploymentRate, 0) / allProvinces.length
-  const avgMatric = allProvinces.reduce((s, p) => s + p.matricPassRate, 0) / allProvinces.length
+  // South Africa's own figures, not an unweighted mean of the nine provinces.
+  const nationalUnemployment = getStatById('unemployment-national')!.rawValue
+  const nationalMatric = getStatById('matric-pass-rate')!.rawValue
 
   // Neighbouring provinces for nav (sorted by id for simplicity)
   const sorted = [...allProvinces].sort((a, b) => a.name.localeCompare(b.name))
@@ -182,17 +187,13 @@ export default async function ProvincePage({ params }: ProvincePageProps) {
             </div>
           )}
           <div className="mt-1 text-xs text-muted">
-            Expanded: <span className="font-medium text-slate-700 dark:text-slate-300">{unem.expanded}%</span>
-            <span className="text-[11px] block text-muted">Legacy measure (Q3 2025)</span>
-          </div>
-          <div className="mt-1 text-xs text-muted">
-            National avg: {avgUnemployment.toFixed(1)}%
+            South Africa: {formatPercent(nationalUnemployment)}
           </div>
         </div>
       </div>
 
       {/* Key stats grid */}
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
         <StatBlock
           label="Population (2026 est.)"
           value={(province.population / 1_000_000).toFixed(2) + 'M'}
@@ -201,16 +202,9 @@ export default async function ProvincePage({ params }: ProvincePageProps) {
           color="bg-blue-500"
         />
         <StatBlock
-          label="GDP Share"
-          value={province.gdpShare + '%'}
-          sub="of national GDP"
-          icon={BarChart3}
-          color="bg-brand-600"
-        />
-        <StatBlock
           label="Matric Pass"
-          value={province.matricPassRate + '%'}
-          sub={'2024 · avg ' + avgMatric.toFixed(1) + '%'}
+          value={formatPercent(province.matricPassRate, 2)}
+          sub={'2025 · South Africa ' + formatPercent(nationalMatric)}
           icon={GraduationCap}
           color="bg-purple-500"
         />
@@ -228,7 +222,7 @@ export default async function ProvincePage({ params }: ProvincePageProps) {
         {/* Labour */}
         <div className="card p-5">
           <h3 className="font-semibold text-slate-900 dark:text-white mb-3">Labour Market</h3>
-          <StatRow label="Unemployment (official LU1)" value={unem.rate + '%'} sub={unem.period} highlight={unem.rate > avgUnemployment ? 'bad' : 'good'} />
+          <StatRow label="Unemployment (official LU1)" value={unem.rate + '%'} sub={unem.period} highlight={unem.rate > nationalUnemployment ? 'bad' : 'good'} />
           {unem.lu3 !== undefined && (
             <StatRow
               label="Unemployment + potential labour force (LU3)"
@@ -236,11 +230,6 @@ export default async function ProvincePage({ params }: ProvincePageProps) {
               sub={unem.period}
             />
           )}
-          <StatRow
-            label="Expanded unemployment (legacy)"
-            value={unem.expanded + '%'}
-            sub="Q3 2025 legacy"
-          />
           <StatRow label="National rank" value={'#' + province.unemploymentRank + ' lowest'} />
           <StatRow label="Change (qoq)" value={(unem.change > 0 ? '+' : '') + unem.change.toFixed(1) + 'pp'} highlight={unem.change < 0 ? 'good' : unem.change > 0 ? 'bad' : 'neutral'} />
         </div>
@@ -248,9 +237,12 @@ export default async function ProvincePage({ params }: ProvincePageProps) {
         {/* Education */}
         <div className="card p-5">
           <h3 className="font-semibold text-slate-900 dark:text-white mb-3">Education</h3>
-          <StatRow label="Matric pass rate" value={edu.matricPassRate + '%'} sub={String(edu.year)} highlight={edu.matricPassRate > avgMatric ? 'good' : 'neutral'} />
-          <StatRow label="Literacy rate" value={edu.literacyRate + '%'} />
-          <StatRow label="vs national avg" value={(edu.matricPassRate - avgMatric).toFixed(1) + 'pp'} highlight={edu.matricPassRate > avgMatric ? 'good' : 'bad'} />
+          <StatRow label="Matric pass rate" value={formatPercent(edu.matricPassRate, 2)} sub={String(edu.year)} highlight={edu.matricPassRate > nationalMatric ? 'good' : 'neutral'} />
+          <StatRow label="South Africa" value={formatPercent(nationalMatric)} sub="2025" />
+          <p className="mt-3 text-xs text-muted">
+            Source: Department of Basic Education, 2025 NSC Examination Report, Table 2, page 8. Full-time candidates who
+            wrote.
+          </p>
         </div>
 
         {/* Housing & Services */}
