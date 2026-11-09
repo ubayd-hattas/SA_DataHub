@@ -28,3 +28,13 @@ describe('province page', () => {
     expect(html).toContain('Its official unemployment rate was 47.5% in Q2 2026, the highest of the nine provinces.')
   })
 })
+
+describe('provinces CSV', () => {
+  it('carries the sourced LU3 rate and none of the untraced columns', async () => {
+    const { buildProvinceCsvContent } = await import('@/lib/export')
+    const { provinces } = await import('@/data/mock')
+    const header = buildProvinceCsvContent(provinces, 'Provinces', { includeHeader: false }).split('\n')[0]
+    expect(header).toContain('unemployment_lu3_rate')
+    for (const gone of ['gdp_share', 'education_literacy_rate', 'unemployment_expanded_rate']) expect(header).not.toContain(gone)
+  })
+})
