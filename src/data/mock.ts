@@ -220,7 +220,7 @@ export function getProvinceById(id: string): ProvinceData | undefined {
 }
 
 export function getProvincesSortedBy(
-  key: keyof Pick<ProvinceData, 'unemploymentRate' | 'population' | 'matricPassRate' | 'gdpShare'>
+  key: keyof Pick<ProvinceData, 'unemploymentRate' | 'population' | 'matricPassRate'>
 ): ProvinceData[] {
   return [...provinces].sort((a, b) => (b[key] as number) - (a[key] as number))
 }

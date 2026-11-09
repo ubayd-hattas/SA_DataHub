@@ -240,7 +240,7 @@ export function buildProvinceCsvContent(
       'province_name',
       'capital',
       'unemployment_rate',
-      'unemployment_expanded_rate',
+      'unemployment_lu3_rate',
       'unemployment_period',
       'unemployment_trend',
       'unemployment_change',
@@ -251,12 +251,10 @@ export function buildProvinceCsvContent(
       'population_source',
       'education_matric_pass_rate',
       'education_year',
-      'education_literacy_rate',
       'housing_formal_dwelling_2022',
       'housing_water_scheme_2022',
       'housing_flush_toilet_2022',
       'housing_cooking_electricity_2022',
-      'gdp_share',
     ])
   )
 
@@ -267,7 +265,7 @@ export function buildProvinceCsvContent(
         p.name,
         p.capital,
         p.stats.unemployment.rate,
-        p.stats.unemployment.expanded,
+        p.stats.unemployment.lu3,
         p.stats.unemployment.period,
         p.stats.unemployment.trend,
         p.stats.unemployment.change,
@@ -278,12 +276,10 @@ export function buildProvinceCsvContent(
         p.stats.population.source,
         p.stats.education.matricPassRate,
         p.stats.education.year,
-        p.stats.education.literacyRate,
         p.stats.housing.formal[1],
         p.stats.housing.waterScheme[1],
         p.stats.housing.flushToilet[1],
         p.stats.housing.electricityCooking[1],
-        p.gdpShare,
       ])
     )
   }

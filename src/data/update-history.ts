@@ -25,6 +25,18 @@ export interface UpdateHistoryEntry {
 export const UPDATE_HISTORY: UpdateHistoryEntry[] = [
   {
     date: '2026-11-09',
+    datasetId: 'provinces',
+    datasetLabel: 'Provinces',
+    type: 'correction',
+    summary: `Province pages now show only figures SA Data Hub can trace to a release. Matric pass rates are the 2025 figures from the Department of Basic Education's 2025 NSC Examination Report (Table 2, page 8), replacing values labelled 2024 that had no source. Comparisons use South Africa's own rates instead of an unweighted average of the nine provinces, which had put unemployment at 34.1% against the official 33.6%. The legacy expanded unemployment rate, provincial GDP share, literacy rate and the descriptions of each province's economy were removed because no held release supports them.`,
+    changes: [
+      { item: 'Comparison figure for unemployment', from: '34.1% (average of the nine provinces)', to: '33.6% (South Africa, Q2 2026)' },
+      { item: 'Western Cape matric pass rate', from: '89.1% (labelled 2024, no source)', to: '88.14% (2025)' },
+      { item: 'Eastern Cape matric pass rate', from: '79.8% (labelled 2024, no source)', to: '84.17% (2025)' },
+    ],
+  },
+  {
+    date: '2026-11-09',
     datasetId: 'unemployment',
     datasetLabel: 'Unemployment',
     type: 'correction',
