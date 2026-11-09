@@ -131,7 +131,7 @@ export default async function StoryPage({ params }: StoryPageProps) {
             </p>
 
             {/* Byline */}
-            <div className="mt-6 flex flex-wrap items-center gap-4 border-t border-slate-100 pt-5 text-xs text-slate-400 dark:border-slate-800">
+            <div className="mt-6 flex flex-wrap items-center gap-4 border-t border-slate-100 pt-5 text-xs text-muted dark:border-slate-800">
               <span>
                 By{' '}
                 <a
@@ -193,7 +193,7 @@ export default async function StoryPage({ params }: StoryPageProps) {
                 aria-label="Table of contents"
               >
                 <div className="mb-3 flex items-center gap-2">
-                  <BookOpen size={13} className="text-slate-400" aria-hidden="true" />
+                  <BookOpen size={13} className="text-muted" aria-hidden="true" />
                   <p className="section-label">Contents</p>
                 </div>
                 <ol className="space-y-1.5">
@@ -203,7 +203,7 @@ export default async function StoryPage({ params }: StoryPageProps) {
                         href={`#${section.id}`}
                         className="flex gap-3 text-sm text-slate-600 transition-colors hover:text-brand-600 dark:text-slate-300 dark:hover:text-brand-400"
                       >
-                        <span className="shrink-0 font-mono text-slate-400">{String(i + 1).padStart(2, '0')}</span>
+                        <span className="shrink-0 font-mono text-muted">{String(i + 1).padStart(2, '0')}</span>
                         {section.heading}
                       </a>
                     </li>
@@ -232,7 +232,7 @@ export default async function StoryPage({ params }: StoryPageProps) {
                       <p className="mt-2 font-mono text-2xl font-medium tabular-nums text-slate-900 dark:text-white">
                         {stat.value}
                       </p>
-                      <p className="mt-1 text-xs text-slate-400">
+                      <p className="mt-1 text-xs text-muted">
                         {stat.changeLabel} · {stat.source.shortName}
                       </p>
                     </div>

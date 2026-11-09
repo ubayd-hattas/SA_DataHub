@@ -77,7 +77,7 @@ export default function InsightsHub() {
           <div className="relative flex-1 sm:max-w-sm">
             <Search
               size={16}
-              className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
+              className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted"
               aria-hidden="true"
             />
             <input
@@ -146,7 +146,7 @@ export default function InsightsHub() {
           <div className="card flex flex-col items-center justify-center py-20 text-center">
             <p className="text-3xl" aria-hidden="true">📭</p>
             <p className="mt-4 font-semibold text-slate-700 dark:text-slate-300">No stories found</p>
-            <p className="mt-1 text-sm text-slate-400">Try a different search term or category.</p>
+            <p className="mt-1 text-sm text-muted">Try a different search term or category.</p>
             <button
               onClick={() => { setSearch(''); setSelectedCategory('all') }}
               className="mt-5 rounded-lg px-4 py-2 text-sm font-medium text-brand-600 hover:bg-brand-50 dark:text-brand-400 dark:hover:bg-brand-950/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
