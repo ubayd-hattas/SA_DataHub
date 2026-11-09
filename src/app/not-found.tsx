@@ -17,7 +17,8 @@ export default function NotFound() {
       <p className="font-mono text-6xl font-bold text-brand-600 dark:text-brand-400">404</p>
       <h1 className="heading-display mt-4 text-2xl font-semibold">Page not found</h1>
       <p className="mt-2 text-slate-500 dark:text-slate-400">
-        This statistic or category doesn&apos;t exist yet — or may be coming soon.
+        There is no page at this address. It may have moved, or the link may be wrong. Try the search at the top, or
+        start from the home page.
       </p>
       <Link
         href="/"
