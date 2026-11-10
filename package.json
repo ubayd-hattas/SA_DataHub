@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "typecheck": "tsc --noEmit",
     "validate": "python validation/report.py",
     "db:migrate": "node db/migrate.mjs",
     "db:migrate:status": "node db/migrate.mjs --status",
@@ -16,7 +17,8 @@
     "etl": "python etl/run.py",
     "etl:verify": "node etl/verify.mjs",
     "test": "vitest run",
-    "test:equivalence": "vitest run tests/equivalence"
+    "test:equivalence": "vitest run tests/equivalence",
+    "prepare": "git config core.hooksPath .githooks || true"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",
