@@ -1,0 +1,53 @@
+name: Release due
+
+# Opens or updates one issue when a release in src/data/release-calendar.ts is
+# past its date plus the two working days the runbook allows. It reads only this
+# repository. It makes no requests to Stats SA, the SARB or any other publisher.
+
+on:
+  schedule:
+    # 06:15 UTC (08:15 in South Africa), Monday to Friday
+    - cron: '15 6 * * 1-5'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: release-due
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Find overdue releases
+        run: node scripts/release-due.mjs > due.md
+
+      - name: Open or update the issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          if [ ! -s due.md ]; then
+            echo "Nothing overdue."
+            exit 0
+          fi
+          gh label create release-due --color B60205 --description "A covered release is overdue on the site" 2>/dev/null || true
+          existing=$(gh issue list --label release-due --state open --json number --jq '.[0].number // empty')
+          if [ -n "$existing" ]; then
+            gh issue edit "$existing" --body-file due.md
+            echo "Updated issue #$existing"
+          else
+            gh issue create --title "Release overdue on the site" --label release-due --body-file due.md
+          fi
