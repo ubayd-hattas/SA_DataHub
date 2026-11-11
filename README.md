@@ -95,7 +95,7 @@ npm run build      # also runs the sourcing check
 
 CI runs the type-check, lint, tests, dataset validation and a full build on every pull request.
 
-**Stack:** Next.js 15 (App Router), TypeScript, Tailwind CSS, Recharts, Vitest. Data lives in JSON files in `src/data/datasets/` and is read at build time, so almost every page is static. Deployed on Vercel from `main`.
+**Stack:** Next.js 16 (App Router), TypeScript, Tailwind CSS, Recharts, Vitest. Data lives in JSON files in `src/data/datasets/` and is read at build time, so almost every page is static. Deployed on Vercel from `main`.
 
 ## Updating a dataset
 
