@@ -156,7 +156,7 @@ export function buildCsvContent(
  */
 export function downloadCsv(filename: string, csvContent: string): void {
   // The BOM makes Excel read the file as UTF-8. Server routes do not add it.
-  const blob = new Blob(['﻿', csvContent],{ type: 'text/csv;charset=utf-8;' })
+  const blob = new Blob(['\uFEFF', csvContent], { type: 'text/csv;charset=utf-8;' })
   const url  = URL.createObjectURL(blob)
   const link = document.createElement('a')
 
