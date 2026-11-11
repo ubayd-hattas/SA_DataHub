@@ -60,6 +60,13 @@ export default async function SeriesPage({ params }: SeriesPageProps) {
   const fmt = (v: number) => formatSeriesValue(v, doc.unit, decimals)
   const downloads = { csv: seriesCsvHref(stat.id), json: seriesJsonHref(stat.id) }
 
+  const noteLine = stat.note ? (
+    <p className="mt-4 max-w-prose text-small text-muted">
+      <strong className="font-semibold text-ink">Note: </strong>
+      {stat.note}
+    </p>
+  ) : null
+
   const source = (
     <SourceLine
       publisher={doc.source.publisher}
@@ -100,9 +107,11 @@ export default async function SeriesPage({ params }: SeriesPageProps) {
             {source}
           </div>
         )}
+        {noteLine}
       </div>
 
       <Section id="values" title="Every value">
+        {noteLine}
         <div className="overflow-x-auto">
           <table className="w-full max-w-md text-left text-small">
             <caption className="sr-only">

@@ -49,6 +49,8 @@ export interface SeriesDocument {
   license: string
   citation: string
   points: SeriesPoint[]
+  /** Reader-facing caveat about the figures, present only when the statistic has one. */
+  note?: string
   /** Values the publisher revised, newest first. */
   revisions: SeriesRevision[]
   /** SA Data Hub's own log of changes to the dataset this series belongs to, newest first. */
@@ -100,6 +102,7 @@ export function seriesDocument(stat: Statistic): SeriesDocument {
     license: LICENSE_URL,
     citation: seriesCitation(stat),
     points: seriesPointsFor(stat),
+    ...(stat.note ? { note: stat.note } : {}),
     revisions: seriesRevisions(stat),
     changeLog: seriesChangeLog(stat).map(({ date, type, summary }) => ({ date, type, summary })),
   }

@@ -54,6 +54,8 @@ export interface Statistic {
   checkedOn?: string
   /** Why the record is kept in the file but not shown on the site (no traceable release date, for example). */
   withheld?: string
+  /** Reader-facing caveat shown beside the figures, for example when some values are calculated rather than published. */
+  note?: string
   province?: Province
   series?: DataSeries[]
   insight?: Insight
