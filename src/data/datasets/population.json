@@ -28,6 +28,7 @@
         "publicationDate": "2026-07-30"
       },
       "lastUpdated": "2026-07-30",
+      "note": "Values for 2015 to 2024 are approximations calculated by SA Data Hub from the annual growth rates in the 2026 release. They are not published Stats SA totals. The 2026 value is published; 2025 is that value minus the increase stated in the release.",
       "series": [
         {
           "name": "Population (millions)",
