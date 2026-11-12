@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState } from 'react'
 import { Search } from 'lucide-react'
 import { StoryCard } from '@/components/ui/StoryCard'
 import { STORIES, getFeaturedStories } from '@/data/stories'
@@ -27,16 +27,15 @@ export default function InsightsHub() {
 
   const featured = getFeaturedStories()
 
-  const filtered = useMemo<Story[]>(() => {
-    return STORIES.filter((s) => {
-      const matchCat = selectedCategory === 'all' || s.category === selectedCategory
-      const q = search.toLowerCase()
-      const matchSearch = !q || [s.title, s.subtitle, s.summary, ...s.tags].some((t) =>
-        t.toLowerCase().includes(q)
-      )
-      return matchCat && matchSearch
-    })
-  }, [selectedCategory, search])
+  // A handful of stories: filtering on each render is cheap, so no memo is needed.
+  const filtered: Story[] = STORIES.filter((s) => {
+    const matchCat = selectedCategory === 'all' || s.category === selectedCategory
+    const q = search.toLowerCase()
+    const matchSearch = !q || [s.title, s.subtitle, s.summary, ...s.tags].some((t) =>
+      t.toLowerCase().includes(q)
+    )
+    return matchCat && matchSearch
+  })
 
   const isFiltered = selectedCategory !== 'all' || !!search
   const nonFeatured = isFiltered ? filtered : filtered.filter((s) => !s.featured)

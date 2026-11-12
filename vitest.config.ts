@@ -2,9 +2,10 @@ import { defineConfig } from 'vitest/config'
 import path from 'node:path'
 
 export default defineConfig({
-  // Next compiles JSX itself (tsconfig `jsx: preserve`); tests that render
-  // components need the automatic runtime here.
-  esbuild: { jsx: 'automatic' },
+  // Next compiles JSX itself; tests that render components need the
+  // automatic runtime here.
+  // Vite 8 transforms with Oxc; this was `esbuild: { jsx: 'automatic' }` before.
+  oxc: { jsx: { runtime: 'automatic' } },
   test: {
     environment: 'node',
     include: ['tests/**/*.test.ts'],

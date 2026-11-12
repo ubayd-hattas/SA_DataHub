@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "validate": "python validation/report.py",
     "db:migrate": "node db/migrate.mjs",
@@ -21,13 +21,13 @@
     "prepare": "git config core.hooksPath .githooks || true"
   },
   "dependencies": {
-    "@neondatabase/serverless": "^1.1.0",
+    "@neondatabase/serverless": "^1.2.0",
     "@vercel/analytics": "^2.0.1",
     "clsx": "^2.1.1",
     "framer-motion": "^13.1.0",
     "lucide-react": "^0.383.0",
-    "next": "15.5.28",
-    "next-themes": "^0.3.0",
+    "next": "16.4.6",
+    "next-themes": "^0.4.6",
     "postgres": "^3.4.9",
     "react": "^18",
     "react-dom": "^18",
@@ -37,15 +37,15 @@
     "tailwind-merge": "^2.3.0"
   },
   "devDependencies": {
-    "@types/node": "^20",
+    "@types/node": "^22.20.5",
     "@types/react": "^18",
     "@types/react-dom": "^18",
-    "autoprefixer": "^10.0.1",
-    "eslint": "^8",
-    "eslint-config-next": "15.5.28",
-    "postcss": "^8",
+    "autoprefixer": "^10.6.0",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "16.4.6",
+    "postcss": "^8.5.0",
     "tailwindcss": "^3.4.1",
     "typescript": "^5",
-    "vitest": "^3.0.5"
+    "vitest": "^5.1.0"
   }
 }
