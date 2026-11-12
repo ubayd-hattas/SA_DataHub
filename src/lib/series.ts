@@ -114,6 +114,6 @@ export function seriesCsv(stat: Statistic): string {
     `# ${doc.title}. Source: ${doc.source.publisher}, ${doc.source.publication}, released ${doc.source.releasedOn}. Checked by SA Data Hub ${doc.checkedOn}.`,
     `# ${doc.page}. Licence: CC BY 4.0. Cite as: ${doc.citation}`,
   ]
-  const body = buildCsvContent([stat], stat.title, { mode: 'series', includeHeader: false })
+  const body = buildCsvContent([stat], stat.title, { mode: 'series' })
   return [...header, body].join('\n')
 }
