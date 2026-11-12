@@ -11,7 +11,6 @@ export default defineConfig([
       'src/app/dashboard/DashboardView.tsx',
       'src/app/municipalities/MunicipalityExplorer.tsx',
       'src/app/updates/UpdatesLog.tsx',
-      'src/components/charts/StatChart.tsx',
     ],
     rules: {
       'react-hooks/set-state-in-effect': 'warn',
