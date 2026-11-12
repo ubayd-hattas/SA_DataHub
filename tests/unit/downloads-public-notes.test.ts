@@ -46,13 +46,18 @@ describe('public dataset notes', () => {
   })
 })
 
-describe('CSV attribution header', () => {
-  it('names the real site domain', async () => {
+describe('CSV first line', () => {
+  it('has no # comment lines and starts with the column header row', async () => {
     const { buildCsvContent, buildProvinceCsvContent } = await import('@/lib/export')
     const { statistics, provinces } = await import('@/data/mock')
-    for (const csv of [buildCsvContent(statistics.slice(0, 1), 'Test'), buildProvinceCsvContent(provinces, 'Test')]) {
-      expect(csv).toContain('https://sadatahub.tech')
-      expect(csv).not.toContain('sadatahub.co.za')
+    const cases: [string, string][] = [
+      [buildCsvContent(statistics.slice(0, 1), 'Test'), 'id,'],
+      [buildProvinceCsvContent(provinces, 'Test'), 'province_id,'],
+    ]
+    for (const [csv, headerStart] of cases) {
+      const lines = csv.split('\n')
+      expect(lines.some((line) => line.startsWith('#'))).toBe(false)
+      expect(lines[0].startsWith(headerStart)).toBe(true)
     }
   })
 })

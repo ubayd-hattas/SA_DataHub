@@ -25,7 +25,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ fil
     `# ${entry.label}. Source: ${entry.sourceName}. From SA Data Hub, ${absoluteUrl('/')}`,
     `# How the data is collected and checked: ${absoluteUrl('/methodology')}`,
   ]
-  const body = buildCsvContent(getStatsByIds(entry.statIds), entry.label, { mode: 'series', includeHeader: false })
+  const body = buildCsvContent(getStatsByIds(entry.statIds), entry.label, { mode: 'series' })
   return new Response([...header, body].join('\n'), {
     headers: {
       'Content-Type': 'text/csv; charset=utf-8',

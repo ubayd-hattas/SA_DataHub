@@ -16,7 +16,6 @@
  */
 
 import { ProvinceData, Statistic } from '@/types'
-import { SITE_URL } from '@/lib/seo'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -29,16 +28,14 @@ export interface ExportOptions {
    * Default: 'series' if the first stat has series data, else 'summary'.
    */
   mode?: ExportMode
-  /** Include a comment header row with attribution. Default: true. */
-  includeHeader?: boolean
 }
 
 // ─── Internal helpers ─────────────────────────────────────────────────────────
 
-/** Escape a CSV field value: wrap in quotes if it contains comma, newline, or quote. */
+/** Escape a CSV field value: wrap in quotes if it contains comma, newline, carriage return, or quote. */
 function escapeField(value: string | number | null | undefined): string {
   const str = value === null || value === undefined ? '' : String(value)
-  if (str.includes(',') || str.includes('\n') || str.includes('"')) {
+  if (str.includes(',') || str.includes('\n') || str.includes('\r') || str.includes('"')) {
     return `"${str.replace(/"/g, '""')}"`
   }
   return str
@@ -75,18 +72,10 @@ export function buildCsvContent(
   options: ExportOptions = {}
 ): string {
   const {
-    includeHeader = true,
     mode = stats.length === 1 && stats[0].series?.length ? 'series' : 'summary',
   } = options
 
-  const today = todayISO()
   const rows: string[] = []
-
-  // Attribution comment header (valid CSV — most parsers skip # rows)
-  if (includeHeader) {
-    rows.push(`# SA Data Hub, ${datasetLabel}. Downloaded ${today} from ${SITE_URL}`)
-    rows.push(`# Data from official South African publications. How it is checked: ${SITE_URL}/methodology`)
-  }
 
   if (mode === 'series') {
     // ── Series format ────────────────────────────────────────────────────────
@@ -166,7 +155,8 @@ export function buildCsvContent(
  * Must be called from a user interaction (click handler) in a browser environment.
  */
 export function downloadCsv(filename: string, csvContent: string): void {
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+  // The BOM makes Excel read the file as UTF-8. Server routes do not add it.
+  const blob = new Blob(['\uFEFF', csvContent], { type: 'text/csv;charset=utf-8;' })
   const url  = URL.createObjectURL(blob)
   const link = document.createElement('a')
 
@@ -190,7 +180,7 @@ export function downloadCsv(filename: string, csvContent: string): void {
  * Filename format: sa-data-hub_<datasetLabel-kebab>_<YYYY-MM-DD>.csv
  *
  * @param stats        The Statistic[] to export
- * @param datasetLabel Human-readable label used in the filename and header comment
+ * @param datasetLabel Human-readable label used in the filename
  * @param options      Optional ExportOptions
  */
 export function exportDataset(
@@ -222,17 +212,8 @@ export function exportDataset(
 export function buildProvinceCsvContent(
   provinces: ProvinceData[],
   datasetLabel: string,
-  options: { includeHeader?: boolean } = {}
 ): string {
-  const { includeHeader = true } = options
-
-  const today = todayISO()
   const rows: string[] = []
-
-  if (includeHeader) {
-    rows.push(`# SA Data Hub, ${datasetLabel}. Downloaded ${today} from ${SITE_URL}`)
-    rows.push(`# Data from official South African publications. How it is checked: ${SITE_URL}/methodology`)
-  }
 
   rows.push(
     csvRow([
