@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { SlidersHorizontal, BookOpen, ArrowRight, MapPin, Database, BarChart2 } from 'lucide-react'
 import { StatCard } from '@/components/ui/StatCard'
@@ -11,6 +11,7 @@ import { intelligentSearch } from '@/lib/search'
 import type { SearchRegistryEntry } from '@/lib/search-intent'
 import { Category, CategoryId, Province, ProvinceData, SearchResult, SearchResultKind, Statistic } from '@/types'
 import { cn, provinceLabels } from '@/lib/utils'
+import { useUrlParam } from '@/lib/use-url-param'
 
 const PROVINCES: Province[] = [
   'all',
@@ -86,19 +87,16 @@ interface DashboardViewProps {
 export default function DashboardView({ statistics, categories, provinces, registry }: DashboardViewProps) {
   const [selectedCategory, setSelectedCategory] = useState<CategoryId | 'all'>('all')
   const [selectedProvince, setSelectedProvince] = useState<Province>('all')
-  const [search, setSearch] = useState('')
+  // ?search= opens the page filtered. The server HTML is unfiltered; the URL's value applies after hydration.
+  const urlSearch = useUrlParam('search')
+  const [typedSearch, setSearch] = useState<string | null>(null)
+  const search = typedSearch ?? urlSearch
   const [showFilters, setShowFilters] = useState(false)
 
   const allCategories: { id: CategoryId | 'all'; label: string }[] = [
     { id: 'all', label: 'All' },
     ...categories.map((category) => ({ id: category.id, label: category.label })),
   ]
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search)
-    const q = params.get('search')
-    if (q) setSearch(q)
-  }, [])
 
   const searchResults = useMemo(
     () => (search.trim() ? intelligentSearch(search, statistics, provinces, categories, registry) : []),
