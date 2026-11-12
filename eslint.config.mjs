@@ -9,7 +9,6 @@ export default defineConfig([
     // everywhere else. Remove a file from this list when it is fixed.
     files: [
       'src/app/dashboard/DashboardView.tsx',
-      'src/app/updates/UpdatesLog.tsx',
     ],
     rules: {
       'react-hooks/set-state-in-effect': 'warn',

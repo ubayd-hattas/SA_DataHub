@@ -1,7 +1,8 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import type { UpdateHistoryEntry, UpdateHistoryType } from '@/data/update-history'
+import { useUrlParam } from '@/lib/use-url-param'
 
 const TYPE_LABELS: Record<UpdateHistoryType, string> = {
   correction: 'Correction',
@@ -30,13 +31,11 @@ export default function UpdatesLog({
   entries: UpdateHistoryEntry[]
   datasets: { id: string; label: string }[]
 }) {
-  const [dataset, setDataset] = useState('all')
+  // ?dataset= opens the log filtered (only for a known dataset). The server HTML is unfiltered.
+  const urlDataset = useUrlParam('dataset')
+  const [pickedDataset, setDataset] = useState<string | null>(null)
+  const dataset = pickedDataset ?? (datasets.some((d) => d.id === urlDataset) ? urlDataset : 'all')
   const [type, setType] = useState<'all' | UpdateHistoryType>('all')
-
-  useEffect(() => {
-    const q = new URLSearchParams(window.location.search).get('dataset')
-    if (q && datasets.some((d) => d.id === q)) setDataset(q)
-  }, [datasets])
 
   const shown = useMemo(
     () => entries.filter((e) => (dataset === 'all' || e.datasetId === dataset) && (type === 'all' || e.type === type)),
