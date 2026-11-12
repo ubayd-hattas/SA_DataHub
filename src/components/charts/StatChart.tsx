@@ -19,6 +19,44 @@ function ChartTooltip({ active, payload, unit }: any) {
   )
 }
 
+// The first and last x-axis labels are anchored inward, so they stay inside the chart on a phone.
+function XTick({ x, y, payload, index, visibleTicksCount }: any) {
+  const anchor = index === 0 ? 'start' : index === visibleTicksCount - 1 ? 'end' : 'middle'
+  return (
+    <text x={x} y={y + 12} textAnchor={anchor} fontSize={12} fill="currentColor">
+      {payload.value}
+    </text>
+  )
+}
+
+function PointLabel({ cx, cy, payload, index, points, labelled, fmt }: any) {
+  if (cx == null || cy == null || !labelled.has(payload.label)) return <g key={index} />
+  const isFirst = index === 0
+  const isLast = index === points.length - 1
+  // The label goes on the side away from the line, clear of the marker:
+  // the peak sits centred above; an end point sits below if the line climbs away from it, above if it falls.
+  const neighbour = points[isLast ? index - 1 : index + 1]
+  const below = !isFirst && !isLast ? false : neighbour.value > payload.value
+  const x = isFirst ? cx + 8 : isLast ? cx - 8 : cx
+  const anchor = isFirst ? 'start' : isLast ? 'end' : 'middle'
+  return (
+    <g key={index}>
+      <circle cx={cx} cy={cy} r={3.5} fill="currentColor" stroke="var(--paper)" strokeWidth={2} />
+      <text
+        x={x}
+        y={below ? cy + 20 : cy - 10}
+        textAnchor={anchor}
+        fill="var(--ink)"
+        fontSize={12}
+        fontWeight={600}
+        style={{ fontVariantNumeric: 'tabular-nums' }}
+      >
+        {fmt(payload.value)}
+      </text>
+    </g>
+  )
+}
+
 /**
  * The standard chart for one statistic (docs/DESIGN.md): a title that states
  * the takeaway, labels on the line instead of a legend, light gridlines, the
@@ -57,44 +95,6 @@ export function StatChart({
   ]
   const axisFmt = (v: number) => (unit === '%' ? `${v}%` : fmt(v))
 
-  function PointLabel({ cx, cy, payload, index }: any) {
-    if (cx == null || cy == null || !labelled.has(payload.label)) return <g key={index} />
-    const isFirst = index === 0
-    const isLast = index === points.length - 1
-    // The label goes on the side away from the line, clear of the marker:
-    // the peak sits centred above; an end point sits below if the line climbs away from it, above if it falls.
-    const neighbour = points[isLast ? index - 1 : index + 1]
-    const below = !isFirst && !isLast ? false : neighbour.value > payload.value
-    const x = isFirst ? cx + 8 : isLast ? cx - 8 : cx
-    const anchor = isFirst ? 'start' : isLast ? 'end' : 'middle'
-    return (
-      <g key={index}>
-        <circle cx={cx} cy={cy} r={3.5} fill="currentColor" stroke="var(--paper)" strokeWidth={2} />
-        <text
-          x={x}
-          y={below ? cy + 20 : cy - 10}
-          textAnchor={anchor}
-          fill="var(--ink)"
-          fontSize={12}
-          fontWeight={600}
-          style={{ fontVariantNumeric: 'tabular-nums' }}
-        >
-          {fmt(payload.value)}
-        </text>
-      </g>
-    )
-  }
-
-  // The first and last x-axis labels are anchored inward, so they stay inside the chart on a phone.
-  function XTick({ x, y, payload, index, visibleTicksCount }: any) {
-    const anchor = index === 0 ? 'start' : index === visibleTicksCount - 1 ? 'end' : 'middle'
-    return (
-      <text x={x} y={y + 12} textAnchor={anchor} fontSize={12} fill="currentColor">
-        {payload.value}
-      </text>
-    )
-  }
-
   return (
     <ChartFigure
       title={title}
@@ -132,7 +132,7 @@ export function StatChart({
               <XAxis dataKey="label" tick={<XTick />} className="text-muted" tickLine={false} axisLine={false} interval="preserveStartEnd" minTickGap={24} />
               <YAxis tick={{ fontSize: 12, fill: 'currentColor' }} className="text-muted" tickLine={false} axisLine={false} width={64} tickFormatter={axisFmt} domain={domain} allowDecimals={false} />
               <Tooltip content={<ChartTooltip unit={unit} />} />
-              <Line type="linear" dataKey="value" stroke="currentColor" strokeWidth={2} dot={<PointLabel />} activeDot={{ r: 4 }} isAnimationActive={false} />
+              <Line type="linear" dataKey="value" stroke="currentColor" strokeWidth={2} dot={<PointLabel points={points} labelled={labelled} fmt={fmt} />} activeDot={{ r: 4 }} isAnimationActive={false} />
             </LineChart>
           ) : (
             <BarChart data={points} margin={{ top: 24, right: 8, left: 8, bottom: 0 }}>

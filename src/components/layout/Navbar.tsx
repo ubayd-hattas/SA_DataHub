@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useEffect, useId, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState, useSyncExternalStore } from 'react'
 import { useTheme } from 'next-themes'
 import { Menu, Moon, Sun, X } from 'lucide-react'
 import { BrandMark } from '@/components/layout/BrandMark'
@@ -12,12 +12,13 @@ import { cn } from '@/lib/utils'
 
 const FOCUS = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent'
 
+const subscribeNothing = () => () => {}
+
 /** One button that switches between the light and dark themes. */
 function ThemeToggle() {
   const { resolvedTheme, setTheme } = useTheme()
   // The theme is only known in the browser; render a neutral button until then.
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => setMounted(true), [])
+  const mounted = useSyncExternalStore(subscribeNothing, () => true, () => false)
   const isDark = mounted && resolvedTheme === 'dark'
   const label = isDark ? 'Switch to light theme' : 'Switch to dark theme'
 
@@ -91,10 +92,12 @@ export function Navbar() {
   const navRef = useRef<HTMLElement>(null)
 
   // Close everything when the page changes.
-  useEffect(() => {
+  const [prevPath, setPrevPath] = useState(pathname)
+  if (prevPath !== pathname) {
+    setPrevPath(pathname)
     setOpenId(null)
     setMobileOpen(false)
-  }, [pathname])
+  }
 
   // Escape closes, and focus goes back to the button that opened the panel.
   useEffect(() => {
