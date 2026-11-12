@@ -1,10 +1,11 @@
 'use client'
 
-import { useEffect, useState, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { Search } from 'lucide-react'
 import type { ProvinceCode } from '@/types'
 import { formatCount, formatSigned } from '@/lib/format'
+import { useUrlParam } from '@/lib/use-url-param'
 
 /** The fields the table needs, so the page sends no more than that to the browser. */
 export interface ExplorerRow {
@@ -39,16 +40,14 @@ type SortKey = 'name' | 'population2022' | 'change' | 'households2022'
 const change = (m: ExplorerRow) => ((m.population2022 - m.population2011) / m.population2011) * 100
 
 export default function MunicipalityExplorer({ municipalities }: { municipalities: ExplorerRow[] }) {
-  const [query, setQuery] = useState('')
+  // ?search= from the homepage place search (also used when JavaScript is off there).
+  // Until the visitor types, the box shows the URL's value; it is empty in the server HTML.
+  const urlQuery = useUrlParam('search')
+  const [typedQuery, setQuery] = useState<string | null>(null)
+  const query = typedQuery ?? urlQuery
   const [province, setProvince] = useState<ProvinceCode | 'ALL'>('ALL')
   const [category, setCategory] = useState<'ALL' | 'A' | 'B'>('ALL')
   const [sortKey, setSortKey] = useState<SortKey>('name')
-
-  // ?search= from the homepage place search (also used when JavaScript is off there).
-  useEffect(() => {
-    const q = new URLSearchParams(window.location.search).get('search')
-    if (q) setQuery(q)
-  }, [])
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
