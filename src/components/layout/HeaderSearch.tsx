@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useId, useMemo, useRef, useState } from 'react'
+import { useId, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Search } from 'lucide-react'
 import { SEARCH_GROUPS, searchEntries, type SearchEntry } from '@/lib/search-match'
@@ -35,11 +35,11 @@ export function HeaderSearch({ className, panelClassName }: { className?: string
   const formRef = useRef<HTMLFormElement>(null)
 
   const results = useMemo(() => (index && query.trim() ? searchEntries(index, query) : []), [index, query])
-  useEffect(() => setActive(-1), [query])
 
   const go = (entry: SearchEntry) => {
     setOpen(false)
     setQuery('')
+    setActive(-1)
     router.push(entry.href)
   }
 
@@ -61,6 +61,7 @@ export function HeaderSearch({ className, panelClassName }: { className?: string
         setActive(-1)
       } else {
         setQuery('')
+        setActive(-1)
       }
     }
   }
@@ -96,6 +97,7 @@ export function HeaderSearch({ className, panelClassName }: { className?: string
         value={query}
         onChange={(e) => {
           setQuery(e.target.value)
+          setActive(-1)
           setOpen(true)
         }}
         onFocus={() => {
