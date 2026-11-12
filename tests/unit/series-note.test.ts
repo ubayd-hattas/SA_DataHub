@@ -13,16 +13,19 @@ async function render(id: string): Promise<string> {
 describe('series note', () => {
   it('shows the population note under the chart and above the table of values', async () => {
     const html = await render('population-total')
-    expect(html.split(POPULATION_NOTE)).toHaveLength(3)
+    expect(html).toContain(POPULATION_NOTE)
     expect(html).toContain('Note: </strong>')
-    const firstNote = html.indexOf(POPULATION_NOTE)
-    expect(firstNote).toBeLessThan(html.indexOf('id="values"') + html.slice(html.indexOf('id="values"')).indexOf('<table'))
-    expect(html.indexOf('id="values"')).toBeLessThan(html.lastIndexOf(POPULATION_NOTE))
+    const values = html.indexOf('id="values"')
+    // The full note sits above the table section, and the table points back to it.
+    expect(html.indexOf(POPULATION_NOTE)).toBeLessThan(values)
+    expect(html.indexOf('See the note above.')).toBeGreaterThan(values)
   })
 
   it('shows no note on a statistic that has none', async () => {
     expect(getSeries('unemployment-national')!.note).toBeUndefined()
-    expect(await render('unemployment-national')).not.toContain('Note: ')
+    const html = await render('unemployment-national')
+    expect(html).not.toContain('Note: ')
+    expect(html).not.toContain('See the note above.')
   })
 
   it('carries the note in the series JSON only when present', () => {
