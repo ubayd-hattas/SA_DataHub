@@ -13,7 +13,6 @@ export default defineConfig([
       'src/app/updates/UpdatesLog.tsx',
       'src/components/charts/StatChart.tsx',
       'src/components/layout/HeaderSearch.tsx',
-      'src/components/layout/Navbar.tsx',
     ],
     rules: {
       'react-hooks/set-state-in-effect': 'warn',
