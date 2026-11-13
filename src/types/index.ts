@@ -57,6 +57,8 @@ export interface Statistic {
   withheld?: string
   /** Reader-facing caveat shown beside the figures, for example when some values are calculated rather than published. */
   note?: string
+  /** True when some series values are calculated by SA Data Hub rather than published (the note explains how). */
+  hasCalculatedValues?: boolean
   province?: Province
   series?: DataSeries[]
   insight?: Insight
