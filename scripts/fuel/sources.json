@@ -1,0 +1,283 @@
+{
+  "2022-01": {
+    "document": "January 2022 Fuel Regulations",
+    "url": "https://www.dmpr.gov.za/Portals/0/Energy_Website/files/esources/petroleum/January2022/January-2022-Fuel-Regulations.xlsx",
+    "file": "regs-2022-01.xlsx"
+  },
+  "2022-02": {
+    "document": "February 2022 Fuel Regulations",
+    "url": "https://www.dmpr.gov.za/Portals/0/Energy_Website/files/esources/petroleum/February2022/February-2022-Fuel-Regulations.xlsx",
+    "file": "regs-2022-02.xlsx"
+  },
+  "2022-03": {
+    "document": "March 2022 Fuel Regulations",
+    "url": "https://www.dmpr.gov.za/Portals/0/Energy_Website/files/esources/petroleum/March2022/March-2022-Fuel-Regulations.xlsx",
+    "file": "regs-2022-03.xlsx"
+  },
+  "2022-04": {
+    "document": "April 2022 Fuel Regulations",
+    "url": "https://www.dmpr.gov.za/Portals/0/Energy_Website/files/esources/petroleum/April2022/April-2022-Fuel-Regulations.xlsx",
+    "file": "regs-2022-04.xlsx"
+  },
+  "2022-05": {
+    "document": "May 2022 Fuel Regulations",
+    "url": "https://www.dmpr.gov.za/Portals/0/Energy_Website/files/esources/petroleum/May2022/May-2022-Fuel-Regulations.xlsx",
+    "file": "regs-2022-05.xlsx"
+  },
+  "2022-06": {
+    "document": "June 2022 Fuel Regulations",
+    "url": "https://www.dmpr.gov.za/Portals/0/Energy_Website/files/esources/petroleum/June2022/June-2022-Fuel-Regulations.xlsx",
+    "file": "regs-2022-06.xlsx"
+  },
+  "2022-07": {
+    "document": "July 2022 Fuel Regulations",
+    "url": "https://www.dmpr.gov.za/Portals/0/Energy_Website/files/esources/petroleum/July2022/July-2022-Fuel-Regulations.xlsx",
+    "file": "regs-2022-07.xlsx"
+  },
+  "2022-08": {
+    "document": "August 2022 Fuel Regulations",
+    "url": "https://www.dmpr.gov.za/Portals/0/Energy_Website/files/esources/petroleum/August2022/August-2022-Fuel-Regulations.xlsx",
+    "file": "regs-2022-08.xlsx"
+  },
+  "2022-09": {
+    "document": "September 2022 Fuel Regulations",
+    "url": "https://www.dmpr.gov.za/Portals/0/Energy_Website/files/esources/petroleum/September2022/September-2022-Fuel-Regulations.xlsx",
+    "file": "regs-2022-09.xlsx"
+  },
+  "2022-10": {
+    "document": "October 2022 Fuel Regulations",
+    "url": "https://www.dmpr.gov.za/Portals/0/Energy_Website/files/esources/petroleum/October2022/October-2022-Fuel-Regulations.xlsx",
+    "file": "regs-2022-10.xlsx"
+  },
+  "2022-11": {
+    "document": "November 2022 Fuel Regulations",
+    "url": "https://www.dmpr.gov.za/Portals/0/Energy_Website/files/esources/petroleum/November2022/November-2022-Fuel-Regulations.xlsx",
+    "file": "regs-2022-11.xlsx"
+  },
+  "2022-12": {
+    "document": "December 2022 Fuel Regulations",
+    "url": "https://www.dmpr.gov.za/Portals/0/Energy_Website/files/esources/petroleum/December2022/December-2022-Fuel-Regulations.xlsx",
+    "file": "regs-2022-12.xlsx"
+  },
+  "2023-01": {
+    "document": "January 2023 Fuel Regulations",
+    "url": "https://www.dmpr.gov.za/Portals/0/Energy_Website/files/esources/petroleum/January2023/January-2023-Fuel-Regulations.xlsx",
+    "file": "regs-2023-01.xlsx"
+  },
+  "2023-02": {
+    "document": "February 2023 Fuel Regulations",
+    "url": "https://www.dmpr.gov.za/Portals/0/Energy_Website/files/esources/petroleum/February2023/February-2023-Fuel-Regulations.xlsx",
+    "file": "regs-2023-02.xlsx"
+  },
+  "2023-03": {
+    "document": "March 2023 Fuel Regulations",
+    "url": "https://www.dmpr.gov.za/Portals/0/Energy_Website/files/esources/petroleum/March2023/March-2023-Fuel-Regulations.xlsx",
+    "file": "regs-2023-03.xlsx"
+  },
+  "2023-04": {
+    "document": "April 2023 Fuel Regulations",
+    "url": "https://www.dmpr.gov.za/Portals/0/Energy_Website/files/esources/petroleum/April2023/April-2023-Fuel-Regulations.xlsx",
+    "file": "regs-2023-04.xlsx"
+  },
+  "2023-05": {
+    "document": "May 2023 Fuel Regulations",
+    "url": "https://www.dmpr.gov.za/Portals/0/Energy_Website/files/esources/petroleum/May2023/May-2023-Fuel-Regulations.xlsx",
+    "file": "regs-2023-05.xlsx"
+  },
+  "2023-06": {
+    "document": "June 2023 Fuel Regulations",
+    "url": "https://www.dmpr.gov.za/Portals/0/Energy_Website/files/esources/petroleum/June2023/June-2023-Fuel-Regulations.xlsx",
+    "file": "regs-2023-06.xlsx"
+  },
+  "2023-07": {
+    "document": "July 2023 Fuel Regulations",
+    "url": "https://www.dmpr.gov.za/Portals/0/Energy_Website/files/esources/petroleum/July2023/July-2023-Fuel-Regulations.xlsx",
+    "file": "regs-2023-07.xlsx"
+  },
+  "2023-08": {
+    "document": "August 2023 Fuel Regulations",
+    "url": "https://www.dmpr.gov.za/Portals/0/Energy_Website/files/esources/petroleum/August2023/August-2023-Fuel-Regulations.xlsx",
+    "file": "regs-2023-08.xlsx"
+  },
+  "2023-09": {
+    "document": "September 2023 Fuel Regulations",
+    "url": "https://www.dmpr.gov.za/Portals/0/Energy_Website/files/esources/petroleum/September2023/September-2023-Fuel-Regulations.xlsx",
+    "file": "regs-2023-09.xlsx"
+  },
+  "2023-10": {
+    "document": "October 2023 Fuel Regulations",
+    "url": "https://www.dmpr.gov.za/Portals/0/Energy_Website/files/esources/petroleum/October2023/October-2023-Fuel-Regulations.xlsx",
+    "file": "regs-2023-10.xlsx"
+  },
+  "2023-11": {
+    "document": "November 2023 Fuel Regulations",
+    "url": "https://www.dmpr.gov.za/Portals/0/Energy_Website/files/esources/petroleum/November2023/November-2023-Fuel-Regulations.xlsx",
+    "file": "regs-2023-11.xlsx"
+  },
+  "2023-12": {
+    "document": "December 2023 Fuel Regulations",
+    "url": "https://www.dmpr.gov.za/Portals/0/Energy_Website/files/esources/petroleum/December2023/December-2023-Fuel-Regulations.xlsx",
+    "file": "regs-2023-12.xlsx"
+  },
+  "2024-01": {
+    "document": "January 2024 Fuel Regulations",
+    "url": "https://www.dmpr.gov.za/Portals/0/Energy_Website/files/esources/petroleum/January2024/January-2024-Fuel-Regulations.xlsx",
+    "file": "regs-2024-01.xlsx"
+  },
+  "2024-02": {
+    "document": "February 2024 Fuel Regulations",
+    "url": "https://www.dmpr.gov.za/Portals/0/Energy_Website/files/esources/petroleum/February2024/February-2024-Fuel-Regulations.xlsx",
+    "file": "regs-2024-02.xlsx"
+  },
+  "2024-03": {
+    "document": "March 2024 Fuel Regulations",
+    "url": "https://www.dmpr.gov.za/Portals/0/Energy_Website/files/esources/petroleum/March2024/March-2024-Fuel-Regulations.xlsx",
+    "file": "regs-2024-03.xlsx"
+  },
+  "2024-04": {
+    "document": "April 2024 Fuel Regulations",
+    "url": "https://www.dmpr.gov.za/Portals/0/Energy_Website/files/esources/petroleum/April2024/April-2024-Fuel-Regulations.xlsx",
+    "file": "regs-2024-04.xlsx"
+  },
+  "2024-05": {
+    "document": "May 2024 Fuel Regulations",
+    "url": "https://www.dmpr.gov.za/Portals/0/Resources/Fuel%20Prices%20Adjustments/Fuel%20Prices%20Per%20Zone/2024/May%202024/May-2024-Fuel-Regulations.xlsx",
+    "file": "regs-2024-05.xlsx"
+  },
+  "2024-06": {
+    "document": "June 2024 Fuel Regulations",
+    "url": "https://www.dmpr.gov.za/Portals/0/Resources/Fuel%20Prices%20Adjustments/Fuel%20Prices%20Per%20Zone/2024/June%202024/June-2024-Fuel-Regulations.xlsx",
+    "file": "regs-2024-06.xlsx"
+  },
+  "2024-07": {
+    "document": "July 2024 Fuel Regulations",
+    "url": "https://www.dmpr.gov.za/Portals/0/Resources/Fuel%20Prices%20Adjustments/Fuel%20Prices%20Per%20Zone/2024/July%202024/July-2024-Fuel-Regulations.xlsx",
+    "file": "regs-2024-07.xlsx"
+  },
+  "2024-08": {
+    "document": "August 2024 Fuel Regulations",
+    "url": "https://www.dmpr.gov.za/Portals/0/Resources/Fuel%20Prices%20Adjustments/Fuel%20Prices%20Per%20Zone/2024/August%202024/August-2024-Fuel-Regulations.xlsx",
+    "file": "regs-2024-08.xlsx"
+  },
+  "2024-09": {
+    "document": "September 2024 Fuel Regulations",
+    "url": "https://www.dmpr.gov.za/Portals/0/Resources/Fuel%20Prices%20Adjustments/Fuel%20Prices%20Per%20Zone/2024/September%202024/September-2024-Fuel-Regulations.xlsx",
+    "file": "regs-2024-09.xlsx"
+  },
+  "2024-10": {
+    "document": "October 2024 Fuel Regulations",
+    "url": "https://www.dmpr.gov.za/Portals/0/Resources/Fuel%20Prices%20Adjustments/Fuel%20Prices%20Per%20Zone/2024/October%202024/October-2024-Fuel-Regulations.xlsx",
+    "file": "regs-2024-10.xlsx"
+  },
+  "2024-11": {
+    "document": "November 2024 Fuel Regulations",
+    "url": "https://www.dmpr.gov.za/Portals/0/Resources/Fuel%20Prices%20Adjustments/Fuel%20Prices%20Per%20Zone/2024/November%202024/November-2024-Fuel-Regulations.xlsx",
+    "file": "regs-2024-11.xlsx"
+  },
+  "2024-12": {
+    "document": "December 2024 Fuel Regulations",
+    "url": "https://www.dmpr.gov.za/Portals/0/Resources/Fuel%20Prices%20Adjustments/Fuel%20Prices%20Per%20Zone/2024/December%202024/December-2024-Fuel-Regulations.xlsx",
+    "file": "regs-2024-12.xlsx"
+  },
+  "2025-01": {
+    "document": "January 2025 Fuel Regulations",
+    "url": "https://www.dmpr.gov.za/Portals/0/Resources/Fuel%20Prices%20Adjustments/Fuel%20Prices%20Per%20Zone/2025/January%202025/January-2025-Fuel-Regulations.xlsx",
+    "file": "regs-2025-01.xlsx"
+  },
+  "2025-02": {
+    "document": "February 2025 Fuel Regulations",
+    "url": "https://www.dmpr.gov.za/Portals/0/Resources/Fuel%20Prices%20Adjustments/Fuel%20Prices%20Per%20Zone/2025/February%202025/February-2025-Fuel-Regulations.xlsx",
+    "file": "regs-2025-02.xlsx"
+  },
+  "2025-03": {
+    "document": "March 2025 Fuel Regulations",
+    "url": "https://www.dmpr.gov.za/Portals/0/Resources/Fuel%20Prices%20Adjustments/Fuel%20Prices%20Per%20Zone/2025/March%202025/March-2025-Fuel-Regulations.xlsx",
+    "file": "regs-2025-03.xlsx"
+  },
+  "2025-04": {
+    "document": "April 2025 Fuel Regulations",
+    "url": "https://www.dmpr.gov.za/Portals/0/Resources/Fuel%20Prices%20Adjustments/Fuel%20Prices%20Per%20Zone/2025/April%202025/April-2025-Fuel-Regulations.xlsx",
+    "file": "regs-2025-04.xlsx"
+  },
+  "2025-05": {
+    "document": "May 2025 Fuel Regulations",
+    "url": "https://www.dmpr.gov.za/Portals/0/Resources/Fuel%20Prices%20Adjustments/Fuel%20Prices%20Per%20Zone/2025/May%202025/May-2025-Fuel-Regulations.xlsx",
+    "file": "regs-2025-05.xlsx"
+  },
+  "2025-06": {
+    "document": "June 2025 Fuel Regulations",
+    "url": "https://www.dmpr.gov.za/Portals/0/Resources/Fuel%20Prices%20Adjustments/Fuel%20Prices%20Per%20Zone/2025/June%202025/June-2025-Fuel-Regulations.xlsx",
+    "file": "regs-2025-06.xlsx"
+  },
+  "2025-07": {
+    "document": "July 2025 Fuel Regulations",
+    "url": "https://www.dmpr.gov.za/Portals/0/Resources/Fuel%20Prices%20Adjustments/Fuel%20Prices%20Per%20Zone/2025/July%202025/July-2025-Fuel-Regulations.xlsx",
+    "file": "regs-2025-07.xlsx"
+  },
+  "2025-08": {
+    "document": "August 2025 Fuel Regulations",
+    "url": "https://www.dmpr.gov.za/Portals/0/Resources/Fuel%20Prices%20Adjustments/Fuel%20Prices%20Per%20Zone/2025/August%202025/August-2025-Fuel-Regulations.xlsx",
+    "file": "regs-2025-08.xlsx"
+  },
+  "2025-09": {
+    "document": "September 2025 Fuel Regulations",
+    "url": "https://www.dmpr.gov.za/Portals/0/Resources/Fuel%20Prices%20Adjustments/Fuel%20Prices%20Per%20Zone/2025/September%202025/September-2025-Fuel-Regulations.xlsx",
+    "file": "regs-2025-09.xlsx"
+  },
+  "2025-10": {
+    "document": "October 2025 Fuel Regulations",
+    "url": "https://www.dmpr.gov.za/Portals/0/Resources/Fuel%20Prices%20Adjustments/Fuel%20Prices%20Per%20Zone/2025/October%202025/October-2025-Fuel-Regulations.xlsx",
+    "file": "regs-2025-10.xlsx"
+  },
+  "2025-11": {
+    "document": "November 2025 Fuel Regulations",
+    "url": "https://www.dmpr.gov.za/Portals/0/Resources/Fuel%20Prices%20Adjustments/Fuel%20Prices%20Per%20Zone/2025/November%202025/November-2025-Fuel-Regulations.xlsx",
+    "file": "regs-2025-11.xlsx"
+  },
+  "2025-12": {
+    "document": "December 2025 Fuel Regulations",
+    "url": "https://www.dmpr.gov.za/Portals/0/Resources/Fuel%20Prices%20Adjustments/Fuel%20Prices%20Per%20Zone/2025/December%202025/December-2025-Fuel-Regulations.xlsx",
+    "file": "regs-2025-12.xlsx"
+  },
+  "2026-01": {
+    "document": "January 2026 Fuel Regulations",
+    "url": "https://www.dmpr.gov.za/Portals/0/Resources/Fuel%20Prices%20Adjustments/Fuel%20Prices%20Per%20Zone/2026/January%202026/January-2026-Fuel-Regulations.xlsx",
+    "file": "regs-2026-01.xlsx"
+  },
+  "2026-05": {
+    "document": "Fuel Price Schedule May 2026",
+    "url": "https://www.dmpr.gov.za/API/Evotiva-UserFiles/FileActionsServices/DownloadFile?ItemId=3396&ModuleId=2305&TabId=154",
+    "file": "regs-2026-05.xlsx"
+  },
+  "2026-06": {
+    "document": "Fuel Price Schedule June 2026",
+    "url": "https://www.dmpr.gov.za/API/Evotiva-UserFiles/FileActionsServices/DownloadFile?ItemId=3404&ModuleId=2305&TabId=154",
+    "file": "regs-2026-06.xlsx"
+  },
+  "2026-07": {
+    "document": "Fuel Price Schedule July 2026",
+    "url": "https://www.dmpr.gov.za/API/Evotiva-UserFiles/FileActionsServices/DownloadFile?ItemId=3449&ModuleId=2305&TabId=154",
+    "file": "regs-2026-07.xlsx"
+  },
+  "2026-08": {
+    "document": "Fuel Price Schedule August 2026 (in the August 2026 fuel price pack)",
+    "url": "https://bit.ly/4hPxbEU",
+    "file": "regs-2026-08.xlsx"
+  },
+  "2026-09": {
+    "document": "Fuel Price Schedule September 2026 (in the September 2026 fuel price pack)",
+    "url": "https://bit.ly/4i15nxE",
+    "file": "regs-2026-09.xlsx"
+  },
+  "2026-10": {
+    "document": "Fuel Price Schedule October 2026 (in the October 2026 fuel price pack)",
+    "url": "https://bit.ly/4rPpgud",
+    "file": "regs-2026-10.xlsx"
+  },
+  "2026-11": {
+    "document": "Fuel Price Schedule November 2026 (in the November 2026 fuel price pack)",
+    "url": "https://bit.ly/4sZwrAY",
+    "file": "regs-2026-11.xlsx",
+    "releasedOn": "2026-11-03"
+  }
+}
