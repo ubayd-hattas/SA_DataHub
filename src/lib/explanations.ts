@@ -41,6 +41,8 @@ const CATEGORY_CONTEXT: Record<CategoryId, string> = {
     'South Africa\'s GDP figures follow international SNA 2008 standards. The quarterly national accounts are released about 10 weeks after quarter end. GDP per capita has been broadly stagnant since 2013 as population growth has largely offset economic expansion. Mining and manufacturing cyclicality drives significant quarter-to-quarter volatility.',
   census:
     'The 2022 Census was South Africa\'s first since 2011 — an 11-year gap compared to the usual 5–10 years. Stats SA acknowledged undercounting of approximately 1–2 million people. Census data forms the baseline for all population-derived statistics and government planning.',
+  fuel:
+    "The Department of Mineral and Petroleum Resources sets the petrol price and the wholesale prices of diesel and illuminating paraffin each month, usually from the first Wednesday. Its Fuel Price Structure page describes the price as the basic fuel price (the import cost, which follows international product prices and the rand-dollar exchange rate) plus taxes and levies, regulated margins, and transport costs.",
 }
 
 const CATEGORY_MATTERS: Record<CategoryId, (stat: Statistic) => string> = {
@@ -60,6 +62,8 @@ const CATEGORY_MATTERS: Record<CategoryId, (stat: Statistic) => string> = {
     `GDP growth at ${stat.value} is the primary measure of economic expansion. South Africa needs sustained growth of 5%+ to meaningfully reduce unemployment and expand the tax base for social spending. Structural constraints — energy, logistics, regulatory complexity — have kept growth well below that threshold since 2012.`,
   census: (stat) =>
     `Census data underpins all government planning and resource allocation. The 2022 Census is the definitive source for population, household composition, and service access data. ${stat.title} at ${stat.value} reflects the outcome of the most comprehensive survey of South African society.`,
+  fuel: (stat) =>
+    `${stat.title} is ${stat.value} a litre. It is the official price the DMPR set for the month, not an estimate. Diesel and paraffin figures are wholesale list prices, so the price at a filling station will differ.`,
 }
 
 // ─── Core generator ───────────────────────────────────────────────────────────

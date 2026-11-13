@@ -9,6 +9,7 @@ export type CategoryId =
   | 'housing'
   | 'gdp'
   | 'census'
+  | 'fuel'
 
 export type Province =
   | 'all'
