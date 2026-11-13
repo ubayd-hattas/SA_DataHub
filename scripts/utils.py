@@ -63,7 +63,7 @@ def save_dataset(name: str, data: dict, dry_run: bool = False) -> None:
 
 SESSION = requests.Session()
 SESSION.headers.update({
-    "User-Agent": "SA-DataHub-Updater/1.0 (https://github.com/your-repo; contact@yourdomain.co.za)"
+    "User-Agent": "SADataHubBot/1.0 (+https://sadatahub.tech/methodology)"
 })
 
 
