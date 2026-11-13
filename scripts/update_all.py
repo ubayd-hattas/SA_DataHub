@@ -22,6 +22,7 @@ Run from your project root (the folder containing package.json):
 
 import argparse
 import importlib
+import os
 import sys
 import time
 from datetime import datetime
@@ -122,6 +123,12 @@ def print_summary(results: list[dict]) -> None:
 
 
 def main():
+    if os.environ.get("SADH_ALLOW_PAUSED_FETCH") != "1":
+        print(
+            "Automated updates have been paused since 25 October 2026. Data is entered by hand "
+            "(docs/RUNBOOK.md). Nothing was run and no request was sent."
+        )
+        sys.exit(2)
     parser = argparse.ArgumentParser(description="SA Data Hub — update all datasets")
     parser.add_argument("--only", metavar="DATASET", help="Run only this updater (e.g. inflation)")
     parser.add_argument("--dry-run", action="store_true", help="Fetch data but don't write files")
