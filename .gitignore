@@ -54,8 +54,9 @@ newdatasets/*.xls
 # ETL raw snapshots (immutable archives)
 etl/raw-snapshots/
 
-# Search Console exports (never commit)
+# Search Console exports (never commit). Downloads land in the repo root with this name.
 sources/search-console/
+*Performance-on-Search*.zip
 
 # Neon CLI project link (the database migration is paused)
 .neon
