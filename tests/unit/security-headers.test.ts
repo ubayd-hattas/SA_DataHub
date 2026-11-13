@@ -5,7 +5,6 @@
  * that lets other sites frame /embed/* pages.
  */
 import { describe, it, expect } from 'vitest'
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const nextConfig = require('../../next.config.js')
 
 interface HeaderRule {
