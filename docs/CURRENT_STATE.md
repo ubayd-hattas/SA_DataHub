@@ -44,7 +44,7 @@ The main menu has five sections: What changed, Your area, Topics, Tools and Abou
 ## Paused
 
 - **Automation** (`automation/`, `scripts/update_*.py`): paused since 25 October 2026. Nothing may make requests to statssa.gov.za.
-- **PostgreSQL migration** (`db/`, `etl/`, `DATA_SOURCE=database`): production uses the JSON files.
+- **PostgreSQL migration** (`db/`, `etl/`, `DATA_SOURCE=database`): production uses the JSON files. Parked, not planned: decided 13 November 2026 (`docs/implementation-plan.md`, D2). New data, including fuel, is built on JSON files in git.
 
 ## Known gaps
 

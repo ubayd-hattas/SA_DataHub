@@ -1,5 +1,7 @@
 # SA Data Hub — database migrations
 
+> **Parked since 25 October 2026.** Production builds from the JSON files in `src/data/datasets/`. Four datasets (unemployment, youth unemployment, labour force, interest rates: 9 of the site's statistics) have ETL pipelines and equivalence tests. Even with `DATA_SOURCE=database`, only the dashboard, topic and story pages read through the provider; every other page imports the JSON directly. On 13 November 2026 the owner decided not to finish the migration: the site is static, small, and gets review and rollback from git (see `docs/audit.md`, section 1). To resume, first route every page through `getAppDataProvider()`, then migrate the remaining datasets, then switch production.
+
 Numbered SQL files applied in order by `npm run db:migrate`.
 
 | File | Purpose |
