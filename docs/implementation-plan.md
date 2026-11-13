@@ -1,7 +1,7 @@
 # SA Data Hub: implementation plan
 
 **Date:** 13 November 2026. **Planner and reviewer:** Claude (Fable). **Implementer:** Claude Opus in Claude Code.
-**Status: waiting for the owner's review. No code is to be written until the decisions below are answered.**
+**Status: approved 13 November 2026.** The owner accepted the recommendation on all six decisions (D1 to D6 below). The CEF email in D3 is still for the owner to send; until CEF answers, the tracker is built and backtested but not published.
 
 Read with: `docs/audit.md`, `docs/ux-plan.md`, `docs/fuel.md`, `docs/pipeline-and-api.md`, `docs/opportunities.md`.
 
