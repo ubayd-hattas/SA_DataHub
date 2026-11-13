@@ -46,6 +46,7 @@ import municipalitiesData  from './datasets/municipalities.json'
 import youthUnemployment   from './datasets/youth-unemployment.json'
 import interestRatesData   from './datasets/interest-rates.json'
 import labourForceData     from './datasets/labour-force.json'
+import { fuelStatistics }  from '@/lib/fuel'
 
 // ─── Categories ───────────────────────────────────────────────────────────────
 
@@ -114,6 +115,15 @@ export const categories: Category[] = [
     stats: housingData.statistics.length,
   },
   {
+    id: 'fuel',
+    label: 'Fuel prices',
+    description: 'The official monthly price of petrol 93 and 95, and the wholesale price of diesel and illuminating paraffin, inland and at the coast, set by the Department of Mineral and Petroleum Resources.',
+    icon: 'Fuel',
+    color: 'text-amber-600 dark:text-amber-400',
+    bgColor: 'bg-amber-50 dark:bg-amber-950/30',
+    stats: fuelStatistics().length,
+  },
+  {
     id: 'census',
     label: 'Census 2022',
     description: 'Households and internet access, from Census 2022 and earlier censuses.',
@@ -139,6 +149,7 @@ export const allStatistics: Statistic[] = [
   ...(populationData.statistics    as Statistic[]),
   ...(housingData.statistics       as Statistic[]),
   ...(censusData.statistics        as Statistic[]),
+  ...fuelStatistics(),
 ]
 
 /** The statistics the site shows: every record that is not withheld. */

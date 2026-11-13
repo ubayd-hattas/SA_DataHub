@@ -112,6 +112,17 @@ export const GOOD_DIRECTION_BY_STAT: Record<string, GoodDirection> = {
   // Census
   'census-households': 'up',
   'census-internet-access': 'up',
+  // Fuel prices: a rise costs motorists money but is a fact, not a verdict. Changes are given in words.
+  'fuel-petrol-95-inland': 'neutral',
+  'fuel-petrol-95-coastal': 'neutral',
+  'fuel-petrol-93-inland': 'neutral',
+  'fuel-petrol-93-coastal': 'neutral',
+  'fuel-diesel-500ppm-inland': 'neutral',
+  'fuel-diesel-500ppm-coastal': 'neutral',
+  'fuel-diesel-50ppm-inland': 'neutral',
+  'fuel-diesel-50ppm-coastal': 'neutral',
+  'fuel-paraffin-inland': 'neutral',
+  'fuel-paraffin-coastal': 'neutral',
 }
 
 /**
