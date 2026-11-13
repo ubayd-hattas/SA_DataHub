@@ -24,6 +24,13 @@ export interface UpdateHistoryEntry {
 
 export const UPDATE_HISTORY: UpdateHistoryEntry[] = [
   {
+    date: '2026-11-13',
+    datasetId: 'downloads',
+    datasetLabel: 'Downloads',
+    type: 'correction',
+    summary: `The "Download CSV" button on each topic page gave one row per statistic, with only the latest value, instead of every value in each series. It now gives one row per data point, the same as the Download Center and the files under /data. Files downloaded from a topic page before 13 November 2026 should be downloaded again.`,
+  },
+  {
     date: '2026-11-09',
     datasetId: 'provinces',
     datasetLabel: 'Provinces',

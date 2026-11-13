@@ -281,7 +281,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
             <section aria-labelledby="download">
               <h3 id="download" className="text-body font-semibold text-ink">Download</h3>
               <p className="mt-1 text-small text-muted">Every statistic on this page as a CSV file.</p>
-              <ExportButton stats={stats} label={category.label} variant="full" className="mt-3" />
+              <ExportButton stats={stats} label={category.label} variant="full" exportMode="series" className="mt-3" />
             </section>
           )}
 

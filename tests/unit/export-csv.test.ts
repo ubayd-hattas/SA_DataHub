@@ -59,6 +59,23 @@ describe('CSV builders', () => {
     expectRectangular(parseCsv(buildProvinceCsvContent(provinces, 'Provinces')))
   })
 
+  it('a topic export with several statistics gives one row per data point by default', () => {
+    // The topic-page download passes several statistics and no mode. It used to
+    // fall back to summary mode and give one row per statistic.
+    const inflation = statistics.filter((s) => s.categoryId === 'inflation')
+    expect(inflation.length).toBeGreaterThan(1)
+    const points = inflation.reduce((n, s) => n + (s.series ?? []).reduce((m, ser) => m + ser.data.length, 0), 0)
+    const rows = parseCsv(buildCsvContent(inflation, 'Inflation'))
+    expectRectangular(rows)
+    expect(rows[0]).toContain('period')
+    expect(rows.length - 1).toBe(points)
+  })
+
+  it('summary mode is still available when asked for by name', () => {
+    const rows = parseCsv(buildCsvContent(statistics, 'All', { mode: 'summary' }))
+    expect(rows.length - 1).toBe(statistics.length)
+  })
+
   it('a title with a comma, quote, newline and carriage return round-trips exactly', () => {
     const title = 'Rate, "adjusted"\nline two\rline three'
     const fake = { ...statistics[0], title }
