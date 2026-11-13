@@ -126,6 +126,11 @@ export function formatChange(
 ): string {
   const unit = stat.series?.[0]?.unit ?? stat.unit
   if (unit === '%') return `${amount.toFixed(1)}${long ? ' percentage points' : 'pp'}`
+  if (unit === 'R/litre') {
+    // Fuel price moves are read in cents: "12 cents", or "R1.10" from a rand up.
+    const cents = Math.round(Math.abs(amount) * 100)
+    return cents < 100 ? `${cents} cent${cents === 1 ? '' : 's'}` : `R${(cents / 100).toFixed(2)}`
+  }
   return `${amount.toFixed(1)} ${unit}`
 }
 

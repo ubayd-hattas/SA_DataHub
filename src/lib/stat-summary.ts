@@ -22,7 +22,7 @@ export function formatStatistic(stat: Pick<Statistic, 'rawValue' | 'unit'> & { s
   const { rawValue: v, unit } = stat
   if (unit === '%') return formatSeriesValue(v, '%', percentDecimals([v, ...(stat.series?.[0]?.data.map((p) => p.value) ?? [])]))
   if (Math.abs(v) >= 1_000_000) return `${formatDecimal(v / 1_000_000)} million ${unit}`
-  if (unit === 'ZAR billion' || unit === 'ZAR') return formatSeriesValue(v, unit)
+  if (unit === 'ZAR billion' || unit === 'ZAR' || unit === 'R/litre') return formatSeriesValue(v, unit)
   return `${formatCount(v)} ${unit}`
 }
 

@@ -48,7 +48,7 @@ export function percentDecimals(values: number[]): number {
 
 /**
  * One value in a series' own unit: "4.5%", "7.25%", "26 232", "63.5 million",
- * "R7 071 billion". Pass `decimals` from percentDecimals so a whole series uses one precision.
+ * "R7 071 billion", "R30.24" (a price per litre). Pass `decimals` from percentDecimals so a whole series uses one precision.
  */
 export function formatSeriesValue(value: number, unit: string, decimals = percentDecimals([value])): string {
   switch (unit) {
@@ -60,6 +60,9 @@ export function formatSeriesValue(value: number, unit: string, decimals = percen
       return `R${formatCount(value)} billion`
     case 'ZAR':
       return formatRand(value, 0)
+    case 'R/litre':
+      // A pump price: rands and cents, as the pump shows it (R30.24).
+      return formatRand(value, 2)
     default:
       return formatCount(value)
   }
