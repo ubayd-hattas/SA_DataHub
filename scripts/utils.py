@@ -10,6 +10,7 @@ Provides:
 from __future__ import annotations
 
 import json
+import os
 import time
 from datetime import datetime
 from pathlib import Path
@@ -62,15 +63,28 @@ def save_dataset(name: str, data: dict, dry_run: bool = False) -> None:
 
 SESSION = requests.Session()
 SESSION.headers.update({
-    "User-Agent": "SA-DataHub-Updater/1.0 (https://github.com/your-repo; contact@yourdomain.co.za)"
+    "User-Agent": "SADataHubBot/1.0 (+https://sadatahub.tech/methodology)"
 })
+
+
+PAUSED_MESSAGE = (
+    "Automated updates have been paused since 25 October 2026: data is entered by hand "
+    "from releases the maintainer downloads, and nothing may send requests to statssa.gov.za. "
+    "No request was sent. See docs/CURRENT_STATE.md. To run a non-Stats SA fetch anyway, "
+    "set SADH_ALLOW_PAUSED_FETCH=1 for that one command."
+)
 
 
 def fetch(url: str, retries: int = 3, backoff: float = 2.0, **kwargs) -> requests.Response:
     """
     GET a URL with retry/backoff.
     Raises on non-2xx after all retries.
+    Refuses to run while automation is paused, and never contacts statssa.gov.za.
     """
+    if "statssa.gov.za" in url:
+        raise SystemExit("Refusing to request statssa.gov.za: the project does not send automated requests there. " + PAUSED_MESSAGE)
+    if os.environ.get("SADH_ALLOW_PAUSED_FETCH") != "1":
+        raise SystemExit(PAUSED_MESSAGE)
     for attempt in range(retries):
         try:
             resp = SESSION.get(url, timeout=30, **kwargs)
