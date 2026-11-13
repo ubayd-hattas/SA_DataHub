@@ -21,7 +21,8 @@
  * src/data/datasets/provinces.json   — provincial breakdown data
  *
  * ── Updating data ─────────────────────────────────────────────────────────────
- * Run:  python scripts/update_all.py
+ * By hand, from releases the maintainer downloads: see docs/RUNBOOK.md.
+ * The scripts/update_*.py updaters are paused and refuse to run.
  */
 
 import { Category, Statistic, ProvinceData, MunicipalityRecord, MunicipalitiesDataset, ProvinceCode } from '@/types'
