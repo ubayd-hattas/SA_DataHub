@@ -29,10 +29,10 @@ export const metadata: Metadata = buildPageMetadata({
 
 function automationBadge(level: AutomationLevel) {
   const map: Record<AutomationLevel, { label: string; className: string }> = {
-    auto:       { label: 'Auto-updated',  className: 'bg-brand-50 text-brand-700 dark:bg-brand-950/30 dark:text-brand-300' },
-    'semi-auto':{ label: 'Semi-auto',     className: 'bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-300' },
-    manual:     { label: 'Manual',        className: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300' },
-    static:     { label: 'Static',        className: 'bg-teal-50 text-teal-700 dark:bg-teal-950/30 dark:text-teal-300' },
+    auto:       { label: 'Updated automatically',  className: 'bg-brand-50 text-brand-700 dark:bg-brand-950/30 dark:text-brand-300' },
+    'semi-auto':{ label: 'Script, checked by hand', className: 'bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-300' },
+    manual:     { label: 'Entered by hand', className: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300' },
+    static:     { label: 'Does not change', className: 'bg-teal-50 text-teal-700 dark:bg-teal-950/30 dark:text-teal-300' },
   }
   const { label, className } = map[level]
   return (
