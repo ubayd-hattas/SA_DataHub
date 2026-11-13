@@ -1,0 +1,1859 @@
+{
+  "_meta": {
+    "description": "Official monthly fuel prices in South Africa, one record per monthly adjustment.",
+    "publisher": "Department of Mineral and Petroleum Resources (DMPR)",
+    "publisher_url": "https://www.dmpr.gov.za/Branches/Petroleum-Resources/Fuel-Prices",
+    "units": "South African cents per litre, exactly as printed by the DMPR",
+    "zones": {
+      "inland": "Zone 9C, Gauteng: the inland reference price the DMPR uses in its own history tables",
+      "coastal": "Zone 1A, the coastal reference price"
+    },
+    "price_types": {
+      "petrol93": "Regulated retail (pump) price, 93 unleaded",
+      "petrol95": "Regulated retail (pump) price, 95 unleaded",
+      "diesel500ppm": "Wholesale list price, diesel 0.05% sulphur (500 ppm)",
+      "diesel50ppm": "Wholesale list price, diesel 0.005% sulphur (50 ppm)",
+      "paraffin": "Wholesale list price, illuminating paraffin"
+    },
+    "terms": "DMPR material may be reproduced if it is accurate, not used for financial or commercial gain, not misleading, and credited to the DMPR with its website address (https://www.dmpr.gov.za/Terms-Conditions).",
+    "built_by": "scripts/fuel/build_prices.py from the files in sources/releases/fuel/ (not committed)",
+    "null_values": "null means no file SA Data Hub holds gives that price for that month",
+    "checked_on": "2026-11-13"
+  },
+  "adjustments": [
+    {
+      "month": "2022-01",
+      "effectiveFrom": "2022-01-05",
+      "source": {
+        "document": "January 2022 Fuel Regulations",
+        "url": "https://www.dmpr.gov.za/Portals/0/Energy_Website/files/esources/petroleum/January2022/January-2022-Fuel-Regulations.xlsx"
+      },
+      "enteredFrom": "spreadsheet",
+      "prices": {
+        "petrol93": {
+          "inland": 1936.0,
+          "coastal": 1874.0
+        },
+        "petrol95": {
+          "inland": 1961.0,
+          "coastal": 1889.0
+        },
+        "diesel500ppm": {
+          "inland": 1724.68,
+          "coastal": 1663.18
+        },
+        "diesel50ppm": {
+          "inland": 1728.08,
+          "coastal": 1666.58
+        },
+        "paraffin": {
+          "inland": 1096.688,
+          "coastal": 1014.788
+        }
+      },
+      "note": "The file's header says 2021-01-05. The year is a typo in the file: it was published for 2022-01."
+    },
+    {
+      "month": "2022-02",
+      "effectiveFrom": "2022-02-02",
+      "source": {
+        "document": "February 2022 Fuel Regulations",
+        "url": "https://www.dmpr.gov.za/Portals/0/Energy_Website/files/esources/petroleum/February2022/February-2022-Fuel-Regulations.xlsx"
+      },
+      "enteredFrom": "spreadsheet",
+      "prices": {
+        "petrol93": {
+          "inland": 1989.0,
+          "coastal": 1927.0
+        },
+        "petrol95": {
+          "inland": 2014.0,
+          "coastal": 1942.0
+        },
+        "diesel500ppm": {
+          "inland": 1804.52,
+          "coastal": 1743.02
+        },
+        "diesel50ppm": {
+          "inland": 1806.92,
+          "coastal": 1745.42
+        },
+        "paraffin": {
+          "inland": 1197.688,
+          "coastal": 1115.788
+        }
+      }
+    },
+    {
+      "month": "2022-03",
+      "effectiveFrom": "2022-03-02",
+      "source": {
+        "document": "March 2022 Fuel Regulations",
+        "url": "https://www.dmpr.gov.za/Portals/0/Energy_Website/files/esources/petroleum/March2022/March-2022-Fuel-Regulations.xlsx"
+      },
+      "enteredFrom": "spreadsheet",
+      "prices": {
+        "petrol93": {
+          "inland": 2135.0,
+          "coastal": 2073.0
+        },
+        "petrol95": {
+          "inland": 2160.0,
+          "coastal": 2088.0
+        },
+        "diesel500ppm": {
+          "inland": 1948.88,
+          "coastal": 1887.38
+        },
+        "diesel50ppm": {
+          "inland": 1955.28,
+          "coastal": 1893.78
+        },
+        "paraffin": {
+          "inland": 1318.688,
+          "coastal": 1236.788
+        }
+      }
+    },
+    {
+      "month": "2022-04",
+      "effectiveFrom": "2022-04-06",
+      "source": {
+        "document": "April 2022 Fuel Regulations",
+        "url": "https://www.dmpr.gov.za/Portals/0/Energy_Website/files/esources/petroleum/April2022/April-2022-Fuel-Regulations.xlsx"
+      },
+      "enteredFrom": "spreadsheet",
+      "prices": {
+        "petrol93": {
+          "inland": 2163.0,
+          "coastal": 2101.0
+        },
+        "petrol95": {
+          "inland": 2196.0,
+          "coastal": 2124.0
+        },
+        "diesel500ppm": {
+          "inland": 2101.44,
+          "coastal": 2039.94
+        },
+        "diesel50ppm": {
+          "inland": 2123.84,
+          "coastal": 2062.34
+        },
+        "paraffin": {
+          "inland": 1584.688,
+          "coastal": 1502.788
+        }
+      }
+    },
+    {
+      "month": "2022-05",
+      "effectiveFrom": "2022-05-04",
+      "source": {
+        "document": "May 2022 Fuel Regulations",
+        "url": "https://www.dmpr.gov.za/Portals/0/Energy_Website/files/esources/petroleum/May2022/May-2022-Fuel-Regulations.xlsx"
+      },
+      "enteredFrom": "spreadsheet",
+      "prices": {
+        "petrol93": {
+          "inland": 2151.0,
+          "coastal": 2086.0
+        },
+        "petrol95": {
+          "inland": 2184.0,
+          "coastal": 2109.0
+        },
+        "diesel500ppm": {
+          "inland": 2199.44,
+          "coastal": 2134.24
+        },
+        "diesel50ppm": {
+          "inland": 2215.84,
+          "coastal": 2150.64
+        },
+        "paraffin": {
+          "inland": 1664.288,
+          "coastal": 1585.088
+        }
+      }
+    },
+    {
+      "month": "2022-06",
+      "effectiveFrom": "2022-06-01",
+      "source": {
+        "document": "June 2022 Fuel Regulations",
+        "url": "https://www.dmpr.gov.za/Portals/0/Energy_Website/files/esources/petroleum/June2022/June-2022-Fuel-Regulations.xlsx"
+      },
+      "enteredFrom": "spreadsheet",
+      "prices": {
+        "petrol93": {
+          "inland": 2394.0,
+          "coastal": 2329.0
+        },
+        "petrol95": {
+          "inland": 2417.0,
+          "coastal": 2352.0
+        },
+        "diesel500ppm": {
+          "inland": 2309.44,
+          "coastal": 2244.24
+        },
+        "diesel50ppm": {
+          "inland": 2322.84,
+          "coastal": 2257.64
+        },
+        "paraffin": {
+          "inland": 1820.288,
+          "coastal": 1741.088
+        }
+      }
+    },
+    {
+      "month": "2022-07",
+      "effectiveFrom": "2022-07-06",
+      "source": {
+        "document": "July 2022 Fuel Regulations",
+        "url": "https://www.dmpr.gov.za/Portals/0/Energy_Website/files/esources/petroleum/July2022/July-2022-Fuel-Regulations.xlsx"
+      },
+      "enteredFrom": "spreadsheet",
+      "prices": {
+        "petrol93": {
+          "inland": 2631.0,
+          "coastal": 2566.0
+        },
+        "petrol95": {
+          "inland": 2674.0,
+          "coastal": 2609.0
+        },
+        "diesel500ppm": {
+          "inland": 2540.44,
+          "coastal": 2475.24
+        },
+        "diesel50ppm": {
+          "inland": 2552.84,
+          "coastal": 2487.64
+        },
+        "paraffin": {
+          "inland": 1986.288,
+          "coastal": 1907.088
+        }
+      }
+    },
+    {
+      "month": "2022-08",
+      "effectiveFrom": "2022-08-03",
+      "source": {
+        "document": "August 2022 Fuel Regulations",
+        "url": "https://www.dmpr.gov.za/Portals/0/Energy_Website/files/esources/petroleum/August2022/August-2022-Fuel-Regulations.xlsx"
+      },
+      "enteredFrom": "spreadsheet",
+      "prices": {
+        "petrol93": {
+          "inland": 2499.0,
+          "coastal": 2434.0
+        },
+        "petrol95": {
+          "inland": 2542.0,
+          "coastal": 2477.0
+        },
+        "diesel500ppm": {
+          "inland": 2452.44,
+          "coastal": 2387.24
+        },
+        "diesel50ppm": {
+          "inland": 2461.84,
+          "coastal": 2396.64
+        },
+        "paraffin": {
+          "inland": 1842.288,
+          "coastal": 1763.088
+        }
+      }
+    },
+    {
+      "month": "2022-09",
+      "effectiveFrom": "2022-09-07",
+      "source": {
+        "document": "September 2022 Fuel Regulations",
+        "url": "https://www.dmpr.gov.za/Portals/0/Energy_Website/files/esources/petroleum/September2022/September-2022-Fuel-Regulations.xlsx"
+      },
+      "enteredFrom": "spreadsheet",
+      "prices": {
+        "petrol93": {
+          "inland": 2295.0,
+          "coastal": 2230.0
+        },
+        "petrol95": {
+          "inland": 2338.0,
+          "coastal": 2273.0
+        },
+        "diesel500ppm": {
+          "inland": 2396.1,
+          "coastal": 2330.9
+        },
+        "diesel50ppm": {
+          "inland": 2415.5,
+          "coastal": 2350.3
+        },
+        "paraffin": {
+          "inland": 1760.288,
+          "coastal": 1681.088
+        }
+      }
+    },
+    {
+      "month": "2022-10",
+      "effectiveFrom": "2022-10-05",
+      "source": {
+        "document": "October 2022 Fuel Regulations",
+        "url": "https://www.dmpr.gov.za/Portals/0/Energy_Website/files/esources/petroleum/October2022/October-2022-Fuel-Regulations.xlsx"
+      },
+      "enteredFrom": "spreadsheet",
+      "prices": {
+        "petrol93": {
+          "inland": 2206.0,
+          "coastal": 2141.0
+        },
+        "petrol95": {
+          "inland": 2236.0,
+          "coastal": 2171.0
+        },
+        "diesel500ppm": {
+          "inland": 2406.1,
+          "coastal": 2340.9
+        },
+        "diesel50ppm": {
+          "inland": 2430.5,
+          "coastal": 2365.3
+        },
+        "paraffin": {
+          "inland": 1699.288,
+          "coastal": 1620.088
+        }
+      }
+    },
+    {
+      "month": "2022-11",
+      "effectiveFrom": "2022-11-02",
+      "source": {
+        "document": "November 2022 Fuel Regulations",
+        "url": "https://www.dmpr.gov.za/Portals/0/Energy_Website/files/esources/petroleum/November2022/November-2022-Fuel-Regulations.xlsx"
+      },
+      "enteredFrom": "spreadsheet",
+      "prices": {
+        "petrol93": {
+          "inland": 2257.0,
+          "coastal": 2192.0
+        },
+        "petrol95": {
+          "inland": 2287.0,
+          "coastal": 2222.0
+        },
+        "diesel500ppm": {
+          "inland": 2548.96,
+          "coastal": 2483.76
+        },
+        "diesel50ppm": {
+          "inland": 2574.36,
+          "coastal": 2509.16
+        },
+        "paraffin": {
+          "inland": 1776.288,
+          "coastal": 1697.088
+        }
+      }
+    },
+    {
+      "month": "2022-12",
+      "effectiveFrom": "2022-12-07",
+      "source": {
+        "document": "December 2022 Fuel Regulations",
+        "url": "https://www.dmpr.gov.za/Portals/0/Energy_Website/files/esources/petroleum/December2022/December-2022-Fuel-Regulations.xlsx"
+      },
+      "enteredFrom": "spreadsheet",
+      "prices": {
+        "petrol93": {
+          "inland": 2316.0,
+          "coastal": 2251.0
+        },
+        "petrol95": {
+          "inland": 2346.0,
+          "coastal": 2281.0
+        },
+        "diesel500ppm": {
+          "inland": 2391.77,
+          "coastal": 2326.57
+        },
+        "diesel50ppm": {
+          "inland": 2422.17,
+          "coastal": 2356.97
+        },
+        "paraffin": {
+          "inland": 1718.958,
+          "coastal": 1639.758
+        }
+      }
+    },
+    {
+      "month": "2023-01",
+      "effectiveFrom": "2023-01-04",
+      "source": {
+        "document": "January 2023 Fuel Regulations",
+        "url": "https://www.dmpr.gov.za/Portals/0/Energy_Website/files/esources/petroleum/January2023/January-2023-Fuel-Regulations.xlsx"
+      },
+      "enteredFrom": "spreadsheet",
+      "prices": {
+        "petrol93": {
+          "inland": 2110.0,
+          "coastal": 2045.0
+        },
+        "petrol95": {
+          "inland": 2140.0,
+          "coastal": 2075.0
+        },
+        "diesel500ppm": {
+          "inland": 2122.87,
+          "coastal": 2057.67
+        },
+        "diesel50ppm": {
+          "inland": 2141.27,
+          "coastal": 2076.07
+        },
+        "paraffin": {
+          "inland": 1525.958,
+          "coastal": 1446.758
+        }
+      }
+    },
+    {
+      "month": "2023-02",
+      "effectiveFrom": "2023-02-01",
+      "source": {
+        "document": "February 2023 Fuel Regulations",
+        "url": "https://www.dmpr.gov.za/Portals/0/Energy_Website/files/esources/petroleum/February2023/February-2023-Fuel-Regulations.xlsx"
+      },
+      "enteredFrom": "spreadsheet",
+      "prices": {
+        "petrol93": {
+          "inland": 2138.0,
+          "coastal": 2073.0
+        },
+        "petrol95": {
+          "inland": 2168.0,
+          "coastal": 2103.0
+        },
+        "diesel500ppm": {
+          "inland": 2132.03,
+          "coastal": 2066.83
+        },
+        "diesel50ppm": {
+          "inland": 2140.43,
+          "coastal": 2075.23
+        },
+        "paraffin": {
+          "inland": 1583.958,
+          "coastal": 1504.758
+        }
+      }
+    },
+    {
+      "month": "2023-03",
+      "effectiveFrom": "2023-03-01",
+      "source": {
+        "document": "March 2023 Fuel Regulations",
+        "url": "https://www.dmpr.gov.za/Portals/0/Energy_Website/files/esources/petroleum/March2023/March-2023-Fuel-Regulations.xlsx"
+      },
+      "enteredFrom": "spreadsheet",
+      "prices": {
+        "petrol93": {
+          "inland": 2265.0,
+          "coastal": 2200.0
+        },
+        "petrol95": {
+          "inland": 2295.0,
+          "coastal": 2230.0
+        },
+        "diesel500ppm": {
+          "inland": 2162.41,
+          "coastal": 2097.21
+        },
+        "diesel50ppm": {
+          "inland": 2171.81,
+          "coastal": 2106.61
+        },
+        "paraffin": {
+          "inland": 1596.958,
+          "coastal": 1517.758
+        }
+      }
+    },
+    {
+      "month": "2023-04",
+      "effectiveFrom": "2023-04-05",
+      "source": {
+        "document": "April 2023 Fuel Regulations",
+        "url": "https://www.dmpr.gov.za/Portals/0/Energy_Website/files/esources/petroleum/April2023/April-2023-Fuel-Regulations.xlsx"
+      },
+      "enteredFrom": "spreadsheet",
+      "prices": {
+        "petrol93": {
+          "inland": 2264.0,
+          "coastal": 2192.0
+        },
+        "petrol95": {
+          "inland": 2297.0,
+          "coastal": 2225.0
+        },
+        "diesel500ppm": {
+          "inland": 2088.83,
+          "coastal": 2016.63
+        },
+        "diesel50ppm": {
+          "inland": 2097.23,
+          "coastal": 2025.03
+        },
+        "paraffin": {
+          "inland": 1472.058,
+          "coastal": 1379.558
+        }
+      }
+    },
+    {
+      "month": "2023-05",
+      "effectiveFrom": "2023-05-03",
+      "source": {
+        "document": "May 2023 Fuel Regulations",
+        "url": "https://www.dmpr.gov.za/Portals/0/Energy_Website/files/esources/petroleum/May2023/May-2023-Fuel-Regulations.xlsx"
+      },
+      "enteredFrom": "spreadsheet",
+      "prices": {
+        "petrol93": {
+          "inland": 2301.0,
+          "coastal": 2229.0
+        },
+        "petrol95": {
+          "inland": 2334.0,
+          "coastal": 2262.0
+        },
+        "diesel500ppm": {
+          "inland": 2015.29,
+          "coastal": 1943.09
+        },
+        "diesel50ppm": {
+          "inland": 2049.69,
+          "coastal": 1977.49
+        },
+        "paraffin": {
+          "inland": 1439.058,
+          "coastal": 1346.558
+        }
+      }
+    },
+    {
+      "month": "2023-06",
+      "effectiveFrom": "2023-06-07",
+      "source": {
+        "document": "June 2023 Fuel Regulations",
+        "url": "https://www.dmpr.gov.za/Portals/0/Energy_Website/files/esources/petroleum/June2023/June-2023-Fuel-Regulations.xlsx"
+      },
+      "enteredFrom": "spreadsheet",
+      "prices": {
+        "petrol93": {
+          "inland": 2230.0,
+          "coastal": 2158.0
+        },
+        "petrol95": {
+          "inland": 2263.0,
+          "coastal": 2191.0
+        },
+        "diesel500ppm": {
+          "inland": 1931.29,
+          "coastal": 1859.09
+        },
+        "diesel50ppm": {
+          "inland": 1969.69,
+          "coastal": 1897.49
+        },
+        "paraffin": {
+          "inland": 1396.058,
+          "coastal": 1303.558
+        }
+      }
+    },
+    {
+      "month": "2023-07",
+      "effectiveFrom": "2023-07-05",
+      "source": {
+        "document": "July 2023 Fuel Regulations",
+        "url": "https://www.dmpr.gov.za/Portals/0/Energy_Website/files/esources/petroleum/July2023/July-2023-Fuel-Regulations.xlsx"
+      },
+      "enteredFrom": "spreadsheet",
+      "prices": {
+        "petrol93": {
+          "inland": 2206.0,
+          "coastal": 2134.0
+        },
+        "petrol95": {
+          "inland": 2246.0,
+          "coastal": 2174.0
+        },
+        "diesel500ppm": {
+          "inland": 1949.29,
+          "coastal": 1877.09
+        },
+        "diesel50ppm": {
+          "inland": 1981.69,
+          "coastal": 1909.49
+        },
+        "paraffin": {
+          "inland": 1392.058,
+          "coastal": 1299.558
+        }
+      }
+    },
+    {
+      "month": "2023-08",
+      "effectiveFrom": "2023-08-02",
+      "source": {
+        "document": "August 2023 Fuel Regulations",
+        "url": "https://www.dmpr.gov.za/Portals/0/Energy_Website/files/esources/petroleum/August2023/August-2023-Fuel-Regulations.xlsx"
+      },
+      "enteredFrom": "spreadsheet",
+      "prices": {
+        "petrol93": {
+          "inland": 2243.0,
+          "coastal": 2171.0
+        },
+        "petrol95": {
+          "inland": 2283.0,
+          "coastal": 2211.0
+        },
+        "diesel500ppm": {
+          "inland": 2021.29,
+          "coastal": 1949.09
+        },
+        "diesel50ppm": {
+          "inland": 2052.69,
+          "coastal": 1980.49
+        },
+        "paraffin": {
+          "inland": 1463.058,
+          "coastal": 1370.558
+        }
+      }
+    },
+    {
+      "month": "2023-09",
+      "effectiveFrom": "2023-09-06",
+      "source": {
+        "document": "September 2023 Fuel Regulations",
+        "url": "https://www.dmpr.gov.za/Portals/0/Energy_Website/files/esources/petroleum/September2023/September-2023-Fuel-Regulations.xlsx"
+      },
+      "enteredFrom": "spreadsheet",
+      "prices": {
+        "petrol93": {
+          "inland": 2414.0,
+          "coastal": 2342.0
+        },
+        "petrol95": {
+          "inland": 2454.0,
+          "coastal": 2382.0
+        },
+        "diesel500ppm": {
+          "inland": 2305.29,
+          "coastal": 2233.09
+        },
+        "diesel50ppm": {
+          "inland": 2328.69,
+          "coastal": 2256.49
+        },
+        "paraffin": {
+          "inland": 1741.058,
+          "coastal": 1648.558
+        }
+      }
+    },
+    {
+      "month": "2023-10",
+      "effectiveFrom": "2023-10-04",
+      "source": {
+        "document": "October 2023 Fuel Regulations",
+        "url": "https://www.dmpr.gov.za/Portals/0/Energy_Website/files/esources/petroleum/October2023/October-2023-Fuel-Regulations.xlsx"
+      },
+      "enteredFrom": "spreadsheet",
+      "prices": {
+        "petrol93": {
+          "inland": 2522.0,
+          "coastal": 2450.0
+        },
+        "petrol95": {
+          "inland": 2568.0,
+          "coastal": 2496.0
+        },
+        "diesel500ppm": {
+          "inland": 2501.99,
+          "coastal": 2429.79
+        },
+        "diesel50ppm": {
+          "inland": 2522.39,
+          "coastal": 2450.19
+        },
+        "paraffin": {
+          "inland": 1892.058,
+          "coastal": 1799.558
+        }
+      }
+    },
+    {
+      "month": "2023-11",
+      "effectiveFrom": "2023-11-01",
+      "source": {
+        "document": "November 2023 Fuel Regulations",
+        "url": "https://www.dmpr.gov.za/Portals/0/Energy_Website/files/esources/petroleum/November2023/November-2023-Fuel-Regulations.xlsx"
+      },
+      "enteredFrom": "spreadsheet",
+      "prices": {
+        "petrol93": {
+          "inland": 2344.0,
+          "coastal": 2272.0
+        },
+        "petrol95": {
+          "inland": 2390.0,
+          "coastal": 2318.0
+        },
+        "diesel500ppm": {
+          "inland": 2416.91,
+          "coastal": 2344.71
+        },
+        "diesel50ppm": {
+          "inland": 2440.31,
+          "coastal": 2368.11
+        },
+        "paraffin": {
+          "inland": 1795.058,
+          "coastal": 1702.558
+        }
+      }
+    },
+    {
+      "month": "2023-12",
+      "effectiveFrom": "2023-12-06",
+      "source": {
+        "document": "December 2023 Fuel Regulations",
+        "url": "https://www.dmpr.gov.za/Portals/0/Energy_Website/files/esources/petroleum/December2023/December-2023-Fuel-Regulations.xlsx"
+      },
+      "enteredFrom": "spreadsheet",
+      "prices": {
+        "petrol93": {
+          "inland": 2279.0,
+          "coastal": 2207.0
+        },
+        "petrol95": {
+          "inland": 2325.0,
+          "coastal": 2253.0
+        },
+        "diesel500ppm": {
+          "inland": 2181.49,
+          "coastal": 2109.29
+        },
+        "diesel50ppm": {
+          "inland": 2198.89,
+          "coastal": 2126.69
+        },
+        "paraffin": {
+          "inland": 1623.938,
+          "coastal": 1531.438
+        }
+      }
+    },
+    {
+      "month": "2024-01",
+      "effectiveFrom": "2024-01-03",
+      "source": {
+        "document": "January 2024 Fuel Regulations",
+        "url": "https://www.dmpr.gov.za/Portals/0/Energy_Website/files/esources/petroleum/January2024/January-2024-Fuel-Regulations.xlsx"
+      },
+      "enteredFrom": "spreadsheet",
+      "prices": {
+        "petrol93": {
+          "inland": 2217.0,
+          "coastal": 2145.0
+        },
+        "petrol95": {
+          "inland": 2249.0,
+          "coastal": 2177.0
+        },
+        "diesel500ppm": {
+          "inland": 2063.17,
+          "coastal": 1990.97
+        },
+        "diesel50ppm": {
+          "inland": 2072.57,
+          "coastal": 2000.37
+        },
+        "paraffin": {
+          "inland": 1530.938,
+          "coastal": 1438.438
+        }
+      }
+    },
+    {
+      "month": "2024-02",
+      "effectiveFrom": "2024-02-07",
+      "source": {
+        "document": "February 2024 Fuel Regulations",
+        "url": "https://www.dmpr.gov.za/Portals/0/Energy_Website/files/esources/petroleum/February2024/February-2024-Fuel-Regulations.xlsx"
+      },
+      "enteredFrom": "spreadsheet",
+      "prices": {
+        "petrol93": {
+          "inland": 2292.0,
+          "coastal": 2220.0
+        },
+        "petrol95": {
+          "inland": 2324.0,
+          "coastal": 2252.0
+        },
+        "diesel500ppm": {
+          "inland": 2136.17,
+          "coastal": 2063.97
+        },
+        "diesel50ppm": {
+          "inland": 2142.57,
+          "coastal": 2070.37
+        },
+        "paraffin": {
+          "inland": 1583.938,
+          "coastal": 1491.438
+        }
+      }
+    },
+    {
+      "month": "2024-03",
+      "effectiveFrom": "2024-03-06",
+      "source": {
+        "document": "March 2024 Fuel Regulations",
+        "url": "https://www.dmpr.gov.za/Portals/0/Energy_Website/files/esources/petroleum/March2024/March-2024-Fuel-Regulations.xlsx"
+      },
+      "enteredFrom": "spreadsheet",
+      "prices": {
+        "petrol93": {
+          "inland": 2413.0,
+          "coastal": 2341.0
+        },
+        "petrol95": {
+          "inland": 2445.0,
+          "coastal": 2373.0
+        },
+        "diesel500ppm": {
+          "inland": 2241.87,
+          "coastal": 2169.87
+        },
+        "diesel50ppm": {
+          "inland": 2261.27,
+          "coastal": 2189.27
+        },
+        "paraffin": {
+          "inland": 1647.938,
+          "coastal": 1555.438
+        }
+      }
+    },
+    {
+      "month": "2024-04",
+      "effectiveFrom": "2024-04-03",
+      "source": {
+        "document": "April 2024 Fuel Regulations",
+        "url": "https://www.dmpr.gov.za/Portals/0/Energy_Website/files/esources/petroleum/April2024/April-2024-Fuel-Regulations.xlsx"
+      },
+      "enteredFrom": "spreadsheet",
+      "prices": {
+        "petrol93": {
+          "inland": 2478.0,
+          "coastal": 2399.0
+        },
+        "petrol95": {
+          "inland": 2512.0,
+          "coastal": 2433.0
+        },
+        "diesel500ppm": {
+          "inland": 2245.09,
+          "coastal": 2166.09
+        },
+        "diesel50ppm": {
+          "inland": 2259.49,
+          "coastal": 2180.49
+        },
+        "paraffin": {
+          "inland": 1618.938,
+          "coastal": 1519.738
+        }
+      }
+    },
+    {
+      "month": "2024-05",
+      "effectiveFrom": "2024-05-01",
+      "source": {
+        "document": "May 2024 Fuel Regulations",
+        "url": "https://www.dmpr.gov.za/Portals/0/Resources/Fuel%20Prices%20Adjustments/Fuel%20Prices%20Per%20Zone/2024/May%202024/May-2024-Fuel-Regulations.xlsx"
+      },
+      "enteredFrom": "spreadsheet",
+      "prices": {
+        "petrol93": {
+          "inland": 2515.0,
+          "coastal": 2436.0
+        },
+        "petrol95": {
+          "inland": 2549.0,
+          "coastal": 2470.0
+        },
+        "diesel500ppm": {
+          "inland": 2215.09,
+          "coastal": 2136.09
+        },
+        "diesel50ppm": {
+          "inland": 2223.49,
+          "coastal": 2144.49
+        },
+        "paraffin": {
+          "inland": 1599.938,
+          "coastal": 1500.738
+        }
+      }
+    },
+    {
+      "month": "2024-06",
+      "effectiveFrom": "2024-06-05",
+      "source": {
+        "document": "June 2024 Fuel Regulations",
+        "url": "https://www.dmpr.gov.za/Portals/0/Resources/Fuel%20Prices%20Adjustments/Fuel%20Prices%20Per%20Zone/2024/June%202024/June-2024-Fuel-Regulations.xlsx"
+      },
+      "enteredFrom": "spreadsheet",
+      "prices": {
+        "petrol93": {
+          "inland": 2391.0,
+          "coastal": 2312.0
+        },
+        "petrol95": {
+          "inland": 2425.0,
+          "coastal": 2346.0
+        },
+        "diesel500ppm": {
+          "inland": 2096.55,
+          "coastal": 2017.55
+        },
+        "diesel50ppm": {
+          "inland": 2114.95,
+          "coastal": 2035.95
+        },
+        "paraffin": {
+          "inland": 1519.938,
+          "coastal": 1420.738
+        }
+      }
+    },
+    {
+      "month": "2024-07",
+      "effectiveFrom": "2024-07-04",
+      "source": {
+        "document": "July 2024 Fuel Regulations",
+        "url": "https://www.dmpr.gov.za/Portals/0/Resources/Fuel%20Prices%20Adjustments/Fuel%20Prices%20Per%20Zone/2024/July%202024/July-2024-Fuel-Regulations.xlsx"
+      },
+      "enteredFrom": "spreadsheet",
+      "prices": {
+        "petrol93": {
+          "inland": 2286.0,
+          "coastal": 2207.0
+        },
+        "petrol95": {
+          "inland": 2326.0,
+          "coastal": 2247.0
+        },
+        "diesel500ppm": {
+          "inland": 2066.17,
+          "coastal": 1987.17
+        },
+        "diesel50ppm": {
+          "inland": 2090.57,
+          "coastal": 2011.57
+        },
+        "paraffin": {
+          "inland": 1501.938,
+          "coastal": 1402.738
+        }
+      }
+    },
+    {
+      "month": "2024-08",
+      "effectiveFrom": "2024-08-07",
+      "source": {
+        "document": "August 2024 Fuel Regulations",
+        "url": "https://www.dmpr.gov.za/Portals/0/Resources/Fuel%20Prices%20Adjustments/Fuel%20Prices%20Per%20Zone/2024/August%202024/August-2024-Fuel-Regulations.xlsx"
+      },
+      "enteredFrom": "spreadsheet",
+      "prices": {
+        "petrol93": {
+          "inland": 2271.0,
+          "coastal": 2192.0
+        },
+        "petrol95": {
+          "inland": 2311.0,
+          "coastal": 2232.0
+        },
+        "diesel500ppm": {
+          "inland": 2038.17,
+          "coastal": 1959.17
+        },
+        "diesel50ppm": {
+          "inland": 2073.57,
+          "coastal": 1994.57
+        },
+        "paraffin": {
+          "inland": 1479.938,
+          "coastal": 1380.738
+        }
+      }
+    },
+    {
+      "month": "2024-09",
+      "effectiveFrom": "2024-09-04",
+      "source": {
+        "document": "September 2024 Fuel Regulations",
+        "url": "https://www.dmpr.gov.za/Portals/0/Resources/Fuel%20Prices%20Adjustments/Fuel%20Prices%20Per%20Zone/2024/September%202024/September-2024-Fuel-Regulations.xlsx"
+      },
+      "enteredFrom": "spreadsheet",
+      "prices": {
+        "petrol93": {
+          "inland": 2179.0,
+          "coastal": 2100.0
+        },
+        "petrol95": {
+          "inland": 2219.0,
+          "coastal": 2140.0
+        },
+        "diesel500ppm": {
+          "inland": 1959.17,
+          "coastal": 1880.17
+        },
+        "diesel50ppm": {
+          "inland": 1968.57,
+          "coastal": 1889.57
+        },
+        "paraffin": {
+          "inland": 1376.938,
+          "coastal": 1277.738
+        }
+      }
+    },
+    {
+      "month": "2024-10",
+      "effectiveFrom": "2024-10-02",
+      "source": {
+        "document": "October 2024 Fuel Regulations",
+        "url": "https://www.dmpr.gov.za/Portals/0/Resources/Fuel%20Prices%20Adjustments/Fuel%20Prices%20Per%20Zone/2024/October%202024/October-2024-Fuel-Regulations.xlsx"
+      },
+      "enteredFrom": "spreadsheet",
+      "prices": {
+        "petrol93": {
+          "inland": 2073.0,
+          "coastal": 1994.0
+        },
+        "petrol95": {
+          "inland": 2105.0,
+          "coastal": 2026.0
+        },
+        "diesel500ppm": {
+          "inland": 1845.17,
+          "coastal": 1766.37
+        },
+        "diesel50ppm": {
+          "inland": 1856.57,
+          "coastal": 1777.77
+        },
+        "paraffin": {
+          "inland": 1265.938,
+          "coastal": 1166.938
+        }
+      }
+    },
+    {
+      "month": "2024-11",
+      "effectiveFrom": "2024-11-06",
+      "source": {
+        "document": "November 2024 Fuel Regulations",
+        "url": "https://www.dmpr.gov.za/Portals/0/Resources/Fuel%20Prices%20Adjustments/Fuel%20Prices%20Per%20Zone/2024/November%202024/November-2024-Fuel-Regulations.xlsx"
+      },
+      "enteredFrom": "spreadsheet",
+      "prices": {
+        "petrol93": {
+          "inland": 2098.0,
+          "coastal": 2019.0
+        },
+        "petrol95": {
+          "inland": 2130.0,
+          "coastal": 2051.0
+        },
+        "diesel500ppm": {
+          "inland": 1866.17,
+          "coastal": 1787.37
+        },
+        "diesel50ppm": {
+          "inland": 1876.57,
+          "coastal": 1797.77
+        },
+        "paraffin": {
+          "inland": 1286.938,
+          "coastal": 1187.938
+        }
+      }
+    },
+    {
+      "month": "2024-12",
+      "effectiveFrom": "2024-12-04",
+      "source": {
+        "document": "December 2024 Fuel Regulations",
+        "url": "https://www.dmpr.gov.za/Portals/0/Resources/Fuel%20Prices%20Adjustments/Fuel%20Prices%20Per%20Zone/2024/December%202024/December-2024-Fuel-Regulations.xlsx"
+      },
+      "enteredFrom": "spreadsheet",
+      "prices": {
+        "petrol93": {
+          "inland": 2115.0,
+          "coastal": 2036.0
+        },
+        "petrol95": {
+          "inland": 2147.0,
+          "coastal": 2068.0
+        },
+        "diesel500ppm": {
+          "inland": 1921.05,
+          "coastal": 1842.25
+        },
+        "diesel50ppm": {
+          "inland": 1932.45,
+          "coastal": 1853.65
+        },
+        "paraffin": {
+          "inland": 1335.818,
+          "coastal": 1236.818
+        }
+      }
+    },
+    {
+      "month": "2025-01",
+      "effectiveFrom": "2025-01-01",
+      "source": {
+        "document": "January 2025 Fuel Regulations",
+        "url": "https://www.dmpr.gov.za/Portals/0/Resources/Fuel%20Prices%20Adjustments/Fuel%20Prices%20Per%20Zone/2025/January%202025/January-2025-Fuel-Regulations.xlsx"
+      },
+      "enteredFrom": "spreadsheet",
+      "prices": {
+        "petrol93": {
+          "inland": 2134.0,
+          "coastal": 2055.0
+        },
+        "petrol95": {
+          "inland": 2159.0,
+          "coastal": 2080.0
+        },
+        "diesel500ppm": {
+          "inland": 1928.55,
+          "coastal": 1849.55
+        },
+        "diesel50ppm": {
+          "inland": 1942.95,
+          "coastal": 1863.95
+        },
+        "paraffin": {
+          "inland": 1326.318,
+          "coastal": 1227.118
+        }
+      }
+    },
+    {
+      "month": "2025-02",
+      "effectiveFrom": "2025-02-05",
+      "source": {
+        "document": "February 2025 Fuel Regulations",
+        "url": "https://www.dmpr.gov.za/Portals/0/Resources/Fuel%20Prices%20Adjustments/Fuel%20Prices%20Per%20Zone/2025/February%202025/February-2025-Fuel-Regulations.xlsx"
+      },
+      "enteredFrom": "spreadsheet",
+      "prices": {
+        "petrol93": {
+          "inland": 2216.0,
+          "coastal": 2137.0
+        },
+        "petrol95": {
+          "inland": 2241.0,
+          "coastal": 2162.0
+        },
+        "diesel500ppm": {
+          "inland": 2033.55,
+          "coastal": 1954.55
+        },
+        "diesel50ppm": {
+          "inland": 2043.95,
+          "coastal": 1964.95
+        },
+        "paraffin": {
+          "inland": 1423.318,
+          "coastal": 1324.118
+        }
+      }
+    },
+    {
+      "month": "2025-03",
+      "effectiveFrom": "2025-03-05",
+      "source": {
+        "document": "March 2025 Fuel Regulations",
+        "url": "https://www.dmpr.gov.za/Portals/0/Resources/Fuel%20Prices%20Adjustments/Fuel%20Prices%20Per%20Zone/2025/March%202025/March-2025-Fuel-Regulations.xlsx"
+      },
+      "enteredFrom": "spreadsheet",
+      "prices": {
+        "petrol93": {
+          "inland": 2209.0,
+          "coastal": 2130.0
+        },
+        "petrol95": {
+          "inland": 2234.0,
+          "coastal": 2155.0
+        },
+        "diesel500ppm": {
+          "inland": 2016.05,
+          "coastal": 1937.05
+        },
+        "diesel50ppm": {
+          "inland": 2020.45,
+          "coastal": 1941.45
+        },
+        "paraffin": {
+          "inland": 1417.318,
+          "coastal": 1318.118
+        }
+      }
+    },
+    {
+      "month": "2025-04",
+      "effectiveFrom": "2025-04-02",
+      "source": {
+        "document": "April 2025 Fuel Regulations",
+        "url": "https://www.dmpr.gov.za/Portals/0/Resources/Fuel%20Prices%20Adjustments/Fuel%20Prices%20Per%20Zone/2025/April%202025/April-2025-Fuel-Regulations.xlsx"
+      },
+      "enteredFrom": "spreadsheet",
+      "prices": {
+        "petrol93": {
+          "inland": 2151.0,
+          "coastal": 2068.0
+        },
+        "petrol95": {
+          "inland": 2162.0,
+          "coastal": 2079.0
+        },
+        "diesel500ppm": {
+          "inland": 1932.25,
+          "coastal": 1849.05
+        },
+        "diesel50ppm": {
+          "inland": 1934.65,
+          "coastal": 1851.45
+        },
+        "paraffin": {
+          "inland": 1335.618,
+          "coastal": 1234.118
+        }
+      }
+    },
+    {
+      "month": "2025-05",
+      "effectiveFrom": "2025-05-07",
+      "source": {
+        "document": "May 2025 Fuel Regulations",
+        "url": "https://www.dmpr.gov.za/Portals/0/Resources/Fuel%20Prices%20Adjustments/Fuel%20Prices%20Per%20Zone/2025/May%202025/May-2025-Fuel-Regulations.xlsx"
+      },
+      "enteredFrom": "spreadsheet",
+      "prices": {
+        "petrol93": {
+          "inland": 2129.0,
+          "coastal": 2046.0
+        },
+        "petrol95": {
+          "inland": 2140.0,
+          "coastal": 2057.0
+        },
+        "diesel500ppm": {
+          "inland": 1890.25,
+          "coastal": 1807.05
+        },
+        "diesel50ppm": {
+          "inland": 1893.65,
+          "coastal": 1810.45
+        },
+        "paraffin": {
+          "inland": 1304.618,
+          "coastal": 1203.118
+        }
+      }
+    },
+    {
+      "month": "2025-06",
+      "effectiveFrom": "2025-06-04",
+      "source": {
+        "document": "June 2025 Fuel Regulations",
+        "url": "https://www.dmpr.gov.za/Portals/0/Resources/Fuel%20Prices%20Adjustments/Fuel%20Prices%20Per%20Zone/2025/June%202025/June-2025-Fuel-Regulations.xlsx"
+      },
+      "enteredFrom": "spreadsheet",
+      "prices": {
+        "petrol93": {
+          "inland": 2124.0,
+          "coastal": 2041.0
+        },
+        "petrol95": {
+          "inland": 2135.0,
+          "coastal": 2052.0
+        },
+        "diesel500ppm": {
+          "inland": 1853.35,
+          "coastal": 1770.05
+        },
+        "diesel50ppm": {
+          "inland": 1856.75,
+          "coastal": 1773.45
+        },
+        "paraffin": {
+          "inland": 1248.618,
+          "coastal": 1147.118
+        }
+      }
+    },
+    {
+      "month": "2025-07",
+      "effectiveFrom": "2025-07-02",
+      "source": {
+        "document": "July 2025 Fuel Regulations",
+        "url": "https://www.dmpr.gov.za/Portals/0/Resources/Fuel%20Prices%20Adjustments/Fuel%20Prices%20Per%20Zone/2025/July%202025/July-2025-Fuel-Regulations.xlsx"
+      },
+      "enteredFrom": "spreadsheet",
+      "prices": {
+        "petrol93": {
+          "inland": 2179.0,
+          "coastal": 2096.0
+        },
+        "petrol95": {
+          "inland": 2187.0,
+          "coastal": 2104.0
+        },
+        "diesel500ppm": {
+          "inland": 1935.35,
+          "coastal": 1852.05
+        },
+        "diesel50ppm": {
+          "inland": 1940.75,
+          "coastal": 1857.45
+        },
+        "paraffin": {
+          "inland": 1315.618,
+          "coastal": 1214.118
+        }
+      }
+    },
+    {
+      "month": "2025-08",
+      "effectiveFrom": "2025-08-06",
+      "source": {
+        "document": "August 2025 Fuel Regulations",
+        "url": "https://www.dmpr.gov.za/Portals/0/Resources/Fuel%20Prices%20Adjustments/Fuel%20Prices%20Per%20Zone/2025/August%202025/August-2025-Fuel-Regulations.xlsx"
+      },
+      "enteredFrom": "spreadsheet",
+      "prices": {
+        "petrol93": {
+          "inland": 2151.0,
+          "coastal": 2068.0
+        },
+        "petrol95": {
+          "inland": 2159.0,
+          "coastal": 2076.0
+        },
+        "diesel500ppm": {
+          "inland": 2000.35,
+          "coastal": 1917.05
+        },
+        "diesel50ppm": {
+          "inland": 2003.75,
+          "coastal": 1920.45
+        },
+        "paraffin": {
+          "inland": 1347.618,
+          "coastal": 1246.118
+        }
+      }
+    },
+    {
+      "month": "2025-09",
+      "effectiveFrom": "2025-09-03",
+      "source": {
+        "document": "September 2025 Fuel Regulations",
+        "url": "https://www.dmpr.gov.za/Portals/0/Resources/Fuel%20Prices%20Adjustments/Fuel%20Prices%20Per%20Zone/2025/September%202025/September-2025-Fuel-Regulations.xlsx"
+      },
+      "enteredFrom": "spreadsheet",
+      "prices": {
+        "petrol93": {
+          "inland": 2147.0,
+          "coastal": 2064.0
+        },
+        "petrol95": {
+          "inland": 2155.0,
+          "coastal": 2072.0
+        },
+        "diesel500ppm": {
+          "inland": 1944.35,
+          "coastal": 1861.05
+        },
+        "diesel50ppm": {
+          "inland": 1946.75,
+          "coastal": 1863.45
+        },
+        "paraffin": {
+          "inland": 1310.618,
+          "coastal": 1209.118
+        }
+      }
+    },
+    {
+      "month": "2025-10",
+      "effectiveFrom": "2025-10-01",
+      "source": {
+        "document": "October 2025 Fuel Regulations",
+        "url": "https://www.dmpr.gov.za/Portals/0/Resources/Fuel%20Prices%20Adjustments/Fuel%20Prices%20Per%20Zone/2025/October%202025/October-2025-Fuel-Regulations.xlsx"
+      },
+      "enteredFrom": "spreadsheet",
+      "prices": {
+        "petrol93": {
+          "inland": 2148.0,
+          "coastal": 2065.0
+        },
+        "petrol95": {
+          "inland": 2163.0,
+          "coastal": 2080.0
+        },
+        "diesel500ppm": {
+          "inland": 1934.35,
+          "coastal": 1851.05
+        },
+        "diesel50ppm": {
+          "inland": 1938.75,
+          "coastal": 1855.45
+        },
+        "paraffin": {
+          "inland": 1299.618,
+          "coastal": 1198.118
+        }
+      }
+    },
+    {
+      "month": "2025-11",
+      "effectiveFrom": "2025-11-05",
+      "source": {
+        "document": "November 2025 Fuel Regulations",
+        "url": "https://www.dmpr.gov.za/Portals/0/Resources/Fuel%20Prices%20Adjustments/Fuel%20Prices%20Per%20Zone/2025/November%202025/November-2025-Fuel-Regulations.xlsx"
+      },
+      "enteredFrom": "spreadsheet",
+      "prices": {
+        "petrol93": {
+          "inland": 2097.0,
+          "coastal": 2014.0
+        },
+        "petrol95": {
+          "inland": 2112.0,
+          "coastal": 2029.0
+        },
+        "diesel500ppm": {
+          "inland": 1913.35,
+          "coastal": 1830.05
+        },
+        "diesel50ppm": {
+          "inland": 1919.75,
+          "coastal": 1836.45
+        },
+        "paraffin": {
+          "inland": 1298.618,
+          "coastal": 1197.118
+        }
+      }
+    },
+    {
+      "month": "2025-12",
+      "effectiveFrom": "2025-12-03",
+      "source": {
+        "document": "December 2025 Fuel Regulations",
+        "url": "https://www.dmpr.gov.za/Portals/0/Resources/Fuel%20Prices%20Adjustments/Fuel%20Prices%20Per%20Zone/2025/December%202025/December-2025-Fuel-Regulations.xlsx"
+      },
+      "enteredFrom": "spreadsheet",
+      "prices": {
+        "petrol93": {
+          "inland": 2126.0,
+          "coastal": 2043.0
+        },
+        "petrol95": {
+          "inland": 2141.0,
+          "coastal": 2058.0
+        },
+        "diesel500ppm": {
+          "inland": 1978.83,
+          "coastal": 1895.53
+        },
+        "diesel50ppm": {
+          "inland": 2002.23,
+          "coastal": 1918.93
+        },
+        "paraffin": {
+          "inland": 1373.098,
+          "coastal": 1271.598
+        }
+      }
+    },
+    {
+      "month": "2026-01",
+      "effectiveFrom": "2026-01-07",
+      "source": {
+        "document": "January 2026 Fuel Regulations",
+        "url": "https://www.dmpr.gov.za/Portals/0/Resources/Fuel%20Prices%20Adjustments/Fuel%20Prices%20Per%20Zone/2026/January%202026/January-2026-Fuel-Regulations.xlsx"
+      },
+      "enteredFrom": "spreadsheet",
+      "prices": {
+        "petrol93": {
+          "inland": 2064.0,
+          "coastal": 1981.0
+        },
+        "petrol95": {
+          "inland": 2075.0,
+          "coastal": 1992.0
+        },
+        "diesel500ppm": {
+          "inland": 1841.83,
+          "coastal": 1758.53
+        },
+        "diesel50ppm": {
+          "inland": 1852.23,
+          "coastal": 1768.93
+        },
+        "paraffin": {
+          "inland": 1263.098,
+          "coastal": 1161.598
+        }
+      }
+    },
+    {
+      "month": "2026-02",
+      "effectiveFrom": "2026-02-04",
+      "source": {
+        "document": "February 2026 Petrol Regulations and Diesel wholesale prices (PDF). Paraffin from History of Fuel Prices November 2026",
+        "url": "https://www.dmpr.gov.za/API/Evotiva-UserFiles/FileActionsServices/DownloadFile?ItemId=2816&ModuleId=2305&TabId=154"
+      },
+      "note": "The DMPR published PDFs, not a spreadsheet, for February 2026. Petrol and diesel were typed from the zone 1A and 9C rows of those PDFs. Paraffin was typed from the DMPR's History of Fuel Prices table in the November 2026 pack.",
+      "prices": {
+        "petrol93": {
+          "inland": 1999.0,
+          "coastal": 1916.0
+        },
+        "petrol95": {
+          "inland": 2010.0,
+          "coastal": 1927.0
+        },
+        "diesel500ppm": {
+          "inland": 1791.83,
+          "coastal": 1708.53
+        },
+        "diesel50ppm": {
+          "inland": 1795.23,
+          "coastal": 1711.93
+        },
+        "paraffin": {
+          "inland": 1210.098,
+          "coastal": 1108.598
+        }
+      },
+      "enteredFrom": "hand"
+    },
+    {
+      "month": "2026-03",
+      "effectiveFrom": "2026-03-04",
+      "source": {
+        "document": "History of Fuel Prices November 2026 (in the November 2026 fuel price pack)",
+        "url": "https://bit.ly/4sZwrAY"
+      },
+      "note": "No March 2026 price schedule is linked on the DMPR site. Prices were typed from the DMPR's History of Fuel Prices table, which does not give petrol 93 at the coast or 50 ppm diesel.",
+      "prices": {
+        "petrol93": {
+          "inland": 2019.0,
+          "coastal": null
+        },
+        "petrol95": {
+          "inland": 2030.0,
+          "coastal": 1947.0
+        },
+        "diesel500ppm": {
+          "inland": 1853.83,
+          "coastal": 1770.53
+        },
+        "diesel50ppm": {
+          "inland": null,
+          "coastal": null
+        },
+        "paraffin": {
+          "inland": 1254.098,
+          "coastal": 1152.598
+        }
+      },
+      "enteredFrom": "hand"
+    },
+    {
+      "month": "2026-04",
+      "effectiveFrom": "2026-04-01",
+      "source": {
+        "document": "History of Fuel Prices November 2026 (in the November 2026 fuel price pack)",
+        "url": "https://bit.ly/4sZwrAY"
+      },
+      "note": "No April 2026 price schedule is linked on the DMPR site. Prices were typed from the DMPR's History of Fuel Prices table, which does not give petrol 93 at the coast or 50 ppm diesel.",
+      "prices": {
+        "petrol93": {
+          "inland": 2325.0,
+          "coastal": null
+        },
+        "petrol95": {
+          "inland": 2336.0,
+          "coastal": 2249.0
+        },
+        "diesel500ppm": {
+          "inland": 2590.83,
+          "coastal": 2503.63
+        },
+        "diesel50ppm": {
+          "inland": null,
+          "coastal": null
+        },
+        "paraffin": {
+          "inland": 2421.098,
+          "coastal": 2315.698
+        }
+      },
+      "enteredFrom": "hand"
+    },
+    {
+      "month": "2026-05",
+      "effectiveFrom": "2026-05-06",
+      "source": {
+        "document": "Fuel Price Schedule May 2026",
+        "url": "https://www.dmpr.gov.za/API/Evotiva-UserFiles/FileActionsServices/DownloadFile?ItemId=3396&ModuleId=2305&TabId=154"
+      },
+      "enteredFrom": "spreadsheet",
+      "prices": {
+        "petrol93": {
+          "inland": 2652.0,
+          "coastal": 2565.0
+        },
+        "petrol95": {
+          "inland": 2663.0,
+          "coastal": 2576.0
+        },
+        "diesel500ppm": {
+          "inland": 3117.53,
+          "coastal": 3030.33
+        },
+        "diesel50ppm": {
+          "inland": 3137.93,
+          "coastal": 3050.73
+        },
+        "paraffin": {
+          "inland": 2843.098,
+          "coastal": 2737.698
+        }
+      }
+    },
+    {
+      "month": "2026-06",
+      "effectiveFrom": "2026-06-03",
+      "source": {
+        "document": "Fuel Price Schedule June 2026",
+        "url": "https://www.dmpr.gov.za/API/Evotiva-UserFiles/FileActionsServices/DownloadFile?ItemId=3404&ModuleId=2305&TabId=154"
+      },
+      "enteredFrom": "spreadsheet",
+      "prices": {
+        "petrol93": {
+          "inland": 2795.0,
+          "coastal": 2708.0
+        },
+        "petrol95": {
+          "inland": 2806.0,
+          "coastal": 2719.0
+        },
+        "diesel500ppm": {
+          "inland": 2792.57,
+          "coastal": 2705.37
+        },
+        "diesel50ppm": {
+          "inland": 2875.97,
+          "coastal": 2788.77
+        },
+        "paraffin": {
+          "inland": 2247.098,
+          "coastal": 2141.698
+        }
+      }
+    },
+    {
+      "month": "2026-07",
+      "effectiveFrom": "2026-07-01",
+      "source": {
+        "document": "Fuel Price Schedule July 2026",
+        "url": "https://www.dmpr.gov.za/API/Evotiva-UserFiles/FileActionsServices/DownloadFile?ItemId=3449&ModuleId=2305&TabId=154"
+      },
+      "enteredFrom": "spreadsheet",
+      "prices": {
+        "petrol93": {
+          "inland": 2594.0,
+          "coastal": 2507.0
+        },
+        "petrol95": {
+          "inland": 2610.0,
+          "coastal": 2523.0
+        },
+        "diesel500ppm": {
+          "inland": 2478.77,
+          "coastal": 2391.57
+        },
+        "diesel50ppm": {
+          "inland": 2517.17,
+          "coastal": 2429.97
+        },
+        "paraffin": {
+          "inland": 1724.098,
+          "coastal": 1618.698
+        }
+      }
+    },
+    {
+      "month": "2026-08",
+      "effectiveFrom": "2026-08-05",
+      "source": {
+        "document": "Fuel Price Schedule August 2026 (in the August 2026 fuel price pack)",
+        "url": "https://bit.ly/4hPxbEU"
+      },
+      "enteredFrom": "spreadsheet",
+      "prices": {
+        "petrol93": {
+          "inland": 2542.0,
+          "coastal": 2455.0
+        },
+        "petrol95": {
+          "inland": 2558.0,
+          "coastal": 2471.0
+        },
+        "diesel500ppm": {
+          "inland": 2617.21,
+          "coastal": 2530.01
+        },
+        "diesel50ppm": {
+          "inland": 2640.61,
+          "coastal": 2553.41
+        },
+        "paraffin": {
+          "inland": 1876.098,
+          "coastal": 1770.698
+        }
+      }
+    },
+    {
+      "month": "2026-09",
+      "effectiveFrom": "2026-09-02",
+      "source": {
+        "document": "Fuel Price Schedule September 2026 (in the September 2026 fuel price pack)",
+        "url": "https://bit.ly/4i15nxE"
+      },
+      "enteredFrom": "spreadsheet",
+      "prices": {
+        "petrol93": {
+          "inland": 2676.0,
+          "coastal": 2589.0
+        },
+        "petrol95": {
+          "inland": 2692.0,
+          "coastal": 2605.0
+        },
+        "diesel500ppm": {
+          "inland": 2911.11,
+          "coastal": 2823.91
+        },
+        "diesel50ppm": {
+          "inland": 2955.51,
+          "coastal": 2868.31
+        },
+        "paraffin": {
+          "inland": 2089.098,
+          "coastal": 1983.698
+        }
+      }
+    },
+    {
+      "month": "2026-10",
+      "effectiveFrom": "2026-10-07",
+      "source": {
+        "document": "Fuel Price Schedule October 2026 (in the October 2026 fuel price pack)",
+        "url": "https://bit.ly/4rPpgud"
+      },
+      "enteredFrom": "spreadsheet",
+      "prices": {
+        "petrol93": {
+          "inland": 2988.0,
+          "coastal": 2901.0
+        },
+        "petrol95": {
+          "inland": 3025.0,
+          "coastal": 2938.0
+        },
+        "diesel500ppm": {
+          "inland": 3195.49,
+          "coastal": 3108.29
+        },
+        "diesel50ppm": {
+          "inland": 3279.89,
+          "coastal": 3192.69
+        },
+        "paraffin": {
+          "inland": 2447.098,
+          "coastal": 2341.698
+        }
+      }
+    },
+    {
+      "month": "2026-11",
+      "effectiveFrom": "2026-11-04",
+      "releasedOn": "2026-11-03",
+      "source": {
+        "document": "Fuel Price Schedule November 2026 (in the November 2026 fuel price pack)",
+        "url": "https://bit.ly/4sZwrAY"
+      },
+      "enteredFrom": "spreadsheet",
+      "prices": {
+        "petrol93": {
+          "inland": 2987.0,
+          "coastal": 2900.0
+        },
+        "petrol95": {
+          "inland": 3024.0,
+          "coastal": 2937.0
+        },
+        "diesel500ppm": {
+          "inland": 3085.67,
+          "coastal": 2998.47
+        },
+        "diesel50ppm": {
+          "inland": 3160.07,
+          "coastal": 3072.87
+        },
+        "paraffin": {
+          "inland": 2722.098,
+          "coastal": 2616.698
+        }
+      }
+    }
+  ]
+}

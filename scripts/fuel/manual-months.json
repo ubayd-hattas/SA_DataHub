@@ -1,0 +1,50 @@
+[
+  {
+    "month": "2026-02",
+    "effectiveFrom": "2026-02-04",
+    "source": {
+      "document": "February 2026 Petrol Regulations and Diesel wholesale prices (PDF). Paraffin from History of Fuel Prices November 2026",
+      "url": "https://www.dmpr.gov.za/API/Evotiva-UserFiles/FileActionsServices/DownloadFile?ItemId=2816&ModuleId=2305&TabId=154"
+    },
+    "note": "The DMPR published PDFs, not a spreadsheet, for February 2026. Petrol and diesel were typed from the zone 1A and 9C rows of those PDFs. Paraffin was typed from the DMPR's History of Fuel Prices table in the November 2026 pack.",
+    "prices": {
+      "petrol93": { "inland": 1999.0, "coastal": 1916.0 },
+      "petrol95": { "inland": 2010.0, "coastal": 1927.0 },
+      "diesel500ppm": { "inland": 1791.83, "coastal": 1708.53 },
+      "diesel50ppm": { "inland": 1795.23, "coastal": 1711.93 },
+      "paraffin": { "inland": 1210.098, "coastal": 1108.598 }
+    }
+  },
+  {
+    "month": "2026-03",
+    "effectiveFrom": "2026-03-04",
+    "source": {
+      "document": "History of Fuel Prices November 2026 (in the November 2026 fuel price pack)",
+      "url": "https://bit.ly/4sZwrAY"
+    },
+    "note": "No March 2026 price schedule is linked on the DMPR site. Prices were typed from the DMPR's History of Fuel Prices table, which does not give petrol 93 at the coast or 50 ppm diesel.",
+    "prices": {
+      "petrol93": { "inland": 2019.0, "coastal": null },
+      "petrol95": { "inland": 2030.0, "coastal": 1947.0 },
+      "diesel500ppm": { "inland": 1853.83, "coastal": 1770.53 },
+      "diesel50ppm": { "inland": null, "coastal": null },
+      "paraffin": { "inland": 1254.098, "coastal": 1152.598 }
+    }
+  },
+  {
+    "month": "2026-04",
+    "effectiveFrom": "2026-04-01",
+    "source": {
+      "document": "History of Fuel Prices November 2026 (in the November 2026 fuel price pack)",
+      "url": "https://bit.ly/4sZwrAY"
+    },
+    "note": "No April 2026 price schedule is linked on the DMPR site. Prices were typed from the DMPR's History of Fuel Prices table, which does not give petrol 93 at the coast or 50 ppm diesel.",
+    "prices": {
+      "petrol93": { "inland": 2325.0, "coastal": null },
+      "petrol95": { "inland": 2336.0, "coastal": 2249.0 },
+      "diesel500ppm": { "inland": 2590.83, "coastal": 2503.63 },
+      "diesel50ppm": { "inland": null, "coastal": null },
+      "paraffin": { "inland": 2421.098, "coastal": 2315.698 }
+    }
+  }
+]
