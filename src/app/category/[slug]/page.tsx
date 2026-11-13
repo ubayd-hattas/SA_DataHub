@@ -51,7 +51,7 @@ export function generateStaticParams() {
   assertSiteSourced()
   return [
     'unemployment', 'gdp', 'inflation', 'crime',
-    'education', 'population', 'housing', 'census',
+    'education', 'population', 'housing', 'census', 'fuel',
   ].map((slug) => ({ slug }))
 }
 
