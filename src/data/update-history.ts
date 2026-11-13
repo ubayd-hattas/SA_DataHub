@@ -28,6 +28,13 @@ export const UPDATE_HISTORY: UpdateHistoryEntry[] = [
     datasetId: 'downloads',
     datasetLabel: 'Downloads',
     type: 'correction',
+    summary: `The Download Center said seven datasets were updated semi-automatically and the population dataset automatically. That has not been true since 25 October 2026, when automated updates were paused: every figure is typed in by hand from a release SA Data Hub holds. Each dataset now says "Entered by hand", or "Does not change" for Census 2022.`,
+  },
+  {
+    date: '2026-11-13',
+    datasetId: 'downloads',
+    datasetLabel: 'Downloads',
+    type: 'correction',
     summary: `The "Download CSV" button on each topic page gave one row per statistic, with only the latest value, instead of every value in each series. It now gives one row per data point, the same as the Download Center and the files under /data. Files downloaded from a topic page before 13 November 2026 should be downloaded again.`,
   },
   {
