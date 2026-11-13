@@ -1,6 +1,6 @@
 /**
  * PostgreSQL data access layer — query stubs for Phase 2+.
- * Pages still read from src/data/mock.ts until DATA_SOURCE=db.
+ * Pages still read from src/data/mock.ts until DATA_SOURCE=database.
  */
 
 export { getSql, isDatabaseConfigured } from './client'
