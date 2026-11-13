@@ -34,7 +34,6 @@ tsc_output.txt
 
 # TypeScript
 *.tsbuildinfo
-next-env.d.ts
 
 # IDE / System Files
 .DS_Store
