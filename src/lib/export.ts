@@ -23,9 +23,11 @@ export type ExportMode = 'series' | 'summary'
 
 export interface ExportOptions {
   /**
-   * 'series'  — one row per data point (time series). Best for single stats with trend data.
-   * 'summary' — one row per statistic.  Best for full dataset/category overview.
-   * Default: 'series' if the first stat has series data, else 'summary'.
+   * 'series'  — one row per data point (time series).
+   * 'summary' — one row per statistic. Only used when a caller asks for it.
+   * Default: 'series' if any statistic has series data, else 'summary'.
+   * A download should give every value, so a several-statistic export must
+   * not fall back to one row per statistic.
    */
   mode?: ExportMode
 }
@@ -72,7 +74,7 @@ export function buildCsvContent(
   options: ExportOptions = {}
 ): string {
   const {
-    mode = stats.length === 1 && stats[0].series?.length ? 'series' : 'summary',
+    mode = stats.some((s) => s.series?.length) ? 'series' : 'summary',
   } = options
 
   const rows: string[] = []
