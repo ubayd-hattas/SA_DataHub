@@ -1,5 +1,6 @@
 import { EXPLAINERS } from '@/data/explainers'
 import { categories } from '@/data/mock'
+import { FUEL_PATH, fuelPageTitle } from '@/lib/fuel-page'
 import { ELECTIONS_PATH } from '@/lib/elections'
 import { CALENDAR_PATH } from '@/lib/release-calendar-ics'
 import { absoluteUrl, SITE_NAME } from '@/lib/seo'
@@ -43,6 +44,7 @@ export function buildLlmsTxt(): string {
     '## Guides',
     '',
     link('All data series', SERIES_PATH, 'every statistic with its page, CSV and JSON'),
+    link(fuelPageTitle(), FUEL_PATH, 'the official petrol price and the wholesale diesel and paraffin prices, inland and coastal, from the DMPR'),
     link('Why do the numbers disagree?', '/why-numbers-differ', 'census count vs mid-year estimate vs UN projection for population; the four Stats SA unemployment measures (LU1 to LU4)'),
     link('Glossary', '/glossary', "what the terms mean, with Stats SA's own definitions and page numbers"),
     link('Release calendar', CALENDAR_PATH, 'dates of the next releases, each from the previous release'),

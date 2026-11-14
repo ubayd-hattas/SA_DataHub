@@ -21,8 +21,8 @@ function routeExists(href: string): boolean {
 const allLinks = NAV_SECTIONS.flatMap((s) => (s.href ? [{ href: s.href, label: s.label }] : s.links ?? []))
 
 describe('main navigation', () => {
-  it('has the five sections in order', () => {
-    expect(NAV_SECTIONS.map((s) => s.label)).toEqual(['What changed', 'Your area', 'Topics', 'Tools', 'About the data'])
+  it('has the six sections in order', () => {
+    expect(NAV_SECTIONS.map((s) => s.label)).toEqual(['Fuel', 'What changed', 'Your area', 'Topics', 'Tools', 'About the data'])
   })
 
   it.each(allLinks)('$label ($href) points to an existing page', ({ href }) => {
