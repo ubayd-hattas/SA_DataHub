@@ -80,7 +80,7 @@ export function FuelCalculator({ initialLitres, initialProduct, initialZone }: F
             value={litresText}
             onChange={(e) => setLitresText(e.target.value)}
             aria-invalid={litresError ? true : undefined}
-            aria-describedby={litresError ? `${litresId}-error` : `${litresId}-hint`}
+            aria-describedby={litresError ? `${litresId}-hint ${litresId}-error` : `${litresId}-hint`}
             className={FIELD}
           />
           <p id={`${litresId}-hint`} className="mt-1 text-caption text-muted">

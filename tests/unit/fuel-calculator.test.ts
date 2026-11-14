@@ -59,6 +59,12 @@ describe('default output', () => {
     expect(html).toContain('Work out the cost')
   })
 
+  it('describes the input by its hint alone when there is no error', () => {
+    const ids = /aria-describedby="([^"]+)"/.exec(html)![1].split(' ')
+    expect(ids).toHaveLength(1)
+    expect(ids[0]).toMatch(/-hint$/)
+  })
+
   it('has no error and no wholesale note for petrol', () => {
     expect(html).not.toContain('Error:')
     expect(html).not.toContain('wholesale price')
@@ -70,9 +76,11 @@ describe('errors', () => {
   it.each(['', 'abc', '0', '1001', '-4'])('says what is wrong for %j, in text tied to the input', (text) => {
     const html = render(text)
     expect(html).toContain('aria-invalid="true"')
-    const id = /aria-describedby="([^"]+)"/.exec(html)![1]
-    expect(id).toMatch(/-error$/)
-    expect(html).toContain(`id="${id}"`)
+    const ids = /aria-describedby="([^"]+)"/.exec(html)![1].split(' ')
+    expect(ids).toHaveLength(2)
+    expect(ids[0]).toMatch(/-hint$/)
+    expect(ids[1]).toMatch(/-error$/)
+    for (const id of ids) expect(html).toContain(`id="${id}"`)
     expect(html).toContain('Error: </span>Enter litres as a number from 1 to 1000')
     expect(html).not.toContain('Nov 2026</p>')
   })
