@@ -1,9 +1,10 @@
 'use client'
 
-import { useId, useState, type FormEvent } from 'react'
+import { useEffect, useId, useState, type FormEvent } from 'react'
+import { Link2 } from 'lucide-react'
 import { FUEL_PRODUCTS, FUEL_ZONES, type FuelProduct, type FuelZone } from '@/lib/fuel'
 import { calculateFuelCost, parseLitres, LITRES_ERROR } from '@/lib/fuel-calc'
-import { changeText, rands, selectionText, wholesaleNote, workingText } from '@/lib/fuel-calc-text'
+import { calcHref, changeText, rands, selectionText, wholesaleNote, workingText } from '@/lib/fuel-calc-text'
 import { FUEL_PATH } from '@/lib/fuel-page'
 
 const FIELD =
@@ -29,6 +30,8 @@ export function FuelCalculator({ initialLitres, initialProduct, initialZone }: F
   const [litresText, setLitresText] = useState(initialLitres)
   const [product, setProduct] = useState<FuelProduct>(initialProduct)
   const [zone, setZone] = useState<FuelZone>(initialZone)
+  // The message belongs to the link it was about, so it disappears when the answer changes.
+  const [copy, setCopy] = useState<{ href: string; message: string } | null>(null)
 
   const litres = parseLitres(litresText)
   const result = litres === null ? null : calculateFuelCost({ litres, product, zone })
@@ -38,6 +41,23 @@ export function FuelCalculator({ initialLitres, initialProduct, initialZone }: F
   const productSlug = FUEL_PRODUCTS.find((p) => p.id === product)!.slug
   const change = ok ? changeText(ok) : null
   const note = ok ? wholesaleNote(ok) : null
+
+  const href = ok ? calcHref({ litres: ok.litres, product, zone }) : null
+
+  // replaceState, not a navigation: typing should not add history entries or reload the page.
+  useEffect(() => {
+    if (href) window.history.replaceState(null, '', href)
+  }, [href])
+
+  async function copyLink() {
+    if (!href) return
+    try {
+      await navigator.clipboard.writeText(new URL(href, window.location.origin).toString())
+      setCopy({ href, message: 'Link copied.' })
+    } catch {
+      setCopy({ href, message: 'Could not copy the link. Copy it from the address bar instead.' })
+    }
+  }
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     // The answer is already on the page; submitting only reloads it.
@@ -125,6 +145,17 @@ export function FuelCalculator({ initialLitres, initialProduct, initialZone }: F
             <p className="mt-3 text-body tabular-nums text-ink">{workingText(ok)}</p>
             {change && <p className="mt-1 text-body text-ink">{change}</p>}
             {note && <p className="mt-3 max-w-prose text-small text-muted">{note}</p>}
+            <div className="mt-4 flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                onClick={copyLink}
+                className="inline-flex items-center gap-2 rounded border border-rule px-3 py-2 text-small font-medium text-ink hover:bg-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+              >
+                <Link2 size={16} aria-hidden="true" />
+                Copy link to this answer
+              </button>
+              {copy && copy.href === href && <span className="text-small text-muted">{copy.message}</span>}
+            </div>
           </>
         ) : (
           <p className="text-body text-muted">

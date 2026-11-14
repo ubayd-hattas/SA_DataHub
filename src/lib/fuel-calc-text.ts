@@ -4,9 +4,9 @@
  * wording is tested and the share image and WhatsApp link say the same thing.
  */
 import { formatDecimal, formatRand } from '@/lib/format'
-import { monthLabel } from '@/lib/fuel'
+import { monthLabel, type FuelProduct, type FuelZone } from '@/lib/fuel'
 import { DEFAULT_LITRES, priceText, type FuelCostResult } from '@/lib/fuel-calc'
-import { productInfo, productName, zoneLabel } from '@/lib/fuel-page'
+import { DEFAULT_PRODUCT, DEFAULT_ZONE, FUEL_PATH, productInfo, productName, zoneLabel } from '@/lib/fuel-page'
 
 type Ok = Extract<FuelCostResult, { ok: true }>
 
@@ -61,4 +61,18 @@ export function costSentence(r: Ok): string {
 export function litresFromParams(params: Record<string, string | string[] | undefined>): string {
   const value = Array.isArray(params.litres) ? params.litres[0] : params.litres
   return value === undefined ? String(DEFAULT_LITRES) : value.slice(0, 20)
+}
+
+/**
+ * The address of an answer. It uses the same product and zone parameters as
+ * the page, so the headline and the calculator agree when the link is opened.
+ * Anything left at its default is left out; all defaults is the bare /fuel.
+ */
+export function calcHref({ litres, product, zone }: { litres: number; product: FuelProduct; zone: FuelZone }): string {
+  const query = new URLSearchParams()
+  if (litres !== DEFAULT_LITRES) query.set('litres', String(litres))
+  if (product !== DEFAULT_PRODUCT) query.set('product', productInfo(product).slug)
+  if (zone !== DEFAULT_ZONE) query.set('zone', zone)
+  const text = query.toString()
+  return text ? `${FUEL_PATH}?${text}` : FUEL_PATH
 }

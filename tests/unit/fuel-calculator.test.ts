@@ -8,6 +8,8 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import FuelPage from '@/app/fuel/page'
 import { FuelCalculator } from '@/components/fuel/FuelCalculator'
 import type { FuelProduct, FuelZone } from '@/lib/fuel'
+import { calcHref, litresFromParams } from '@/lib/fuel-calc-text'
+import { parseFuelSelection } from '@/lib/fuel-page'
 
 const NBSP = ' '
 
@@ -93,5 +95,33 @@ describe('on the /fuel page', () => {
       await FuelPage({ searchParams: Promise.resolve({ product: 'petrol-93', zone: 'coastal', litres: '30' }) }),
     )
     expect(html).toContain('30 litres × R29.00 = R870.00')
+  })
+})
+
+describe('the address of an answer', () => {
+  it('is the bare page for the defaults and leaves out anything at its default', () => {
+    expect(calcHref({ litres: 45, product: 'petrol95', zone: 'inland' })).toBe('/fuel')
+    expect(calcHref({ litres: 52.5, product: 'petrol95', zone: 'inland' })).toBe('/fuel?litres=52.5')
+    expect(calcHref({ litres: 30, product: 'diesel50ppm', zone: 'coastal' })).toBe('/fuel?litres=30&product=diesel-50ppm&zone=coastal')
+  })
+
+  it('reads back to the same choice with the page parser', () => {
+    const href = calcHref({ litres: 30, product: 'paraffin', zone: 'coastal' })
+    const params = Object.fromEntries(new URL(href, 'http://x').searchParams)
+    expect(parseFuelSelection(params)).toEqual({ product: 'paraffin', zone: 'coastal' })
+    expect(litresFromParams(params)).toBe('30')
+  })
+
+  it('takes litres from the address as text, so a bad value shows its error, and caps its length', () => {
+    expect(litresFromParams({})).toBe('45')
+    expect(litresFromParams({ litres: ['12', '99'] })).toBe('12')
+    expect(litresFromParams({ litres: 'x'.repeat(500) })).toHaveLength(20)
+  })
+})
+
+describe('copy link', () => {
+  it('is offered with a result and not when the litres are wrong', () => {
+    expect(render()).toContain('Copy link to this answer')
+    expect(render('abc')).not.toContain('Copy link to this answer')
   })
 })
