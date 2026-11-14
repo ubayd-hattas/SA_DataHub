@@ -1,11 +1,12 @@
 /**
- * The numbers on the homepage: four compact headline figures and one row per
+ * The numbers on the homepage: six compact headline figures and one row per
  * topic. Values, periods and dates come from src/lib/stat-summary.ts, which
  * reads the existing datasets. Only the short labels are written here, from
  * each dataset's own description.
  */
 import { getStatById } from '@/data/mock'
 import { formatShortDate } from '@/lib/format'
+import { FUEL_PUBLISHER, fuelSeriesId, latestAdjustment, type FuelProduct } from '@/lib/fuel'
 import { explainerForStat, formatStatistic, latestPeriod, statDates } from '@/lib/stat-summary'
 import type { CategoryId, Statistic } from '@/types'
 
@@ -46,10 +47,44 @@ export interface HeadlineNumber {
   href: string
   /** Where the link goes, for screen readers and the tooltip. */
   linkLabel: string
+  /** The date line shown on the tile: "Stats SA, 21 Oct 2026", or "DMPR, effective 4 Nov 2026" for fuel. */
+  dateLine: string
+  /** The ISO date the date line shows. */
+  dateIso: string
+}
+
+/**
+ * Fuel tiles: the inland price, which is the reference price for Gauteng. Diesel is
+ * the 0.05% sulphur (500 ppm) product and is wholesale, so its label says so.
+ */
+const FUEL_HEADLINE_SPECS: { product: FuelProduct; label: string }[] = [
+  { product: 'petrol95', label: 'Petrol 95 (inland)' },
+  { product: 'diesel500ppm', label: 'Diesel 500 ppm (inland, wholesale)' },
+]
+
+function fuelHeadlineNumbers(): HeadlineNumber[] {
+  const latest = latestAdjustment()
+  return FUEL_HEADLINE_SPECS.map((spec) => {
+    const stat = requireStat(fuelSeriesId(spec.product, 'inland'))
+    const releasedOn = statDates(stat).releasedOn
+    return {
+      statId: stat.id,
+      label: spec.label,
+      value: formatStatistic(stat),
+      period: requirePeriod(stat),
+      sourceShort: `${FUEL_PUBLISHER.shortName}, ${formatShortDate(releasedOn)}`,
+      releasedOn,
+      checkedOn: statDates(stat).checkedOn,
+      href: '/fuel',
+      linkLabel: 'Fuel prices for every product and zone',
+      dateLine: `${FUEL_PUBLISHER.shortName}, effective ${formatShortDate(latest.effectiveFrom)}`,
+      dateIso: latest.effectiveFrom,
+    }
+  })
 }
 
 export function getHeadlineNumbers(): HeadlineNumber[] {
-  return HEADLINE_SPECS.map((spec) => {
+  const statNumbers = HEADLINE_SPECS.map((spec) => {
     const stat = requireStat(spec.statId)
     const explainer = explainerForStat(stat)
     const { releasedOn, checkedOn } = statDates(stat)
@@ -67,8 +102,11 @@ export function getHeadlineNumbers(): HeadlineNumber[] {
       checkedOn,
       href: link.href,
       linkLabel: link.label,
+      dateLine: `${stat.source.shortName}, ${formatShortDate(releasedOn)}`,
+      dateIso: releasedOn,
     }
   })
+  return [...statNumbers, ...fuelHeadlineNumbers()]
 }
 
 // ─── Topic rows ───────────────────────────────────────────────────────────────

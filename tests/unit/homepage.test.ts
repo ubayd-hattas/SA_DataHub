@@ -10,6 +10,7 @@ import { EXPLAINERS } from '@/data/explainers'
 import { isCpi, isQlfs } from '@/lib/explainers'
 import { getAllMunicipalities, getStatById, statistics } from '@/data/mock'
 import { formatStatistic, getHeadlineNumbers, getTopicRows } from '@/lib/headline-numbers'
+import { formatRandsPerLitre, latestAdjustment } from '@/lib/fuel'
 
 const NBSP = ' '
 const ISO = /^\d{4}-\d{2}-\d{2}$/
@@ -17,8 +18,19 @@ const ISO = /^\d{4}-\d{2}-\d{2}$/
 describe('headline numbers', () => {
   const numbers = getHeadlineNumbers()
 
-  it('are inflation, unemployment, GDP growth and the repo rate, in that order', () => {
-    expect(numbers.map((n) => n.statId)).toEqual(['cpi-headline', 'unemployment-national', 'gdp-growth', 'repo-rate-sarb'])
+  it('are inflation, unemployment, GDP growth, the repo rate, petrol and diesel, in that order', () => {
+    expect(numbers.map((n) => n.statId)).toEqual([
+      'cpi-headline',
+      'unemployment-national',
+      'gdp-growth',
+      'repo-rate-sarb',
+      'fuel-petrol-95-inland',
+      'fuel-diesel-500ppm-inland',
+    ])
+  })
+
+  it('keeps the grid even: six tiles fill 2 columns by 3 rows and 3 columns by 2 rows', () => {
+    expect(numbers).toHaveLength(6)
   })
 
   it.each(getHeadlineNumbers())('$label comes from its dataset', (n) => {
@@ -49,6 +61,49 @@ describe('headline numbers', () => {
     const qlfs = EXPLAINERS.find(isQlfs)!
     expect(numbers[1]).toMatchObject({ href: `/explainers/${qlfs.slug}`, checkedOn: qlfs.headline.rate.checkedOn })
     expect(numbers[2].href).toBe('/category/gdp')
+  })
+})
+
+describe('fuel headline numbers', () => {
+  const [petrol, diesel] = getHeadlineNumbers().slice(4)
+  const latest = latestAdjustment()
+
+  it('show the inland price in rands per litre, as the DMPR printed it', () => {
+    expect(petrol.value).toBe(formatRandsPerLitre(latest.prices.petrol95.inland!))
+    expect(diesel.value).toBe(formatRandsPerLitre(latest.prices.diesel500ppm.inland!))
+  })
+
+  it('show the effective date and DMPR', () => {
+    for (const n of [petrol, diesel]) {
+      expect(n.dateIso).toBe(latest.effectiveFrom)
+      expect(n.dateLine).toMatch(/^DMPR, effective \d{1,2} [A-Z][a-z]{2} \d{4}$/)
+    }
+  })
+
+  it('say inland, and say wholesale on the diesel tile only', () => {
+    expect(petrol.label).toBe('Petrol 95 (inland)')
+    expect(petrol.label).not.toMatch(/wholesale/i)
+    expect(diesel.label).toBe('Diesel 500 ppm (inland, wholesale)')
+  })
+
+  it('link to the fuel page', () => {
+    expect(petrol.href).toBe('/fuel')
+    expect(diesel.href).toBe('/fuel')
+  })
+})
+
+describe('headline grid on the page', () => {
+  const page = readFileSync(join(process.cwd(), 'src/app/page.tsx'), 'utf8')
+
+  it('is 2 columns on phones and 3 from the large breakpoint, so six tiles make 3 rows and then 2', () => {
+    expect(page).toContain('grid grid-cols-2')
+    expect(page).toContain('lg:grid-cols-3')
+    expect(page).not.toContain('lg:grid-cols-4')
+  })
+
+  it('prints each tile its own date line, so fuel shows DMPR and its effective date', () => {
+    expect(page).toContain('{n.dateLine}')
+    expect(page).toContain('dateTime={n.dateIso}')
   })
 })
 

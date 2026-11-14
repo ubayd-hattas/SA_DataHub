@@ -63,7 +63,7 @@ export default function HomePage() {
           South Africa&apos;s latest official numbers
         </h1>
         {/* Compact on purpose: full citations and definitions are on the linked pages. */}
-        <ul className="mt-5 grid grid-cols-2 gap-px border border-rule bg-rule sm:mt-8 lg:grid-cols-4">
+        <ul className="mt-5 grid grid-cols-2 gap-px border border-rule bg-rule sm:mt-8 lg:grid-cols-3">
           {headline.map((n) => (
             <li key={n.statId} className="relative bg-paper p-4 hover:bg-subtle">
               <p className="font-display text-[2.25rem] font-semibold leading-none tabular-nums text-ink sm:text-[3rem]">{n.value}</p>
@@ -79,7 +79,7 @@ export default function HomePage() {
               </p>
               <p className="text-caption text-muted">{n.period}</p>
               <p className="mt-1 text-caption text-muted">
-                <time dateTime={n.releasedOn}>{n.sourceShort}</time>
+                <time dateTime={n.dateIso}>{n.dateLine}</time>
               </p>
             </li>
           ))}
