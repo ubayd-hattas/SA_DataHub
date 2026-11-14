@@ -10,8 +10,9 @@ const choice =
  * Product and zone as plain links, so the choice works with JavaScript off:
  * each link reloads /fuel with the choice in the address. The current choice
  * is marked with aria-current and a heavier border, not by colour alone.
+ * The calculator's litres travel with the links so the amount survives a switch.
  */
-export function FuelSelector({ selection }: { selection: FuelSelection }) {
+export function FuelSelector({ selection, litres }: { selection: FuelSelection; /** The calculator's current valid litres, kept in each link. */ litres?: number }) {
   const group = (label: string, items: { key: string; text: string; next: FuelSelection; current: boolean }[]) => (
     <div>
       <p className="mb-2 text-caption font-medium text-muted">{label}</p>
@@ -19,7 +20,7 @@ export function FuelSelector({ selection }: { selection: FuelSelection }) {
         {items.map((item) => (
           <li key={item.key}>
             <Link
-              href={fuelHref(item.next)}
+              href={fuelHref(item.next, litres)}
               aria-current={item.current ? 'true' : undefined}
               className={cn(
                 choice,

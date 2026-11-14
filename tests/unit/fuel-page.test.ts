@@ -71,6 +71,8 @@ describe('choosing a product and zone', () => {
     expect(html).toContain('href="/fuel"')
     expect(html).toContain('aria-current="true"')
     expect(fuelHref({ product: 'petrol95', zone: 'inland' })).toBe('/fuel')
+    expect(fuelHref({ product: 'petrol95', zone: 'inland' }, 45)).toBe('/fuel')
+    expect(fuelHref({ product: 'diesel50ppm', zone: 'coastal' }, 30)).toBe('/fuel?litres=30&product=diesel-50ppm&zone=coastal')
   })
 
   it.each(FUEL_PRODUCTS.flatMap((p) => ['inland', 'coastal'].map((z) => [p.slug, z] as const)))(

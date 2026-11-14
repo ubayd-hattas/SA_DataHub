@@ -10,7 +10,7 @@ import { NumberBlock } from '@/components/editorial/NumberBlock'
 import { Column, PageHeader, Section, linkClass } from '@/components/editorial/Section'
 import { SourceLine } from '@/components/editorial/SourceLine'
 import { formatLongDate } from '@/lib/explainers'
-import { calculateFuelCost, parseShareQuery } from '@/lib/fuel-calc'
+import { calculateFuelCost, parseLitres, parseShareQuery, MAX_LITRES, MIN_LITRES } from '@/lib/fuel-calc'
 import { costSentence, litresFromParams } from '@/lib/fuel-calc-text'
 import { FUEL_PRODUCTS, FUEL_PUBLISHER, FUEL_ZONES, fuelSeriesId, latestAdjustment } from '@/lib/fuel'
 import {
@@ -63,6 +63,12 @@ export async function generateMetadata({ searchParams }: Partial<FuelPageProps> 
   }
 }
 
+/** The litres in the address, only when the calculator accepts them. */
+function validLitres(params: Record<string, string | string[] | undefined>): number | undefined {
+  const litres = parseLitres(litresFromParams(params))
+  return litres !== null && litres >= MIN_LITRES && litres <= MAX_LITRES ? litres : undefined
+}
+
 export default async function FuelPage({ searchParams }: FuelPageProps) {
   const params = await searchParams
   const selection = parseFuelSelection(params)
@@ -80,7 +86,7 @@ export default async function FuelPage({ searchParams }: FuelPageProps) {
       <PageHeader kicker="Fuel prices" title={fuelPageTitle()} />
 
       <div className="border-t border-rule py-8">
-        <FuelSelector selection={selection} />
+        <FuelSelector selection={selection} litres={validLitres(params)} />
       </div>
 
       <section aria-labelledby="headline" className="border-t border-rule py-10">

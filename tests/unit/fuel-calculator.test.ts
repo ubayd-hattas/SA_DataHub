@@ -117,6 +117,18 @@ describe('on the /fuel page', () => {
     expect(html).toContain(`45 litres × R30.24 = R1${NBSP}360.80`)
   })
 
+  it('keeps the valid litres in the selector links, and drops invalid ones', async () => {
+    const links = (html: string) => [...html.matchAll(/href="(\/fuel[^"]*)"/g)].map((m) => m[1].replace(/&amp;/g, '&'))
+    const kept = links(renderToStaticMarkup(await FuelPage({ searchParams: Promise.resolve({ litres: '30' }) })))
+    expect(kept).toContain('/fuel?litres=30&product=diesel-50ppm')
+    expect(kept).toContain('/fuel?litres=30&zone=coastal')
+    const none = links(renderToStaticMarkup(await FuelPage({ searchParams: Promise.resolve({ litres: '5000' }) })))
+    expect(none).toContain('/fuel?product=diesel-50ppm')
+    expect(none.some((l) => l.includes('litres='))).toBe(false)
+    const plain = links(renderToStaticMarkup(await FuelPage({ searchParams: Promise.resolve({}) })))
+    expect(plain.some((l) => l.includes('litres='))).toBe(false)
+  })
+
   it('starts from the product, zone and litres in the address', async () => {
     const html = renderToStaticMarkup(
       await FuelPage({ searchParams: Promise.resolve({ product: 'petrol-93', zone: 'coastal', litres: '30' }) }),

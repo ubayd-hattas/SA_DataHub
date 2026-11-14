@@ -18,6 +18,7 @@ import {
   type FuelProductInfo,
   type FuelZone,
 } from '@/lib/fuel'
+import { DEFAULT_LITRES } from '@/lib/fuel-calc'
 
 export const FUEL_PATH = '/fuel'
 export const DEFAULT_PRODUCT: FuelProduct = 'petrol95'
@@ -124,9 +125,14 @@ export function parseFuelSelection(params: RawParams): FuelSelection {
   return { product, zone }
 }
 
-/** The address for a selection. The default is the bare `/fuel`. */
-export function fuelHref({ product, zone }: FuelSelection): string {
+/**
+ * The address for a selection. The default is the bare `/fuel`. Pass the
+ * calculator's current valid litres to keep them when the selection changes
+ * (the default of 45 is left out, as the calculator's own links do).
+ */
+export function fuelHref({ product, zone }: FuelSelection, litres?: number): string {
   const query = new URLSearchParams()
+  if (litres !== undefined && litres !== DEFAULT_LITRES) query.set('litres', String(litres))
   if (product !== DEFAULT_PRODUCT) query.set('product', productInfo(product).slug)
   if (zone !== DEFAULT_ZONE) query.set('zone', zone)
   const text = query.toString()
