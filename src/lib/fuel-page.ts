@@ -105,3 +105,30 @@ export function latestPriceRows(): FuelTableRow[] {
     coastal: latest.prices[product.id].coastal,
   }))
 }
+
+export interface FuelSelection {
+  product: FuelProduct
+  zone: FuelZone
+}
+
+type RawParams = Record<string, string | string[] | undefined>
+
+function first(value: string | string[] | undefined): string | undefined {
+  return Array.isArray(value) ? value[0] : value
+}
+
+/** Product and zone from the URL (`?product=diesel-50ppm&zone=coastal`). Anything unknown falls back to the default. */
+export function parseFuelSelection(params: RawParams): FuelSelection {
+  const product = FUEL_PRODUCTS.find((p) => p.slug === first(params.product))?.id ?? DEFAULT_PRODUCT
+  const zone = FUEL_ZONES.find((z) => z.id === first(params.zone))?.id ?? DEFAULT_ZONE
+  return { product, zone }
+}
+
+/** The address for a selection. The default is the bare `/fuel`. */
+export function fuelHref({ product, zone }: FuelSelection): string {
+  const query = new URLSearchParams()
+  if (product !== DEFAULT_PRODUCT) query.set('product', productInfo(product).slug)
+  if (zone !== DEFAULT_ZONE) query.set('zone', zone)
+  const text = query.toString()
+  return text ? `${FUEL_PATH}?${text}` : FUEL_PATH
+}

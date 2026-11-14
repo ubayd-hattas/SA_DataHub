@@ -3,17 +3,17 @@ import Link from 'next/link'
 import { Breadcrumbs } from '@/components/seo/Breadcrumbs'
 import { JsonLd } from '@/components/seo/JsonLd'
 import { FuelPriceTable } from '@/components/fuel/FuelPriceTable'
+import { FuelSelector } from '@/components/fuel/FuelSelector'
 import { NumberBlock } from '@/components/editorial/NumberBlock'
 import { Column, PageHeader, Section, linkClass } from '@/components/editorial/Section'
 import { SourceLine } from '@/components/editorial/SourceLine'
 import { formatLongDate } from '@/lib/explainers'
 import { FUEL_PRODUCTS, FUEL_PUBLISHER, FUEL_ZONES, fuelSeriesId, latestAdjustment } from '@/lib/fuel'
 import {
-  DEFAULT_PRODUCT,
-  DEFAULT_ZONE,
   FUEL_PATH,
   fuelHeadline,
   fuelPageTitle,
+  parseFuelSelection,
   zoneLabel,
   productName,
 } from '@/lib/fuel-page'
@@ -28,9 +28,14 @@ export function generateMetadata(): Metadata {
   return buildPageMetadata({ title: fuelPageTitle(), description: DESCRIPTION, path: FUEL_PATH })
 }
 
-export default function FuelPage() {
+interface FuelPageProps {
+  searchParams: Promise<Record<string, string | string[] | undefined>>
+}
+
+export default async function FuelPage({ searchParams }: FuelPageProps) {
+  const selection = parseFuelSelection(await searchParams)
   const latest = latestAdjustment()
-  const head = fuelHeadline(DEFAULT_PRODUCT, DEFAULT_ZONE)
+  const head = fuelHeadline(selection.product, selection.zone)
   const breadcrumbs = [
     { name: 'Home', path: '/' },
     { name: 'Fuel prices', path: FUEL_PATH },
@@ -41,6 +46,10 @@ export default function FuelPage() {
       <JsonLd data={[breadcrumbSchema(breadcrumbs)]} />
       <Breadcrumbs items={breadcrumbs} className="pt-6" />
       <PageHeader kicker="Fuel prices" title={fuelPageTitle()} />
+
+      <div className="border-t border-rule py-8">
+        <FuelSelector selection={selection} />
+      </div>
 
       <section aria-labelledby="headline" className="border-t border-rule py-10">
         <h2 id="headline" className="sr-only">
