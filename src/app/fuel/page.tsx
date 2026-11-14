@@ -18,6 +18,7 @@ import {
   zoneLabel,
   productName,
 } from '@/lib/fuel-page'
+import { FUEL_HISTORY_PATH } from '@/lib/fuel-history'
 import { breadcrumbSchema } from '@/lib/schema'
 import { buildPageMetadata } from '@/lib/seo'
 import { seriesCsvHref, seriesHref } from '@/lib/series'
@@ -100,6 +101,10 @@ export default async function FuelPage({ searchParams }: FuelPageProps) {
       <Section id="series" title="Every month, and the downloads">
         <p className="mb-4 text-body text-ink">
           Each product and zone has its own page with every monthly price since January 2022, and downloads.
+        </p>
+        <p className="mb-4 text-body text-ink">
+          <Link href={FUEL_HISTORY_PATH} className={linkClass}>See every monthly adjustment in one table</Link>, with
+          the change in cents and the source document for each month.
         </p>
         <ul className="space-y-2 text-body">
           {FUEL_PRODUCTS.flatMap((p) =>
