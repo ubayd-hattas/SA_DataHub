@@ -8,6 +8,7 @@
  * diesel and paraffin) carry fractions of a cent. The total uses the exact
  * price and is rounded once, half up, at the end.
  */
+import { formatDecimal } from '@/lib/format'
 import {
   FUEL_PRODUCTS,
   FUEL_ZONES,
@@ -78,11 +79,15 @@ export function costCents(litres: number, priceCents: number): number {
   return Math.floor((hundredthsOfLitres * thousandthsOfCents + 50000) / 100000)
 }
 
-/** "R30.24", or "R31.6007" where the price has a fraction of a cent, so the working adds up. */
+/**
+ * The published price, exactly: "R30.24" where it is whole cents, and
+ * "3 160.07 cents" where it has a fraction of a cent (wholesale diesel,
+ * paraffin), so the working adds up with no rounded price in it.
+ */
 export function priceText(priceCents: number): string {
-  const rands = priceCents / 100
-  const text = Number.isInteger(priceCents) ? rands.toFixed(2) : rands.toFixed(4).replace(/0+$/, '')
-  return `R${text}`
+  if (Number.isInteger(priceCents)) return `R${(priceCents / 100).toFixed(2)}`
+  const decimals = Number.isInteger(priceCents * 10) ? 1 : Number.isInteger(priceCents * 100) ? 2 : 3
+  return `${formatDecimal(priceCents, decimals)} cents`
 }
 
 export function calculateFuelCost(input: FuelCostInput): FuelCostResult {

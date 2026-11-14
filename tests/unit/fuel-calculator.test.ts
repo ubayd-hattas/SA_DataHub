@@ -73,9 +73,15 @@ describe('diesel and paraffin', () => {
     expect(html).toContain('the price you pay will differ')
   })
 
-  it('shows the exact price, with its fraction of a cent, so the working adds up', () => {
+  it('shows the exact published price, in cents, so the working adds up', () => {
     const html = render('45', 'diesel50ppm')
-    expect(html).toContain(`45 litres × R31.6007 = R1${NBSP}422.03`)
+    expect(html).toContain(`45 litres × 3${NBSP}160.07 cents = R1${NBSP}422.03`)
+  })
+})
+
+describe('paraffin', () => {
+  it('shows all three decimals of a cent and the correctly rounded total', () => {
+    expect(render('45', 'paraffin')).toContain(`45 litres × 2${NBSP}722.098 cents = R1${NBSP}224.94`)
   })
 })
 

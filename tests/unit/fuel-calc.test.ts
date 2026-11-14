@@ -76,10 +76,12 @@ describe('rounding', () => {
     }
   })
 
-  it('shows a price with its fraction of a cent so the working adds up', () => {
+  it('shows a price exactly: rands when whole cents, cents when it has a fraction', () => {
     expect(priceText(3024)).toBe('R30.24')
-    expect(priceText(3160.07)).toBe('R31.6007')
-    expect(priceText(3085.67)).toBe('R30.8567')
+    expect(priceText(3160.07)).toBe('3 160.07 cents')
+    expect(priceText(3085.67)).toBe('3 085.67 cents')
+    expect(priceText(2722.098)).toBe('2 722.098 cents')
+    expect(priceText(2500.5)).toBe('2 500.5 cents')
   })
 })
 
