@@ -10,13 +10,15 @@ import { NumberBlock } from '@/components/editorial/NumberBlock'
 import { Column, PageHeader, Section, linkClass } from '@/components/editorial/Section'
 import { SourceLine } from '@/components/editorial/SourceLine'
 import { formatLongDate } from '@/lib/explainers'
-import { litresFromParams } from '@/lib/fuel-calc-text'
+import { calculateFuelCost, parseShareQuery } from '@/lib/fuel-calc'
+import { costSentence, litresFromParams } from '@/lib/fuel-calc-text'
 import { FUEL_PRODUCTS, FUEL_PUBLISHER, FUEL_ZONES, fuelSeriesId, latestAdjustment } from '@/lib/fuel'
 import {
   FUEL_PATH,
   fuelHeadline,
   fuelPageTitle,
   longMonthLabel,
+  productInfo,
   parseFuelSelection,
   zoneLabel,
   productName,
@@ -29,12 +31,36 @@ import { seriesCsvHref, seriesHref } from '@/lib/series'
 const DESCRIPTION =
   'The official monthly petrol price, and the wholesale diesel and paraffin prices, for inland and coastal South Africa, from the Department of Mineral and Petroleum Resources. Every price with its source and a CSV download.'
 
-export function generateMetadata(): Metadata {
-  return buildPageMetadata({ title: fuelPageTitle(), description: DESCRIPTION, path: FUEL_PATH })
-}
-
 interface FuelPageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>
+}
+
+/**
+ * Every variant has the same title and canonical URL. Only a link that
+ * carries calculator litres gets the calculator's share image and sentence.
+ */
+export async function generateMetadata({ searchParams }: Partial<FuelPageProps> = {}): Promise<Metadata> {
+  const meta = buildPageMetadata({ title: fuelPageTitle(), description: DESCRIPTION, path: FUEL_PATH })
+  const params = (await searchParams) ?? {}
+  const litres = Array.isArray(params.litres) ? params.litres[0] : params.litres
+  if (litres === undefined) return meta
+  const { product, zone } = parseFuelSelection(params)
+  const query = parseShareQuery({ litres, product: productInfo(product).slug, zone })
+  const result = query.ok ? calculateFuelCost(query) : null
+  if (!result?.ok) return meta
+  const sentence = costSentence(result)
+  const image = new URLSearchParams({ litres: String(result.litres), product: productInfo(product).slug, zone })
+  const withImage = buildPageMetadata({
+    title: fuelPageTitle(),
+    description: DESCRIPTION,
+    path: FUEL_PATH,
+    image: { url: `${FUEL_PATH}/share-image?${image}`, alt: sentence },
+  })
+  return {
+    ...withImage,
+    openGraph: { ...withImage.openGraph, description: sentence },
+    twitter: { ...withImage.twitter, description: sentence },
+  }
 }
 
 export default async function FuelPage({ searchParams }: FuelPageProps) {

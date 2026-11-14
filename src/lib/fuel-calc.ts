@@ -113,3 +113,39 @@ export function calculateFuelCost(input: FuelCostInput): FuelCostResult {
 
   return { ok: true, litres, product, zone, month, priceCents, costCents: cost, previous }
 }
+
+export type ShareQuery =
+  | { ok: true; litres: number; product: FuelProduct; zone: FuelZone }
+  | { ok: false; error: string }
+
+/**
+ * Inputs for the share image, from the query string. Product and zone must
+ * be on the fixed lists (an unknown one is an error, not a default, so the
+ * route cannot be asked for endless variants). Litres must be a number and
+ * are clamped to the allowed range and to two decimals. Left out means the
+ * default.
+ */
+export function parseShareQuery(params: Record<string, string | undefined>): ShareQuery {
+  let product: FuelProduct = 'petrol95'
+  if (params.product !== undefined) {
+    const found = FUEL_PRODUCTS.find((p) => p.slug === params.product)
+    if (!found) return { ok: false, error: 'Unknown product.' }
+    product = found.id
+  }
+
+  let zone: FuelZone = 'inland'
+  if (params.zone !== undefined) {
+    const found = FUEL_ZONES.find((z) => z.id === params.zone)
+    if (!found) return { ok: false, error: 'Unknown zone.' }
+    zone = found.id
+  }
+
+  let litres = DEFAULT_LITRES
+  if (params.litres !== undefined) {
+    if (!/^\d{1,9}(\.\d{1,9})?$/.test(params.litres)) return { ok: false, error: 'Litres must be a number.' }
+    const clamped = Math.min(MAX_LITRES, Math.max(MIN_LITRES, Number(params.litres)))
+    litres = Math.round(clamped * 100) / 100
+  }
+
+  return { ok: true, litres, product, zone }
+}

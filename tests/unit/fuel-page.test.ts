@@ -107,8 +107,8 @@ describe('table of every product', () => {
 })
 
 describe('metadata and listings', () => {
-  it('builds the title from the latest month and keeps one canonical address', () => {
-    const meta = generateMetadata()
+  it('builds the title from the latest month and keeps one canonical address', async () => {
+    const meta = await generateMetadata()
     expect(meta.title).toBe('Petrol and diesel prices in South Africa, November 2026')
     expect(fuelPageTitle()).toBe(meta.title)
     expect(meta.alternates?.canonical).toBe('https://sadatahub.tech/fuel')
