@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Breadcrumbs } from '@/components/seo/Breadcrumbs'
 import { JsonLd } from '@/components/seo/JsonLd'
+import { FuelCalculator } from '@/components/fuel/FuelCalculator'
 import { FuelChart } from '@/components/fuel/FuelChart'
 import { FuelPriceTable } from '@/components/fuel/FuelPriceTable'
 import { FuelSelector } from '@/components/fuel/FuelSelector'
@@ -9,11 +10,13 @@ import { NumberBlock } from '@/components/editorial/NumberBlock'
 import { Column, PageHeader, Section, linkClass } from '@/components/editorial/Section'
 import { SourceLine } from '@/components/editorial/SourceLine'
 import { formatLongDate } from '@/lib/explainers'
+import { litresFromParams } from '@/lib/fuel-calc-text'
 import { FUEL_PRODUCTS, FUEL_PUBLISHER, FUEL_ZONES, fuelSeriesId, latestAdjustment } from '@/lib/fuel'
 import {
   FUEL_PATH,
   fuelHeadline,
   fuelPageTitle,
+  longMonthLabel,
   parseFuelSelection,
   zoneLabel,
   productName,
@@ -35,7 +38,8 @@ interface FuelPageProps {
 }
 
 export default async function FuelPage({ searchParams }: FuelPageProps) {
-  const selection = parseFuelSelection(await searchParams)
+  const params = await searchParams
+  const selection = parseFuelSelection(params)
   const latest = latestAdjustment()
   const head = fuelHeadline(selection.product, selection.zone)
   const breadcrumbs = [
@@ -88,6 +92,20 @@ export default async function FuelPage({ searchParams }: FuelPageProps) {
               checkedOn={head.stat.checkedOn ?? latest.effectiveFrom}
             />
           }
+        />
+      </section>
+
+      <section aria-labelledby="calculator" className="border-t border-rule py-10">
+        <h2 id="calculator" className="mb-2 font-display text-[1.5rem] font-semibold leading-snug text-ink sm:text-h2">
+          What would a tank cost?
+        </h2>
+        <p className="mb-6 max-w-prose text-body text-ink">
+          Litres times the official price per litre for {longMonthLabel(latest.month)}, with the working shown.
+        </p>
+        <FuelCalculator
+          initialLitres={litresFromParams(params)}
+          initialProduct={selection.product}
+          initialZone={selection.zone}
         />
       </section>
 
