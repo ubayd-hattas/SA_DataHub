@@ -65,7 +65,6 @@ export function FuelHistoryTable() {
                 {/* Short visible text keeps rows one line high; the full document name is in the link's accessible name. */}
                 <a
                   href={row.source.url}
-                  title={row.source.document}
                   className="text-accent underline decoration-accent/40 underline-offset-4 hover:decoration-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                 >
                   DMPR file<span className="sr-only">: {row.source.document}</span>

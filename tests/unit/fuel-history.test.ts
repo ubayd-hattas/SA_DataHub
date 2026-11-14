@@ -23,6 +23,16 @@ describe('table rows', () => {
     expect(rows[0].month).toBe('2026-11')
   })
 
+  it('has no missing month, so each change compares with the month just before', () => {
+    // The change in each cell is taken from the previous record. A missing month would make it span two months.
+    const months = fuelAdjustments().map((a) => a.month)
+    for (let i = 1; i < months.length; i++) {
+      const [y, m] = months[i - 1].split('-').map(Number)
+      const next = m === 12 ? `${y + 1}-01` : `${y}-${String(m + 1).padStart(2, '0')}`
+      expect(months[i], `month after ${months[i - 1]}`).toBe(next)
+    }
+  })
+
   it('shows every effective date and links every source document', () => {
     const page = html()
     for (const adj of fuelAdjustments()) {

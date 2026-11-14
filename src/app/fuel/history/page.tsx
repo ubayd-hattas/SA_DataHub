@@ -35,7 +35,7 @@ export default function FuelHistoryPage() {
       <PageHeader
         kicker="Fuel prices"
         title="Fuel price history"
-        lede={`Every monthly adjustment from ${longMonthLabel(first.month)} to ${longMonthLabel(latest.month)}, newest first. Prices are in rands per litre. Under each price is the change in cents from the month before.`}
+        lede={`Every monthly adjustment from ${longMonthLabel(first.month)} to ${longMonthLabel(latest.month)}, newest first. Prices are in rands per litre. Under each price is the change from the month before.`}
       />
 
       <Section id="table" title="Every monthly adjustment">
@@ -71,8 +71,9 @@ export default function FuelHistoryPage() {
           The latest prices are from {FUEL_PUBLISHER.name} ({FUEL_PUBLISHER.shortName}), {latest.source.document}. They
           took effect on {formatLongDate(latest.effectiveFrom)}. Earlier months come from the department&apos;s files
           for each month, and each row above links to its file. A script read the prices from those files and they
-          were checked against them by hand. March and April 2026 have no monthly file online, so those prices were
-          typed in from the department&apos;s History of Fuel Prices table.
+          were checked against them by hand. February 2026 was typed in from the department&apos;s PDFs, with paraffin from its History of Fuel
+          Prices table. March and April 2026 have no monthly file online, so those prices were typed in from
+          that table.
         </p>
       </section>
     </Column>
