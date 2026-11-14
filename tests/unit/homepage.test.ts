@@ -92,6 +92,21 @@ describe('fuel headline numbers', () => {
   })
 })
 
+describe('headline grid on the page', () => {
+  const page = readFileSync(join(process.cwd(), 'src/app/page.tsx'), 'utf8')
+
+  it('is 2 columns on phones and 3 from the large breakpoint, so six tiles make 3 rows and then 2', () => {
+    expect(page).toContain('grid grid-cols-2')
+    expect(page).toContain('lg:grid-cols-3')
+    expect(page).not.toContain('lg:grid-cols-4')
+  })
+
+  it('prints each tile its own date line, so fuel shows DMPR and its effective date', () => {
+    expect(page).toContain('{n.dateLine}')
+    expect(page).toContain('dateTime={n.dateIso}')
+  })
+})
+
 describe('topic rows', () => {
   it('cover the eight topics with sentence-case labels', () => {
     const rows = getTopicRows()
