@@ -7,6 +7,7 @@ import { EXPLAINERS } from '@/data/explainers'
 import { ANSWERS, ANSWERS_PATH } from '@/data/answers'
 import { latestAdjustment } from '@/lib/fuel'
 import { FUEL_PATH } from '@/lib/fuel-page'
+import { FUEL_HISTORY_PATH } from '@/lib/fuel-history'
 import { allSeries, SERIES_PATH, seriesHref } from '@/lib/series'
 
 /** Static routes with approximate change frequency for sitemap hints. */
@@ -14,6 +15,7 @@ const STATIC_ROUTES: { path: string; priority: number; changeFrequency: Metadata
   { path: '/',              priority: 1,   changeFrequency: 'weekly',  lastModified: new Date('2026-07-01') },
   // Only the canonical URL; ?product=&zone= variants are not listed.
   { path: FUEL_PATH, priority: 0.9, changeFrequency: 'monthly', lastModified: new Date(latestAdjustment().releasedOn ?? latestAdjustment().effectiveFrom) },
+  { path: FUEL_HISTORY_PATH, priority: 0.8, changeFrequency: 'monthly', lastModified: new Date(latestAdjustment().releasedOn ?? latestAdjustment().effectiveFrom) },
   { path: '/municipalities', priority: 0.9, changeFrequency: 'monthly', lastModified: new Date('2026-05-01') },
   { path: '/provinces',    priority: 0.9, changeFrequency: 'monthly', lastModified: new Date('2026-05-01') },
   { path: '/insights',     priority: 0.8, changeFrequency: 'weekly',  lastModified: new Date('2026-07-01') },
