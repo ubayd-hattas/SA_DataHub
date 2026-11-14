@@ -29,6 +29,7 @@ import { CategoryId } from '@/types'
 import { statistics, getStatById } from '@/data/mock'
 import { getFreshness, FreshnessStatus } from '@/lib/utils'
 import { UPDATE_HISTORY, UpdateHistoryEntry } from '@/data/update-history'
+import { FUEL_PUBLISHER, fuelStatistics } from '@/lib/fuel'
 
 // Dataset JSON imports for propagating `_meta.public_notes` into the registry.
 import unemploymentData from '@/data/datasets/unemployment.json'
@@ -268,6 +269,22 @@ const datasetRegistryBase: DatasetRegistryEntry[] = [
     seriesStart: '2001',
   },
   {
+    id: 'fuel',
+    label: 'Fuel prices',
+    description: 'Official monthly petrol prices and wholesale diesel and paraffin prices, inland (Gauteng) and coastal, from the DMPR.',
+    statIds: fuelStatistics().map((s) => s.id),
+    categoryId: 'fuel',
+    sourceName: FUEL_PUBLISHER.name,
+    sourceShortName: FUEL_PUBLISHER.shortName,
+    sourceUrl: FUEL_PUBLISHER.url,
+    publicationName: 'Monthly fuel price schedules',
+    updateFrequency: 'Monthly (first Wednesday)',
+    // Read from the DMPR spreadsheets by scripts/fuel/build_prices.py, then checked by hand.
+    automationLevel: 'semi-auto',
+    unit: 'R/litre',
+    seriesStart: 'Jan 2022',
+  },
+  {
     id: 'provinces',
     label: 'Provinces',
     description: 'Unemployment, population, education and housing indicators by province.',
@@ -398,6 +415,7 @@ const PUBLIC_NOTES_BY_ID: Record<string, string> = {
   population: (populationData as any)._meta?.public_notes ?? '',
   housing: (housingData as any)._meta?.public_notes ?? '',
   census: (censusData as any)._meta?.public_notes ?? '',
+  fuel: 'Petrol prices are the regulated pump prices. Diesel and illuminating paraffin prices are the official wholesale list prices, so filling stations charge more. Inland means Gauteng (zone 9C) and coastal means zone 1A, the two reference zones the DMPR uses in its own history tables. Petrol 93 at the coast and both 50 ppm diesel series have no value for March and April 2026, because no DMPR document SA Data Hub holds gives them.',
   provinces: (provincesData as any)._meta?.public_notes ?? '',
 }
 
@@ -443,6 +461,7 @@ const LAST_VERIFIED_BY_ID: Record<string, string> = {
   population: (populationData as any)._meta?.last_verified ?? '',
   housing: (housingData as any)._meta?.last_verified ?? '',
   census: (censusData as any)._meta?.last_verified ?? '',
+  fuel: fuelStatistics()[0]?.checkedOn ?? '',
   provinces: (provincesData as any)._meta?.last_verified ?? '',
 }
 

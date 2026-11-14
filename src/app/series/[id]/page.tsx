@@ -111,7 +111,7 @@ export default async function SeriesPage({ params }: SeriesPageProps) {
       </div>
 
       <Section id="values" title="Every value">
-        {stat.note && (
+        {stat.hasCalculatedValues && (
           <p className="mb-4 text-small text-muted">Some of these values are calculated, not published. See the note above.</p>
         )}
         <div className="overflow-x-auto">

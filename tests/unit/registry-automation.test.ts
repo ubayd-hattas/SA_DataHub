@@ -10,7 +10,8 @@ import { describe, it, expect } from 'vitest'
 import { datasetRegistry } from '@/lib/registry'
 
 const AUTOMATED: string[] = []
-const SCRIPTED: string[] = []
+// fuel: scripts/fuel/build_prices.py reads the DMPR spreadsheets the maintainer downloads.
+const SCRIPTED: string[] = ['fuel']
 
 describe('dataset automation labels', () => {
   it.each(datasetRegistry.map((e) => [e.id, e.automationLevel] as const))('%s says %s truthfully', (id, level) => {

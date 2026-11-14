@@ -28,6 +28,14 @@ describe('series note', () => {
     expect(html).not.toContain('See the note above.')
   })
 
+  it('says values are calculated only when the record says so, not for every note', async () => {
+    const fuel = getSeries('fuel-diesel-50ppm-coastal')!
+    expect(fuel.note).toBeTruthy()
+    const html = await render('fuel-diesel-50ppm-coastal')
+    expect(html).toContain(fuel.note!.slice(0, 40))
+    expect(html).not.toContain('Some of these values are calculated')
+  })
+
   it('carries the note in the series JSON only when present', () => {
     expect(seriesDocument(getSeries('population-total')!).note).toBe(POPULATION_NOTE)
     expect('note' in seriesDocument(getSeries('unemployment-national')!)).toBe(false)

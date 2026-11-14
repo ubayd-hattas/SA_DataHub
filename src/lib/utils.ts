@@ -112,6 +112,17 @@ export const GOOD_DIRECTION_BY_STAT: Record<string, GoodDirection> = {
   // Census
   'census-households': 'up',
   'census-internet-access': 'up',
+  // Fuel prices: a rise costs motorists money but is a fact, not a verdict. Changes are given in words.
+  'fuel-petrol-95-inland': 'neutral',
+  'fuel-petrol-95-coastal': 'neutral',
+  'fuel-petrol-93-inland': 'neutral',
+  'fuel-petrol-93-coastal': 'neutral',
+  'fuel-diesel-500ppm-inland': 'neutral',
+  'fuel-diesel-500ppm-coastal': 'neutral',
+  'fuel-diesel-50ppm-inland': 'neutral',
+  'fuel-diesel-50ppm-coastal': 'neutral',
+  'fuel-paraffin-inland': 'neutral',
+  'fuel-paraffin-coastal': 'neutral',
 }
 
 /**
@@ -126,6 +137,11 @@ export function formatChange(
 ): string {
   const unit = stat.series?.[0]?.unit ?? stat.unit
   if (unit === '%') return `${amount.toFixed(1)}${long ? ' percentage points' : 'pp'}`
+  if (unit === 'R/litre') {
+    // Fuel price moves are read in cents: "12 cents", or "R1.10" from a rand up.
+    const cents = Math.round(Math.abs(amount) * 100)
+    return cents < 100 ? `${cents} cent${cents === 1 ? '' : 's'}` : `R${(cents / 100).toFixed(2)}`
+  }
   return `${amount.toFixed(1)} ${unit}`
 }
 
