@@ -20,7 +20,7 @@ function Cell({ cell }: { cell: FuelHistoryCell }) {
 /** Every monthly adjustment, newest first, both zones as column groups. Scrolls sideways inside its own container. */
 export function FuelHistoryTable() {
   return (
-    <div className="overflow-x-auto" tabIndex={0} role="region" aria-label="Fuel price history table, scrolls sideways">
+    <div className="overflow-x-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent" tabIndex={0} role="region" aria-label="Fuel price history table, scrolls sideways">
       <table className="w-full text-left text-small">
         <caption className="sr-only">
           Official fuel prices in rands per litre for every monthly adjustment, newest first, with the change in cents
@@ -61,12 +61,14 @@ export function FuelHistoryTable() {
               {FUEL_ZONES.flatMap((z) =>
                 FUEL_PRODUCTS.map((p) => <Cell key={`${z.id}-${p.id}`} cell={row.cells[p.id][z.id]} />)
               )}
-              <td className="min-w-[14rem] border-l border-rule px-3 py-2 text-ink">
+              <td className="whitespace-nowrap border-l border-rule px-3 py-2 text-ink">
+                {/* Short visible text keeps rows one line high; the full document name is in the link's accessible name. */}
                 <a
                   href={row.source.url}
-                  className="text-accent underline decoration-accent/40 underline-offset-4 hover:decoration-accent"
+                  title={row.source.document}
+                  className="text-accent underline decoration-accent/40 underline-offset-4 hover:decoration-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                 >
-                  {row.source.document}
+                  DMPR file<span className="sr-only">: {row.source.document}</span>
                 </a>
               </td>
             </tr>
