@@ -31,6 +31,19 @@ describe('default output', () => {
     expect(live).toContain(`R1${NBSP}360.80`)
   })
 
+  it('announces only the total and the change, not the working, notes or buttons', () => {
+    const start = html.indexOf('aria-live="polite"')
+    const live = html.slice(start, html.indexOf('</div>', start))
+    expect(live).toContain(`R1${NBSP}360.80`)
+    expect(live).toContain('less than in Oct 2026')
+    expect(live).not.toContain('litres ×')
+    expect(live).not.toContain('Copy link')
+    expect(live).not.toContain('WhatsApp')
+    const wholesale = render('45', 'paraffin')
+    const wStart = wholesale.indexOf('aria-live="polite"')
+    expect(wholesale.slice(wStart, wholesale.indexOf('</div>', wStart))).not.toContain('Filling stations')
+  })
+
   it('labels every field, and the litres box has a decimal keyboard', () => {
     expect(html).toMatch(/<label[^>]*>Litres<\/label>/)
     expect(html).toMatch(/<label[^>]*>Fuel<\/label>/)

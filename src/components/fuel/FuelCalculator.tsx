@@ -135,15 +135,26 @@ export function FuelCalculator({ initialLitres, initialProduct, initialZone }: F
         </p>
       )}
 
-      <div aria-live="polite" className="mt-8">
-        {ok ? (
-          <>
-            <p className="text-body text-ink">{selectionText(ok)}</p>
-            <p className="mt-1 font-display text-[3rem] font-semibold leading-none tabular-nums text-ink sm:text-figure">
-              {rands(ok.costCents)}
+      <div className="mt-8">
+        {ok && <p className="text-body text-ink">{selectionText(ok)}</p>}
+        {/* Only the total and the change are announced as you type; the rest of the result is not repeated. */}
+        <div aria-live="polite">
+          {ok ? (
+            <>
+              <p className="mt-1 font-display text-[3rem] font-semibold leading-none tabular-nums text-ink sm:text-figure">
+                {rands(ok.costCents)}
+              </p>
+              {change && <p className="mt-3 text-body text-ink">{change}</p>}
+            </>
+          ) : (
+            <p className="text-body text-muted">
+              <span aria-hidden="true">&ndash; </span>No cost to show until the litres are a number from 1 to 1000.
             </p>
+          )}
+        </div>
+        {ok && (
+          <>
             <p className="mt-3 text-body tabular-nums text-ink">{workingText(ok)}</p>
-            {change && <p className="mt-1 text-body text-ink">{change}</p>}
             {note && <p className="mt-3 max-w-prose text-small text-muted">{note}</p>}
             <div className="mt-4 flex flex-wrap items-center gap-3">
               <button
@@ -164,13 +175,9 @@ export function FuelCalculator({ initialLitres, initialProduct, initialZone }: F
                 Share on WhatsApp
                 <span className="sr-only"> (opens in a new tab)</span>
               </a>
-              {copy && copy.href === href && <span className="text-small text-muted">{copy.message}</span>}
+              {copy && copy.href === href && <span role="status" className="text-small text-muted">{copy.message}</span>}
             </div>
           </>
-        ) : (
-          <p className="text-body text-muted">
-            <span aria-hidden="true">&ndash; </span>No cost to show until the litres are a number from 1 to 1000.
-          </p>
         )}
       </div>
     </form>
