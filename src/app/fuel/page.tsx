@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Breadcrumbs } from '@/components/seo/Breadcrumbs'
 import { JsonLd } from '@/components/seo/JsonLd'
+import { FuelCalculator } from '@/components/fuel/FuelCalculator'
 import { FuelChart } from '@/components/fuel/FuelChart'
 import { FuelPriceTable } from '@/components/fuel/FuelPriceTable'
 import { FuelSelector } from '@/components/fuel/FuelSelector'
@@ -9,11 +10,15 @@ import { NumberBlock } from '@/components/editorial/NumberBlock'
 import { Column, PageHeader, Section, linkClass } from '@/components/editorial/Section'
 import { SourceLine } from '@/components/editorial/SourceLine'
 import { formatLongDate } from '@/lib/explainers'
+import { calculateFuelCost, parseLitres, parseShareQuery, MAX_LITRES, MIN_LITRES } from '@/lib/fuel-calc'
+import { costSentence, litresFromParams } from '@/lib/fuel-calc-text'
 import { FUEL_PRODUCTS, FUEL_PUBLISHER, FUEL_ZONES, fuelSeriesId, latestAdjustment } from '@/lib/fuel'
 import {
   FUEL_PATH,
   fuelHeadline,
   fuelPageTitle,
+  longMonthLabel,
+  productInfo,
   parseFuelSelection,
   zoneLabel,
   productName,
@@ -26,16 +31,47 @@ import { seriesCsvHref, seriesHref } from '@/lib/series'
 const DESCRIPTION =
   'The official monthly petrol price, and the wholesale diesel and paraffin prices, for inland and coastal South Africa, from the Department of Mineral and Petroleum Resources. Every price with its source and a CSV download.'
 
-export function generateMetadata(): Metadata {
-  return buildPageMetadata({ title: fuelPageTitle(), description: DESCRIPTION, path: FUEL_PATH })
-}
-
 interface FuelPageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>
 }
 
+/**
+ * Every variant has the same title and canonical URL. Only a link that
+ * carries calculator litres gets the calculator's share image and sentence.
+ */
+export async function generateMetadata({ searchParams }: Partial<FuelPageProps> = {}): Promise<Metadata> {
+  const meta = buildPageMetadata({ title: fuelPageTitle(), description: DESCRIPTION, path: FUEL_PATH })
+  const params = (await searchParams) ?? {}
+  const litres = Array.isArray(params.litres) ? params.litres[0] : params.litres
+  if (litres === undefined) return meta
+  const { product, zone } = parseFuelSelection(params)
+  const query = parseShareQuery({ litres, product: productInfo(product).slug, zone })
+  const result = query.ok ? calculateFuelCost(query) : null
+  if (!result?.ok) return meta
+  const sentence = costSentence(result)
+  const image = new URLSearchParams({ litres: String(result.litres), product: productInfo(product).slug, zone })
+  const withImage = buildPageMetadata({
+    title: fuelPageTitle(),
+    description: DESCRIPTION,
+    path: FUEL_PATH,
+    image: { url: `${FUEL_PATH}/share-image?${image}`, alt: sentence },
+  })
+  return {
+    ...withImage,
+    openGraph: { ...withImage.openGraph, description: sentence },
+    twitter: { ...withImage.twitter, description: sentence },
+  }
+}
+
+/** The litres in the address, only when the calculator accepts them. */
+function validLitres(params: Record<string, string | string[] | undefined>): number | undefined {
+  const litres = parseLitres(litresFromParams(params))
+  return litres !== null && litres >= MIN_LITRES && litres <= MAX_LITRES ? litres : undefined
+}
+
 export default async function FuelPage({ searchParams }: FuelPageProps) {
-  const selection = parseFuelSelection(await searchParams)
+  const params = await searchParams
+  const selection = parseFuelSelection(params)
   const latest = latestAdjustment()
   const head = fuelHeadline(selection.product, selection.zone)
   const breadcrumbs = [
@@ -50,7 +86,7 @@ export default async function FuelPage({ searchParams }: FuelPageProps) {
       <PageHeader kicker="Fuel prices" title={fuelPageTitle()} />
 
       <div className="border-t border-rule py-8">
-        <FuelSelector selection={selection} />
+        <FuelSelector selection={selection} litres={validLitres(params)} />
       </div>
 
       <section aria-labelledby="headline" className="border-t border-rule py-10">
@@ -88,6 +124,20 @@ export default async function FuelPage({ searchParams }: FuelPageProps) {
               checkedOn={head.stat.checkedOn ?? latest.effectiveFrom}
             />
           }
+        />
+      </section>
+
+      <section aria-labelledby="calculator" className="border-t border-rule py-10">
+        <h2 id="calculator" className="mb-2 font-display text-[1.5rem] font-semibold leading-snug text-ink sm:text-h2">
+          What would a tank cost?
+        </h2>
+        <p className="mb-6 max-w-prose text-body text-ink">
+          Litres times the official price per litre for {longMonthLabel(latest.month)}, with the working shown.
+        </p>
+        <FuelCalculator
+          initialLitres={litresFromParams(params)}
+          initialProduct={selection.product}
+          initialZone={selection.zone}
         />
       </section>
 
