@@ -134,9 +134,9 @@ export type ShareQuery =
 /**
  * Inputs for the share image, from the query string. Product and zone must
  * be on the fixed lists (an unknown one is an error, not a default, so the
- * route cannot be asked for endless variants). Litres must be a number and
- * are clamped to the allowed range and to two decimals. Left out means the
- * default.
+ * route cannot be asked for endless variants). Litres go through parseLitres
+ * and the same range as the page, and anything the page would call an error
+ * is an error here too (no clamping). Left out means the default.
  */
 export function parseShareQuery(params: Record<string, string | undefined>): ShareQuery {
   let product: FuelProduct = 'petrol95'
@@ -155,9 +155,11 @@ export function parseShareQuery(params: Record<string, string | undefined>): Sha
 
   let litres = DEFAULT_LITRES
   if (params.litres !== undefined) {
-    if (!/^\d{1,9}(\.\d{1,9})?$/.test(params.litres)) return { ok: false, error: 'Litres must be a number.' }
-    const clamped = Math.min(MAX_LITRES, Math.max(MIN_LITRES, Number(params.litres)))
-    litres = Math.round(clamped * 100) / 100
+    // The same reading and range check as the calculator on the page.
+    const parsed = parseLitres(params.litres)
+    if (parsed === null) return { ok: false, error: LITRES_ERROR }
+    if (parsed < MIN_LITRES || parsed > MAX_LITRES) return { ok: false, error: LITRES_ERROR }
+    litres = parsed
   }
 
   return { ok: true, litres, product, zone }

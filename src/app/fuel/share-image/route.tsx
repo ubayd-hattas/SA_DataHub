@@ -9,8 +9,9 @@ const CACHE = 'public, max-age=86400, s-maxage=604800'
 
 /**
  * The share image for /fuel?litres=&product=&zone=, showing the cost.
- * Product and zone must be on the fixed lists and litres are clamped, so the
- * route has a small, fixed set of possible images. Anything else is a 400.
+ * Product and zone must be on the fixed lists and litres must be ones the
+ * calculator accepts (1 to 1000, two decimals at most), so the route has a
+ * small, fixed set of possible images. Anything else is a 400.
  */
 export async function GET(request: Request) {
   const query = parseShareQuery(Object.fromEntries(new URL(request.url).searchParams))
