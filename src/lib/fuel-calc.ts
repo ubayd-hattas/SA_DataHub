@@ -66,11 +66,16 @@ export function parseLitres(text: string): number | null {
   return Number(cleaned)
 }
 
-/** litres × cents, rounded once. Litres have at most two decimals, so the scaling keeps the sum exact. */
+/**
+ * litres × cents, rounded once to whole cents, half up. Litres have at most two
+ * decimals and published prices at most three decimals of a cent (paraffin),
+ * so both scale to whole numbers and the sum is exact: hundredths of a litre
+ * × thousandths of a cent, divided by 100 000.
+ */
 export function costCents(litres: number, priceCents: number): number {
   const hundredthsOfLitres = Math.round(litres * 100)
-  const hundredthsOfCents = Math.round(priceCents * 100)
-  return Math.round((hundredthsOfLitres * hundredthsOfCents) / 10000)
+  const thousandthsOfCents = Math.round(priceCents * 1000)
+  return Math.floor((hundredthsOfLitres * thousandthsOfCents + 50000) / 100000)
 }
 
 /** "R30.24", or "R31.6007" where the price has a fraction of a cent, so the working adds up. */
