@@ -55,14 +55,17 @@ export type FuelCostResult =
     }
   | { ok: false; errors: FuelCostErrors }
 
-export const LITRES_ERROR = `Enter litres as a number from ${MIN_LITRES} to ${MAX_LITRES}, for example 45 or 52.5.`
+export const LITRES_ERROR = `Enter litres as a number from ${MIN_LITRES} to ${MAX_LITRES}, for example 45 or 52,5.`
 
 /**
- * Litres from text: digits with an optional full stop and up to two decimals.
- * Spaces are ignored ("1 000"). The range is checked by calculateFuelCost.
+ * Litres from text: digits with an optional decimal part of up to two digits,
+ * written with a full stop or a comma ("52.5" or "52,5"). Spaces are ignored
+ * ("1 000"). A comma followed by three digits ("1,000") could be a thousands
+ * separator or a decimal, so it is rejected rather than guessed. The range is
+ * checked by calculateFuelCost.
  */
 export function parseLitres(text: string): number | null {
-  const cleaned = text.replace(/\s/g, '')
+  const cleaned = text.replace(/\s/g, '').replace(/^(\d+),(\d{1,2})$/, '$1.$2')
   if (!/^\d+(\.\d{1,2})?$/.test(cleaned)) return null
   return Number(cleaned)
 }

@@ -7,6 +7,7 @@ import { formatRand } from '@/lib/format'
 import { fuelAdjustments, latestAdjustment } from '@/lib/fuel'
 import {
   DEFAULT_LITRES,
+  LITRES_ERROR,
   MAX_LITRES,
   MIN_LITRES,
   calculateFuelCost,
@@ -126,10 +127,23 @@ describe('reading litres from text', () => {
     expect(parseLitres('45')).toBe(45)
     expect(parseLitres(' 45.5 ')).toBe(45.5)
     expect(parseLitres('1 000')).toBe(1000)
+  })
+
+  it('reads one comma as the decimal separator, as South Africans type it', () => {
+    expect(parseLitres('52,5')).toBe(52.5)
+    expect(parseLitres('7,25')).toBe(7.25)
+    expect(parseLitres(' 45,0 ')).toBe(45)
+  })
+
+  it('has a hint that shows the comma form', () => {
+    expect(LITRES_ERROR).toContain('for example 45 or 52,5')
+  })
+
+  it('keeps the default at 45', () => {
     expect(DEFAULT_LITRES).toBe(45)
   })
 
-  it.each(['', 'abc', '45 litres', '-3', '1e3', '45,5', '12.345', '0x10', 'Infinity'])('rejects %j', (text) => {
+  it.each(['', 'abc', '45 litres', '-3', '1e3', '12.345', '12,345', '1,000', '1,2,3', '45,', ',5', '1,234.5', '1.5,5', '0x10', 'Infinity'])('rejects %j', (text) => {
     expect(parseLitres(text)).toBeNull()
   })
 
