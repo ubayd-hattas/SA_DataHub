@@ -166,3 +166,64 @@ Add its id to `statIds` in `src/lib/registry.ts` and to `GOOD_DIRECTION_BY_STAT`
 4. Log each changed municipality in `src/data/update-history.ts` as a `correction` with old and new values.
 
 **Also check:** the census story (`/insights/census-2011-to-2022`), the answers that rank municipalities, and that the share images still fit long names (`/municipalities/<code>/share-image`). Mid-year population estimates (P0302, each July) update `population.json` and the province totals in `provinces.json` (Appendix 1). They are estimates, not census counts, so keep them labelled that way.
+
+---
+
+## Publishing the monthly fuel prices
+
+**What it is:** the official monthly fuel prices from the Department of Mineral and Petroleum Resources (DMPR). They feed `/fuel`, `/category/fuel` and ten `/series/fuel-*` pages. A person reviews and merges every monthly price update (decision D5, `docs/implementation-plan.md`). Nothing about this task merges by itself.
+
+**Cadence:** one adjustment a month, taking effect on the first Wednesday. The DMPR announces it one or two days before. Target: published within 2 working days of the announcement.
+
+**Never:** make a script request to a DMPR page or file. Download by hand in a browser. Do not commit the downloaded files (`sources/releases/` is ignored by git).
+
+**Files involved**
+
+| File | What |
+|---|---|
+| `scripts/fuel/sources.json` | One entry per month that has a spreadsheet: `document`, `url`, `file` and `releasedOn` (the announcement date). The key is the month, `YYYY-MM`. |
+| `scripts/fuel/manual-months.json` | Months with no spreadsheet online, typed by hand from named DMPR documents (March and April 2026 today). Not needed for a normal month. |
+| `scripts/fuel/build_prices.py` | Reads the spreadsheets and the two lists above, checks every price, and writes `src/data/fuel/prices.json`. |
+| `src/data/fuel/prices.json` | The output. Do not edit it by hand. |
+| `src/data/update-history.ts` | The `/updates` entry. |
+
+**Steps**
+
+1. **Find the files.** Open the DMPR Fuel Prices page, https://www.dmpr.gov.za/Branches/Petroleum-Resources/Fuel-Prices. The current month has one entry. Recent months are a ZIP of files behind a short link, and some months list separate files: Basic Fuel Price, Breakdown of Prices, Fuel Price Schedule, History of Fuel Prices and Media Statement. Older months are on the Petrol Price Archive page, https://www.dmpr.gov.za/Branches/Petroleum-Resources/Petrol-Price-Archive. The files you need are the new month's price schedule or "Fuel Regulations" spreadsheet (`.xlsx`) and the History of Fuel Prices table.
+2. **Download by hand.** Save the new month's spreadsheet as `sources/releases/fuel/regs-YYYY-MM.xlsx` (for example `regs-2026-12.xlsx`). Keep the earlier months' files in the same folder: `build` reads every file named in `sources.json`, so a missing file stops it. Also save the History of Fuel Prices document in that folder for step 7. Do not commit any of them.
+3. **Add the month to `sources.json`.** Copy the last entry and change: the key, `document` (the DMPR's name for the file), `url` (where you downloaded it), `file` and `releasedOn` (the date of the announcement). The newest month must have `releasedOn`: the site fails to build without it.
+4. **Read the spreadsheet.**
+   ```bash
+   python -I scripts/fuel/build_prices.py check sources/releases/fuel/regs-2026-12.xlsx
+   ```
+   It prints the effective date from the file's header and the parsed prices (cents per litre: petrol 93 and 95, diesel 500 ppm and 50 ppm, illuminating paraffin, inland zone 9C and coastal zone 1A). Any line starting `PROBLEM` or `ERROR` means a value is outside 800 to 6000 cents, inland is not above coastal, petrol 95 is below petrol 93, a petrol price is not whole cents, or the file does not have the layout the script expects. Do not work around it. Find out why, and stop and ask the owner if you cannot tell.
+5. **Build the file.**
+   ```bash
+   python -I scripts/fuel/build_prices.py build YYYY-MM-DD
+   ```
+   Use today's date as the argument: it is stored as the date you checked the prices. The script rewrites `src/data/fuel/prices.json`, prints `Wrote N adjustments, 2022-01 to YYYY-MM`, and writes nothing if a month is missing or repeated or any price fails the checks. Run `git diff src/data/fuel/prices.json`: only the new month and `checked_on` should change. If an older month changed, find out why before going on.
+6. **Run the tests.**
+   ```bash
+   npx vitest run tests/unit/fuel-prices.test.ts
+   ```
+   They check: every month from January 2022 appears once with no gap, each effective date falls in its month, each month names a source with an https URL, every price is within range with inland above coastal and 95 at or above 93, only the hand-typed months have missing prices, and January, April, July, October and November 2026 match the DMPR history table. One test names November 2026 as the latest month, with petrol 95 inland at R30.24. When a new month becomes the latest, change that test to the new month and its value, checked against the DMPR history table (step 7). Do not loosen any other test.
+7. **Check the numbers against a second DMPR document.** Open the new History of Fuel Prices table (it is in the new month's pack). Compare the new month's petrol 93, petrol 95, diesel 500 ppm and paraffin, inland and coastal, with `src/data/fuel/prices.json`. They must be equal to the cent. Also read the price in the DMPR media statement for the month. If they differ, the spreadsheet is wrong or the table is: report it, do not choose.
+8. **Add the `/updates` entry** at the top of `UPDATE_HISTORY` in `src/data/update-history.ts`, using the format in "Update-log entry" above:
+   ```ts
+   {
+     date: 'YYYY-MM-DD',
+     datasetId: 'fuel',
+     datasetLabel: 'Fuel prices',
+     type: 'data-update',
+     summary: 'Added the DMPR prices taking effect on <date>, from <document>.',
+     changes: [{ item: 'Petrol 95, inland', from: 'R30.24 a litre (November 2026)', to: 'R… a litre (<month year>)' }],
+   }
+   ```
+   Add one `changes` row for each of the ten series that moved: petrol 93 and 95, diesel 500 ppm and 50 ppm and paraffin, inland and coastal. Rands, not cents, as the site shows them.
+9. **Update the release calendar.** In `src/data/release-calendar.ts`, remove the fuel entry whose date has passed and add the next adjustment only if a DMPR document gives the date. The first Wednesday of the month is the rule, not a printed date, so say that in the `source` text and say the announcement is not confirmed.
+10. **Run the checks** in "Checks (run for every release)" above, plus `npm run validate`. Then open the Vercel preview and look at `/fuel`, `/category/fuel` and one `/series/fuel-*` page at phone and desktop width.
+11. **Open a pull request** from a `data/fuel-YYYY-MM` branch with the diff of `scripts/fuel/sources.json`, `src/data/fuel/prices.json` and `src/data/update-history.ts`, the output of steps 4 to 7, and the date you checked. The owner merges it after looking at the preview. A script or an AI draft does not merge it.
+
+**If a month has no spreadsheet:** type it into `scripts/fuel/manual-months.json` from the named DMPR documents (see the March and April 2026 entries for the shape: `month`, `effectiveFrom`, `source`, `note`, `prices`). Use `null` for a price no held file gives, and say why in `note`. A month goes in `sources.json` or `manual-months.json`, never both.
+
+**Not done by this runbook:** the breakdown of a litre's price and the estimate of the next change have their own sources and are not covered here.

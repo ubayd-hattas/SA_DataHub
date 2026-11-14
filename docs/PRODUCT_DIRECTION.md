@@ -1,4 +1,4 @@
-# SA Data Hub: product direction (updated 28 October 2026)
+# SA Data Hub: product direction (updated 14 November 2026)
 
 ## Positioning
 
@@ -11,14 +11,27 @@ People in South Africa who meet a statistic in the news, at school or at work an
 ## Principles
 
 1. Every figure shows its source, the source's release date and the date SA Data Hub checked it.
-2. The "why" comes from the source's own breakdown (for example the contributions table in a Stats SA CPI release), quoted and cited with its page. No speculation and no forecasts.
+2. The "why" comes from the source's own breakdown (for example the contributions table in a Stats SA CPI release), quoted and cited with its page. No forecasts of our own. We may show a published official indicator of the next change, as a range, with our past error shown.
 3. "What it means" is a calculation with its working shown, not an opinion.
 4. Plain English, short sentences, no em dashes, no hype.
-5. Data is entered by hand from releases the maintainer downloads. No automated requests to Stats SA. Automation and the PostgreSQL migration are paused.
-6. AI may draft text, but a person checks every number and sentence against the release before it is published.
+5. Data is entered by hand from releases the maintainer downloads. No automated requests to Stats SA. Automation is reopened for fuel only (CEF and DMPR). The PostgreSQL migration is paused.
+6. AI may draft text, but a person checks every number and sentence against the release before it is published. Official monthly prices always need a person's merge. The daily estimate merges itself when every check passes, and is labelled "updated automatically, not reviewed".
 7. Corrections are logged publicly.
 8. A figure that can't be traced to a release we hold is withheld, with the reason recorded, not shown without a date.
 9. New releases go live within 2 working days ([`RUNBOOK.md`](RUNBOOK.md)).
+
+## Fuel prices
+
+Fuel is now a dataset. The official monthly DMPR prices are live on `/fuel`, `/category/fuel` and ten series pages. Next: the breakdown of a litre, the cost calculator, the estimate of the next change (only after CEF answers) and a static API.
+
+Decisions of 13 November 2026, approved as recommended (`docs/implementation-plan.md`):
+
+- **D1:** automation is reopened for fuel only (CEF and DMPR). The Stats SA rule stays as it is.
+- **D2:** PostgreSQL stays paused. Fuel is built on JSON files in git.
+- **D3:** email CEF and do not publish the estimate tracker until they answer. The email is the owner's action and is pending.
+- **D4:** principle 2 is amended as above.
+- **D5:** principle 6 is split as above.
+- **D6:** yes to a static API, no rate limiting for now.
 
 ## Pillar 1: release explainers
 
@@ -71,7 +84,7 @@ Short pages for questions people search for, chosen from Search Console queries.
 
 ## Not now
 
-Translations into African languages (no search demand in the data so far, and any translation would need native-speaker review), new categories, automation, the database migration and a public API.
+Translations into African languages (no search demand in the data so far, and any translation would need native-speaker review), new categories, automation outside fuel, and the database migration. A static public API is allowed for fuel (D6) and is not built yet.
 
 ## Success measures, reviewed monthly
 

@@ -24,6 +24,14 @@ export interface UpdateHistoryEntry {
 
 export const UPDATE_HISTORY: UpdateHistoryEntry[] = [
   {
+    date: '2026-11-14',
+    datasetId: 'fuel',
+    datasetLabel: 'Fuel prices',
+    type: 'new-dataset',
+    summary: `Added official monthly fuel prices from the Department of Mineral and Petroleum Resources (DMPR): petrol 93 and 95 (regulated pump prices), diesel 500 ppm and 50 ppm and illuminating paraffin (wholesale list prices), for inland (zone 9C) and coastal (zone 1A), from January 2022 to November 2026. Each of the ten series has its own page under /series, and /fuel shows them together. Prices are in cents per litre as the DMPR prints them. March and April 2026 have no price schedule on the DMPR site: they were typed from the DMPR's History of Fuel Prices table, which does not give coastal petrol 93 or either zone of 50 ppm diesel for those months, so those series leave the two months out.`,
+    source: 'https://www.dmpr.gov.za/Branches/Petroleum-Resources/Fuel-Prices',
+  },
+  {
     date: '2026-11-13',
     datasetId: 'downloads',
     datasetLabel: 'Downloads',

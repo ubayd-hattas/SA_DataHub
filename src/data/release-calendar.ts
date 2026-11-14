@@ -114,6 +114,19 @@ export const RELEASE_CALENDAR: ScheduledRelease[] = [
     href: '/category/gdp',
   },
   {
+    id: 'fuel-2026-12',
+    title: 'Fuel price adjustment (prices take effect)',
+    publisher: 'Department of Mineral and Petroleum Resources (DMPR)',
+    period: 'December 2026',
+    date: '2026-12-02',
+    source: {
+      document: 'the DMPR Fuel Prices page, which says adjustments take effect on the first Wednesday of the month',
+      location: 'applied to December 2026. The announcement is expected about 30 November or 1 December and is not confirmed',
+      checkedOn: '2026-11-13',
+    },
+    href: '/fuel',
+  },
+  {
     id: 'gdp-2026-q4',
     title: 'Gross domestic product',
     publisher: STATS_SA,
