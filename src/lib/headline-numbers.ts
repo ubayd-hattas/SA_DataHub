@@ -76,7 +76,7 @@ function fuelHeadlineNumbers(): HeadlineNumber[] {
       releasedOn,
       checkedOn: statDates(stat).checkedOn,
       href: '/fuel',
-      linkLabel: 'Fuel prices, and how this month was set',
+      linkLabel: 'Fuel prices for every product and zone',
       dateLine: `${FUEL_PUBLISHER.shortName}, effective ${formatShortDate(latest.effectiveFrom)}`,
       dateIso: latest.effectiveFrom,
     }
