@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Breadcrumbs } from '@/components/seo/Breadcrumbs'
 import { JsonLd } from '@/components/seo/JsonLd'
+import { FuelChart } from '@/components/fuel/FuelChart'
 import { FuelPriceTable } from '@/components/fuel/FuelPriceTable'
 import { FuelSelector } from '@/components/fuel/FuelSelector'
 import { NumberBlock } from '@/components/editorial/NumberBlock'
@@ -74,6 +75,21 @@ export default async function FuelPage({ searchParams }: FuelPageProps) {
         )}
       </section>
 
+      <section aria-labelledby="chart" className="border-t border-rule py-10">
+        <h2 id="chart" className="sr-only">Price history</h2>
+        <FuelChart
+          stat={head.stat}
+          source={
+            <SourceLine
+              publisher={FUEL_PUBLISHER.name}
+              title={latest.source.document}
+              releasedOn={latest.releasedOn ?? latest.effectiveFrom}
+              checkedOn={head.stat.checkedOn ?? latest.effectiveFrom}
+            />
+          }
+        />
+      </section>
+
       <Section id="all-products" title={`Every product, ${head.month}`}>
         <FuelPriceTable month={head.month} />
         <p className="mt-4 max-w-prose text-small text-muted">
@@ -108,15 +124,14 @@ export default async function FuelPage({ searchParams }: FuelPageProps) {
         <h2 id="source" className="mb-5 font-display text-[1.5rem] font-semibold leading-snug text-ink sm:text-h2">
           Where these prices come from
         </h2>
-        <SourceLine
-          publisher={FUEL_PUBLISHER.name}
-          title={latest.source.document}
-          releasedOn={latest.releasedOn ?? latest.effectiveFrom}
-          checkedOn={head.stat.checkedOn ?? latest.effectiveFrom}
-        />
+        <p className="max-w-prose text-body text-ink">
+          The latest prices are from {FUEL_PUBLISHER.name} ({FUEL_PUBLISHER.shortName}), {latest.source.document}. They
+          took effect on {formatLongDate(latest.effectiveFrom)}. Earlier months come from the department&apos;s files
+          for each month. A script read the prices from those files and they were checked against them by hand.
+        </p>
         <p className="mt-3 max-w-prose text-small text-muted">
-          The price took effect on {formatLongDate(latest.effectiveFrom)}. Prices were read from the department&apos;s
-          files by a script and checked by hand against them.
+          Where no file SA Data Hub holds gives a price, that month is left out and the line joins the months either
+          side.
         </p>
       </section>
     </Column>
