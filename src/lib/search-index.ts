@@ -76,7 +76,7 @@ export function buildSearchIndex(): SearchEntry[] {
     {
       group: 'Statistics',
       title: fuelPageTitle(),
-      detail: 'Official petrol, diesel and paraffin prices, inland and coastal',
+      detail: 'Official petrol prices and wholesale diesel and paraffin prices, inland and coastal',
       href: FUEL_PATH,
       terms: normalise('fuel petrol diesel paraffin price per litre 95 93 inland coastal gauteng dmpr'),
     },

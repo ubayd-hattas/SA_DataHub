@@ -128,6 +128,8 @@ export default async function FuelPage({ searchParams }: FuelPageProps) {
           The latest prices are from {FUEL_PUBLISHER.name} ({FUEL_PUBLISHER.shortName}), {latest.source.document}. They
           took effect on {formatLongDate(latest.effectiveFrom)}. Earlier months come from the department&apos;s files
           for each month. A script read the prices from those files and they were checked against them by hand.
+          March and April 2026 have no monthly file online, so those prices were typed in from the
+          department&apos;s History of Fuel Prices table.
         </p>
         <p className="mt-3 max-w-prose text-small text-muted">
           Where no file SA Data Hub holds gives a price, that month is left out and the line joins the months either
