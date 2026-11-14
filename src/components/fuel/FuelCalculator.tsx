@@ -1,10 +1,10 @@
 'use client'
 
 import { useEffect, useId, useState, type FormEvent } from 'react'
-import { Link2 } from 'lucide-react'
+import { Link2, MessageCircle } from 'lucide-react'
 import { FUEL_PRODUCTS, FUEL_ZONES, type FuelProduct, type FuelZone } from '@/lib/fuel'
 import { calculateFuelCost, parseLitres, LITRES_ERROR } from '@/lib/fuel-calc'
-import { calcHref, changeText, rands, selectionText, wholesaleNote, workingText } from '@/lib/fuel-calc-text'
+import { calcHref, changeText, rands, selectionText, whatsappHref, wholesaleNote, workingText } from '@/lib/fuel-calc-text'
 import { FUEL_PATH } from '@/lib/fuel-page'
 
 const FIELD =
@@ -154,6 +154,16 @@ export function FuelCalculator({ initialLitres, initialProduct, initialZone }: F
                 <Link2 size={16} aria-hidden="true" />
                 Copy link to this answer
               </button>
+              <a
+                href={whatsappHref(ok)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded border border-rule px-3 py-2 text-small font-medium text-ink hover:bg-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+              >
+                <MessageCircle size={16} aria-hidden="true" />
+                Share on WhatsApp
+                <span className="sr-only"> (opens in a new tab)</span>
+              </a>
               {copy && copy.href === href && <span className="text-small text-muted">{copy.message}</span>}
             </div>
           </>

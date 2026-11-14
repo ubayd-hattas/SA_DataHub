@@ -6,6 +6,7 @@
 import { formatDecimal, formatRand } from '@/lib/format'
 import { monthLabel, type FuelProduct, type FuelZone } from '@/lib/fuel'
 import { DEFAULT_LITRES, priceText, type FuelCostResult } from '@/lib/fuel-calc'
+import { absoluteUrl } from '@/lib/seo'
 import { DEFAULT_PRODUCT, DEFAULT_ZONE, FUEL_PATH, productInfo, productName, zoneLabel } from '@/lib/fuel-page'
 
 type Ok = Extract<FuelCostResult, { ok: true }>
@@ -75,4 +76,14 @@ export function calcHref({ litres, product, zone }: { litres: number; product: F
   if (zone !== DEFAULT_ZONE) query.set('zone', zone)
   const text = query.toString()
   return text ? `${FUEL_PATH}?${text}` : FUEL_PATH
+}
+
+/**
+ * A WhatsApp link with the sentence and the address of the answer. It is a
+ * plain link to wa.me, with no tracking parameters; nothing is sent until the
+ * reader chooses a chat in WhatsApp.
+ */
+export function whatsappHref(r: Ok): string {
+  const url = absoluteUrl(calcHref(r))
+  return `https://wa.me/?text=${encodeURIComponent(`${costSentence(r)} ${url}`)}`
 }

@@ -125,3 +125,34 @@ describe('copy link', () => {
     expect(render('abc')).not.toContain('Copy link to this answer')
   })
 })
+
+describe('WhatsApp link', () => {
+  const href = /href="(https:\/\/wa\.me\/[^"]+)"/.exec(render())?.[1]?.replace(/&amp;/g, '&')
+
+  it('is a wa.me link carrying the sentence and the page address, nothing else', () => {
+    expect(href).toBeDefined()
+    const url = new URL(href!)
+    expect(url.origin + url.pathname).toBe('https://wa.me/')
+    expect([...url.searchParams.keys()]).toEqual(['text'])
+    expect(url.searchParams.get('text')).toBe(
+      `45 litres of Petrol 95 cost R1${NBSP}360.80 in Nov 2026 (inland price). https://sadatahub.tech/fuel`,
+    )
+  })
+
+  it('carries the choice in the address it shares, and no tracking parameters', () => {
+    const text = new URL(render('30', 'diesel50ppm', 'coastal').match(/href="(https:\/\/wa\.me\/[^"]+)"/)![1].replace(/&amp;/g, '&')).searchParams.get('text')!
+    expect(text).toContain('https://sadatahub.tech/fuel?litres=30&product=diesel-50ppm&zone=coastal')
+    expect(text).not.toMatch(/utm_|fbclid|ref=/)
+  })
+
+  it('opens safely in a new tab and is announced as doing so', () => {
+    const html = render()
+    expect(html).toContain('rel="noopener noreferrer"')
+    expect(html).toContain('Share on WhatsApp')
+    expect(html).toContain('(opens in a new tab)')
+  })
+
+  it('is not offered when the litres are wrong', () => {
+    expect(render('abc')).not.toContain('wa.me')
+  })
+})
