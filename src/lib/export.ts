@@ -44,7 +44,7 @@ function escapeField(value: string | number | null | undefined): string {
 }
 
 /** Join an array of values into a single CSV row string. */
-function csvRow(fields: (string | number | null | undefined)[]): string {
+export function csvRow(fields: (string | number | null | undefined)[]): string {
   return fields.map(escapeField).join(',')
 }
 

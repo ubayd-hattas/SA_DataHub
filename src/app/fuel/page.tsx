@@ -18,6 +18,7 @@ import {
   zoneLabel,
   productName,
 } from '@/lib/fuel-page'
+import { FUEL_HISTORY_PATH } from '@/lib/fuel-history'
 import { breadcrumbSchema } from '@/lib/schema'
 import { buildPageMetadata } from '@/lib/seo'
 import { seriesCsvHref, seriesHref } from '@/lib/series'
@@ -101,6 +102,10 @@ export default async function FuelPage({ searchParams }: FuelPageProps) {
         <p className="mb-4 text-body text-ink">
           Each product and zone has its own page with every monthly price since January 2022, and downloads.
         </p>
+        <p className="mb-4 text-body text-ink">
+          <Link href={FUEL_HISTORY_PATH} className={linkClass}>See every monthly adjustment in one table</Link>, with
+          the change in cents and the source document for each month.
+        </p>
         <ul className="space-y-2 text-body">
           {FUEL_PRODUCTS.flatMap((p) =>
             FUEL_ZONES.map((z) => {
@@ -128,8 +133,9 @@ export default async function FuelPage({ searchParams }: FuelPageProps) {
           The latest prices are from {FUEL_PUBLISHER.name} ({FUEL_PUBLISHER.shortName}), {latest.source.document}. They
           took effect on {formatLongDate(latest.effectiveFrom)}. Earlier months come from the department&apos;s files
           for each month. A script read the prices from those files and they were checked against them by hand.
-          March and April 2026 have no monthly file online, so those prices were typed in from the
-          department&apos;s History of Fuel Prices table.
+          February 2026 was typed in from the department&apos;s PDFs, with paraffin from its History of Fuel
+          Prices table. March and April 2026 have no monthly file online, so those prices were typed in from
+          that table.
         </p>
         <p className="mt-3 max-w-prose text-small text-muted">
           Where no file SA Data Hub holds gives a price, that month is left out and the line joins the months either
