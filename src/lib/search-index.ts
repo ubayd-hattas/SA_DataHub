@@ -9,6 +9,7 @@ import { ANSWERS, ANSWERS_PATH } from '@/data/answers'
 import { STORIES } from '@/data/stories'
 import { HUB_PATH, HUB_TITLE } from '@/lib/census-hub'
 import { MONEY_VALUE_PATH } from '@/lib/money-value'
+import { FUEL_PATH, fuelPageTitle } from '@/lib/fuel-page'
 import { COMPARE_PATH } from '@/lib/compare'
 import { normalise, type SearchEntry } from '@/lib/search-match'
 
@@ -72,6 +73,13 @@ export function buildSearchIndex(): SearchEntry[] {
       href: `/insights/${s.slug}`,
       terms: normalise(`${s.title} ${s.tags.join(' ')}`),
     })),
+    {
+      group: 'Statistics',
+      title: fuelPageTitle(),
+      detail: 'Official petrol prices and wholesale diesel and paraffin prices, inland and coastal',
+      href: FUEL_PATH,
+      terms: normalise('fuel petrol diesel paraffin price per litre 95 93 inland coastal gauteng dmpr'),
+    },
     {
       group: 'Tools',
       title: 'What was money worth?',

@@ -1,5 +1,5 @@
 /**
- * The five sections of the main navigation. The desktop bar and the phone
+ * The sections of the main navigation. The desktop bar and the phone
  * menu both render this list, so they always have the same structure.
  * tests/unit/navigation.test.ts checks that every link is an existing route.
  */
@@ -20,6 +20,12 @@ export interface NavSection {
 }
 
 export const NAV_SECTIONS: NavSection[] = [
+  {
+    id: 'fuel',
+    label: 'Fuel',
+    href: '/fuel',
+    match: ['/fuel'],
+  },
   {
     id: 'what-changed',
     label: 'What changed',

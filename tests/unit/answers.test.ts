@@ -72,6 +72,6 @@ describe('answers', () => {
     expect(read('src/components/layout/Footer.tsx')).toContain("href: '/answers'")
     const urls = sitemap().map((e) => e.url)
     expect(urls.filter((u) => u.includes('/answers')).length).toBe(ANSWERS.length + 1)
-    expect(NAV_SECTIONS).toHaveLength(5)
+    expect(NAV_SECTIONS).toHaveLength(6)
   })
 })
