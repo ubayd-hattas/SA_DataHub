@@ -73,7 +73,7 @@ describe('sitemap', () => {
   it('lists every static page, except those marked noindex', async () => {
     // Static pages are page.tsx files with no [dynamic] segment.
     const pages = staticPagePaths(join(process.cwd(), 'src/app'))
-    const noIndex = new Set(['/dashboard'])
+    const noIndex = new Set(['/dashboard', '/fuel/next-month'])
     for (const path of pages) {
       const url = path === '/' ? `${SITE_URL}/` : `${SITE_URL}${path}`
       if (noIndex.has(path)) expect(urls, path).not.toContain(url)
