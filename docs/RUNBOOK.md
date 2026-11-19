@@ -232,8 +232,14 @@ Add its id to `statIds` in `src/lib/registry.ts` and to `GOOD_DIRECTION_BY_STAT`
 
 **What it is:** the expected change in next month's fuel prices, as a range, from the Central Energy Fund's daily basic fuel price sheets (`docs/fuel.md`, section 4). **Nothing from CEF is published yet**: CEF publishes no reuse terms and has not answered the request (decision D3). `src/data/fuel/estimate.json` says `"status": "none"`, `/fuel/next-month` is not linked and not indexed, and `tests/unit/fuel-estimate.test.ts` fails if an estimate is committed.
 
-**Run it privately:** `python scripts/fuel/fetch_cef.py` (all listed sheets, 5 seconds apart, into the ignored `sources/releases/fuel/cef/`), then `python scripts/fuel/backtest.py sources/releases/fuel/cef src/data/fuel/prices.json sources/releases/fuel/backtest`, then `python scripts/fuel/estimate.py sources/releases/fuel/estimate.json`. The estimate script refuses to write into `src/`. The same steps run on GitHub from the "Fuel estimate (private)" workflow, by hand only, and keep the result as a 7-day artifact.
+**Run it on your own computer only.** The repository is public, so a GitHub Actions run would expose its logs and files to anyone. Do not add a workflow for this until CEF agrees.
 
-**Announced changes:** add them to `src/data/fuel/known-changes.json` only from an official document (DMPR, CEF press release or Treasury), with its name and address. Press reports go in `_meta.unconfirmed`, not in `changes`.
+1. `python scripts/fuel/fetch_cef.py` fetches the sheets it does not already hold (5 seconds apart, honest User-Agent, robots.txt checked) into the ignored `sources/releases/fuel/cef/`.
+2. `python scripts/fuel/backtest.py sources/releases/fuel/cef src/data/fuel/prices.json sources/releases/fuel/backtest`
+3. `python scripts/fuel/estimate.py sources/releases/fuel/estimate.json`
 
-**When CEF agrees:** record the permission and its wording in `docs/fuel.md`, then in one pull request: let the estimate script write `src/data/fuel/estimate.json`, change the first test in `tests/unit/fuel-estimate.test.ts`, add a schedule to the workflow with a step that opens a pull request, link `/fuel/next-month` from `/fuel`, and remove `noIndex` from the page.
+Both scripts refuse to write anywhere outside `sources/releases/fuel/`, and print only where they wrote. Never paste their numbers into a commit, an issue, a pull request or a test: use made-up numbers in tests.
+
+**Announced changes:** add them to `src/data/fuel/known-changes.json` only from an official document (DMPR, Treasury, or a press release issued on the DMPR's behalf), with its name and address. Press reports go in `_meta.unconfirmed`, not in `changes`.
+
+**When CEF agrees:** record the permission and its wording in `docs/fuel.md`, then in one pull request: let the estimate script write `src/data/fuel/estimate.json`, change the first test in `tests/unit/fuel-estimate.test.ts`, add a scheduled workflow that opens a pull request, link `/fuel/next-month` from `/fuel`, and remove `noIndex` from the page.
