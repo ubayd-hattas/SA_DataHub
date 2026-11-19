@@ -1,3 +1,4 @@
+import { FuelStaleNote } from '@/components/fuel/FuelStaleNote'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Breadcrumbs } from '@/components/seo/Breadcrumbs'
@@ -21,7 +22,7 @@ import {
   productInfo,
   parseFuelSelection,
   zoneLabel,
-  productName } from '@/lib/fuel-page'
+  productName, nextFuelChange } from '@/lib/fuel-page'
 import { FUEL_HISTORY_PATH } from '@/lib/fuel-history'
 import { breadcrumbSchema } from '@/lib/schema'
 import { buildPageMetadata } from '@/lib/seo'
@@ -103,6 +104,7 @@ export default async function FuelPage({ searchParams }: FuelPageProps) {
           }
           source={<p className="max-w-prose text-body text-ink">{head.stat.description}</p>}
         />
+        <FuelStaleNote effectiveFrom={head.effectiveFrom} nextChange={nextFuelChange()} />
         {head.stat.note && (
           <p className="mt-4 max-w-prose text-small text-muted">
             <strong className="font-semibold text-ink">Note: </strong>
