@@ -41,7 +41,7 @@ export const BREAKDOWN_GROUPS: { id: BreakdownGroupId; label: string; detail: st
   { id: 'import', label: 'Import cost', detail: 'The basic fuel price: what the fuel would cost to buy overseas and ship to South Africa. It follows international fuel prices and the rand-dollar exchange rate.' },
   { id: 'taxes', label: 'Taxes and levies', detail: 'The general fuel levy, the Road Accident Fund levy, the slate levy and smaller levies.' },
   { id: 'margins', label: 'Margins', detail: 'Amounts for the wholesaler, storage and distribution, and for petrol the filling station.' },
-  { id: 'transport', label: 'Transport', detail: 'Getting the fuel from the coast to Gauteng.' },
+  { id: 'transport', label: 'Transport', detail: 'Getting the fuel from the coast to Gauteng, and delivery.' },
 ]
 
 export interface BreakdownGroup {

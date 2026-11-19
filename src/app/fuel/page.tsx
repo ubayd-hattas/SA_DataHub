@@ -143,7 +143,7 @@ export default async function FuelPage({ searchParams }: FuelPageProps) {
       </section>
 
       <Section id="breakdown" title="What a litre is made of">
-        <FuelBreakdown product={selection.product} zone={selection.zone} />
+        <FuelBreakdown product={selection.product} zone={selection.zone} litres={validLitres(params)} />
       </Section>
 
       <Section id="all-products" title={`Every product, ${head.month}`}>
