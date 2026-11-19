@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useId, useState, type FormEvent } from 'react'
+import { useRouter } from 'next/navigation'
 import { Link2, MessageCircle } from 'lucide-react'
 import { FUEL_PRODUCTS, FUEL_ZONES, type FuelProduct, type FuelZone } from '@/lib/fuel'
 import { calculateFuelCost, parseLitres, LITRES_ERROR } from '@/lib/fuel-calc'
@@ -8,7 +9,7 @@ import { calcHref, changeText, rands, selectionText, whatsappHref, wholesaleNote
 import { FUEL_PATH } from '@/lib/fuel-page'
 
 const FIELD =
-  'w-full border-0 border-b border-ink/40 bg-transparent px-0 py-2 text-body tabular-nums text-ink focus:border-accent focus:outline-none focus:ring-0 focus-visible:border-b-2'
+  'w-full border-0 border-b border-ink bg-transparent px-0 py-2 text-body tabular-nums text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-accent'
 
 interface FuelCalculatorProps {
   /** What the litres box holds on first render: the default, or the text from the address. */
@@ -44,10 +45,17 @@ export function FuelCalculator({ initialLitres, initialProduct, initialZone }: F
 
   const href = ok ? calcHref({ litres: ok.litres, product, zone }) : null
 
-  // replaceState, not a navigation: typing should not add history entries or reload the page.
+  const router = useRouter()
+  // A soft replace, after a short pause in typing: the headline, chart and
+  // selector links above re-render for the same product, zone and litres, and
+  // no history entries are added. The hash is kept so /fuel#series still works.
   useEffect(() => {
-    if (href) window.history.replaceState(null, '', href)
-  }, [href])
+    if (!href) return
+    const current = `${window.location.pathname}${window.location.search}`
+    if (current === href) return
+    const timer = window.setTimeout(() => router.replace(`${href}${window.location.hash}`, { scroll: false }), 400)
+    return () => window.clearTimeout(timer)
+  }, [href, router])
 
   async function copyLink() {
     if (!href) return
@@ -175,7 +183,8 @@ export function FuelCalculator({ initialLitres, initialProduct, initialZone }: F
                 Share on WhatsApp
                 <span className="sr-only"> (opens in a new tab)</span>
               </a>
-              {copy && copy.href === href && <span role="status" className="text-small text-muted">{copy.message}</span>}
+              {/* Always in the page, so screen readers announce the message when it is filled in. */}
+              <span role="status" className="text-small text-muted">{copy && copy.href === href ? copy.message : ''}</span>
             </div>
           </>
         )}

@@ -214,8 +214,9 @@ def build(checked_on: str) -> int:
                   **({"releasedOn": src["releasedOn"]} if "releasedOn" in src else {}),
                   "source": {"document": src["document"], "url": src["url"]},
                   "enteredFrom": "spreadsheet", "prices": parsed["prices"]}
-        if note:
-            record["note"] = note
+        notes = [n for n in (note, src.get("note")) if n]
+        if notes:
+            record["note"] = " ".join(notes)
         records.append(record)
     for month, m in manual.items():
         if any(r["month"] == month for r in records):

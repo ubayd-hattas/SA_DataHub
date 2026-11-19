@@ -1,3 +1,4 @@
+import { FuelStaleNote } from '@/components/fuel/FuelStaleNote'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Breadcrumbs } from '@/components/seo/Breadcrumbs'
@@ -10,7 +11,7 @@ import { NumberBlock } from '@/components/editorial/NumberBlock'
 import { Column, PageHeader, Section, linkClass } from '@/components/editorial/Section'
 import { SourceLine } from '@/components/editorial/SourceLine'
 import { formatLongDate } from '@/lib/explainers'
-import { calculateFuelCost, parseLitres, parseShareQuery, MAX_LITRES, MIN_LITRES } from '@/lib/fuel-calc'
+import { calculateFuelCost, parseLitres, parseShareQuery, MAX_LITRES, MIN_LITRES, shareImageQuery } from '@/lib/fuel-calc'
 import { costSentence, litresFromParams } from '@/lib/fuel-calc-text'
 import { FUEL_PRODUCTS, FUEL_PUBLISHER, FUEL_ZONES, fuelSeriesId, latestAdjustment } from '@/lib/fuel'
 import {
@@ -21,8 +22,7 @@ import {
   productInfo,
   parseFuelSelection,
   zoneLabel,
-  productName,
-} from '@/lib/fuel-page'
+  productName, nextFuelChange } from '@/lib/fuel-page'
 import { FUEL_HISTORY_PATH } from '@/lib/fuel-history'
 import { breadcrumbSchema } from '@/lib/schema'
 import { buildPageMetadata } from '@/lib/seo'
@@ -49,7 +49,7 @@ export async function generateMetadata({ searchParams }: Partial<FuelPageProps> 
   const result = query.ok ? calculateFuelCost(query) : null
   if (!result?.ok) return meta
   const sentence = costSentence(result)
-  const image = new URLSearchParams({ litres: String(result.litres), product: productInfo(product).slug, zone })
+  const image = shareImageQuery(result)
   const withImage = buildPageMetadata({
     title: fuelPageTitle(),
     description: DESCRIPTION,
@@ -104,6 +104,7 @@ export default async function FuelPage({ searchParams }: FuelPageProps) {
           }
           source={<p className="max-w-prose text-body text-ink">{head.stat.description}</p>}
         />
+        <FuelStaleNote effectiveFrom={head.effectiveFrom} nextChange={nextFuelChange()} />
         {head.stat.note && (
           <p className="mt-4 max-w-prose text-small text-muted">
             <strong className="font-semibold text-ink">Note: </strong>
