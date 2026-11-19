@@ -2,7 +2,7 @@
  * The /fuel page: the default headline, the choice in the address, the
  * wholesale label, the table of every product, and the places that list it.
  */
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
@@ -12,6 +12,13 @@ import { FUEL_PRODUCTS, fuelSeriesId } from '@/lib/fuel'
 import { fuelHref, fuelPageTitle, parseFuelSelection } from '@/lib/fuel-page'
 import { buildLlmsTxt } from '@/lib/llms-txt'
 import { buildSearchIndex } from '@/lib/search-index'
+
+// The calculator uses Next's router for a soft replace. A static render has no
+// router, so give it one that does nothing; every other export stays real.
+vi.mock('next/navigation', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('next/navigation')>()),
+  useRouter: () => ({ replace: () => {}, push: () => {}, prefetch: () => {}, back: () => {}, forward: () => {}, refresh: () => {} }),
+}))
 
 const render = async (params: Record<string, string | string[] | undefined> = {}) =>
   renderToStaticMarkup(await FuelPage({ searchParams: Promise.resolve(params) }))

@@ -1,3 +1,4 @@
+import { FuelStaleNote } from '@/components/fuel/FuelStaleNote'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Breadcrumbs } from '@/components/seo/Breadcrumbs'
@@ -6,7 +7,7 @@ import { FuelHistoryTable } from '@/components/fuel/FuelHistoryTable'
 import { Column, PageHeader, Section, linkClass } from '@/components/editorial/Section'
 import { formatLongDate } from '@/lib/explainers'
 import { FUEL_PUBLISHER, fuelAdjustments, latestAdjustment } from '@/lib/fuel'
-import { FUEL_PATH, longMonthLabel } from '@/lib/fuel-page'
+import { FUEL_PATH, longMonthLabel, nextFuelChange } from '@/lib/fuel-page'
 import { FUEL_HISTORY_CSV_PATH, FUEL_HISTORY_PATH } from '@/lib/fuel-history'
 import { breadcrumbSchema } from '@/lib/schema'
 import { buildPageMetadata } from '@/lib/seo'
@@ -37,6 +38,8 @@ export default function FuelHistoryPage() {
         title="Fuel price history"
         lede={`Every monthly adjustment from ${longMonthLabel(first.month)} to ${longMonthLabel(latest.month)}, newest first. Prices are in rands per litre. Under each price is the change from the month before.`}
       />
+
+      <FuelStaleNote effectiveFrom={latest.effectiveFrom} nextChange={nextFuelChange()} />
 
       <Section id="table" title="Every monthly adjustment">
         <FuelHistoryTable />

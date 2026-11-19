@@ -2,7 +2,7 @@
  * The calculator on /fuel: what it prints with no JavaScript (the default
  * answer, labels, the live region), its error state, and the diesel note.
  */
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import FuelPage from '@/app/fuel/page'
@@ -10,6 +10,13 @@ import { FuelCalculator } from '@/components/fuel/FuelCalculator'
 import type { FuelProduct, FuelZone } from '@/lib/fuel'
 import { calcHref, litresFromParams } from '@/lib/fuel-calc-text'
 import { parseFuelSelection } from '@/lib/fuel-page'
+
+// The calculator uses Next's router for a soft replace. A static render has no
+// router, so give it one that does nothing; every other export stays real.
+vi.mock('next/navigation', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('next/navigation')>()),
+  useRouter: () => ({ replace: () => {}, push: () => {}, prefetch: () => {}, back: () => {}, forward: () => {}, refresh: () => {} }),
+}))
 
 const NBSP = ' '
 

@@ -69,12 +69,25 @@ describe('the route', () => {
     }
   })
 
-  it('draws an image for the default and for a valid choice, with a long Cache-Control', async () => {
-    for (const q of ['', '?litres=30&product=diesel-50ppm&zone=coastal', '?litres=1%20000', '?litres=52,5']) {
+  it('draws an image at its one address, with a long Cache-Control', async () => {
+    for (const q of ['?litres=45&product=petrol-95&zone=inland', '?litres=30&product=diesel-50ppm&zone=coastal', '?litres=1000&product=petrol-95&zone=inland', '?litres=52.5&product=petrol-95&zone=inland']) {
       const res = await get(q)
-      expect(res.status).toBe(200)
+      expect(res.status, q).toBe(200)
       expect(res.headers.get('content-type')).toBe('image/png')
       expect(res.headers.get('cache-control')).toBe('public, max-age=86400, s-maxage=604800')
+    }
+  })
+
+  it('sends the default and other spellings to that address', async () => {
+    const cases: [string, string][] = [
+      ['', '?litres=45&product=petrol-95&zone=inland'],
+      ['?litres=1%20000', '?litres=1000&product=petrol-95&zone=inland'],
+      ['?litres=52,5', '?litres=52.5&product=petrol-95&zone=inland'],
+    ]
+    for (const [q, target] of cases) {
+      const res = await get(q)
+      expect(res.status, q).toBe(308)
+      expect(res.headers.get('location'), q).toBe(`/fuel/share-image${target}`)
     }
   })
 

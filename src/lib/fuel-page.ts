@@ -14,11 +14,13 @@ import {
   fuelStatistics,
   latestAdjustment,
   monthLabel,
+  previousMonthPrice,
   type FuelProduct,
   type FuelProductInfo,
   type FuelZone,
 } from '@/lib/fuel'
 import { DEFAULT_LITRES } from '@/lib/fuel-calc'
+import { RELEASE_CALENDAR } from '@/data/release-calendar'
 
 export const FUEL_PATH = '/fuel'
 export const DEFAULT_PRODUCT: FuelProduct = 'petrol95'
@@ -68,15 +70,29 @@ export interface FuelHeadline {
   change: string
 }
 
+/**
+ * The next fuel adjustment on the release calendar after the latest one held,
+ * or null when none is scheduled. Used to tell readers when prices may be stale.
+ */
+export function nextFuelChange(): string | null {
+  const held = latestAdjustment().effectiveFrom
+  const next = RELEASE_CALENDAR.filter((r) => r.id.startsWith('fuel-') && r.date && r.date > held)
+    .map((r) => r.date!)
+    .sort()[0]
+  return next ?? null
+}
+
 export function fuelHeadline(product: FuelProduct, zone: FuelZone): FuelHeadline {
   const id = fuelSeriesId(product, zone)
   const stat = fuelStatistics().find((s) => s.id === id)!
   const latest = latestAdjustment()
   const points = fuelPoints(product, zone)
   const last = points.at(-1)!
-  const previous = points.at(-2)
+  const previous = previousMonthPrice(product, zone)
   let change = 'This is the first month in the series.'
-  if (previous) {
+  if (previous && previous.cents === null) {
+    change = `No price is held for ${monthLabel(previous.month)}, so no change is given.`
+  } else if (previous && previous.cents !== null) {
     const words = describeChange(last.cents - previous.cents)
     change = `${words.charAt(0).toUpperCase()}${words.slice(1)} from ${formatRandsPerLitre(previous.cents)} in ${monthLabel(previous.month)}.`
   }
