@@ -8,7 +8,7 @@ import { calcHref, changeText, rands, selectionText, whatsappHref, wholesaleNote
 import { FUEL_PATH } from '@/lib/fuel-page'
 
 const FIELD =
-  'w-full border-0 border-b border-ink/40 bg-transparent px-0 py-2 text-body tabular-nums text-ink focus:border-accent focus:outline-none focus:ring-0 focus-visible:border-b-2'
+  'w-full border-0 border-b border-ink bg-transparent px-0 py-2 text-body tabular-nums text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-accent'
 
 interface FuelCalculatorProps {
   /** What the litres box holds on first render: the default, or the text from the address. */
@@ -175,7 +175,8 @@ export function FuelCalculator({ initialLitres, initialProduct, initialZone }: F
                 Share on WhatsApp
                 <span className="sr-only"> (opens in a new tab)</span>
               </a>
-              {copy && copy.href === href && <span role="status" className="text-small text-muted">{copy.message}</span>}
+              {/* Always in the page, so screen readers announce the message when it is filled in. */}
+              <span role="status" className="text-small text-muted">{copy && copy.href === href ? copy.message : ''}</span>
             </div>
           </>
         )}
