@@ -14,6 +14,7 @@ import {
   fuelStatistics,
   latestAdjustment,
   monthLabel,
+  previousMonthPrice,
   type FuelProduct,
   type FuelProductInfo,
   type FuelZone,
@@ -74,9 +75,11 @@ export function fuelHeadline(product: FuelProduct, zone: FuelZone): FuelHeadline
   const latest = latestAdjustment()
   const points = fuelPoints(product, zone)
   const last = points.at(-1)!
-  const previous = points.at(-2)
+  const previous = previousMonthPrice(product, zone)
   let change = 'This is the first month in the series.'
-  if (previous) {
+  if (previous && previous.cents === null) {
+    change = `No price is held for ${monthLabel(previous.month)}, so no change is given.`
+  } else if (previous && previous.cents !== null) {
     const words = describeChange(last.cents - previous.cents)
     change = `${words.charAt(0).toUpperCase()}${words.slice(1)} from ${formatRandsPerLitre(previous.cents)} in ${monthLabel(previous.month)}.`
   }

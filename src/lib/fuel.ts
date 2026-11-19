@@ -116,6 +116,17 @@ export function fuelPoints(product: FuelProduct, zone: FuelZone): { month: strin
     .filter((p): p is { month: string; cents: number } => p.cents !== null)
 }
 
+/**
+ * The price in the month before the latest one, which may be null when no held
+ * file gives it. Changes are only ever worked out against this month, never
+ * against an earlier one, so every page states the same change.
+ */
+export function previousMonthPrice(product: FuelProduct, zone: FuelZone): { month: string; cents: number | null } | null {
+  const all = fuelAdjustments()
+  const before = all.at(-2)
+  return before ? { month: before.month, cents: before.prices[product][zone] } : null
+}
+
 function missingMonths(product: FuelProduct, zone: FuelZone): string[] {
   return fuelAdjustments()
     .filter((a) => a.prices[product][zone] === null)
@@ -126,12 +137,12 @@ function statisticFor(info: FuelProductInfo, zone: FuelZone): Statistic {
   const points = fuelPoints(info.id, zone)
   const latest = latestAdjustment()
   const last = points.at(-1)
-  const previous = points.at(-2)
+  const previous = previousMonthPrice(info.id, zone)
   if (!last || last.month !== latest.month) {
     throw new Error(`Fuel: ${info.id} ${zone} has no price for the latest month, ${latest.month}`)
   }
   if (!latest.releasedOn) throw new Error(`Fuel: ${latest.month} has no release date`)
-  const changeCents = previous ? last.cents - previous.cents : 0
+  const changeCents = previous?.cents != null ? last.cents - previous.cents : 0
   const zoneInfo = FUEL_ZONES.find((z) => z.id === zone)!
   const missing = missingMonths(info.id, zone)
   const notes = [
@@ -149,7 +160,11 @@ function statisticFor(info: FuelProductInfo, zone: FuelZone): Statistic {
     rawValue: centsToRands(last.cents),
     unit: 'R/litre',
     change: centsToRands(changeCents),
-    changeLabel: previous ? `${describeChange(changeCents)} from ${monthLabel(previous.month)}` : 'first month in the series',
+    changeLabel: !previous
+      ? 'first month in the series'
+      : previous.cents === null
+        ? `no price is held for ${monthLabel(previous.month)}, so no change is given`
+        : `${describeChange(changeCents)} from ${monthLabel(previous.month)}`,
     trend: changeCents > 0 ? 'up' : changeCents < 0 ? 'down' : 'stable',
     description: `The official ${info.priceType === 'wholesale' ? 'wholesale ' : ''}price of ${info.officialName} in rands per litre, ${zoneInfo.detail}, set by the DMPR each month.`,
     source: {
