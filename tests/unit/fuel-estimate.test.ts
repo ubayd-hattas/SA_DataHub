@@ -36,7 +36,8 @@ describe('known changes', () => {
 
 describe('describeRange', () => {
   it('reads a cut, a rise and a range across zero in words', () => {
-    expect(describeRange({ low: -223, high: -199 })).toBe('a cut of between R1.99 and R2.23')
+    // Made-up numbers: no CEF-derived value may appear in the repository.
+    expect(describeRange({ low: -250, high: -210 })).toBe('a cut of between R2.10 and R2.50')
     expect(describeRange({ low: 12, high: 40 })).toBe('a rise of between 12 cents and 40 cents')
     expect(describeRange({ low: -20, high: 35 })).toBe('somewhere between a cut of 20 cents and a rise of 35 cents')
   })

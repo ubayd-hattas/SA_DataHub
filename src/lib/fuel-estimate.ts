@@ -65,7 +65,7 @@ export function largestSlateMove(): { cents: number; month: string } | null {
   return best
 }
 
-/** "a cut of between R1.99 and R2.23", "a rise of between 12 and 40 cents", or a range across zero. */
+/** "a cut of between R2.10 and R2.50", "a rise of between 12 and 40 cents", or a range across zero. */
 export function describeRange(r: Pick<EstimateRange, 'low' | 'high'>): string {
   const amount = (c: number) => {
     const size = Math.abs(Math.round(c))
