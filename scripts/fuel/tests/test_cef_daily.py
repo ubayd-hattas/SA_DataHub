@@ -96,3 +96,48 @@ def test_robots_rules_are_respected():
     import fetch_cef
     assert fetch_cef.allowed_by_robots("User-agent: *\nDisallow: /wp-admin/\n", "/wp-content/uploads/")
     assert not fetch_cef.allowed_by_robots("User-agent: *\nDisallow: /wp-content/\n", "/wp-content/uploads/")
+
+
+def test_rejects_unbalanced_brackets():
+    with pytest.raises(cd.SheetError):
+        cd.parse_text(sheet_text(avg=("(10.000", "8.000", "(20.000)", "(22.000)", "5.000")))
+
+
+def test_scripts_refuse_to_write_outside_the_private_folder(tmp_path):
+    import backtest as bt
+    with pytest.raises(SystemExit, match="Refusing"):
+        bt.private_path(str(tmp_path / "x.json"))
+    with pytest.raises(SystemExit, match="Refusing"):
+        bt.private_path(str(bt.ROOT / "src" / "data" / "fuel" / "estimate.json"))
+    assert bt.private_path(str(bt.PRIVATE / "estimate.json")) == (bt.PRIVATE / "estimate.json").resolve()
+
+
+def test_backtest_keys_periods_by_their_start_and_maps_them_to_the_next_adjustment():
+    import backtest as bt
+    # Made-up numbers. A period starts a few days before a price change and runs to the next one.
+    def s(day, start, price_from, contrib):
+        sh = cd.parse_text(sheet_text(day=day, start=start, price_from=price_from))
+        sh.contribution = {p: contrib for p in cd.PRODUCTS}
+        return sh
+    sheets = [
+        s("01/12/2030", "27/11/2030", "06/11/2030", 900.0),  # period starts before the 4 Dec price
+        s("02/12/2030", "27/11/2030", "06/11/2030", 900.0),
+        s("05/12/2030", "27/11/2030", "04/12/2030", 920.0),  # the new price is in force
+        s("08/01/2031", "29/12/2030", "04/12/2030", 920.0),
+        s("12/01/2031", "29/12/2030", "07/01/2031", 905.0),
+    ]
+    prices = {p: {"inland": 2000.0, "coastal": 1900.0} for p in cd.PRODUCTS}
+    adjustments = [
+        {"month": "2030-11", "effectiveFrom": "2030-11-06", "prices": prices},
+        {"month": "2030-12", "effectiveFrom": "2030-12-04", "prices": prices},
+        {"month": "2031-01", "effectiveFrom": "2031-01-07", "prices": prices},
+    ]
+    rows, unmatched = bt.outcomes(sheets, adjustments)
+    # The period starting 27 Nov runs past the 4 Dec change, so it leads into the 7 Jan adjustment,
+    # measured from the 4 Dec price (920) to the 7 Jan price (905).
+    assert sorted({r["month"] for r in rows}) == ["2031-01"]
+    jan = next(r for r in rows if r["product"] == "petrol95")
+    assert jan["period_start"] == "2030-11-27" and jan["sheets"] == 3 and jan["final_import"] == -15.0
+    # The period starting 29 Dec has no adjustment after it yet: reported, not dropped.
+    assert len(unmatched) == 1 and unmatched[0].startswith("2030-12-29")
+    assert bt.percentile([1, 2, 3, 4, 5], 0.5) == 3
