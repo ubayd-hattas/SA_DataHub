@@ -1,3 +1,4 @@
+import { FuelBreakdown } from '@/components/fuel/FuelBreakdown'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Breadcrumbs } from '@/components/seo/Breadcrumbs'
@@ -140,6 +141,10 @@ export default async function FuelPage({ searchParams }: FuelPageProps) {
           initialZone={selection.zone}
         />
       </section>
+
+      <Section id="breakdown" title="What a litre is made of">
+        <FuelBreakdown product={selection.product} zone={selection.zone} />
+      </Section>
 
       <Section id="all-products" title={`Every product, ${head.month}`}>
         <FuelPriceTable month={head.month} />
