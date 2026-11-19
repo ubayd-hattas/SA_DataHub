@@ -17,6 +17,7 @@ import re
 import sys
 import time
 import urllib.request
+import urllib.robotparser
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -34,8 +35,10 @@ def get(url: str) -> bytes:
 
 
 def allowed_by_robots(robots: str, path: str) -> bool:
-    rules = [l.split(":", 1)[1].strip() for l in robots.splitlines() if l.lower().startswith("disallow:")]
-    return not any(rule and path.startswith(rule) for rule in rules)
+    """Python's own robots.txt reader, so wildcards and $ are handled as crawlers expect."""
+    rp = urllib.robotparser.RobotFileParser()
+    rp.parse(robots.splitlines())
+    return rp.can_fetch(UA, f"https://cefgroup.co.za{path}")
 
 
 def sheet_links(html: str) -> dict[str, str]:
@@ -50,7 +53,8 @@ def main(argv: list[str]) -> int:
     latest_only = "--latest" in argv
     OUT.mkdir(parents=True, exist_ok=True)
     robots = get("https://cefgroup.co.za/robots.txt").decode("utf-8", "replace")
-    if not allowed_by_robots(robots, "/wp-content/uploads/") or not allowed_by_robots(robots, "/2026-4/"):
+    paths = ["/wp-content/uploads/2026/01/Daily-01-01-2026.pdf"] + [urllib.request.urlparse(p).path for p in INDEX_PAGES]
+    if not all(allowed_by_robots(robots, p) for p in paths):
         print("robots.txt disallows the sheets or the index; not fetching.")
         return 1
     links: dict[str, str] = {}

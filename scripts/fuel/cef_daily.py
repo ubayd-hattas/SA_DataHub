@@ -24,7 +24,8 @@ from pathlib import Path
 
 PRODUCTS = ("petrol95", "petrol93", "diesel500ppm", "diesel50ppm", "paraffin")
 DATE = r"(\d{2}/\d{2}/\d{4})"
-NUM = r"(\(?-?[\d,]+\.\d+\)?|-)"
+# A number, or one in balanced brackets (an under-recovery), or a dash for "no value".
+NUM = r"(\(\d[\d,]*\.\d+\)|-?\d[\d,]*\.\d+|-)"
 FIVE = r"\s+" + r"\s+".join([NUM] * 5)
 
 # Plausible ranges, cents per litre (and rand per dollar). A value outside them
