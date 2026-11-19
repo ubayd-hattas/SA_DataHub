@@ -26,6 +26,8 @@
     /* Blue, so a good change does not read as a green link. */
     --good: #1d5fa8;
     --bad: #b42318;
+    /* Stale figures and estimates: a caution, not an error. */
+    --warn: #8a5a00;
   }
 
   .dark {
@@ -38,6 +40,7 @@
     --accent: #4fc8a2;
     --good: #8ab4f0;
     --bad: #f08a80;
+    --warn: #e6b450;
   }
 
   * {

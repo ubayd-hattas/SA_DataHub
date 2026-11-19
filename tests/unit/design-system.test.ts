@@ -59,7 +59,7 @@ function readTheme(selector: ':root' | '.dark'): Record<string, string> {
 
 describe.each([':root', '.dark'] as const)('colour tokens in %s meet WCAG AA', (selector) => {
   const t = readTheme(selector)
-  it.each(['ink', 'muted', 'accent', 'good', 'bad'])('%s text on paper and on subtle is at least 4.5:1', (name) => {
+  it.each(['ink', 'muted', 'accent', 'good', 'bad', 'warn'])('%s text on paper and on subtle is at least 4.5:1', (name) => {
     expect(t[name], `${name} is defined`).toBeTruthy()
     expect(contrast(t[name], t.paper)).toBeGreaterThanOrEqual(4.5)
     expect(contrast(t[name], t.subtle)).toBeGreaterThanOrEqual(4.5)

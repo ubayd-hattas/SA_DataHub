@@ -26,10 +26,11 @@ Tailwind names map to CSS variables, so a class such as `text-muted` follows the
 | `accent` | `#0f6e56` | `#4fc8a2` | Links, chart line, selected tab |
 | `good` | `#1d5fa8` | `#8ab4f0` | A change in the good direction |
 | `bad` | `#b42318` | `#f08a80` | A change in the bad direction |
+| `warn` | `#8a5a00` | `#e6b450` | A caution: a figure that may be stale, or an estimate |
 
 The accent is the logo's green. The logo itself uses `#198e70` (`--brand-green`), which is only 3.9:1 on `paper`, so text and lines use a darker shade of the same hue in light mode and a lighter one in dark mode. "Good" is blue rather than green so a good change does not look like a link.
 
-Text tokens (`ink`, `muted`, `accent`, `good`, `bad`) meet WCAG AA (4.5:1) on `paper` and on `subtle` in both themes. `tests/unit/design-system.test.ts` reads the values from `globals.css` and fails if any pair drops below 4.5:1. `rule` is a divider and is not used for text.
+Text tokens (`ink`, `muted`, `accent`, `good`, `bad`, `warn`) meet WCAG AA (4.5:1) on `paper` and on `subtle` in both themes. `tests/unit/design-system.test.ts` reads the values from `globals.css` and fails if any pair drops below 4.5:1. `rule` is a divider and is not used for text.
 
 | Token | Light on `paper` | Dark on `paper` |
 | --- | --- | --- |
@@ -38,6 +39,7 @@ Text tokens (`ink`, `muted`, `accent`, `good`, `bad`) meet WCAG AA (4.5:1) on `p
 | `accent` | 5.9:1 | 8.9:1 |
 | `good` | 6.1:1 | 8.7:1 |
 | `bad` | 6.2:1 | 7.6:1 |
+| `warn` | 5.6:1 | 9.7:1 |
 
 ## Logo
 
