@@ -40,14 +40,14 @@ export default function FuelNextMonthPage() {
       <section aria-labelledby="estimate" className="border-t border-rule py-10">
         <h2 id="estimate" className="sr-only">The estimate</h2>
         {estimate.status === 'none' && (
-          <p className="max-w-prose text-body text-ink" role="status">
+          <p className="max-w-prose text-body text-ink">
             No estimate is published yet. {estimate.reason}
           </p>
         )}
         {estimate.status === 'too-early' && (
-          <p className="max-w-prose text-body text-ink" role="status">
-            No estimate yet for {monthLabel(estimate.targetMonth)}: there are only {estimate.workingDays} working days of
-            figures so far, and early-month figures have been a poor guide.
+          <p className="max-w-prose text-body text-ink">
+            No estimate yet for {monthLabel(estimate.targetMonth)}. SA Data Hub does not estimate in the first five
+            working days of a price period, and there are {estimate.workingDays} so far.
           </p>
         )}
         {estimate.status === 'ok' && (
