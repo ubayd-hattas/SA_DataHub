@@ -78,7 +78,7 @@ export function Footer() {
               ))}
               <li>
                 {/* A file, not a page, so a plain link rather than client navigation. */}
-                <a href={FEED_PATH} type="application/rss+xml" className="text-slate-500 hover:text-brand-600 dark:text-slate-400 dark:hover:text-brand-400">
+                <a href={FEED_PATH} type="application/rss+xml" className="text-muted hover:text-accent">
                   RSS feed
                 </a>
               </li>
