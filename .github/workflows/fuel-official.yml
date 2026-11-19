@@ -1,0 +1,55 @@
+name: Fuel prices published
+
+# Opens or updates one issue when the DMPR Fuel Prices page lists an adjustment
+# newer than the latest month in src/data/fuel/prices.json. It reads
+# robots.txt and one page on dmpr.gov.za with an honest User-Agent, and never
+# enters prices: a person downloads the files and runs the build scripts.
+# It runs only around month-end, when the next adjustment is announced.
+
+on:
+  schedule:
+    # 14:00 UTC (16:00 in South Africa), from the 25th to the 7th
+    - cron: '0 14 25-31,1-7 * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: fuel-official
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      - name: Look for new official prices
+        run: node scripts/fuel-official-check.mjs > found.md
+
+      - name: Open or update the issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          if [ ! -s found.md ]; then
+            echo "No new prices."
+            exit 0
+          fi
+          gh label create fuel-prices --color FBCA04 --description "New official fuel prices to enter" 2>/dev/null || true
+          existing=$(gh issue list --label fuel-prices --state open --json number --jq '.[0].number // empty')
+          if [ -n "$existing" ]; then
+            gh issue edit "$existing" --body-file found.md
+            echo "Updated issue #$existing"
+          else
+            gh issue create --title "New official fuel prices to enter" --label fuel-prices --body-file found.md
+          fi
