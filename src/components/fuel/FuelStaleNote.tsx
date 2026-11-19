@@ -18,8 +18,8 @@ export function FuelStaleNote({ effectiveFrom, nextChange }: { effectiveFrom: st
   const today = useSyncExternalStore(noSubscription, todayInBrowser, noDateOnServer)
   if (!nextChange || !today || today < nextChange) return null
   return (
-    <p role="note" className="mt-4 max-w-prose border-l-2 border-bad pl-3 text-small text-ink">
-      <strong className="font-semibold">These prices may be out of date. </strong>
+    <p role="note" className="mt-4 max-w-prose border-l-2 border-warn pl-3 text-small text-ink">
+      <strong className="font-semibold text-warn">These prices may be out of date. </strong>
       They took effect on {formatLongDate(effectiveFrom)}. The next adjustment was due on {formatLongDate(nextChange)},
       and SA Data Hub has not added it yet.
     </p>
