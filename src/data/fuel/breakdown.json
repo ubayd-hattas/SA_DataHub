@@ -1,0 +1,2219 @@
+{
+  "_meta": {
+    "description": "Every element of the inland (Gauteng) price per litre, as the DMPR lists it each month.",
+    "publisher": "Department of Mineral and Petroleum Resources (DMPR)",
+    "document": "Petrol Margins and Diesel Margins tables, November 2026 fuel price pack",
+    "url": "https://www.dmpr.gov.za/Branches/Petroleum-Resources/Fuel-Prices",
+    "released_on": "2026-11-03",
+    "checked_on": "2026-11-19",
+    "units": "South African cents per litre, exactly as printed",
+    "covers": "Petrol 95, diesel 0.05% sulphur and diesel 0.005% sulphur, inland. The DMPR tables give no breakdown for petrol 93, illuminating paraffin or coastal prices.",
+    "dmpr_label": "The DMPR titles these tables \"Petrol Margins are only Guidelines\" and \"Diesel Margins are only Guidelines\".",
+    "rounding": "Petrol pump prices are rounded to whole cents, so the elements can differ from the price by a fraction of a cent.",
+    "built_by": "scripts/fuel/build_breakdown.py",
+    "excluded": [
+      {
+        "month": "2026-02",
+        "product": "diesel50ppm",
+        "reason": "The DMPR breakdown table adds up to 1 cent more than the price in the February 2026 diesel regulation."
+      },
+      {
+        "month": "2026-03",
+        "product": "diesel50ppm",
+        "reason": "No DMPR document SA Data Hub holds gives this month's price, so the breakdown cannot be checked against it."
+      },
+      {
+        "month": "2026-04",
+        "product": "diesel50ppm",
+        "reason": "No DMPR document SA Data Hub holds gives this month's price, so the breakdown cannot be checked against it."
+      },
+      {
+        "month": "2026-05",
+        "product": "diesel500ppm",
+        "reason": "The DMPR breakdown table adds up to 92.07 cents more than the official May 2026 price. The gap appears to be in the basic fuel price: it is the only cell that breaks the pattern of the other months."
+      },
+      {
+        "month": "2026-05",
+        "product": "diesel50ppm",
+        "reason": "The DMPR breakdown table adds up to 92.07 cents more than the official May 2026 price. The gap appears to be in the basic fuel price: it is the only cell that breaks the pattern of the other months."
+      }
+    ]
+  },
+  "months": [
+    {
+      "month": "2026-01",
+      "products": {
+        "petrol95": {
+          "total": 2075.3,
+          "elements": [
+            {
+              "id": "basicFuelPrice",
+              "label": "Basic fuel price (the import cost)",
+              "group": "import",
+              "cents": 911.17
+            },
+            {
+              "id": "fuelLevy",
+              "label": "General fuel levy (fuel tax)",
+              "group": "taxes",
+              "cents": 415.0
+            },
+            {
+              "id": "customsExcise",
+              "label": "Customs and excise duty",
+              "group": "taxes",
+              "cents": 4.0
+            },
+            {
+              "id": "equalisationFund",
+              "label": "Equalisation fund levy",
+              "group": "taxes",
+              "cents": 0.0
+            },
+            {
+              "id": "rafLevy",
+              "label": "Road Accident Fund levy",
+              "group": "taxes",
+              "cents": 218.0
+            },
+            {
+              "id": "transport",
+              "label": "Transport to Gauteng",
+              "group": "transport",
+              "cents": 87.1
+            },
+            {
+              "id": "pipelinesLevy",
+              "label": "Petroleum pipelines levy",
+              "group": "taxes",
+              "cents": 0.33
+            },
+            {
+              "id": "wholesaleMargin",
+              "label": "Wholesale margin",
+              "group": "margins",
+              "cents": 66.5
+            },
+            {
+              "id": "secondaryStorage",
+              "label": "Secondary storage",
+              "group": "margins",
+              "cents": 39.0
+            },
+            {
+              "id": "secondaryDistribution",
+              "label": "Secondary distribution",
+              "group": "margins",
+              "cents": 19.1
+            },
+            {
+              "id": "retailMargin",
+              "label": "Retail margin (filling station)",
+              "group": "margins",
+              "cents": 315.1
+            },
+            {
+              "id": "slateLevy",
+              "label": "Slate levy (pays back months when the price was set too low)",
+              "group": "taxes",
+              "cents": 0.0
+            },
+            {
+              "id": "delivery",
+              "label": "Delivery cost",
+              "group": "transport",
+              "cents": 0.0
+            }
+          ]
+        },
+        "diesel500ppm": {
+          "total": 1841.83,
+          "elements": [
+            {
+              "id": "basicFuelPrice",
+              "label": "Basic fuel price (the import cost)",
+              "group": "import",
+              "cents": 972.63
+            },
+            {
+              "id": "fuelLevy",
+              "label": "General fuel levy (fuel tax)",
+              "group": "taxes",
+              "cents": 402.0
+            },
+            {
+              "id": "customsExcise",
+              "label": "Customs and excise duty",
+              "group": "taxes",
+              "cents": 4.0
+            },
+            {
+              "id": "tracerDye",
+              "label": "Tracer dye levy",
+              "group": "taxes",
+              "cents": 0.5
+            },
+            {
+              "id": "pipelinesLevy",
+              "label": "Petroleum pipelines levy",
+              "group": "taxes",
+              "cents": 0.33
+            },
+            {
+              "id": "rafLevy",
+              "label": "Road Accident Fund levy",
+              "group": "taxes",
+              "cents": 218.0
+            },
+            {
+              "id": "transport",
+              "label": "Transport to Gauteng",
+              "group": "transport",
+              "cents": 87.1
+            },
+            {
+              "id": "wholesaleMargin",
+              "label": "Wholesale margin",
+              "group": "margins",
+              "cents": 99.17
+            },
+            {
+              "id": "secondaryStorage",
+              "label": "Secondary storage",
+              "group": "margins",
+              "cents": 39.0
+            },
+            {
+              "id": "secondaryDistribution",
+              "label": "Secondary distribution",
+              "group": "margins",
+              "cents": 19.1
+            },
+            {
+              "id": "slateLevy",
+              "label": "Slate levy (pays back months when the price was set too low)",
+              "group": "taxes",
+              "cents": 0.0
+            }
+          ]
+        },
+        "diesel50ppm": {
+          "total": 1852.23,
+          "elements": [
+            {
+              "id": "basicFuelPrice",
+              "label": "Basic fuel price (the import cost)",
+              "group": "import",
+              "cents": 983.03
+            },
+            {
+              "id": "fuelLevy",
+              "label": "General fuel levy (fuel tax)",
+              "group": "taxes",
+              "cents": 402.0
+            },
+            {
+              "id": "customsExcise",
+              "label": "Customs and excise duty",
+              "group": "taxes",
+              "cents": 4.0
+            },
+            {
+              "id": "tracerDye",
+              "label": "Tracer dye levy",
+              "group": "taxes",
+              "cents": 0.5
+            },
+            {
+              "id": "pipelinesLevy",
+              "label": "Petroleum pipelines levy",
+              "group": "taxes",
+              "cents": 0.33
+            },
+            {
+              "id": "rafLevy",
+              "label": "Road Accident Fund levy",
+              "group": "taxes",
+              "cents": 218.0
+            },
+            {
+              "id": "transport",
+              "label": "Transport to Gauteng",
+              "group": "transport",
+              "cents": 87.1
+            },
+            {
+              "id": "wholesaleMargin",
+              "label": "Wholesale margin",
+              "group": "margins",
+              "cents": 99.17
+            },
+            {
+              "id": "secondaryStorage",
+              "label": "Secondary storage",
+              "group": "margins",
+              "cents": 39.0
+            },
+            {
+              "id": "secondaryDistribution",
+              "label": "Secondary distribution",
+              "group": "margins",
+              "cents": 19.1
+            },
+            {
+              "id": "slateLevy",
+              "label": "Slate levy (pays back months when the price was set too low)",
+              "group": "taxes",
+              "cents": 0.0
+            }
+          ]
+        }
+      }
+    },
+    {
+      "month": "2026-02",
+      "products": {
+        "petrol95": {
+          "total": 2010.3,
+          "elements": [
+            {
+              "id": "basicFuelPrice",
+              "label": "Basic fuel price (the import cost)",
+              "group": "import",
+              "cents": 846.17
+            },
+            {
+              "id": "fuelLevy",
+              "label": "General fuel levy (fuel tax)",
+              "group": "taxes",
+              "cents": 415.0
+            },
+            {
+              "id": "customsExcise",
+              "label": "Customs and excise duty",
+              "group": "taxes",
+              "cents": 4.0
+            },
+            {
+              "id": "equalisationFund",
+              "label": "Equalisation fund levy",
+              "group": "taxes",
+              "cents": 0.0
+            },
+            {
+              "id": "rafLevy",
+              "label": "Road Accident Fund levy",
+              "group": "taxes",
+              "cents": 218.0
+            },
+            {
+              "id": "transport",
+              "label": "Transport to Gauteng",
+              "group": "transport",
+              "cents": 87.1
+            },
+            {
+              "id": "pipelinesLevy",
+              "label": "Petroleum pipelines levy",
+              "group": "taxes",
+              "cents": 0.33
+            },
+            {
+              "id": "wholesaleMargin",
+              "label": "Wholesale margin",
+              "group": "margins",
+              "cents": 66.5
+            },
+            {
+              "id": "secondaryStorage",
+              "label": "Secondary storage",
+              "group": "margins",
+              "cents": 39.0
+            },
+            {
+              "id": "secondaryDistribution",
+              "label": "Secondary distribution",
+              "group": "margins",
+              "cents": 19.1
+            },
+            {
+              "id": "retailMargin",
+              "label": "Retail margin (filling station)",
+              "group": "margins",
+              "cents": 315.1
+            },
+            {
+              "id": "slateLevy",
+              "label": "Slate levy (pays back months when the price was set too low)",
+              "group": "taxes",
+              "cents": 0.0
+            },
+            {
+              "id": "delivery",
+              "label": "Delivery cost",
+              "group": "transport",
+              "cents": 0.0
+            }
+          ]
+        },
+        "diesel500ppm": {
+          "total": 1791.83,
+          "elements": [
+            {
+              "id": "basicFuelPrice",
+              "label": "Basic fuel price (the import cost)",
+              "group": "import",
+              "cents": 922.63
+            },
+            {
+              "id": "fuelLevy",
+              "label": "General fuel levy (fuel tax)",
+              "group": "taxes",
+              "cents": 402.0
+            },
+            {
+              "id": "customsExcise",
+              "label": "Customs and excise duty",
+              "group": "taxes",
+              "cents": 4.0
+            },
+            {
+              "id": "tracerDye",
+              "label": "Tracer dye levy",
+              "group": "taxes",
+              "cents": 0.5
+            },
+            {
+              "id": "pipelinesLevy",
+              "label": "Petroleum pipelines levy",
+              "group": "taxes",
+              "cents": 0.33
+            },
+            {
+              "id": "rafLevy",
+              "label": "Road Accident Fund levy",
+              "group": "taxes",
+              "cents": 218.0
+            },
+            {
+              "id": "transport",
+              "label": "Transport to Gauteng",
+              "group": "transport",
+              "cents": 87.1
+            },
+            {
+              "id": "wholesaleMargin",
+              "label": "Wholesale margin",
+              "group": "margins",
+              "cents": 99.17
+            },
+            {
+              "id": "secondaryStorage",
+              "label": "Secondary storage",
+              "group": "margins",
+              "cents": 39.0
+            },
+            {
+              "id": "secondaryDistribution",
+              "label": "Secondary distribution",
+              "group": "margins",
+              "cents": 19.1
+            },
+            {
+              "id": "slateLevy",
+              "label": "Slate levy (pays back months when the price was set too low)",
+              "group": "taxes",
+              "cents": 0.0
+            }
+          ]
+        }
+      }
+    },
+    {
+      "month": "2026-03",
+      "products": {
+        "petrol95": {
+          "total": 2030.3,
+          "elements": [
+            {
+              "id": "basicFuelPrice",
+              "label": "Basic fuel price (the import cost)",
+              "group": "import",
+              "cents": 866.17
+            },
+            {
+              "id": "fuelLevy",
+              "label": "General fuel levy (fuel tax)",
+              "group": "taxes",
+              "cents": 415.0
+            },
+            {
+              "id": "customsExcise",
+              "label": "Customs and excise duty",
+              "group": "taxes",
+              "cents": 4.0
+            },
+            {
+              "id": "equalisationFund",
+              "label": "Equalisation fund levy",
+              "group": "taxes",
+              "cents": 0.0
+            },
+            {
+              "id": "rafLevy",
+              "label": "Road Accident Fund levy",
+              "group": "taxes",
+              "cents": 218.0
+            },
+            {
+              "id": "transport",
+              "label": "Transport to Gauteng",
+              "group": "transport",
+              "cents": 87.1
+            },
+            {
+              "id": "pipelinesLevy",
+              "label": "Petroleum pipelines levy",
+              "group": "taxes",
+              "cents": 0.33
+            },
+            {
+              "id": "wholesaleMargin",
+              "label": "Wholesale margin",
+              "group": "margins",
+              "cents": 66.5
+            },
+            {
+              "id": "secondaryStorage",
+              "label": "Secondary storage",
+              "group": "margins",
+              "cents": 39.0
+            },
+            {
+              "id": "secondaryDistribution",
+              "label": "Secondary distribution",
+              "group": "margins",
+              "cents": 19.1
+            },
+            {
+              "id": "retailMargin",
+              "label": "Retail margin (filling station)",
+              "group": "margins",
+              "cents": 315.1
+            },
+            {
+              "id": "slateLevy",
+              "label": "Slate levy (pays back months when the price was set too low)",
+              "group": "taxes",
+              "cents": 0.0
+            },
+            {
+              "id": "delivery",
+              "label": "Delivery cost",
+              "group": "transport",
+              "cents": 0.0
+            }
+          ]
+        },
+        "diesel500ppm": {
+          "total": 1853.83,
+          "elements": [
+            {
+              "id": "basicFuelPrice",
+              "label": "Basic fuel price (the import cost)",
+              "group": "import",
+              "cents": 984.63
+            },
+            {
+              "id": "fuelLevy",
+              "label": "General fuel levy (fuel tax)",
+              "group": "taxes",
+              "cents": 402.0
+            },
+            {
+              "id": "customsExcise",
+              "label": "Customs and excise duty",
+              "group": "taxes",
+              "cents": 4.0
+            },
+            {
+              "id": "tracerDye",
+              "label": "Tracer dye levy",
+              "group": "taxes",
+              "cents": 0.5
+            },
+            {
+              "id": "pipelinesLevy",
+              "label": "Petroleum pipelines levy",
+              "group": "taxes",
+              "cents": 0.33
+            },
+            {
+              "id": "rafLevy",
+              "label": "Road Accident Fund levy",
+              "group": "taxes",
+              "cents": 218.0
+            },
+            {
+              "id": "transport",
+              "label": "Transport to Gauteng",
+              "group": "transport",
+              "cents": 87.1
+            },
+            {
+              "id": "wholesaleMargin",
+              "label": "Wholesale margin",
+              "group": "margins",
+              "cents": 99.17
+            },
+            {
+              "id": "secondaryStorage",
+              "label": "Secondary storage",
+              "group": "margins",
+              "cents": 39.0
+            },
+            {
+              "id": "secondaryDistribution",
+              "label": "Secondary distribution",
+              "group": "margins",
+              "cents": 19.1
+            },
+            {
+              "id": "slateLevy",
+              "label": "Slate levy (pays back months when the price was set too low)",
+              "group": "taxes",
+              "cents": 0.0
+            }
+          ]
+        }
+      }
+    },
+    {
+      "month": "2026-04",
+      "products": {
+        "petrol95": {
+          "total": 2336.3,
+          "elements": [
+            {
+              "id": "basicFuelPrice",
+              "label": "Basic fuel price (the import cost)",
+              "group": "import",
+              "cents": 1447.17
+            },
+            {
+              "id": "fuelLevy",
+              "label": "General fuel levy (fuel tax)",
+              "group": "taxes",
+              "cents": 129.0
+            },
+            {
+              "id": "customsExcise",
+              "label": "Customs and excise duty",
+              "group": "taxes",
+              "cents": 4.0
+            },
+            {
+              "id": "equalisationFund",
+              "label": "Equalisation fund levy",
+              "group": "taxes",
+              "cents": 0.0
+            },
+            {
+              "id": "rafLevy",
+              "label": "Road Accident Fund levy",
+              "group": "taxes",
+              "cents": 225.0
+            },
+            {
+              "id": "transport",
+              "label": "Transport to Gauteng",
+              "group": "transport",
+              "cents": 91.1
+            },
+            {
+              "id": "pipelinesLevy",
+              "label": "Petroleum pipelines levy",
+              "group": "taxes",
+              "cents": 0.33
+            },
+            {
+              "id": "wholesaleMargin",
+              "label": "Wholesale margin",
+              "group": "margins",
+              "cents": 66.5
+            },
+            {
+              "id": "secondaryStorage",
+              "label": "Secondary storage",
+              "group": "margins",
+              "cents": 39.0
+            },
+            {
+              "id": "secondaryDistribution",
+              "label": "Secondary distribution",
+              "group": "margins",
+              "cents": 19.1
+            },
+            {
+              "id": "retailMargin",
+              "label": "Retail margin (filling station)",
+              "group": "margins",
+              "cents": 315.1
+            },
+            {
+              "id": "slateLevy",
+              "label": "Slate levy (pays back months when the price was set too low)",
+              "group": "taxes",
+              "cents": 0.0
+            },
+            {
+              "id": "delivery",
+              "label": "Delivery cost",
+              "group": "transport",
+              "cents": 0.0
+            }
+          ]
+        },
+        "diesel500ppm": {
+          "total": 2590.83,
+          "elements": [
+            {
+              "id": "basicFuelPrice",
+              "label": "Basic fuel price (the import cost)",
+              "group": "import",
+              "cents": 1996.63
+            },
+            {
+              "id": "fuelLevy",
+              "label": "General fuel levy (fuel tax)",
+              "group": "taxes",
+              "cents": 116.0
+            },
+            {
+              "id": "customsExcise",
+              "label": "Customs and excise duty",
+              "group": "taxes",
+              "cents": 4.0
+            },
+            {
+              "id": "tracerDye",
+              "label": "Tracer dye levy",
+              "group": "taxes",
+              "cents": 0.5
+            },
+            {
+              "id": "pipelinesLevy",
+              "label": "Petroleum pipelines levy",
+              "group": "taxes",
+              "cents": 0.33
+            },
+            {
+              "id": "rafLevy",
+              "label": "Road Accident Fund levy",
+              "group": "taxes",
+              "cents": 225.0
+            },
+            {
+              "id": "transport",
+              "label": "Transport to Gauteng",
+              "group": "transport",
+              "cents": 91.1
+            },
+            {
+              "id": "wholesaleMargin",
+              "label": "Wholesale margin",
+              "group": "margins",
+              "cents": 99.17
+            },
+            {
+              "id": "secondaryStorage",
+              "label": "Secondary storage",
+              "group": "margins",
+              "cents": 39.0
+            },
+            {
+              "id": "secondaryDistribution",
+              "label": "Secondary distribution",
+              "group": "margins",
+              "cents": 19.1
+            },
+            {
+              "id": "slateLevy",
+              "label": "Slate levy (pays back months when the price was set too low)",
+              "group": "taxes",
+              "cents": 0.0
+            }
+          ]
+        }
+      }
+    },
+    {
+      "month": "2026-05",
+      "products": {
+        "petrol95": {
+          "total": 2663.2,
+          "elements": [
+            {
+              "id": "basicFuelPrice",
+              "label": "Basic fuel price (the import cost)",
+              "group": "import",
+              "cents": 1651.37
+            },
+            {
+              "id": "fuelLevy",
+              "label": "General fuel levy (fuel tax)",
+              "group": "taxes",
+              "cents": 129.0
+            },
+            {
+              "id": "customsExcise",
+              "label": "Customs and excise duty",
+              "group": "taxes",
+              "cents": 4.0
+            },
+            {
+              "id": "equalisationFund",
+              "label": "Equalisation fund levy",
+              "group": "taxes",
+              "cents": 0.0
+            },
+            {
+              "id": "rafLevy",
+              "label": "Road Accident Fund levy",
+              "group": "taxes",
+              "cents": 225.0
+            },
+            {
+              "id": "transport",
+              "label": "Transport to Gauteng",
+              "group": "transport",
+              "cents": 91.1
+            },
+            {
+              "id": "pipelinesLevy",
+              "label": "Petroleum pipelines levy",
+              "group": "taxes",
+              "cents": 0.33
+            },
+            {
+              "id": "wholesaleMargin",
+              "label": "Wholesale margin",
+              "group": "margins",
+              "cents": 66.5
+            },
+            {
+              "id": "secondaryStorage",
+              "label": "Secondary storage",
+              "group": "margins",
+              "cents": 39.0
+            },
+            {
+              "id": "secondaryDistribution",
+              "label": "Secondary distribution",
+              "group": "margins",
+              "cents": 19.1
+            },
+            {
+              "id": "retailMargin",
+              "label": "Retail margin (filling station)",
+              "group": "margins",
+              "cents": 315.1
+            },
+            {
+              "id": "slateLevy",
+              "label": "Slate levy (pays back months when the price was set too low)",
+              "group": "taxes",
+              "cents": 122.7
+            },
+            {
+              "id": "delivery",
+              "label": "Delivery cost",
+              "group": "transport",
+              "cents": 0.0
+            }
+          ]
+        }
+      }
+    },
+    {
+      "month": "2026-06",
+      "products": {
+        "petrol95": {
+          "total": 2806.2,
+          "elements": [
+            {
+              "id": "basicFuelPrice",
+              "label": "Basic fuel price (the import cost)",
+              "group": "import",
+              "cents": 1609.33
+            },
+            {
+              "id": "fuelLevy",
+              "label": "General fuel levy (fuel tax)",
+              "group": "taxes",
+              "cents": 279.0
+            },
+            {
+              "id": "customsExcise",
+              "label": "Customs and excise duty",
+              "group": "taxes",
+              "cents": 4.0
+            },
+            {
+              "id": "equalisationFund",
+              "label": "Equalisation fund levy",
+              "group": "taxes",
+              "cents": 0.0
+            },
+            {
+              "id": "rafLevy",
+              "label": "Road Accident Fund levy",
+              "group": "taxes",
+              "cents": 225.0
+            },
+            {
+              "id": "transport",
+              "label": "Transport to Gauteng",
+              "group": "transport",
+              "cents": 91.1
+            },
+            {
+              "id": "pipelinesLevy",
+              "label": "Petroleum pipelines levy",
+              "group": "taxes",
+              "cents": 0.33
+            },
+            {
+              "id": "wholesaleMargin",
+              "label": "Wholesale margin",
+              "group": "margins",
+              "cents": 66.5
+            },
+            {
+              "id": "secondaryStorage",
+              "label": "Secondary storage",
+              "group": "margins",
+              "cents": 39.0
+            },
+            {
+              "id": "secondaryDistribution",
+              "label": "Secondary distribution",
+              "group": "margins",
+              "cents": 19.1
+            },
+            {
+              "id": "retailMargin",
+              "label": "Retail margin (filling station)",
+              "group": "margins",
+              "cents": 315.1
+            },
+            {
+              "id": "slateLevy",
+              "label": "Slate levy (pays back months when the price was set too low)",
+              "group": "taxes",
+              "cents": 157.74
+            },
+            {
+              "id": "delivery",
+              "label": "Delivery cost",
+              "group": "transport",
+              "cents": 0.0
+            }
+          ]
+        },
+        "diesel500ppm": {
+          "total": 2792.57,
+          "elements": [
+            {
+              "id": "basicFuelPrice",
+              "label": "Basic fuel price (the import cost)",
+              "group": "import",
+              "cents": 1937.63
+            },
+            {
+              "id": "fuelLevy",
+              "label": "General fuel levy (fuel tax)",
+              "group": "taxes",
+              "cents": 219.0
+            },
+            {
+              "id": "customsExcise",
+              "label": "Customs and excise duty",
+              "group": "taxes",
+              "cents": 4.0
+            },
+            {
+              "id": "tracerDye",
+              "label": "Tracer dye levy",
+              "group": "taxes",
+              "cents": 0.5
+            },
+            {
+              "id": "pipelinesLevy",
+              "label": "Petroleum pipelines levy",
+              "group": "taxes",
+              "cents": 0.33
+            },
+            {
+              "id": "rafLevy",
+              "label": "Road Accident Fund levy",
+              "group": "taxes",
+              "cents": 225.0
+            },
+            {
+              "id": "transport",
+              "label": "Transport to Gauteng",
+              "group": "transport",
+              "cents": 91.1
+            },
+            {
+              "id": "wholesaleMargin",
+              "label": "Wholesale margin",
+              "group": "margins",
+              "cents": 99.17
+            },
+            {
+              "id": "secondaryStorage",
+              "label": "Secondary storage",
+              "group": "margins",
+              "cents": 39.0
+            },
+            {
+              "id": "secondaryDistribution",
+              "label": "Secondary distribution",
+              "group": "margins",
+              "cents": 19.1
+            },
+            {
+              "id": "slateLevy",
+              "label": "Slate levy (pays back months when the price was set too low)",
+              "group": "taxes",
+              "cents": 157.74
+            }
+          ]
+        },
+        "diesel50ppm": {
+          "total": 2875.97,
+          "elements": [
+            {
+              "id": "basicFuelPrice",
+              "label": "Basic fuel price (the import cost)",
+              "group": "import",
+              "cents": 2021.03
+            },
+            {
+              "id": "fuelLevy",
+              "label": "General fuel levy (fuel tax)",
+              "group": "taxes",
+              "cents": 219.0
+            },
+            {
+              "id": "customsExcise",
+              "label": "Customs and excise duty",
+              "group": "taxes",
+              "cents": 4.0
+            },
+            {
+              "id": "tracerDye",
+              "label": "Tracer dye levy",
+              "group": "taxes",
+              "cents": 0.5
+            },
+            {
+              "id": "pipelinesLevy",
+              "label": "Petroleum pipelines levy",
+              "group": "taxes",
+              "cents": 0.33
+            },
+            {
+              "id": "rafLevy",
+              "label": "Road Accident Fund levy",
+              "group": "taxes",
+              "cents": 225.0
+            },
+            {
+              "id": "transport",
+              "label": "Transport to Gauteng",
+              "group": "transport",
+              "cents": 91.1
+            },
+            {
+              "id": "wholesaleMargin",
+              "label": "Wholesale margin",
+              "group": "margins",
+              "cents": 99.17
+            },
+            {
+              "id": "secondaryStorage",
+              "label": "Secondary storage",
+              "group": "margins",
+              "cents": 39.0
+            },
+            {
+              "id": "secondaryDistribution",
+              "label": "Secondary distribution",
+              "group": "margins",
+              "cents": 19.1
+            },
+            {
+              "id": "slateLevy",
+              "label": "Slate levy (pays back months when the price was set too low)",
+              "group": "taxes",
+              "cents": 157.74
+            }
+          ]
+        }
+      }
+    },
+    {
+      "month": "2026-07",
+      "products": {
+        "petrol95": {
+          "total": 2610.2,
+          "elements": [
+            {
+              "id": "basicFuelPrice",
+              "label": "Basic fuel price (the import cost)",
+              "group": "import",
+              "cents": 1307.13
+            },
+            {
+              "id": "fuelLevy",
+              "label": "General fuel levy (fuel tax)",
+              "group": "taxes",
+              "cents": 429.0
+            },
+            {
+              "id": "customsExcise",
+              "label": "Customs and excise duty",
+              "group": "taxes",
+              "cents": 4.0
+            },
+            {
+              "id": "equalisationFund",
+              "label": "Equalisation fund levy",
+              "group": "taxes",
+              "cents": 0.0
+            },
+            {
+              "id": "rafLevy",
+              "label": "Road Accident Fund levy",
+              "group": "taxes",
+              "cents": 225.0
+            },
+            {
+              "id": "transport",
+              "label": "Transport to Gauteng",
+              "group": "transport",
+              "cents": 91.1
+            },
+            {
+              "id": "pipelinesLevy",
+              "label": "Petroleum pipelines levy",
+              "group": "taxes",
+              "cents": 0.33
+            },
+            {
+              "id": "wholesaleMargin",
+              "label": "Wholesale margin",
+              "group": "margins",
+              "cents": 66.5
+            },
+            {
+              "id": "secondaryStorage",
+              "label": "Secondary storage",
+              "group": "margins",
+              "cents": 39.0
+            },
+            {
+              "id": "secondaryDistribution",
+              "label": "Secondary distribution",
+              "group": "margins",
+              "cents": 19.1
+            },
+            {
+              "id": "retailMargin",
+              "label": "Retail margin (filling station)",
+              "group": "margins",
+              "cents": 315.1
+            },
+            {
+              "id": "slateLevy",
+              "label": "Slate levy (pays back months when the price was set too low)",
+              "group": "taxes",
+              "cents": 113.94
+            },
+            {
+              "id": "delivery",
+              "label": "Delivery cost",
+              "group": "transport",
+              "cents": 0.0
+            }
+          ]
+        },
+        "diesel500ppm": {
+          "total": 2478.77,
+          "elements": [
+            {
+              "id": "basicFuelPrice",
+              "label": "Basic fuel price (the import cost)",
+              "group": "import",
+              "cents": 1470.63
+            },
+            {
+              "id": "fuelLevy",
+              "label": "General fuel levy (fuel tax)",
+              "group": "taxes",
+              "cents": 416.0
+            },
+            {
+              "id": "customsExcise",
+              "label": "Customs and excise duty",
+              "group": "taxes",
+              "cents": 4.0
+            },
+            {
+              "id": "tracerDye",
+              "label": "Tracer dye levy",
+              "group": "taxes",
+              "cents": 0.5
+            },
+            {
+              "id": "pipelinesLevy",
+              "label": "Petroleum pipelines levy",
+              "group": "taxes",
+              "cents": 0.33
+            },
+            {
+              "id": "rafLevy",
+              "label": "Road Accident Fund levy",
+              "group": "taxes",
+              "cents": 225.0
+            },
+            {
+              "id": "transport",
+              "label": "Transport to Gauteng",
+              "group": "transport",
+              "cents": 91.1
+            },
+            {
+              "id": "wholesaleMargin",
+              "label": "Wholesale margin",
+              "group": "margins",
+              "cents": 99.17
+            },
+            {
+              "id": "secondaryStorage",
+              "label": "Secondary storage",
+              "group": "margins",
+              "cents": 39.0
+            },
+            {
+              "id": "secondaryDistribution",
+              "label": "Secondary distribution",
+              "group": "margins",
+              "cents": 19.1
+            },
+            {
+              "id": "slateLevy",
+              "label": "Slate levy (pays back months when the price was set too low)",
+              "group": "taxes",
+              "cents": 113.94
+            }
+          ]
+        },
+        "diesel50ppm": {
+          "total": 2517.17,
+          "elements": [
+            {
+              "id": "basicFuelPrice",
+              "label": "Basic fuel price (the import cost)",
+              "group": "import",
+              "cents": 1509.03
+            },
+            {
+              "id": "fuelLevy",
+              "label": "General fuel levy (fuel tax)",
+              "group": "taxes",
+              "cents": 416.0
+            },
+            {
+              "id": "customsExcise",
+              "label": "Customs and excise duty",
+              "group": "taxes",
+              "cents": 4.0
+            },
+            {
+              "id": "tracerDye",
+              "label": "Tracer dye levy",
+              "group": "taxes",
+              "cents": 0.5
+            },
+            {
+              "id": "pipelinesLevy",
+              "label": "Petroleum pipelines levy",
+              "group": "taxes",
+              "cents": 0.33
+            },
+            {
+              "id": "rafLevy",
+              "label": "Road Accident Fund levy",
+              "group": "taxes",
+              "cents": 225.0
+            },
+            {
+              "id": "transport",
+              "label": "Transport to Gauteng",
+              "group": "transport",
+              "cents": 91.1
+            },
+            {
+              "id": "wholesaleMargin",
+              "label": "Wholesale margin",
+              "group": "margins",
+              "cents": 99.17
+            },
+            {
+              "id": "secondaryStorage",
+              "label": "Secondary storage",
+              "group": "margins",
+              "cents": 39.0
+            },
+            {
+              "id": "secondaryDistribution",
+              "label": "Secondary distribution",
+              "group": "margins",
+              "cents": 19.1
+            },
+            {
+              "id": "slateLevy",
+              "label": "Slate levy (pays back months when the price was set too low)",
+              "group": "taxes",
+              "cents": 113.94
+            }
+          ]
+        }
+      }
+    },
+    {
+      "month": "2026-08",
+      "products": {
+        "petrol95": {
+          "total": 2558.2,
+          "elements": [
+            {
+              "id": "basicFuelPrice",
+              "label": "Basic fuel price (the import cost)",
+              "group": "import",
+              "cents": 1307.69
+            },
+            {
+              "id": "fuelLevy",
+              "label": "General fuel levy (fuel tax)",
+              "group": "taxes",
+              "cents": 429.0
+            },
+            {
+              "id": "customsExcise",
+              "label": "Customs and excise duty",
+              "group": "taxes",
+              "cents": 4.0
+            },
+            {
+              "id": "equalisationFund",
+              "label": "Equalisation fund levy",
+              "group": "taxes",
+              "cents": 0.0
+            },
+            {
+              "id": "rafLevy",
+              "label": "Road Accident Fund levy",
+              "group": "taxes",
+              "cents": 225.0
+            },
+            {
+              "id": "transport",
+              "label": "Transport to Gauteng",
+              "group": "transport",
+              "cents": 91.1
+            },
+            {
+              "id": "pipelinesLevy",
+              "label": "Petroleum pipelines levy",
+              "group": "taxes",
+              "cents": 0.33
+            },
+            {
+              "id": "wholesaleMargin",
+              "label": "Wholesale margin",
+              "group": "margins",
+              "cents": 66.5
+            },
+            {
+              "id": "secondaryStorage",
+              "label": "Secondary storage",
+              "group": "margins",
+              "cents": 39.0
+            },
+            {
+              "id": "secondaryDistribution",
+              "label": "Secondary distribution",
+              "group": "margins",
+              "cents": 19.1
+            },
+            {
+              "id": "retailMargin",
+              "label": "Retail margin (filling station)",
+              "group": "margins",
+              "cents": 315.1
+            },
+            {
+              "id": "slateLevy",
+              "label": "Slate levy (pays back months when the price was set too low)",
+              "group": "taxes",
+              "cents": 61.38
+            },
+            {
+              "id": "delivery",
+              "label": "Delivery cost",
+              "group": "transport",
+              "cents": 0.0
+            }
+          ]
+        },
+        "diesel500ppm": {
+          "total": 2617.21,
+          "elements": [
+            {
+              "id": "basicFuelPrice",
+              "label": "Basic fuel price (the import cost)",
+              "group": "import",
+              "cents": 1661.63
+            },
+            {
+              "id": "fuelLevy",
+              "label": "General fuel levy (fuel tax)",
+              "group": "taxes",
+              "cents": 416.0
+            },
+            {
+              "id": "customsExcise",
+              "label": "Customs and excise duty",
+              "group": "taxes",
+              "cents": 4.0
+            },
+            {
+              "id": "tracerDye",
+              "label": "Tracer dye levy",
+              "group": "taxes",
+              "cents": 0.5
+            },
+            {
+              "id": "pipelinesLevy",
+              "label": "Petroleum pipelines levy",
+              "group": "taxes",
+              "cents": 0.33
+            },
+            {
+              "id": "rafLevy",
+              "label": "Road Accident Fund levy",
+              "group": "taxes",
+              "cents": 225.0
+            },
+            {
+              "id": "transport",
+              "label": "Transport to Gauteng",
+              "group": "transport",
+              "cents": 91.1
+            },
+            {
+              "id": "wholesaleMargin",
+              "label": "Wholesale margin",
+              "group": "margins",
+              "cents": 99.17
+            },
+            {
+              "id": "secondaryStorage",
+              "label": "Secondary storage",
+              "group": "margins",
+              "cents": 39.0
+            },
+            {
+              "id": "secondaryDistribution",
+              "label": "Secondary distribution",
+              "group": "margins",
+              "cents": 19.1
+            },
+            {
+              "id": "slateLevy",
+              "label": "Slate levy (pays back months when the price was set too low)",
+              "group": "taxes",
+              "cents": 61.38
+            }
+          ]
+        },
+        "diesel50ppm": {
+          "total": 2640.61,
+          "elements": [
+            {
+              "id": "basicFuelPrice",
+              "label": "Basic fuel price (the import cost)",
+              "group": "import",
+              "cents": 1685.03
+            },
+            {
+              "id": "fuelLevy",
+              "label": "General fuel levy (fuel tax)",
+              "group": "taxes",
+              "cents": 416.0
+            },
+            {
+              "id": "customsExcise",
+              "label": "Customs and excise duty",
+              "group": "taxes",
+              "cents": 4.0
+            },
+            {
+              "id": "tracerDye",
+              "label": "Tracer dye levy",
+              "group": "taxes",
+              "cents": 0.5
+            },
+            {
+              "id": "pipelinesLevy",
+              "label": "Petroleum pipelines levy",
+              "group": "taxes",
+              "cents": 0.33
+            },
+            {
+              "id": "rafLevy",
+              "label": "Road Accident Fund levy",
+              "group": "taxes",
+              "cents": 225.0
+            },
+            {
+              "id": "transport",
+              "label": "Transport to Gauteng",
+              "group": "transport",
+              "cents": 91.1
+            },
+            {
+              "id": "wholesaleMargin",
+              "label": "Wholesale margin",
+              "group": "margins",
+              "cents": 99.17
+            },
+            {
+              "id": "secondaryStorage",
+              "label": "Secondary storage",
+              "group": "margins",
+              "cents": 39.0
+            },
+            {
+              "id": "secondaryDistribution",
+              "label": "Secondary distribution",
+              "group": "margins",
+              "cents": 19.1
+            },
+            {
+              "id": "slateLevy",
+              "label": "Slate levy (pays back months when the price was set too low)",
+              "group": "taxes",
+              "cents": 61.38
+            }
+          ]
+        }
+      }
+    },
+    {
+      "month": "2026-09",
+      "products": {
+        "petrol95": {
+          "total": 2692.2,
+          "elements": [
+            {
+              "id": "basicFuelPrice",
+              "label": "Basic fuel price (the import cost)",
+              "group": "import",
+              "cents": 1414.89
+            },
+            {
+              "id": "fuelLevy",
+              "label": "General fuel levy (fuel tax)",
+              "group": "taxes",
+              "cents": 429.0
+            },
+            {
+              "id": "customsExcise",
+              "label": "Customs and excise duty",
+              "group": "taxes",
+              "cents": 4.0
+            },
+            {
+              "id": "equalisationFund",
+              "label": "Equalisation fund levy",
+              "group": "taxes",
+              "cents": 0.0
+            },
+            {
+              "id": "rafLevy",
+              "label": "Road Accident Fund levy",
+              "group": "taxes",
+              "cents": 225.0
+            },
+            {
+              "id": "transport",
+              "label": "Transport to Gauteng",
+              "group": "transport",
+              "cents": 91.1
+            },
+            {
+              "id": "pipelinesLevy",
+              "label": "Petroleum pipelines levy",
+              "group": "taxes",
+              "cents": 0.33
+            },
+            {
+              "id": "wholesaleMargin",
+              "label": "Wholesale margin",
+              "group": "margins",
+              "cents": 66.5
+            },
+            {
+              "id": "secondaryStorage",
+              "label": "Secondary storage",
+              "group": "margins",
+              "cents": 39.0
+            },
+            {
+              "id": "secondaryDistribution",
+              "label": "Secondary distribution",
+              "group": "margins",
+              "cents": 19.1
+            },
+            {
+              "id": "retailMargin",
+              "label": "Retail margin (filling station)",
+              "group": "margins",
+              "cents": 320.0
+            },
+            {
+              "id": "slateLevy",
+              "label": "Slate levy (pays back months when the price was set too low)",
+              "group": "taxes",
+              "cents": 83.28
+            },
+            {
+              "id": "delivery",
+              "label": "Delivery cost",
+              "group": "transport",
+              "cents": 0.0
+            }
+          ]
+        },
+        "diesel500ppm": {
+          "total": 2911.11,
+          "elements": [
+            {
+              "id": "basicFuelPrice",
+              "label": "Basic fuel price (the import cost)",
+              "group": "import",
+              "cents": 1933.63
+            },
+            {
+              "id": "fuelLevy",
+              "label": "General fuel levy (fuel tax)",
+              "group": "taxes",
+              "cents": 416.0
+            },
+            {
+              "id": "customsExcise",
+              "label": "Customs and excise duty",
+              "group": "taxes",
+              "cents": 4.0
+            },
+            {
+              "id": "tracerDye",
+              "label": "Tracer dye levy",
+              "group": "taxes",
+              "cents": 0.5
+            },
+            {
+              "id": "pipelinesLevy",
+              "label": "Petroleum pipelines levy",
+              "group": "taxes",
+              "cents": 0.33
+            },
+            {
+              "id": "rafLevy",
+              "label": "Road Accident Fund levy",
+              "group": "taxes",
+              "cents": 225.0
+            },
+            {
+              "id": "transport",
+              "label": "Transport to Gauteng",
+              "group": "transport",
+              "cents": 91.1
+            },
+            {
+              "id": "wholesaleMargin",
+              "label": "Wholesale margin",
+              "group": "margins",
+              "cents": 99.17
+            },
+            {
+              "id": "secondaryStorage",
+              "label": "Secondary storage",
+              "group": "margins",
+              "cents": 39.0
+            },
+            {
+              "id": "secondaryDistribution",
+              "label": "Secondary distribution",
+              "group": "margins",
+              "cents": 19.1
+            },
+            {
+              "id": "slateLevy",
+              "label": "Slate levy (pays back months when the price was set too low)",
+              "group": "taxes",
+              "cents": 83.28
+            }
+          ]
+        },
+        "diesel50ppm": {
+          "total": 2955.51,
+          "elements": [
+            {
+              "id": "basicFuelPrice",
+              "label": "Basic fuel price (the import cost)",
+              "group": "import",
+              "cents": 1978.03
+            },
+            {
+              "id": "fuelLevy",
+              "label": "General fuel levy (fuel tax)",
+              "group": "taxes",
+              "cents": 416.0
+            },
+            {
+              "id": "customsExcise",
+              "label": "Customs and excise duty",
+              "group": "taxes",
+              "cents": 4.0
+            },
+            {
+              "id": "tracerDye",
+              "label": "Tracer dye levy",
+              "group": "taxes",
+              "cents": 0.5
+            },
+            {
+              "id": "pipelinesLevy",
+              "label": "Petroleum pipelines levy",
+              "group": "taxes",
+              "cents": 0.33
+            },
+            {
+              "id": "rafLevy",
+              "label": "Road Accident Fund levy",
+              "group": "taxes",
+              "cents": 225.0
+            },
+            {
+              "id": "transport",
+              "label": "Transport to Gauteng",
+              "group": "transport",
+              "cents": 91.1
+            },
+            {
+              "id": "wholesaleMargin",
+              "label": "Wholesale margin",
+              "group": "margins",
+              "cents": 99.17
+            },
+            {
+              "id": "secondaryStorage",
+              "label": "Secondary storage",
+              "group": "margins",
+              "cents": 39.0
+            },
+            {
+              "id": "secondaryDistribution",
+              "label": "Secondary distribution",
+              "group": "margins",
+              "cents": 19.1
+            },
+            {
+              "id": "slateLevy",
+              "label": "Slate levy (pays back months when the price was set too low)",
+              "group": "taxes",
+              "cents": 83.28
+            }
+          ]
+        }
+      }
+    },
+    {
+      "month": "2026-10",
+      "products": {
+        "petrol95": {
+          "total": 3025.2,
+          "elements": [
+            {
+              "id": "basicFuelPrice",
+              "label": "Basic fuel price (the import cost)",
+              "group": "import",
+              "cents": 1743.51
+            },
+            {
+              "id": "fuelLevy",
+              "label": "General fuel levy (fuel tax)",
+              "group": "taxes",
+              "cents": 429.0
+            },
+            {
+              "id": "customsExcise",
+              "label": "Customs and excise duty",
+              "group": "taxes",
+              "cents": 4.0
+            },
+            {
+              "id": "equalisationFund",
+              "label": "Equalisation fund levy",
+              "group": "taxes",
+              "cents": 0.0
+            },
+            {
+              "id": "rafLevy",
+              "label": "Road Accident Fund levy",
+              "group": "taxes",
+              "cents": 225.0
+            },
+            {
+              "id": "transport",
+              "label": "Transport to Gauteng",
+              "group": "transport",
+              "cents": 91.1
+            },
+            {
+              "id": "pipelinesLevy",
+              "label": "Petroleum pipelines levy",
+              "group": "taxes",
+              "cents": 0.33
+            },
+            {
+              "id": "wholesaleMargin",
+              "label": "Wholesale margin",
+              "group": "margins",
+              "cents": 66.5
+            },
+            {
+              "id": "secondaryStorage",
+              "label": "Secondary storage",
+              "group": "margins",
+              "cents": 39.0
+            },
+            {
+              "id": "secondaryDistribution",
+              "label": "Secondary distribution",
+              "group": "margins",
+              "cents": 19.1
+            },
+            {
+              "id": "retailMargin",
+              "label": "Retail margin (filling station)",
+              "group": "margins",
+              "cents": 320.0
+            },
+            {
+              "id": "slateLevy",
+              "label": "Slate levy (pays back months when the price was set too low)",
+              "group": "taxes",
+              "cents": 87.66
+            },
+            {
+              "id": "delivery",
+              "label": "Delivery cost",
+              "group": "transport",
+              "cents": 0.0
+            }
+          ]
+        },
+        "diesel500ppm": {
+          "total": 3195.49,
+          "elements": [
+            {
+              "id": "basicFuelPrice",
+              "label": "Basic fuel price (the import cost)",
+              "group": "import",
+              "cents": 2213.63
+            },
+            {
+              "id": "fuelLevy",
+              "label": "General fuel levy (fuel tax)",
+              "group": "taxes",
+              "cents": 416.0
+            },
+            {
+              "id": "customsExcise",
+              "label": "Customs and excise duty",
+              "group": "taxes",
+              "cents": 4.0
+            },
+            {
+              "id": "tracerDye",
+              "label": "Tracer dye levy",
+              "group": "taxes",
+              "cents": 0.5
+            },
+            {
+              "id": "pipelinesLevy",
+              "label": "Petroleum pipelines levy",
+              "group": "taxes",
+              "cents": 0.33
+            },
+            {
+              "id": "rafLevy",
+              "label": "Road Accident Fund levy",
+              "group": "taxes",
+              "cents": 225.0
+            },
+            {
+              "id": "transport",
+              "label": "Transport to Gauteng",
+              "group": "transport",
+              "cents": 91.1
+            },
+            {
+              "id": "wholesaleMargin",
+              "label": "Wholesale margin",
+              "group": "margins",
+              "cents": 99.17
+            },
+            {
+              "id": "secondaryStorage",
+              "label": "Secondary storage",
+              "group": "margins",
+              "cents": 39.0
+            },
+            {
+              "id": "secondaryDistribution",
+              "label": "Secondary distribution",
+              "group": "margins",
+              "cents": 19.1
+            },
+            {
+              "id": "slateLevy",
+              "label": "Slate levy (pays back months when the price was set too low)",
+              "group": "taxes",
+              "cents": 87.66
+            }
+          ]
+        },
+        "diesel50ppm": {
+          "total": 3279.89,
+          "elements": [
+            {
+              "id": "basicFuelPrice",
+              "label": "Basic fuel price (the import cost)",
+              "group": "import",
+              "cents": 2298.03
+            },
+            {
+              "id": "fuelLevy",
+              "label": "General fuel levy (fuel tax)",
+              "group": "taxes",
+              "cents": 416.0
+            },
+            {
+              "id": "customsExcise",
+              "label": "Customs and excise duty",
+              "group": "taxes",
+              "cents": 4.0
+            },
+            {
+              "id": "tracerDye",
+              "label": "Tracer dye levy",
+              "group": "taxes",
+              "cents": 0.5
+            },
+            {
+              "id": "pipelinesLevy",
+              "label": "Petroleum pipelines levy",
+              "group": "taxes",
+              "cents": 0.33
+            },
+            {
+              "id": "rafLevy",
+              "label": "Road Accident Fund levy",
+              "group": "taxes",
+              "cents": 225.0
+            },
+            {
+              "id": "transport",
+              "label": "Transport to Gauteng",
+              "group": "transport",
+              "cents": 91.1
+            },
+            {
+              "id": "wholesaleMargin",
+              "label": "Wholesale margin",
+              "group": "margins",
+              "cents": 99.17
+            },
+            {
+              "id": "secondaryStorage",
+              "label": "Secondary storage",
+              "group": "margins",
+              "cents": 39.0
+            },
+            {
+              "id": "secondaryDistribution",
+              "label": "Secondary distribution",
+              "group": "margins",
+              "cents": 19.1
+            },
+            {
+              "id": "slateLevy",
+              "label": "Slate levy (pays back months when the price was set too low)",
+              "group": "taxes",
+              "cents": 87.66
+            }
+          ]
+        }
+      }
+    },
+    {
+      "month": "2026-11",
+      "products": {
+        "petrol95": {
+          "total": 3024.2,
+          "elements": [
+            {
+              "id": "basicFuelPrice",
+              "label": "Basic fuel price (the import cost)",
+              "group": "import",
+              "cents": 1844.33
+            },
+            {
+              "id": "fuelLevy",
+              "label": "General fuel levy (fuel tax)",
+              "group": "taxes",
+              "cents": 279.0
+            },
+            {
+              "id": "customsExcise",
+              "label": "Customs and excise duty",
+              "group": "taxes",
+              "cents": 4.0
+            },
+            {
+              "id": "equalisationFund",
+              "label": "Equalisation fund levy",
+              "group": "taxes",
+              "cents": 0.0
+            },
+            {
+              "id": "rafLevy",
+              "label": "Road Accident Fund levy",
+              "group": "taxes",
+              "cents": 225.0
+            },
+            {
+              "id": "transport",
+              "label": "Transport to Gauteng",
+              "group": "transport",
+              "cents": 91.1
+            },
+            {
+              "id": "pipelinesLevy",
+              "label": "Petroleum pipelines levy",
+              "group": "taxes",
+              "cents": 0.33
+            },
+            {
+              "id": "wholesaleMargin",
+              "label": "Wholesale margin",
+              "group": "margins",
+              "cents": 66.5
+            },
+            {
+              "id": "secondaryStorage",
+              "label": "Secondary storage",
+              "group": "margins",
+              "cents": 39.0
+            },
+            {
+              "id": "secondaryDistribution",
+              "label": "Secondary distribution",
+              "group": "margins",
+              "cents": 19.1
+            },
+            {
+              "id": "retailMargin",
+              "label": "Retail margin (filling station)",
+              "group": "margins",
+              "cents": 320.0
+            },
+            {
+              "id": "slateLevy",
+              "label": "Slate levy (pays back months when the price was set too low)",
+              "group": "taxes",
+              "cents": 135.84
+            },
+            {
+              "id": "delivery",
+              "label": "Delivery cost",
+              "group": "transport",
+              "cents": 0.0
+            }
+          ]
+        },
+        "diesel500ppm": {
+          "total": 3085.67,
+          "elements": [
+            {
+              "id": "basicFuelPrice",
+              "label": "Basic fuel price (the import cost)",
+              "group": "import",
+              "cents": 2355.63
+            },
+            {
+              "id": "fuelLevy",
+              "label": "General fuel levy (fuel tax)",
+              "group": "taxes",
+              "cents": 116.0
+            },
+            {
+              "id": "customsExcise",
+              "label": "Customs and excise duty",
+              "group": "taxes",
+              "cents": 4.0
+            },
+            {
+              "id": "tracerDye",
+              "label": "Tracer dye levy",
+              "group": "taxes",
+              "cents": 0.5
+            },
+            {
+              "id": "pipelinesLevy",
+              "label": "Petroleum pipelines levy",
+              "group": "taxes",
+              "cents": 0.33
+            },
+            {
+              "id": "rafLevy",
+              "label": "Road Accident Fund levy",
+              "group": "taxes",
+              "cents": 225.0
+            },
+            {
+              "id": "transport",
+              "label": "Transport to Gauteng",
+              "group": "transport",
+              "cents": 91.1
+            },
+            {
+              "id": "wholesaleMargin",
+              "label": "Wholesale margin",
+              "group": "margins",
+              "cents": 99.17
+            },
+            {
+              "id": "secondaryStorage",
+              "label": "Secondary storage",
+              "group": "margins",
+              "cents": 39.0
+            },
+            {
+              "id": "secondaryDistribution",
+              "label": "Secondary distribution",
+              "group": "margins",
+              "cents": 19.1
+            },
+            {
+              "id": "slateLevy",
+              "label": "Slate levy (pays back months when the price was set too low)",
+              "group": "taxes",
+              "cents": 135.84
+            }
+          ]
+        },
+        "diesel50ppm": {
+          "total": 3160.07,
+          "elements": [
+            {
+              "id": "basicFuelPrice",
+              "label": "Basic fuel price (the import cost)",
+              "group": "import",
+              "cents": 2430.03
+            },
+            {
+              "id": "fuelLevy",
+              "label": "General fuel levy (fuel tax)",
+              "group": "taxes",
+              "cents": 116.0
+            },
+            {
+              "id": "customsExcise",
+              "label": "Customs and excise duty",
+              "group": "taxes",
+              "cents": 4.0
+            },
+            {
+              "id": "tracerDye",
+              "label": "Tracer dye levy",
+              "group": "taxes",
+              "cents": 0.5
+            },
+            {
+              "id": "pipelinesLevy",
+              "label": "Petroleum pipelines levy",
+              "group": "taxes",
+              "cents": 0.33
+            },
+            {
+              "id": "rafLevy",
+              "label": "Road Accident Fund levy",
+              "group": "taxes",
+              "cents": 225.0
+            },
+            {
+              "id": "transport",
+              "label": "Transport to Gauteng",
+              "group": "transport",
+              "cents": 91.1
+            },
+            {
+              "id": "wholesaleMargin",
+              "label": "Wholesale margin",
+              "group": "margins",
+              "cents": 99.17
+            },
+            {
+              "id": "secondaryStorage",
+              "label": "Secondary storage",
+              "group": "margins",
+              "cents": 39.0
+            },
+            {
+              "id": "secondaryDistribution",
+              "label": "Secondary distribution",
+              "group": "margins",
+              "cents": 19.1
+            },
+            {
+              "id": "slateLevy",
+              "label": "Slate levy (pays back months when the price was set too low)",
+              "group": "taxes",
+              "cents": 135.84
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

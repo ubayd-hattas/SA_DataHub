@@ -48,6 +48,10 @@ jobs:
           python -m pip install --quiet pytest
           python -m pytest -q validation/tests
 
+      - name: Fuel script tests
+        # Made-up tables only: the DMPR and CEF files are not in the repository.
+        run: python -m pytest -q scripts/fuel/tests
+
       - name: Build
         # No DATA_SOURCE set, so the site builds from the JSON datasets.
         run: npm run build

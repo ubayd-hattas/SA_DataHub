@@ -1,4 +1,3 @@
-import { FuelStaleNote } from '@/components/fuel/FuelStaleNote'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Breadcrumbs } from '@/components/seo/Breadcrumbs'
@@ -7,6 +6,8 @@ import { FuelCalculator } from '@/components/fuel/FuelCalculator'
 import { FuelChart } from '@/components/fuel/FuelChart'
 import { FuelPriceTable } from '@/components/fuel/FuelPriceTable'
 import { FuelSelector } from '@/components/fuel/FuelSelector'
+import { FuelBreakdown } from '@/components/fuel/FuelBreakdown'
+import { FuelStaleNote } from '@/components/fuel/FuelStaleNote'
 import { NumberBlock } from '@/components/editorial/NumberBlock'
 import { Column, PageHeader, Section, linkClass } from '@/components/editorial/Section'
 import { SourceLine } from '@/components/editorial/SourceLine'
@@ -141,6 +142,10 @@ export default async function FuelPage({ searchParams }: FuelPageProps) {
           initialZone={selection.zone}
         />
       </section>
+
+      <Section id="breakdown" title="What a litre is made of">
+        <FuelBreakdown product={selection.product} zone={selection.zone} litres={validLitres(params)} />
+      </Section>
 
       <Section id="all-products" title={`Every product, ${head.month}`}>
         <FuelPriceTable month={head.month} />
