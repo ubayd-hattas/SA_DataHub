@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useId, useState, type FormEvent } from 'react'
+import { useRouter } from 'next/navigation'
 import { Link2, MessageCircle } from 'lucide-react'
 import { FUEL_PRODUCTS, FUEL_ZONES, type FuelProduct, type FuelZone } from '@/lib/fuel'
 import { calculateFuelCost, parseLitres, LITRES_ERROR } from '@/lib/fuel-calc'
@@ -44,10 +45,17 @@ export function FuelCalculator({ initialLitres, initialProduct, initialZone }: F
 
   const href = ok ? calcHref({ litres: ok.litres, product, zone }) : null
 
-  // replaceState, not a navigation: typing should not add history entries or reload the page.
+  const router = useRouter()
+  // A soft replace, after a short pause in typing: the headline, chart and
+  // selector links above re-render for the same product, zone and litres, and
+  // no history entries are added. The hash is kept so /fuel#series still works.
   useEffect(() => {
-    if (href) window.history.replaceState(null, '', href)
-  }, [href])
+    if (!href) return
+    const current = `${window.location.pathname}${window.location.search}`
+    if (current === href) return
+    const timer = window.setTimeout(() => router.replace(`${href}${window.location.hash}`, { scroll: false }), 400)
+    return () => window.clearTimeout(timer)
+  }, [href, router])
 
   async function copyLink() {
     if (!href) return
