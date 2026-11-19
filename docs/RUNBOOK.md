@@ -175,7 +175,9 @@ Add its id to `statIds` in `src/lib/registry.ts` and to `GOOD_DIRECTION_BY_STAT`
 
 **Cadence:** one adjustment a month, taking effect on the first Wednesday. The DMPR announces it one or two days before. Target: published within 2 working days of the announcement.
 
-**Never:** make a script request to a DMPR page or file. Download by hand in a browser. Do not commit the downloaded files (`sources/releases/` is ignored by git).
+**Never:** script a download of a DMPR file. Download by hand in a browser. Do not commit the downloaded files (`sources/releases/` is ignored by git). The one automated request is the watcher below, which reads one page.
+
+**How you hear about it:** `.github/workflows/fuel-official.yml` runs at 16:00 South African time from the 25th of each month to the 7th of the next. It reads the DMPR `robots.txt` and the Fuel Prices page (honest User-Agent), and opens or updates one issue labelled `fuel-prices` when the page lists an adjustment newer than the latest month in `prices.json`. It also opens the issue if the page no longer has headings it can read, so a layout change is not silent. It never enters prices. Run it by hand with `node scripts/fuel-official-check.mjs`.
 
 **Files involved**
 
