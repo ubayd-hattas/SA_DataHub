@@ -29,10 +29,10 @@ export const metadata: Metadata = buildPageMetadata({
 
 function automationBadge(level: AutomationLevel) {
   const map: Record<AutomationLevel, { label: string; className: string }> = {
-    auto:       { label: 'Updated automatically',  className: 'bg-brand-50 text-brand-700 dark:bg-brand-950/30 dark:text-brand-300' },
-    'semi-auto':{ label: 'Script, checked by hand', className: 'bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-300' },
-    manual:     { label: 'Entered by hand', className: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300' },
-    static:     { label: 'Does not change', className: 'bg-teal-50 text-teal-700 dark:bg-teal-950/30 dark:text-teal-300' },
+    auto:       { label: 'Updated automatically',  className: 'bg-subtle text-accent' },
+    'semi-auto':{ label: 'Script, checked by hand', className: 'bg-subtle text-warn' },
+    manual:     { label: 'Entered by hand', className: 'bg-subtle text-muted' },
+    static:     { label: 'Does not change', className: 'bg-subtle text-muted' },
   }
   const { label, className } = map[level]
   return (
@@ -44,8 +44,8 @@ function automationBadge(level: AutomationLevel) {
 
 function freshnessIcon(status: ReturnType<typeof getEntryFreshness>) {
   switch (status) {
-    case 'fresh':  return <CheckCircle size={14} className="text-brand-600 dark:text-brand-400" />
-    case 'recent': return <Clock size={14} className="text-amber-500 dark:text-amber-400" />
+    case 'fresh':  return <CheckCircle size={14} className="text-accent" />
+    case 'recent': return <Clock size={14} className="text-warn" />
     case 'aging':  return <AlertTriangle size={14} className="text-orange-500 dark:text-orange-400" />
     case 'stale':  return <AlertCircle size={14} className="text-red-500 dark:text-red-400" />
   }
@@ -62,18 +62,18 @@ function DatasetDownloadCard({ entry }: { entry: DatasetRegistryEntry }) {
   const statCount   = isProvinces ? provinces.length : getEntryStatCount(entry)
 
   return (
-    <div className="card flex flex-col gap-4 p-5">
+    <div className="flex flex-col gap-4 rounded-lg border border-rule bg-paper p-5">
       {/* Header */}
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <h3 className="font-semibold text-slate-900 dark:text-white">{entry.label}</h3>
-          <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">{entry.description}</p>
+          <h3 className="font-semibold text-ink">{entry.label}</h3>
+          <p className="mt-0.5 text-sm text-muted">{entry.description}</p>
         </div>
         {automationBadge(entry.automationLevel)}
       </div>
 
       {/* Meta row */}
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-slate-500 dark:text-slate-400">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-muted">
         {/* Freshness + last updated */}
         <span className="flex items-center gap-1">
           {freshnessIcon(freshness)}
@@ -134,7 +134,7 @@ function DatasetDownloadCard({ entry }: { entry: DatasetRegistryEntry }) {
           href={entry.sourceUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-0.5 text-slate-600 hover:text-brand-600 dark:text-slate-300 dark:hover:text-brand-400"
+          className="inline-flex items-center gap-0.5 text-muted hover:text-accent"
         >
           {entry.sourceName}
           <ExternalLink size={10} />
@@ -201,31 +201,31 @@ export default function DownloadsPage() {
         {/* Page header */}
         <div className="mb-8">
           <div className="mb-3 flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-100 dark:bg-brand-950/40">
-              <Download size={22} className="text-brand-600 dark:text-brand-400" />
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-subtle">
+              <Download size={22} className="text-accent" />
             </div>
             <div>
               <h1 className="heading-display text-3xl font-semibold">Data Downloads</h1>
-              <p className="text-slate-500 dark:text-slate-400">
+              <p className="text-muted">
                 Download any SA Data Hub dataset as a CSV file — free, no sign-up required.
               </p>
             </div>
           </div>
 
           {/* Summary row */}
-          <div className="mt-5 flex flex-wrap gap-x-6 gap-y-2 text-sm text-slate-500 dark:text-slate-400">
+          <div className="mt-5 flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted">
             <span>
-              <strong className="font-semibold text-slate-700 dark:text-slate-200">{datasetRegistry.length}</strong>{' '}
+              <strong className="font-semibold text-ink">{datasetRegistry.length}</strong>{' '}
               datasets available
             </span>
             <span>
-              <strong className="font-semibold text-slate-700 dark:text-slate-200">{totalStats}</strong>{' '}
+              <strong className="font-semibold text-ink">{totalStats}</strong>{' '}
               total indicators
             </span>
             {mostRecentUpdate && (
               <span>
                 Most recent update:{' '}
-                <strong className="font-semibold text-slate-700 dark:text-slate-200">
+                <strong className="font-semibold text-ink">
                   {formatDate(mostRecentUpdate)}
                 </strong>
               </span>
@@ -234,11 +234,11 @@ export default function DownloadsPage() {
         </div>
 
         {/* Explainer banner */}
-        <div className="mb-8 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-300">
+        <div className="mb-8 rounded-xl border border-rule bg-subtle px-4 py-3 text-sm text-muted">
           CSV files include all available time-series data for each indicator, plus source attribution headers.
           Data is sourced from official South African government bodies and updated on the frequency shown on each card.
           Visit the{' '}
-          <Link href="/methodology" className="font-medium text-brand-600 hover:underline dark:text-brand-400">
+          <Link href="/methodology" className="font-medium text-accent hover:underline">
             Methodology page
           </Link>{' '}
           for full source documentation.
@@ -255,7 +255,7 @@ export default function DownloadsPage() {
         <p className="mt-10 text-center text-xs text-muted">
           Data sourced from Statistics South Africa, the South African Reserve Bank, SAPS, and other official bodies.
           Not affiliated with any government department.
-          <Link href="/methodology" className="ml-1 hover:text-brand-600 dark:hover:text-brand-400">
+          <Link href="/methodology" className="ml-1 hover:text-accent">
             Full methodology →
           </Link>
         </p>
