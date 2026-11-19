@@ -44,6 +44,7 @@ export function buildLlmsTxt(): string {
     '## Guides',
     '',
     link('All data series', SERIES_PATH, 'every statistic with its page, CSV and JSON'),
+    link('API', '/api', 'read-only JSON at /api/v1: fuel prices since 2022, the price breakdown, and every series, each response with its source and terms'),
     link(fuelPageTitle(), FUEL_PATH, 'the official petrol price and the wholesale diesel and paraffin prices, inland and coastal, from the DMPR'),
     link('Why do the numbers disagree?', '/why-numbers-differ', 'census count vs mid-year estimate vs UN projection for population; the four Stats SA unemployment measures (LU1 to LU4)'),
     link('Glossary', '/glossary', "what the terms mean, with Stats SA's own definitions and page numbers"),
