@@ -3,7 +3,7 @@
     "description": "Every element of the inland (Gauteng) price per litre, as the DMPR lists it each month.",
     "publisher": "Department of Mineral and Petroleum Resources (DMPR)",
     "document": "Petrol Margins and Diesel Margins tables, November 2026 fuel price pack",
-    "url": "https://bit.ly/4sZwrAY",
+    "url": "https://www.dmpr.gov.za/Branches/Petroleum-Resources/Fuel-Prices",
     "released_on": "2026-11-03",
     "checked_on": "2026-11-19",
     "units": "South African cents per litre, exactly as printed",
@@ -30,12 +30,12 @@
       {
         "month": "2026-05",
         "product": "diesel500ppm",
-        "reason": "The DMPR breakdown table adds up to 92.07 cents more than the official May 2026 price. May 2026 had a published erratum, and the table may not have been corrected."
+        "reason": "The DMPR breakdown table adds up to 92.07 cents more than the official May 2026 price. The gap appears to be in the basic fuel price: it is the only cell that breaks the pattern of the other months."
       },
       {
         "month": "2026-05",
         "product": "diesel50ppm",
-        "reason": "The DMPR breakdown table adds up to 92.07 cents more than the official May 2026 price. May 2026 had a published erratum, and the table may not have been corrected."
+        "reason": "The DMPR breakdown table adds up to 92.07 cents more than the official May 2026 price. The gap appears to be in the basic fuel price: it is the only cell that breaks the pattern of the other months."
       }
     ]
   },
