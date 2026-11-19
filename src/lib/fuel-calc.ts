@@ -140,6 +140,12 @@ export type ShareQuery =
  * and the same range as the page, and anything the page would call an error
  * is an error here too (no clamping). Left out means the default.
  */
+/** The one query string for an answer's share image: litres, product, zone, in that order. */
+export function shareImageQuery(q: { litres: number; product: FuelProduct; zone: FuelZone }): string {
+  const product = FUEL_PRODUCTS.find((p) => p.id === q.product)!.slug
+  return new URLSearchParams({ litres: String(q.litres), product, zone: q.zone }).toString()
+}
+
 export function parseShareQuery(params: Record<string, string | undefined>): ShareQuery {
   let product: FuelProduct = 'petrol95'
   if (params.product !== undefined) {

@@ -1,6 +1,6 @@
 import { ImageResponse } from 'next/og'
 import { FUEL_PUBLISHER, latestAdjustment } from '@/lib/fuel'
-import { calculateFuelCost, parseShareQuery } from '@/lib/fuel-calc'
+import { calculateFuelCost, parseShareQuery, shareImageQuery } from '@/lib/fuel-calc'
 import { changeText, litresText, rands, selectionText, workingText } from '@/lib/fuel-calc-text'
 import { loadLogoDataUri, SHARE_COLORS, SHARE_IMAGE_SIZE, ShareFrame } from '@/lib/share-image'
 
@@ -10,13 +10,20 @@ const CACHE = 'public, max-age=86400, s-maxage=604800'
 /**
  * The share image for /fuel?litres=&product=&zone=, showing the cost.
  * Product and zone must be on the fixed lists and litres must be ones the
- * calculator accepts (1 to 1000, two decimals at most), so the route has a
- * small, fixed set of possible images. Anything else is a 400.
+ * calculator accepts (1 to 1000, two decimals at most). Anything else is a 400.
+ * Every answer has one address (litres, product, zone, in that order, as the
+ * page links it). Other spellings of the same answer, such as litres=045 or
+ * extra parameters, redirect to it, so each answer is drawn and cached once.
  */
 export async function GET(request: Request) {
-  const query = parseShareQuery(Object.fromEntries(new URL(request.url).searchParams))
+  const url = new URL(request.url)
+  const query = parseShareQuery(Object.fromEntries(url.searchParams))
   if (!query.ok) {
     return new Response(query.error, { status: 400, headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'public, max-age=3600' } })
+  }
+  const canonical = shareImageQuery(query)
+  if (url.search !== `?${canonical}`) {
+    return new Response(null, { status: 308, headers: { Location: `${url.pathname}?${canonical}`, 'Cache-Control': CACHE } })
   }
   const result = calculateFuelCost({ litres: query.litres, product: query.product, zone: query.zone })
   if (!result.ok) {
