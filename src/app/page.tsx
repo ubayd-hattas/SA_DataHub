@@ -13,16 +13,9 @@ import { MONEY_VALUE_PATH } from '@/lib/money-value'
 import { assertSiteSourced } from '@/lib/sourcing'
 import { HUB_PATH, HUB_TITLE } from '@/lib/census-hub'
 import { buildPageMetadata } from '@/lib/seo'
-import { ANSWERS_PATH, getAnswer } from '@/data/answers'
+import { ANSWERS_PATH } from '@/data/answers'
+import { homeQuestions } from '@/lib/home-questions'
 import { ELECTIONS_PATH } from '@/lib/elections'
-
-/** The four most searched questions (Search Console, 3 months to 23 October 2026). */
-const HOME_QUESTIONS = [
-  'how-many-municipalities-are-there-in-south-africa',
-  'which-province-is-a-municipality-in',
-  'how-many-people-live-in-the-metros',
-  'what-is-the-unemployment-rate-in-south-africa',
-].map((s) => getAnswer(s)!)
 
 const TITLE = "SA Data Hub: South Africa's official data, explained"
 
@@ -43,6 +36,7 @@ export default function HomePage() {
   // The homepage is static, so this fails `next build` on any unsourced statistic.
   assertSiteSourced()
   const headline = getHeadlineNumbers()
+  const questions = homeQuestions(headline)
 
   const municipalities: MunicipalityOption[] = getAllMunicipalities().map((m) => ({ id: m.id, name: m.name, province: m.provinceName }))
   const shortcuts = METRO_SHORTCUTS.map((id) => municipalities.find((m) => m.id === id)).filter((m): m is MunicipalityOption => !!m)
@@ -86,7 +80,32 @@ export default function HomePage() {
         </ul>
       </section>
 
-      {/* 2. Your area */}
+      {/* 2. The questions people search for, each with its number */}
+      <Section id="questions" title="Questions people ask">
+        <ul className="border-t border-ink">
+          {questions.map((q) => (
+            <li key={q.href} className="relative border-b border-rule hover:bg-subtle">
+              <div className="grid min-h-11 grid-cols-[1fr_auto] items-baseline gap-x-4 gap-y-1 px-1 py-4">
+                <Link
+                  href={q.href}
+                  className="font-medium text-ink after:absolute after:inset-0 focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-accent"
+                >
+                  {q.question}
+                </Link>
+                {q.value && <span className="text-right font-display text-h3 font-semibold tabular-nums text-ink">{q.value}</span>}
+                {q.detail && <span className="col-span-2 text-small text-muted">{q.detail}</span>}
+              </div>
+            </li>
+          ))}
+        </ul>
+        <p className="mt-4 text-small">
+          <Link href={ANSWERS_PATH} className={linkClass}>
+            All questions
+          </Link>
+        </p>
+      </Section>
+
+      {/* 3. Your area */}
       <section aria-label="Your area" className="border-t border-rule py-10">
         <div className="max-w-2xl">
           <FindMunicipality options={municipalities} shortcuts={shortcuts} />
@@ -104,7 +123,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 3. What changed this month */}
+      {/* 4. What changed this month */}
       <Section id="what-changed" title="What changed this month">
         <div className="grid gap-4 lg:grid-cols-2">
           {latestExplainers.map((e) => (
@@ -144,7 +163,7 @@ export default function HomePage() {
         </div>
       </Section>
 
-      {/* 4. The calculator, working on the page */}
+      {/* 5. The calculator, working on the page */}
       <Section id="money-worth" title="What was money worth?">
         <div className="max-w-2xl">
           <ValueCalculator />
@@ -159,25 +178,7 @@ export default function HomePage() {
         </div>
       </Section>
 
-      {/* Questions people ask: four links into the answers section */}
-      <Section id="questions" title="Questions people ask">
-        <ul className="grid gap-x-8 gap-y-3 sm:grid-cols-2">
-          {HOME_QUESTIONS.map((a) => (
-            <li key={a.slug}>
-              <Link href={`${ANSWERS_PATH}/${a.slug}`} className={linkClass}>
-                {a.question}
-              </Link>
-            </li>
-          ))}
-        </ul>
-        <p className="mt-4 text-small">
-          <Link href={ANSWERS_PATH} className={linkClass}>
-            All questions
-          </Link>
-        </p>
-      </Section>
-
-      {/* 5. The eight topics, each with its latest number */}
+      {/* 6. The topics, each with its latest number */}
       <Section id="topics" title="Topics">
         <ul className="border-t border-ink">
           {topics.map((t) => (
@@ -205,7 +206,7 @@ export default function HomePage() {
         </p>
       </Section>
 
-      {/* 6. Trust line */}
+      {/* 7. Trust line */}
       <p className="border-t border-rule pt-8 text-small text-muted">
         Every figure on SA Data Hub names its source and the date that source released it.{' '}
         <Link href="/methodology" className={linkClass}>
