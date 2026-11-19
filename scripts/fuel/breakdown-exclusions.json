@@ -1,0 +1,7 @@
+[
+  { "month": "2026-05", "product": "diesel500ppm", "reason": "The DMPR breakdown table adds up to 92.07 cents more than the official May 2026 price. May 2026 had a published erratum, and the table may not have been corrected." },
+  { "month": "2026-05", "product": "diesel50ppm", "reason": "The DMPR breakdown table adds up to 92.07 cents more than the official May 2026 price. May 2026 had a published erratum, and the table may not have been corrected." },
+  { "month": "2026-02", "product": "diesel50ppm", "reason": "The DMPR breakdown table adds up to 1 cent more than the price in the February 2026 diesel regulation." },
+  { "month": "2026-03", "product": "diesel50ppm", "reason": "No DMPR document SA Data Hub holds gives this month's price, so the breakdown cannot be checked against it." },
+  { "month": "2026-04", "product": "diesel50ppm", "reason": "No DMPR document SA Data Hub holds gives this month's price, so the breakdown cannot be checked against it." }
+]
