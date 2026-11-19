@@ -101,4 +101,4 @@ One format everywhere, from `src/lib/format.ts`:
 
 ## Not yet moved to this system
 
-The navbar, footer, homepage, category pages, the province detail pages (`/provinces/[id]`) and the dashboard still use the old look. The municipality pages, `/municipalities` and `/provinces` use this system, with `BarList` for short bar charts. They are moved in later pull requests. Until then the old `card`, `brand-*` and `slate-*` classes remain, but new work does not use them.
+Checked on 19 November 2026: the province detail pages (`/provinces/[id]`), the dashboard and `/downloads` still use the old look, along with the old chart cards in `src/components/charts/`. The navbar, footer, homepage, topic pages, municipality pages, `/municipalities`, `/provinces` and the fuel pages use this system. The dashboard is also the search results page, so it is restyled or replaced together with search, not on its own. Until then the old `card`, `brand-*` and `slate-*` classes remain, but new work does not use them.
