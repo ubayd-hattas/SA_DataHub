@@ -88,8 +88,10 @@ export function costCents(litres: number, priceCents: number): number {
  * paraffin), so the working adds up with no rounded price in it.
  */
 export function priceText(priceCents: number): string {
-  if (Number.isInteger(priceCents)) return `R${(priceCents / 100).toFixed(2)}`
-  const decimals = Number.isInteger(priceCents * 10) ? 1 : Number.isInteger(priceCents * 100) ? 2 : 3
+  // Count decimals on a rounded integer: 2134.24 * 100 is not an exact integer in floating point.
+  const thousandths = Math.round(priceCents * 1000)
+  if (thousandths % 1000 === 0) return `R${(priceCents / 100).toFixed(2)}`
+  const decimals = thousandths % 100 === 0 ? 1 : thousandths % 10 === 0 ? 2 : 3
   return `${formatDecimal(priceCents, decimals)} cents`
 }
 
