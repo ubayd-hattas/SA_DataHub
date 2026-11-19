@@ -41,7 +41,8 @@ function cellFor(
 ): FuelHistoryCell {
   const cents = current.prices[product][zone]
   const before = previous?.prices[product][zone] ?? null
-  return { cents, changeCents: cents !== null && before !== null ? cents - before : null }
+  // Prices carry at most three decimals of a cent, so round the difference to that and drop float noise.
+  return { cents, changeCents: cents !== null && before !== null ? Math.round((cents - before) * 1000) / 1000 : null }
 }
 
 /** Every adjustment, newest first. */
