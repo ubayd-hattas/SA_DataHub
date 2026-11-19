@@ -7,9 +7,12 @@ price for every month of the year so far.
 Covered: petrol 95, diesel 0.05% and diesel 0.005%, inland only. The DMPR
 tables give no breakdown for petrol 93, illuminating paraffin or the coast.
 
-Every month's elements must add up to the price in src/data/fuel/prices.json
-to within half a cent (petrol pump prices are rounded to whole cents), or
-nothing is written. A month and product that fails for a known reason is
+Every month's elements must add up to the price in src/data/fuel/prices.json,
+or nothing is written: within half a cent for petrol (pump prices are rounded
+to whole cents) and within 0.005 cents for diesel (wholesale prices are not).
+The tables cover one calendar year, so a January pack starts a new year: pass
+that year's files and keep the earlier year's breakdown by hand until the
+script is extended. A month and product that fails for a known reason is
 listed in breakdown-exclusions.json and left out, with the reason recorded.
 No network requests.
 
@@ -75,11 +78,15 @@ def _element_for(heading: str):
     return None
 
 
+TOLERANCE = {"petrol95": 0.5, "diesel500ppm": 0.005, "diesel50ppm": 0.005}
+
+
 def _number(cell: str) -> float:
-    c = re.sub(r"[^\d.\-]", "", cell)
-    if not c:
-        raise BreakdownError(f"no number in '{cell}'")
-    return float(c)
+    """A cell must be one number. A space (or non-breaking space) may only separate thousands: "11 056.14"."""
+    c = cell.replace("\u00a0", " ").replace("\u2212", "-").strip()
+    if not re.fullmatch(r"-?(\d{1,3}( \d{3})+|\d+)(\.\d+)?", c):
+        raise BreakdownError(f"not a plain number: '{cell}'")
+    return float(c.replace(" ", ""))
 
 
 def parse_tables(path: Path) -> list[dict]:
@@ -87,13 +94,14 @@ def parse_tables(path: Path) -> list[dict]:
     root = ET.fromstring(zipfile.ZipFile(path).read("word/document.xml"))
     out = []
     for tbl in root.iter(W + "tbl"):
-        rows = [[_text(tc) for tc in tr.findall(W + "tc")] for tr in tbl.iter(W + "tr")]
+        # findall, not iter: a table can hold nested tables whose rows are not its own.
+        rows = [[_text(tc) for tc in tr.findall(W + "tc")] for tr in tbl.findall(W + "tr")]
         caption = " ".join(" ".join(r) for r in rows[:2]).upper()
         if "0.005%" in caption:
             product = "diesel50ppm"
         elif "0.05%" in caption:
             product = "diesel500ppm"
-        elif "95 OCTANE" in caption or "PETROL" in caption:
+        elif "95 OCTANE" in caption:
             product = "petrol95"
         else:
             continue
@@ -111,18 +119,27 @@ def parse_tables(path: Path) -> list[dict]:
             if el is None:
                 raise BreakdownError(f"{path.name}: unknown column '{h}' in the {product} table")
             columns.append((i, el))
-        months = []
+        months, seen = [], set()
         for r in rows:
             if not r or r[0].strip()[:3].upper() not in MONTHS:
                 continue
             month = MONTHS.index(r[0].strip()[:3].upper()) + 1
-            if all(not (r[i] if i < len(r) else "").strip() for i, _ in columns):
+            cells = [(r[i] if i < len(r) else "").strip() for i, _ in columns]
+            if not any(cells):
                 continue  # a month not reached yet
+            if not all(cells):
+                raise BreakdownError(f"{path.name}: {product} month {month} has an empty cell")
+            if month in seen:
+                raise BreakdownError(f"{path.name}: {product} month {month} appears twice")
+            seen.add(month)
             elements = [
-                {"id": ident, "label": label, "group": group, "cents": _number(r[i])}
-                for i, (ident, label, group) in columns
+                {"id": ident, "label": label, "group": group, "cents": _number(cell)}
+                for cell, (_, (ident, label, group)) in zip(cells, columns)
             ]
             months.append({"month": f"{year_match.group(1)}-{month:02d}", "elements": elements})
+        numbers = [int(m["month"][5:]) for m in months]
+        if numbers != list(range(1, len(numbers) + 1)):
+            raise BreakdownError(f"{path.name}: {product} months are not January onwards without gaps: {numbers}")
         out.append({"product": product, "months": months})
     return out
 
@@ -134,8 +151,10 @@ def main(argv: list[str]) -> int:
     petrol, diesel, document, url, released_on, checked_on = argv
     prices = {a["month"]: a for a in json.loads(PRICES.read_text(encoding="utf-8"))["adjustments"]}
     tables = parse_tables(Path(petrol)) + parse_tables(Path(diesel))
-    products = {t["product"] for t in tables}
-    if products != {"petrol95", "diesel500ppm", "diesel50ppm"}:
+    products = [t["product"] for t in tables]
+    if len(products) != len(set(products)):
+        raise BreakdownError(f"a product has more than one table: {sorted(products)}")
+    if set(products) != {"petrol95", "diesel500ppm", "diesel50ppm"}:
         raise BreakdownError(f"expected petrol 95 and both diesels, found {sorted(products)}")
     exclusions = {(e["month"], e["product"]): e["reason"] for e in json.loads(EXCLUSIONS.read_text(encoding="utf-8"))}
     used: set[tuple[str, str]] = set()
@@ -143,14 +162,18 @@ def main(argv: list[str]) -> int:
     for t in tables:
         for m in t["months"]:
             key = (m["month"], t["product"])
-            if key in exclusions:
-                used.add(key)
-                continue
             price = prices.get(m["month"], {}).get("prices", {}).get(t["product"], {}).get("inland")
             total = round(sum(e["cents"] for e in m["elements"]), 3)
+            fails = price is None or abs(total - price) > TOLERANCE[t["product"]]
+            if key in exclusions:
+                used.add(key)
+                # An exclusion must still be needed: if the month now checks out, say so.
+                if not fails:
+                    problems.append(f"{m['month']} {t['product']}: now adds up to the price, remove it from breakdown-exclusions.json")
+                continue
             if price is None:
                 problems.append(f"{m['month']} {t['product']}: no inland price in prices.json to check against")
-            elif abs(total - price) > 0.5:
+            elif fails:
                 problems.append(f"{m['month']} {t['product']}: elements add up to {total}, price is {price}")
             records.setdefault(m["month"], {})[t["product"]] = {"total": total, "elements": m["elements"]}
     problems += [f"{m} {p}: listed in breakdown-exclusions.json but not in the tables" for m, p in exclusions.keys() - used]
