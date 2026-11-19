@@ -1,0 +1,15 @@
+{
+  "_meta": {
+    "description": "Changes to next month's fuel prices that are already announced in an official document. Cents per litre; positive raises the price. Each entry names its source. Press reports alone are not enough.",
+    "unconfirmed": "Press reports (for example CARmag, 13 November 2026) say a smaller levy cut of R1.00 a litre on petrol and R1.50 on diesel continues from 2 December 2026 to 5 January 2027. No DMPR or Treasury document SA Data Hub holds says so. If it is confirmed, the December entry below falls by 100 cents for petrol and 150 cents for diesel."
+  },
+  "changes": [
+    {
+      "month": "2026-12",
+      "what": "The temporary general fuel levy cut of R1.50 a litre on petrol and R3.00 on diesel applied from 4 November to 1 December 2026, so it ends before the December adjustment.",
+      "cents": { "petrol95": 150, "petrol93": 150, "diesel500ppm": 300, "diesel50ppm": 300 },
+      "source": "Central Energy Fund press release, 30 October 2026 (Change 04 November 2026), in the DMPR November 2026 fuel price pack",
+      "url": "https://www.dmpr.gov.za/Branches/Petroleum-Resources/Fuel-Prices"
+    }
+  ]
+}
