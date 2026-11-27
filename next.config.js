@@ -1,4 +1,5 @@
 // Files and images that are not pages. Crawlers may fetch them, but they should not compete to be indexed.
+// /llms.txt stays indexable: it is written to be read.
 // robots.txt does not block them: a blocked URL is never fetched, so the header would never be seen.
 const NOINDEX_SOURCES = [
   '/data/:path*',
@@ -9,6 +10,7 @@ const NOINDEX_SOURCES = [
   '/opengraph-image',
   '/feed.xml',
   '/calendar.ics',
+  '/search-index.json',
 ]
 
 /** @type {import('next').NextConfig} */

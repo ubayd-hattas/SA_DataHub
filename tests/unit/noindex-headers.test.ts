@@ -42,6 +42,7 @@ describe('noindex headers', () => {
       '/opengraph-image',
       '/feed.xml',
       '/calendar.ics',
+      '/search-index.json',
     ]) {
       expect(await isNoindex(path), path).toBe(true)
     }
