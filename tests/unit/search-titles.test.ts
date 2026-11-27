@@ -26,6 +26,7 @@ describe('unemployment topic metadata', () => {
   it('keeps the description short, whole and sourced', () => {
     expect(description.length).toBeLessThanOrEqual(160)
     expect(description.endsWith('.')).toBe(true)
-    expect(description).toContain(formatStatistic(stat))
+    expect(description).toContain(`The official unemployment rate was ${formatStatistic(stat)}`)
+    expect(description).not.toContain('..')
   })
 })

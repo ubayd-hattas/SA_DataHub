@@ -59,7 +59,7 @@ export function unemploymentTopicMetadata(stat: Statistic): { title: string; des
   return {
     title: `South Africa unemployment rate: ${formatStatistic(stat)}${period ? ` (${period})` : ''}`,
     description: trimToSentence(
-      `Official unemployment was ${formatStatistic(stat)}${period ? ` in ${period}` : ''}. ${change ? `${change.text}. ` : ''}Charts, history and CSV downloads from ${stat.source.shortName} releases.`,
+      `The official unemployment rate was ${formatStatistic(stat)}${period ? ` in ${period}` : ''}. ${change ? `${change.text} ` : ''}Charts, history and CSV downloads from ${stat.source.shortName} releases.`,
     ),
   }
 }
@@ -71,7 +71,7 @@ export function provinceDescription(p: ProvinceData): string {
   const unem = p.stats.unemployment
   const parts = [
     `${p.name}: ${provinceMillions(p)} people (2026 est.)`,
-    `${unem.rate}% unemployment (${unem.period})`,
+    `${formatPercent(unem.rate)} unemployment (${unem.period})`,
     `${formatPercent(p.matricPassRate, 2)} matric pass rate (${p.stats.education.year})`,
   ]
   if (count > 0) parts.push(`${count} municipalities profiled`)
