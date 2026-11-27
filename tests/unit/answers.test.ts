@@ -69,6 +69,7 @@ describe('answers', () => {
     const home = read('src/app/page.tsx')
     expect(home).toContain('title="Questions people ask"')
     // The rows themselves are built in home-questions.ts.
+    expect(home).toContain('homeQuestions(')
     expect(homeQuestions(getHeadlineNumbers()).filter((q) => q.href.startsWith(`${ANSWERS_PATH}/`))).toHaveLength(5)
     expect(read('src/app/category/[slug]/page.tsx')).toContain('topicAnswers')
     expect(read('src/app/municipalities/[code]/page.tsx')).toContain('ANSWERS_PATH')

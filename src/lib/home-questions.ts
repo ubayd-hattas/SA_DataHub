@@ -1,8 +1,8 @@
 /**
  * The questions on the homepage, each with its answer's number where one
  * figure answers it. Fuel comes first because it is the number people check
- * every month; the rest are the most searched questions in Search Console
- * (3 months to 23 October 2026). Every number comes from the same records as
+ * every month, then the headline rates, then two questions about
+ * municipalities taken from the earlier Search Console list. Every number comes from the same records as
  * the headline tiles, so the two never disagree.
  */
 import { ANSWERS_PATH, getAnswer } from '@/data/answers'
@@ -19,10 +19,11 @@ export interface HomeQuestion {
   detail?: string
 }
 
-const ANSWER_ROWS: { slug: string; statId?: string }[] = [
+// `measure` names the figure where the question alone could mean another one.
+const ANSWER_ROWS: { slug: string; statId?: string; measure?: string }[] = [
   { slug: 'what-is-the-unemployment-rate-in-south-africa', statId: 'unemployment-national' },
   { slug: 'what-is-the-inflation-rate-in-south-africa', statId: 'cpi-headline' },
-  { slug: 'what-is-the-interest-rate-in-south-africa', statId: 'repo-rate-sarb' },
+  { slug: 'what-is-the-interest-rate-in-south-africa', statId: 'repo-rate-sarb', measure: 'Repo rate' },
   { slug: 'how-many-municipalities-are-there-in-south-africa' },
   { slug: 'how-many-people-live-in-the-metros' },
 ]
@@ -37,7 +38,7 @@ export function homeQuestions(headline: HeadlineNumber[]): HomeQuestion[] {
       ...(petrol ? { value: petrol.value, detail: `95, inland, ${petrol.period}. ${petrol.sourceShort}` } : {}),
     },
   ]
-  for (const { slug, statId } of ANSWER_ROWS) {
+  for (const { slug, statId, measure } of ANSWER_ROWS) {
     const answer = getAnswer(slug)
     if (!answer) throw new Error(`Homepage: no answer "${slug}"`)
     const n = statId ? byId.get(statId) : undefined
@@ -45,7 +46,7 @@ export function homeQuestions(headline: HeadlineNumber[]): HomeQuestion[] {
     rows.push({
       question: answer.question,
       href: `${ANSWERS_PATH}/${slug}`,
-      ...(n ? { value: n.value, detail: `${n.period}. ${n.sourceShort}` } : {}),
+      ...(n ? { value: n.value, detail: `${measure ? `${measure}, ` : ''}${n.period}. ${n.sourceShort}` } : {}),
     })
   }
   return rows
