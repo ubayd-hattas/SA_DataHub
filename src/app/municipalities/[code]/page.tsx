@@ -135,7 +135,7 @@ function CensusComparison({ m }: { m: MunicipalityRecord }) {
         </Link>
       </p>
       <p className="mt-2 text-small">
-        <Link href={compareHref([m.id])} className={linkClass}>
+        <Link href={compareHref([m.id])} rel="nofollow" className={linkClass}>
           Compare with another place
         </Link>
       </p>
