@@ -24,7 +24,7 @@ describe('structured data', () => {
     expect(schema.spatialCoverage).toHaveProperty('geo')
   })
 
-  it('does not advertise a SearchAction that targets the noindexed dashboard', () => {
+  it('does not advertise a SearchAction that targets a noindexed results page', () => {
     expect(websiteSchema()).not.toHaveProperty('potentialAction')
   })
 

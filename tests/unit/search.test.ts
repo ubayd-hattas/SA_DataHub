@@ -50,7 +50,7 @@ describe('search index', () => {
 describe('header search component', () => {
   const src = readFileSync(join(process.cwd(), 'src/components/layout/HeaderSearch.tsx'), 'utf8')
   it('is a combobox with a listbox, keyboard handling, and no data imports', () => {
-    for (const s of ['role="combobox"', 'role="listbox"', 'role="option"', 'aria-activedescendant', "'ArrowDown'", "'ArrowUp'", "'Escape'", 'action="/dashboard"']) {
+    for (const s of ['role="combobox"', 'role="listbox"', 'role="option"', 'aria-activedescendant', "'ArrowDown'", "'ArrowUp'", "'Escape'", 'action="/search"', 'name="q"']) {
       expect(src, s).toContain(s)
     }
     expect(src).not.toMatch(/from '@\/(data|lib\/search-index|lib\/registry)/)

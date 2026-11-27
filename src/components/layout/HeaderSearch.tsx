@@ -22,7 +22,7 @@ function loadIndex(): Promise<SearchEntry[]> {
 /**
  * The header search: places, statistics, answers, explainers, stories and tools,
  * grouped, with arrow keys, Enter and Escape (the ARIA combobox pattern).
- * Without JavaScript, or with nothing chosen, Enter submits to /dashboard.
+ * Without JavaScript, or with nothing chosen, Enter submits to /search.
  */
 export function HeaderSearch({ className, panelClassName }: { className?: string; panelClassName?: string }) {
   const id = useId()
@@ -72,7 +72,7 @@ export function HeaderSearch({ className, panelClassName }: { className?: string
   return (
     <form
       ref={formRef}
-      action="/dashboard"
+      action="/search"
       method="get"
       role="search"
       className={cn('relative', className)}
@@ -85,7 +85,7 @@ export function HeaderSearch({ className, panelClassName }: { className?: string
       </label>
       <input
         id={id}
-        name="search"
+        name="q"
         type="search"
         placeholder="Search"
         autoComplete="off"
@@ -128,7 +128,7 @@ export function HeaderSearch({ className, panelClassName }: { className?: string
         {index === null ? (
           <p className="px-3 py-2 text-small text-muted">Loading…</p>
         ) : results.length === 0 ? (
-          <p className="px-3 py-2 text-small text-muted">No matches. Press Enter to search all statistics.</p>
+          <p className="px-3 py-2 text-small text-muted">No matches. Try fewer words.</p>
         ) : (
           SEARCH_GROUPS.filter((g) => results.some((r) => r.group === g)).map((group) => (
             <div key={group} role="group" aria-labelledby={`${id}-${group}`}>

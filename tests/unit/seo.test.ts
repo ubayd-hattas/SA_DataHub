@@ -67,20 +67,20 @@ describe('sitemap', () => {
   })
 
   it('does not list non-indexable routes', () => {
-    expect(urls.some((u) => u.endsWith('/dashboard') || u.endsWith('/404'))).toBe(false)
+    expect(urls.some((u) => u.endsWith('/dashboard') || u.endsWith('/search') || u.endsWith('/404'))).toBe(false)
   })
 
   it('lists every static page, except those marked noindex', async () => {
     // Static pages are page.tsx files with no [dynamic] segment.
     const pages = staticPagePaths(join(process.cwd(), 'src/app'))
-    const noIndex = new Set(['/dashboard'])
+    const noIndex = new Set(['/search'])
     for (const path of pages) {
       const url = path === '/' ? `${SITE_URL}/` : `${SITE_URL}${path}`
       if (noIndex.has(path)) expect(urls, path).not.toContain(url)
       else expect(urls, path).toContain(url)
     }
-    const dashboard = await import('@/app/dashboard/page')
-    expect(dashboard.metadata.robots).toMatchObject({ index: false, follow: true })
+    const search = await import('@/app/search/page')
+    expect(search.metadata.robots).toMatchObject({ index: false, follow: true })
   })
 })
 

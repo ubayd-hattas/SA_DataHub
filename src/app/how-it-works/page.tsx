@@ -107,7 +107,7 @@ export default function HowItWorksPage() {
           <p>
             On 27 November 2026, Lighthouse gave the home page, a topic page, a municipality page and a series page performance
             scores from 86 to 93 out of 100, with the largest content showing within 1.2 seconds in its simulated mobile test. The
-            dashboard page scored 78 (it is kept out of search results). These are single lab runs, not what visitors measured. All the figures, and how to
+            dashboard page scored 78 (it has since been removed). These are single lab runs, not what visitors measured. All the figures, and how to
             repeat them, are in <Code file="docs/case-study/lighthouse-2026-11.md" />.
           </p>
         </Prose>
