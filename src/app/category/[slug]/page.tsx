@@ -153,7 +153,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
 
   const breadcrumbs = [
     { name: 'Home', path: '/' },
-    { name: 'All statistics', path: '/dashboard' },
+    { name: 'All statistics', path: '/series' },
     { name: category.label, path: `/category/${slug}` },
   ]
 

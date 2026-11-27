@@ -54,9 +54,9 @@ export const NAV_SECTIONS: NavSection[] = [
       { href: '/category/housing', label: 'Housing' },
       { href: '/category/census', label: 'Census 2022' },
       { href: '/category/fuel', label: 'Fuel prices' },
-      { href: '/dashboard', label: 'All statistics' },
+      { href: '/series', label: 'All statistics' },
     ],
-    match: ['/category', '/dashboard'],
+    match: ['/category', '/series', '/dashboard'],
   },
   {
     id: 'tools',
