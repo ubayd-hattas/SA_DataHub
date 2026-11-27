@@ -30,6 +30,10 @@ describe('how this site works', () => {
     expect(html).toContain(`dashboard page scored ${scores['/dashboard']}`)
   })
 
+  it('does not claim the build checks every page', () => {
+    expect(html).toContain('on the home page, the topic pages and the municipality pages')
+  })
+
   it('is in the sitemap', () => {
     expect(sitemap().map((e) => e.url)).toContain('https://sadatahub.tech/how-it-works')
   })

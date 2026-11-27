@@ -15,7 +15,7 @@ const PATH = '/how-it-works'
 export const metadata: Metadata = buildPageMetadata({
   title: 'How this site works: the engineering behind SA Data Hub',
   description:
-    'How SA Data Hub is built: a build that fails on unsourced figures, public corrections, automated checks, and why it has no database. With links to the code.',
+    'How SA Data Hub is built: a sourcing check that can stop the build, public corrections, automated checks, and why it has no database. With links to the code.',
   path: PATH,
 })
 
@@ -51,6 +51,9 @@ export default function HowItWorksPage() {
             reviewed before it goes live, undone with a revert, and traced in the history.
           </p>
           <p>
+            Automatic collection from Stats SA is paused, and its releases are entered by hand.
+          </p>
+          <p>
             A move to PostgreSQL was started and then stopped. Four datasets had import pipelines and tests comparing the database
             with the files. Finishing it would have added a running service, a secret and a new way to fail, with nothing a reader
             could see. The notes are in <Code file="db/README.md" /> and <Code file="docs/audit.md" />.
@@ -58,13 +61,14 @@ export default function HowItWorksPage() {
         </Prose>
       </Section>
 
-      <Section id="sourcing" title="The build fails on an unsourced figure">
+      <Section id="sourcing" title="A missing source can stop the build">
         <Prose>
           <p>
-            Every statistic needs a source, the source&apos;s release date and the date it was checked, and the checked date cannot
-            come before the release. If one is missing, the site does not build. For municipality figures the check also needs the
-            page of each census table. The rule is in <Code file="src/lib/sourcing.ts" />. Explainers have their own check in{' '}
-            <Code file="src/lib/explainers.ts" />.
+            Each statistic on the home page, the topic pages and the municipality pages needs a source, the source&apos;s release
+            date and the date it was checked, and the checked date cannot come before the release. If one is missing, the site does
+            not build. For municipality figures the check also needs the page of each census table. The rule is in{' '}
+            <Code file="src/lib/sourcing.ts" />. Explainers have their own check in <Code file="src/lib/explainers.ts" />. Other
+            pages, such as fuel and provinces, rely on tests and review instead of this build check.
           </p>
           <p>
             This checks that the record of a source is complete. It cannot tell whether a number was copied correctly. That still
@@ -89,10 +93,7 @@ export default function HowItWorksPage() {
             <Link href="/updates" className={linkClass}>
               updates page
             </Link>
-            . A figure that cannot be traced to a release is withheld, not shown without a date.
-          </p>
-          <p>
-            Automatic collection from Stats SA is paused, and new releases are entered by hand. The{' '}
+            . Some figures that could not be traced to a release have been withheld. The{' '}
             <Link href="/methodology" className={linkClass}>
               methodology page
             </Link>{' '}
@@ -106,7 +107,7 @@ export default function HowItWorksPage() {
           <p>
             On 27 November 2026, Lighthouse gave the home page, a topic page, a municipality page and a series page performance
             scores from 86 to 93 out of 100, with the largest content showing within 1.2 seconds in its simulated mobile test. The
-            older dashboard page scored 78. These are single lab runs, not what visitors measured. All the figures, and how to
+            dashboard page scored 78 (it is kept out of search results). These are single lab runs, not what visitors measured. All the figures, and how to
             repeat them, are in <Code file="docs/case-study/lighthouse-2026-11.md" />.
           </p>
         </Prose>
