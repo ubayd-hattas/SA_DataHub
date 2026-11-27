@@ -14,7 +14,7 @@ interface HeaderRule {
 /** Turns the simple sources used here into a regular expression: ':path*' is any depth, ':name' one segment. */
 function matches(source: string, path: string): boolean {
   const pattern = source
-    .replace(/\./g, '\.')
+    .replace(/\./g, '\\.')
     .replace(/\/:\w+\*/g, '(?:/.*)?')
     .replace(/:\w+/g, '[^/]+')
   return new RegExp(`^${pattern}$`).test(path)

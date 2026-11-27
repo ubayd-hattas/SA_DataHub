@@ -10,6 +10,7 @@ import { getAllMunicipalities } from '@/data/mock'
 import { formatLongDate, getSource, isCpi } from '@/lib/explainers'
 import { getHeadlineNumbers, getTopicRows } from '@/lib/headline-numbers'
 import { MONEY_VALUE_PATH } from '@/lib/money-value'
+import { SERIES_PATH } from '@/lib/series'
 import { assertSiteSourced } from '@/lib/sourcing'
 import { HUB_PATH, HUB_TITLE } from '@/lib/census-hub'
 import { buildPageMetadata } from '@/lib/seo'
@@ -199,8 +200,8 @@ export default function HomePage() {
           ))}
         </ul>
         <p className="mt-4 text-small">
-          <Link href="/dashboard" className={linkClass}>
-            All statistics
+          <Link href={SERIES_PATH} className={linkClass}>
+            All statistics, each with its history and downloads
           </Link>
         </p>
       </Section>
