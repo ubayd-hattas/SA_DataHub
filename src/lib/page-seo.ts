@@ -16,11 +16,14 @@ function trimToSentence(text: string, max = MAX_DESCRIPTION): string {
 /**
  * Municipality title. It leads with what people search for, the population,
  * and says which census the figure is from, so it is not read as a current
- * estimate. The province is included because municipality names are not
+ * estimate. It says "Municipality" unless the name already does, because the
+ * count covers the whole municipal area, not only the town it is named after.
+ * The province is included because municipality names are not
  * unique (e.g. two "Emalahleni" municipalities: EC136 and MP312).
  */
 export function municipalityTitle(m: Pick<MunicipalityRecord, 'name' | 'provinceName' | 'population2022'>): string {
-  return `${m.name} population: ${formatCount(m.population2022)} (Census 2022), ${m.provinceName}`
+  const place = /(City|Municipality)/.test(m.name) ? m.name : `${m.name} Municipality`
+  return `${place} population: ${formatCount(m.population2022)} (Census 2022), ${m.provinceName}`
 }
 
 /**

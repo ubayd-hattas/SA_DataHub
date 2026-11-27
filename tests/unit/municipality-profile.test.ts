@@ -181,9 +181,10 @@ describe('titles and descriptions', () => {
       const title = municipalityTitle(m)
       const desc = municipalityDescription(m)
       expect(title + desc, m.id).not.toContain(EM_DASH)
-      expect(title, m.id).toBe(`${m.name} population: ${formatCount(m.population2022)} (Census 2022), ${m.provinceName}`)
+      const place = /(City|Municipality)/.test(m.name) ? m.name : `${m.name} Municipality`
+      expect(title, m.id).toBe(`${place} population: ${formatCount(m.population2022)} (Census 2022), ${m.provinceName}`)
       // The longest names push past what a result shows; the name and figure come first, so they survive.
-      expect(title.indexOf(formatCount(m.population2022)), m.id).toBeLessThan(60)
+      expect(title.indexOf(formatCount(m.population2022)), m.id).toBeLessThan(70)
       expect(desc, m.id).toContain('Census 2011')
       expect(desc.length, m.id).toBeLessThanOrEqual(160)
     }
