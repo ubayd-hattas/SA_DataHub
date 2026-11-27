@@ -10,7 +10,7 @@ import { StatChart } from '@/components/charts/StatChart'
 import { ExportButton } from '@/components/ui/ExportButton'
 import { CitationWidget } from '@/components/ui/CitationWidget'
 import { getAppDataProvider } from '@/data/providers'
-import { getCategoryById } from '@/data/mock'
+import { getCategoryById, getStatById } from '@/data/mock'
 import {
   getRegistryByCategory,
   getEntryLastUpdated,
@@ -29,6 +29,7 @@ import {
 } from '@/lib/stat-summary'
 import { formatLongDate, isQlfs } from '@/lib/explainers'
 import { buildPageMetadata } from '@/lib/seo'
+import { unemploymentTopicMetadata } from '@/lib/page-seo'
 import { Breadcrumbs } from '@/components/seo/Breadcrumbs'
 import { JsonLd } from '@/components/seo/JsonLd'
 import { breadcrumbSchema, datasetSchema } from '@/lib/schema'
@@ -69,11 +70,14 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
   const { slug } = await params
   const category = getCategoryById(slug)
   if (!category) return {}
-  return buildPageMetadata({
-    title: `${category.label} statistics`,
-    description: `${category.description} View charts, trends, citations, and CSV downloads from official South African sources.`,
-    path: `/category/${slug}`,
-  })
+  const rate = slug === 'unemployment' ? getStatById('unemployment-national') : undefined
+  const text = rate
+    ? unemploymentTopicMetadata(rate)
+    : {
+        title: `${category.label} statistics`,
+        description: `${category.description} View charts, trends, citations, and CSV downloads from official South African sources.`,
+    }
+  return buildPageMetadata({ ...text, path: `/category/${slug}` })
 }
 
 function StatSource({ stat }: { stat: Statistic }) {

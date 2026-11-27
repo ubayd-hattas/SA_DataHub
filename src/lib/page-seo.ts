@@ -1,4 +1,5 @@
-import type { MunicipalityRecord, ProvinceData } from '@/types'
+import type { MunicipalityRecord, ProvinceData, Statistic } from '@/types'
+import { describeChange, formatStatistic, latestPeriod } from '@/lib/stat-summary'
 import { getMunicipalitiesByProvince } from '@/data/mock'
 import { getProvinceCodeFromSlug } from '@/lib/utils'
 import { percentChange } from '@/lib/municipality-profile'
@@ -38,9 +39,29 @@ export function municipalityDescription(m: MunicipalityRecord): string {
   return trimToSentence(`${lead}, ${vs2011}. ${services}`)
 }
 
-/** Province title. */
-export function provinceTitle(p: Pick<ProvinceData, 'name'>): string {
-  return `${p.name} Province Statistics`
+/** A province's mid-year estimate in millions, to two decimals, as its page prints it. */
+function provinceMillions(p: Pick<ProvinceData, 'population'>): string {
+  return `${formatDecimal(p.population / 1_000_000, 2)} million`
+}
+
+/** Province title. These are mid-year estimates, not census counts, and the title says so. */
+export function provinceTitle(p: Pick<ProvinceData, 'name' | 'population'>): string {
+  return `${p.name} population 2026: ${provinceMillions(p)} (estimate)`
+}
+
+/**
+ * Title and description for the unemployment topic page, leading with the rate
+ * and its quarter. Built from the statistic, so they move with each release.
+ */
+export function unemploymentTopicMetadata(stat: Statistic): { title: string; description: string } {
+  const period = latestPeriod(stat)
+  const change = describeChange(stat)
+  return {
+    title: `South Africa unemployment rate: ${formatStatistic(stat)}${period ? ` (${period})` : ''}`,
+    description: trimToSentence(
+      `The official unemployment rate was ${formatStatistic(stat)}${period ? ` in ${period}` : ''}. ${change ? `${change.text} ` : ''}Charts, history and CSV downloads from ${stat.source.shortName} releases.`,
+    ),
+  }
 }
 
 /** Data-led province meta description (live figures, complete sentence, ≤160 chars). */
@@ -49,8 +70,8 @@ export function provinceDescription(p: ProvinceData): string {
   const count = code ? getMunicipalitiesByProvince(code).length : 0
   const unem = p.stats.unemployment
   const parts = [
-    `${p.name}: ${unem.rate}% unemployment (${unem.period})`,
-    `${(p.population / 1_000_000).toFixed(1)}M people (2026 est.)`,
+    `${p.name}: ${provinceMillions(p)} people (2026 est.)`,
+    `${unem.rate}% unemployment (${unem.period})`,
     `${formatPercent(p.matricPassRate, 2)} matric pass rate (${p.stats.education.year})`,
   ]
   if (count > 0) parts.push(`${count} municipalities profiled`)
