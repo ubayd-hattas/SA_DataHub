@@ -99,7 +99,7 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
         {places.length < 2 && (
           <p className="mt-4 text-small text-ink">
             For example,{' '}
-            <Link href={compareHref(['CPT', 'WC024', 'JHB'])} className={linkClass}>
+            <Link href={compareHref(['CPT', 'WC024', 'JHB'])} rel="nofollow" className={linkClass}>
               City of Cape Town, Stellenbosch and City of Johannesburg
             </Link>
             .
@@ -151,7 +151,7 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
             />
             <p className="text-small">
               Link to this comparison:{' '}
-              <Link href={compareHref(places.map((p) => p.id))} className={cn(linkClass, 'break-all')}>
+              <Link href={compareHref(places.map((p) => p.id))} rel="nofollow" className={cn(linkClass, 'break-all')}>
                 sadatahub.tech{compareHref(places.map((p) => p.id))}
               </Link>
             </p>
