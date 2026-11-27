@@ -71,7 +71,7 @@ export function provinceDescription(p: ProvinceData): string {
   const unem = p.stats.unemployment
   const parts = [
     `${p.name}: ${provinceMillions(p)} people (2026 est.)`,
-    `${formatPercent(unem.rate)} unemployment (${unem.period})`,
+    `${unem.rate}% unemployment (${unem.period})`,
     `${formatPercent(p.matricPassRate, 2)} matric pass rate (${p.stats.education.year})`,
   ]
   if (count > 0) parts.push(`${count} municipalities profiled`)
