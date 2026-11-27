@@ -64,7 +64,9 @@ describe('topic page metadata', () => {
     const { generateMetadata } = await import('@/app/category/[slug]/page')
     for (const c of categories) {
       const meta = await generateMetadata({ params: Promise.resolve({ slug: c.id }) })
-      expect(meta.title).toBe(`${c.label} statistics`)
+      // The unemployment title leads with the latest rate instead; search-titles.test.ts covers it.
+      if (c.id === 'unemployment') expect(meta.title).toMatch(/^South Africa unemployment rate: \d/)
+      else expect(meta.title).toBe(`${c.label} statistics`)
     }
     const inflation = await generateMetadata({ params: Promise.resolve({ slug: 'inflation' }) })
     expect(inflation.title).toBe('Inflation and prices statistics')
