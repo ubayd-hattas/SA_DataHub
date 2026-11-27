@@ -1,6 +1,6 @@
 # SA Data Hub: current state
 
-**As of:** 14 November 2026. Fuel prices added on top of `main` after pull request #62.
+**As of:** 27 November 2026.
 **Live:** [sadatahub.tech](https://sadatahub.tech), deployed by Vercel from `main`.
 
 This describes the site as it is. For where it is going, see [`PRODUCT_DIRECTION.md`](PRODUCT_DIRECTION.md) and the roadmap in the [README](../README.md#where-its-going). For how to publish a release, see [`RUNBOOK.md`](RUNBOOK.md). Earlier plans are in [`archive/`](archive/README.md).
@@ -44,7 +44,7 @@ The main menu has five sections: What changed, Your area, Topics, Tools and Abou
 
 ## Paused
 
-- **Automation** (`automation/`, `scripts/update_*.py`): paused since 25 October 2026. Nothing may make requests to statssa.gov.za. Reopened for fuel only (decision D1, 13 November 2026), and no fuel automation is built yet.
+- **Automation** (`automation/`, `scripts/update_*.py`): paused since 25 October 2026. Nothing may make requests to statssa.gov.za. Reopened for fuel only (decision D1, 13 November 2026), and the only fuel automation is a watcher that opens an issue when the DMPR publishes new prices.
 - **PostgreSQL migration** (`db/`, `etl/`, `DATA_SOURCE=database`): production uses the JSON files. Parked, not planned: decided 13 November 2026 (`docs/implementation-plan.md`, D2). New data, including fuel, is built on JSON files in git.
 
 ## Decisions on fuel (13 November 2026)
@@ -58,11 +58,11 @@ The owner approved all six as recommended in `docs/implementation-plan.md`.
 | D3 | CEF daily data has no published reuse terms | Email CEF and do not publish the estimate tracker until they answer. Sending the email is the owner's action and is pending. The tracker, if built, is private until then. |
 | D4 | Principle 2 and the estimate | Principle 2 amended (`PRODUCT_DIRECTION.md`). |
 | D5 | Principle 6 and automatic merges | Principle 6 split (`PRODUCT_DIRECTION.md`). Official monthly prices always need a person's merge. |
-| D6 | Public API | Yes to a static API. No rate limiting for now. Not built yet. |
+| D6 | Public API | Yes to a static API. No rate limiting for now. Live at `/api/v1/`. |
 
 ## Known gaps
 
-- Fuel: the estimate tracker, the calculator, the breakdown of a litre and the static API are not built. The official history is live. March and April 2026 have no DMPR price schedule, so some series leave those months out.
+- Fuel: the estimate of the next change is not published (waiting on CEF). The official history, the breakdown of a litre, the cost calculator and the API (`/api`, `/api/v1/`) are live. March and April 2026 have no DMPR price schedule, so some series leave those months out.
 - Release explainers wait on the releases: QLFS Q3 (November), CPI October (18 November), the MPC decision (19 November) and GDP Q3 (December). There is no GDP or MPC explainer template yet.
 - Election results have no council seats: the IEC voting-station files don't include the seat calculation.
 - The population series for 2015 to 2024 is calculated back from growth rates, not taken from Stats SA's published series.
