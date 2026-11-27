@@ -18,6 +18,7 @@ import {
   groupAverage,
   municipalityNotes,
   municipalitySummary,
+  nationalRanks,
   populationChangeText,
   similarMunicipalities,
   type CensusTable,
@@ -358,6 +359,24 @@ function Similar({ m }: { m: MunicipalityRecord }) {
   )
 }
 
+function NationalRanks({ m }: { m: MunicipalityRecord }) {
+  const { facts, tables } = nationalRanks(m)
+  return (
+    <Section id="national" title={`${m.name} among all municipalities`}>
+      <ul className="max-w-2xl list-disc space-y-2 pl-5 text-body text-ink">
+        {facts.map((fact) => (
+          <li key={fact}>{fact}</li>
+        ))}
+      </ul>
+      <p className="mb-2 mt-4 text-caption text-muted">
+        Changes and positions are SA Data Hub&apos;s own calculations. Places whose figures print the same share a position. The last line shows whichever of four household shares
+        (formal dwellings, flush toilets, water from a scheme, electricity for cooking) ranks highest within its group.
+      </p>
+      <CensusSource m={m} tables={tables} />
+    </Section>
+  )
+}
+
 function PrevNext({ currentId }: { currentId: string }) {
   const sorted = getSortedMunicipalityList()
   const idx = sorted.findIndex((m) => m.id === currentId)
@@ -426,6 +445,7 @@ export default async function MunicipalityDetailPage({ params }: { params: Promi
       <Housing m={m} />
       <Services m={m} />
       <Comparison m={m} />
+      <NationalRanks m={m} />
       <Similar m={m} />
 
       <Section id="sources" title="Sources">
