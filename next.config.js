@@ -1,3 +1,18 @@
+// Files and images that are not pages. Crawlers may fetch them, but they should not compete to be indexed.
+// /llms.txt stays indexable: it is written to be read.
+// robots.txt does not block them: a blocked URL is never fetched, so the header would never be seen.
+const NOINDEX_SOURCES = [
+  '/data/:path*',
+  '/api/v1/:path*',
+  '/municipalities/:code/share-image',
+  '/tools/:tool/share-image',
+  '/fuel/share-image',
+  '/opengraph-image',
+  '/feed.xml',
+  '/calendar.ics',
+  '/search-index.json',
+]
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // The share image reads the logo from disk; make sure the file ships with that function.
@@ -20,6 +35,10 @@ const nextConfig = {
         source: '/((?!embed/).*)',
         headers: [{ key: 'X-Frame-Options', value: 'SAMEORIGIN' }],
       },
+      ...NOINDEX_SOURCES.map((source) => ({
+        source,
+        headers: [{ key: 'X-Robots-Tag', value: 'noindex' }],
+      })),
     ]
   },
   async redirects() {

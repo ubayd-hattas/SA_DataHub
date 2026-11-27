@@ -32,7 +32,8 @@ describe('main navigation', () => {
   it('lists every category under Topics, then All statistics', () => {
     const topics = NAV_SECTIONS.find((s) => s.id === 'topics')!.links!
     expect(topics.slice(0, -1).map((l) => l.href).sort()).toEqual(categories.map((c) => `/category/${c.id}`).sort())
-    expect(topics.at(-1)).toEqual({ href: '/dashboard', label: 'All statistics' })
+    // Not /dashboard: it is noindex, so a menu link there led crawlers nowhere.
+    expect(topics.at(-1)).toEqual({ href: '/series', label: 'All statistics' })
   })
 
   it('has a target for the Compare provinces anchor', () => {

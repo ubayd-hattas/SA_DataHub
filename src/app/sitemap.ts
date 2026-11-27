@@ -14,6 +14,7 @@ import { allSeries, SERIES_PATH, seriesHref } from '@/lib/series'
 const STATIC_ROUTES: { path: string; priority: number; changeFrequency: MetadataRoute.Sitemap[0]['changeFrequency']; lastModified: Date }[] = [
   { path: '/',              priority: 1,   changeFrequency: 'weekly',  lastModified: new Date('2026-07-01') },
   // Only the canonical URL; ?product=&zone= variants are not listed.
+  { path: '/api', priority: 0.5, changeFrequency: 'monthly', lastModified: new Date('2026-11-19') },
   { path: FUEL_PATH, priority: 0.9, changeFrequency: 'monthly', lastModified: new Date(latestAdjustment().releasedOn ?? latestAdjustment().effectiveFrom) },
   { path: FUEL_HISTORY_PATH, priority: 0.8, changeFrequency: 'monthly', lastModified: new Date(latestAdjustment().releasedOn ?? latestAdjustment().effectiveFrom) },
   { path: '/municipalities', priority: 0.9, changeFrequency: 'monthly', lastModified: new Date('2026-05-01') },

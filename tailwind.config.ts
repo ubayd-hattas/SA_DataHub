@@ -35,6 +35,7 @@ const config: Config = {
         accent: 'var(--accent)',
         good: 'var(--good)',
         bad: 'var(--bad)',
+        warn: 'var(--warn)',
         // Brand — deep indigo-green inspired by SA landscape
         brand: {
           50:  '#edfaf4',
