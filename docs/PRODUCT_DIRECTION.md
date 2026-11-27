@@ -22,7 +22,7 @@ People in South Africa who meet a statistic in the news, at school or at work an
 
 ## Fuel prices
 
-Fuel is now a dataset. The official monthly DMPR prices are live on `/fuel`, `/category/fuel` and ten series pages. Next: the breakdown of a litre, the cost calculator, the estimate of the next change (only after CEF answers) and a static API.
+Fuel is now a dataset. The official monthly DMPR prices are live on `/fuel`, `/category/fuel` and ten series pages. The breakdown of a litre, the cost calculator and a static API are live too. Next: the estimate of the next change, only after CEF answers.
 
 Decisions of 13 November 2026, approved as recommended (`docs/implementation-plan.md`):
 
