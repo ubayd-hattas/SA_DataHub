@@ -2,9 +2,11 @@
  * The answers section: factual, answer-first, unique pages; no rankings of
  * "best" or "safest" places; no per-municipality pages.
  */
+import { homeQuestions } from '@/lib/home-questions'
+import { getHeadlineNumbers } from '@/lib/headline-numbers'
 import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { ANSWERS, getAnswer } from '@/data/answers'
+import { ANSWERS, ANSWERS_PATH, getAnswer } from '@/data/answers'
 import AnswerPage from '@/app/answers/[slug]/page'
 import { getAllMunicipalities } from '@/data/mock'
 import { formatCount } from '@/lib/format'
@@ -66,7 +68,9 @@ describe('answers', () => {
     const read = (f: string) => readFileSync(join(process.cwd(), f), 'utf8')
     const home = read('src/app/page.tsx')
     expect(home).toContain('title="Questions people ask"')
-    expect(home.match(/HOME_QUESTIONS = \[([^\]]*)\]/)![1].match(/'[a-z0-9-]+'/g)).toHaveLength(4)
+    // The rows themselves are built in home-questions.ts.
+    expect(home).toContain('homeQuestions(')
+    expect(homeQuestions(getHeadlineNumbers()).filter((q) => q.href.startsWith(`${ANSWERS_PATH}/`))).toHaveLength(5)
     expect(read('src/app/category/[slug]/page.tsx')).toContain('topicAnswers')
     expect(read('src/app/municipalities/[code]/page.tsx')).toContain('ANSWERS_PATH')
     expect(read('src/components/layout/Footer.tsx')).toContain("href: '/answers'")
