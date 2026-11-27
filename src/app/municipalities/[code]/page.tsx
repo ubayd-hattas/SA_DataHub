@@ -18,7 +18,7 @@ import {
   groupAverage,
   municipalityNotes,
   municipalitySummary,
-  nationalRankFacts,
+  nationalRanks,
   populationChangeText,
   similarMunicipalities,
   type CensusTable,
@@ -360,17 +360,19 @@ function Similar({ m }: { m: MunicipalityRecord }) {
 }
 
 function NationalRanks({ m }: { m: MunicipalityRecord }) {
+  const { facts, tables } = nationalRanks(m)
   return (
     <Section id="national" title={`${m.name} among all municipalities`}>
       <ul className="max-w-2xl list-disc space-y-2 pl-5 text-body text-ink">
-        {nationalRankFacts(m).map((fact) => (
+        {facts.map((fact) => (
           <li key={fact}>{fact}</li>
         ))}
       </ul>
       <p className="mb-2 mt-4 text-caption text-muted">
-        Changes and positions are SA Data Hub&apos;s own calculations. Places whose figures print the same share a position.
+        Changes and positions are SA Data Hub&apos;s own calculations. Places whose figures print the same share a position. The last line shows whichever of four household shares
+        (formal dwellings, flush toilets, water from a scheme, electricity for cooking) ranks highest within its group.
       </p>
-      <CensusSource m={m} tables={['person', 'housing1', 'housing2']} />
+      <CensusSource m={m} tables={tables} />
     </Section>
   )
 }
