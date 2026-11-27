@@ -12,7 +12,7 @@ Lets an AI assistant that speaks the [Model Context Protocol](https://modelconte
 
 ## Setup
 
-You need Node 20 or newer.
+You need Node 20.9 or newer. Install everything: do not pass `--omit=dev`, because the MCP SDK is a development dependency.
 
 ```bash
 git clone https://github.com/ubayd-hattas/SA_DataHub.git

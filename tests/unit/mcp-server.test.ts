@@ -9,6 +9,7 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { Client } from '@modelcontextprotocol/sdk/client/index.js'
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js'
 import { createServer, DEFAULT_BASE } from '../../mcp/sa-data-hub.mjs'
+import { allSeries, getSeries, seriesDocument } from '@/lib/series'
 import { GET as listRoute } from '@/app/api/v1/series/route'
 import { GET as seriesRoute } from '@/app/api/v1/series/[id]/route'
 import { GET as fuelRoute } from '@/app/api/v1/fuel/latest/route'
@@ -54,12 +55,19 @@ describe('MCP server', () => {
     expect(isError).toBe(false)
     const body = JSON.parse(text)
     expect(body.points).toHaveLength(3)
+    // "last" must mean the newest: the series ends on the site's latest period.
+    expect(body.points.at(-1)).toEqual(seriesDocument(getSeries('cpi-headline')!).points.at(-1))
+    expect(body.points.at(-1).value).toBe(body.latest.value)
     expect(body.pointsInFullSeries).toBeGreaterThan(3)
     expect(body.citation).toContain('https://sadatahub.tech/series/cpi-headline')
     expect(body.source.publisher).toBeTruthy()
     expect(body.source.releasedOn).toMatch(/^\d{4}-\d{2}-\d{2}$/)
     expect(body.checkedOn).toMatch(/^\d{4}-\d{2}-\d{2}$/)
     expect(body.terms).toBeTruthy()
+  })
+
+  it('accepts the id of every series the site shows', () => {
+    for (const s of allSeries()) expect(s.id).toMatch(/^[a-z0-9]+(-[a-z0-9]+)*$/)
   })
 
   it('searches the series list', async () => {

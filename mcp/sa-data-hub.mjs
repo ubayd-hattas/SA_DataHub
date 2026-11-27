@@ -96,7 +96,14 @@ export function createServer({ fetchImpl = fetch, base = DEFAULT_BASE } = {}) {
     },
     safely(async () => {
       const { data, meta } = await get('/fuel/latest')
-      return text({ ...data, source: meta.source, checkedOn: meta.checkedOn, attribution: meta.attribution, terms: meta.terms })
+      return text({
+        ...data,
+        source: meta.source,
+        checkedOn: meta.checkedOn,
+        attribution: meta.attribution,
+        terms: meta.terms,
+        estimate: meta.estimate,
+      })
     }),
   )
 
