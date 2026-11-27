@@ -304,3 +304,72 @@ export function similarMunicipalities(m: MunicipalityRecord, count = SIMILAR_COU
     })
     .slice(0, count)
 }
+
+// ─── National ranks ──────────────────────────────────────────────────────────
+
+/**
+ * Position of `value` among `values`, largest first, with equal values sharing
+ * a position. Values are compared as printed (one decimal), so two places that
+ * show the same figure are never ranked apart.
+ */
+export function rankAmong(value: number, values: number[]): { rank: number; joint: boolean } {
+  const printed = (v: number) => Math.round(v * 10) / 10
+  const own = printed(value)
+  const all = values.map(printed)
+  return { rank: all.filter((v) => v > own).length + 1, joint: all.filter((v) => v === own).length > 1 }
+}
+
+/** "the largest", "the 5th largest", "the joint 5th largest". */
+function placed({ rank, joint }: { rank: number; joint: boolean }, adjective: string): string {
+  return `the ${joint ? 'joint ' : ''}${rank === 1 ? '' : `${ordinal(rank)} `}${adjective}`
+}
+
+/** Shares compared between the two censuses when looking for the change that sets a place apart. */
+const RANKED_SHARES: { name: string; change: (m: MunicipalityRecord) => number }[] = [
+  { name: 'households in a formal dwelling', change: (m) => m.pctFormalDwelling2022 - m.pctFormalDwelling2011 },
+  { name: 'households with a flush toilet', change: (m) => m.pctFlushToilet2022 - m.pctFlushToilet2011 },
+  { name: 'households with water from a regional or local scheme', change: (m) => m.pctWaterScheme2022 - m.pctWaterScheme2011 },
+  { name: 'households using electricity for cooking', change: (m) => m.pctElectricityCooking2022 - m.pctElectricityCooking2011 },
+]
+
+/**
+ * Three sentences that place one municipality among all of them: its size, how
+ * its population changed, and the share whose change ranks nearest the top.
+ * They state positions only, with no reason and no verdict.
+ */
+export function nationalRankFacts(m: MunicipalityRecord): string[] {
+  const all = getAllMunicipalities()
+  const facts: string[] = []
+
+  const size = rankAmong(m.population2022, all.map((p) => p.population2022))
+  facts.push(`By Census 2022 population, ${m.name} was ${placed(size, 'largest')} of the ${all.length} municipalities.`)
+
+  const growth = (p: MunicipalityRecord) => percentChange(p.population2011, p.population2022)
+  const own = growth(m)
+  // Rises are ranked among rises and falls among falls, so "3rd largest fall" means what it says.
+  const grew = own >= 0
+  const peers = all.map(growth).filter((g) => g >= 0 === grew)
+  const place = rankAmong(Math.abs(own), peers.map(Math.abs))
+  const direction = grew ? 'rise' : 'fall'
+  facts.push(
+    `Between 2011 and 2022 its population ${grew ? 'rose' : 'fell'} by ${formatDecimal(Math.abs(own))}%, ${placed(place, 'largest')} percentage ${direction} of the ${peers.length} municipalities where it ${grew ? 'rose' : 'fell'}.`,
+  )
+
+  const candidates = RANKED_SHARES.flatMap(({ name, change }) => {
+    const value = change(m)
+    // A change that prints as 0.0 is neither a rise nor a fall.
+    if (Math.abs(value) < 0.05) return []
+    const rose = value > 0
+    const same = all.map(change).filter((c) => Math.abs(c) >= 0.05 && c > 0 === rose)
+    return [{ name, value, rose, of: same.length, place: rankAmong(Math.abs(value), same.map(Math.abs)) }]
+  })
+  // Nearest the top of its group, as a fraction, so a small group does not win by being small.
+  const [standout] = candidates.sort((a, b) => a.place.rank / a.of - b.place.rank / b.of)
+  if (standout) {
+    const word = standout.rose ? 'rose' : 'fell'
+    facts.push(
+      `The share of ${standout.name} ${word} by ${formatDecimal(Math.abs(standout.value))} percentage points, ${placed(standout.place, 'largest')} ${standout.rose ? 'rise' : 'fall'} of the ${standout.of} municipalities where that share ${word}.`,
+    )
+  }
+  return facts
+}
