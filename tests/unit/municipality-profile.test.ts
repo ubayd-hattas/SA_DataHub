@@ -176,12 +176,14 @@ describe('similar municipalities', () => {
 })
 
 describe('titles and descriptions', () => {
-  it('name both censuses on every profile', () => {
+  it('lead the title with the population, and name both censuses in the description', () => {
     for (const m of all) {
       const title = municipalityTitle(m)
       const desc = municipalityDescription(m)
       expect(title + desc, m.id).not.toContain(EM_DASH)
-      expect(title, m.id).toContain('Census 2011 and 2022')
+      expect(title, m.id).toBe(`${m.name} population: ${formatCount(m.population2022)} (Census 2022), ${m.provinceName}`)
+      // The longest names push past what a result shows; the name and figure come first, so they survive.
+      expect(title.indexOf(formatCount(m.population2022)), m.id).toBeLessThan(60)
       expect(desc, m.id).toContain('Census 2011')
       expect(desc.length, m.id).toBeLessThanOrEqual(160)
     }
