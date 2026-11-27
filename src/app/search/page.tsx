@@ -10,6 +10,9 @@ const MAX_QUERY = 100
 /** More than the header's five per group: this page has the room. */
 const PER_GROUP = 20
 
+// The data only changes with a deployment, so the index is built once per server instance.
+let index: ReturnType<typeof buildSearchIndex> | undefined
+
 // A results page is not something to find through a search engine.
 export const metadata: Metadata = buildPageMetadata({
   title: 'Search',
@@ -25,7 +28,7 @@ export const metadata: Metadata = buildPageMetadata({
 export default async function SearchPage({ searchParams }: { searchParams: Promise<{ q?: string | string[] }> }) {
   const { q } = await searchParams
   const query = (Array.isArray(q) ? q[0] : (q ?? '')).trim().slice(0, MAX_QUERY)
-  const results = query ? searchEntries(buildSearchIndex(), query, PER_GROUP) : []
+  const results = query ? searchEntries((index ??= buildSearchIndex()), query, PER_GROUP) : []
 
   return (
     <Column className="pb-16">
