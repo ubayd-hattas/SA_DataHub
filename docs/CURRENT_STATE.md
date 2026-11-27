@@ -27,7 +27,8 @@ The main menu has five sections: What changed, Your area, Topics, Tools and Abou
 | Tools | `/tools/money-value`, `/tools/compare` | Money value calculator (CPI from 1980) and a compare tool, each with a share image |
 | Trust | `/methodology`, `/updates`, `/changelog`, `/feed.xml` | Methods, Stats SA's reuse condition, the public corrections log, the changelog and an RSS feed |
 | Support | `/support` | Ways to help: report an error, ask for data, share, contribute code. A sponsorship section appears once GitHub Sponsors is approved (`SPONSORS_URL` in `src/lib/contact.ts`) |
-| For AI tools | `/llms.txt` | A Markdown map of the site and every series JSON file |
+| For AI tools | `/llms.txt`, `mcp/` | A Markdown map of the site and every series JSON file, and an MCP server people run on their own computer (`mcp/README.md`) |
+| Engineering | `/how-it-works` | How figures are checked, with links to the code |
 | Search | `/search` | Results for the header search, not indexed. `/dashboard` redirects here or to `/series` |
 | Other | `/downloads`, `/about` | CSV downloads, about the author |
 
