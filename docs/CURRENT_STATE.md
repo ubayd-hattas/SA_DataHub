@@ -28,7 +28,8 @@ The main menu has five sections: What changed, Your area, Topics, Tools and Abou
 | Trust | `/methodology`, `/updates`, `/changelog`, `/feed.xml` | Methods, Stats SA's reuse condition, the public corrections log, the changelog and an RSS feed |
 | Support | `/support` | Ways to help: report an error, ask for data, share, contribute code. A sponsorship section appears once GitHub Sponsors is approved (`SPONSORS_URL` in `src/lib/contact.ts`) |
 | For AI tools | `/llms.txt` | A Markdown map of the site and every series JSON file |
-| Other | `/dashboard`, `/downloads`, `/about` | All statistics, CSV downloads, about the author |
+| Search | `/search` | Results for the header search, not indexed. `/dashboard` redirects here or to `/series` |
+| Other | `/downloads`, `/about` | CSV downloads, about the author |
 
 ## Data
 

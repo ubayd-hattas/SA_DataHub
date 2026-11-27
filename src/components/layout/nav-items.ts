@@ -56,7 +56,7 @@ export const NAV_SECTIONS: NavSection[] = [
       { href: '/category/fuel', label: 'Fuel prices' },
       { href: '/series', label: 'All statistics' },
     ],
-    match: ['/category', '/series', '/dashboard'],
+    match: ['/category', '/series'],
   },
   {
     id: 'tools',

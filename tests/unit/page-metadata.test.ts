@@ -34,7 +34,6 @@ async function allPages(): Promise<Meta[]> {
     staticMeta('/about', () => import('@/app/about/page')),
     staticMeta('/answers', () => import('@/app/answers/page')),
     staticMeta('/changelog', () => import('@/app/changelog/page')),
-    staticMeta('/dashboard', () => import('@/app/dashboard/page')),
     staticMeta('/downloads', () => import('@/app/downloads/page')),
     staticMeta('/explainers', () => import('@/app/explainers/page')),
     staticMeta('/insights', () => import('@/app/insights/page')),

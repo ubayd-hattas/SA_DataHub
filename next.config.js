@@ -43,6 +43,14 @@ const nextConfig = {
   },
   async redirects() {
     return [
+      // /dashboard was retired. Its searches go to /search; everything else to the list of all statistics.
+      {
+        source: '/dashboard',
+        has: [{ type: 'query', key: 'search', value: '(?<q>.*)' }],
+        destination: '/search?q=:q',
+        permanent: true,
+      },
+      { source: '/dashboard', destination: '/series', permanent: true },
       // The Matric 2024 story was retired: its provincial figures could not be traced to a held release.
       { source: '/insights/matric-results-2024', destination: '/insights/matric-results-2025', permanent: true },
       // Canonical host: apex domain (non-www), matching ubayd.me pattern
