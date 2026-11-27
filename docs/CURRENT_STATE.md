@@ -62,7 +62,7 @@ The owner approved all six as recommended in `docs/implementation-plan.md`.
 
 ## Known gaps
 
-- Fuel: the estimate tracker, the calculator, the breakdown of a litre and the static API are not built. The official history is live. March and April 2026 have no DMPR price schedule, so some series leave those months out.
+- Fuel: the estimate of the next change is not published (waiting on CEF). The official history, the breakdown of a litre, the cost calculator and the API (`/api`, `/api/v1/`) are live. March and April 2026 have no DMPR price schedule, so some series leave those months out.
 - Release explainers wait on the releases: QLFS Q3 (November), CPI October (18 November), the MPC decision (19 November) and GDP Q3 (December). There is no GDP or MPC explainer template yet.
 - Election results have no council seats: the IEC voting-station files don't include the seat calculation.
 - The population series for 2015 to 2024 is calculated back from growth rates, not taken from Stats SA's published series.

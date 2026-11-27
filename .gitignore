@@ -59,3 +59,6 @@ sources/search-console/
 
 # Neon CLI project link (the database migration is paused)
 .neon
+
+# Search Console exports and analysis notes (never commit)
+google-search-console/
